@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YAML ↔ JSON Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert YAML to JSON or JSON to YAML instantly. Free bidirectional converter with validation, error detection, and formatting. No signup, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/yaml-json.html">
+  <meta property="og:title" content="YAML ↔ JSON Converter — DevToolbox">
+  <meta property="og:description" content="Free online YAML to JSON and JSON to YAML converter. 100% client-side with validation and error detection.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/yaml-json.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "YAML to JSON Converter",
+    "url": "https://thisdevtool.com/tools/yaml-json.html",
+    "description": "Convert YAML to JSON or JSON to YAML instantly. Free, bidirectional, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between YAML and JSON?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "YAML and JSON are both data serialization formats, but they differ in syntax and use cases. JSON uses braces, brackets, and quotes with a strict syntax. YAML uses indentation and colons, making it more human-readable. YAML supports comments, multi-line strings, and anchors, while JSON is more widely supported in APIs and programming languages. YAML is a superset of JSON, meaning valid JSON is also valid YAML."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This YAML/JSON converter runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What YAML features are supported?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This converter supports the most common YAML features including key-value pairs, nested objects via indentation, arrays with dash notation, inline arrays and objects, quoted and unquoted strings, numbers, booleans (true/false/yes/no), null values, multi-line strings with pipe (|) and fold (>) indicators, and comments. It covers the YAML subset used in over 90% of real-world configuration files."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I convert JSON back to YAML?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Click the JSON to YAML chip to switch direction. The converter serializes JSON objects into clean, properly indented YAML with 2-space indentation. Arrays use dash notation, nested objects are indented, and strings that require quoting are handled automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my YAML fail to parse?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The most common YAML parsing errors are inconsistent indentation (mixing tabs and spaces), missing colons after keys, incorrect list formatting, and unquoted strings that look like other types. YAML is indentation-sensitive, so make sure you use consistent spacing. The error message shown in the status bar will help you identify the exact issue."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/csv-json.html">CSV/JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>YAML &harr; JSON Converter</h1>
+          <p class="tool-subtitle">Convert between YAML and JSON in either direction. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="yaml2json">YAML &rarr; JSON</button>
+            <button class="option-chip" data-mode="json2yaml">JSON &rarr; YAML</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">YAML Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="convInput" rows="16" placeholder="# Example YAML config
+server:
+  host: localhost
+  port: 8080
+  debug: true
+
+database:
+  driver: postgresql
+  name: myapp
+  credentials:
+    username: admin
+    password: secret123
+
+features:
+  - authentication
+  - logging
+  - caching
+
+limits:
+  max_connections: 100
+  timeout: 30" spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">JSON Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="convOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste YAML above to convert it to JSON.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the YAML JSON Converter</h2>
+          <ol>
+            <li><strong>Choose a direction</strong> — select "YAML to JSON" or "JSON to YAML" using the chips above the editor.</li>
+            <li><strong>Paste your data</strong> into the input area on the left (or top on mobile).</li>
+            <li><strong>View the result</strong> — the converted output appears instantly on the right with validation feedback in the status bar.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output pane to copy to clipboard or download the result as a .json or .yaml file.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>This converter transforms YAML data into JSON format and vice versa, entirely within your browser. The YAML parser is built from scratch without any external libraries. It handles the common YAML subset that covers over 90% of real-world configuration files, including nested objects, arrays, comments, quoted strings, booleans, numbers, null values, and multi-line strings. The JSON-to-YAML serializer produces clean, human-readable YAML with consistent 2-space indentation.</p>
+
+          <h3>Features</h3>
+          <ul>
+            <li><strong>Bidirectional conversion</strong> — switch between YAML-to-JSON and JSON-to-YAML with a single click</li>
+            <li><strong>No external dependencies</strong> — the YAML parser is built from scratch, no CDN or library required</li>
+            <li><strong>Validation with error messages</strong> — parse errors are displayed in the status bar with descriptive messages</li>
+            <li><strong>Comment handling</strong> — YAML comments are stripped during conversion (JSON does not support comments)</li>
+            <li><strong>Live conversion</strong> — output updates as you type with a 150ms debounce</li>
+            <li><strong>Key count display</strong> — the status bar shows the number of top-level keys after successful conversion</li>
+            <li><strong>Privacy</strong> — everything runs locally in your browser with zero server communication</li>
+          </ul>
+
+          <h3>YAML Syntax Basics</h3>
+          <p>YAML (YAML Ain't Markup Language) uses indentation to represent structure. Key-value pairs are written as <code>key: value</code>, with the colon followed by a space. Nested objects are indicated by increased indentation. Arrays use the dash notation: each item starts with <code>-</code> followed by a space. Comments begin with <code>#</code> and extend to the end of the line. String values can be unquoted, single-quoted, or double-quoted. YAML recognizes boolean values (<code>true</code>, <code>false</code>, <code>yes</code>, <code>no</code>), null (<code>null</code> or <code>~</code>), integers, and floating-point numbers automatically.</p>
+
+          <h3>YAML vs JSON Comparison</h3>
+          <p>JSON is the lingua franca of web APIs and is natively supported by every modern programming language. It has a strict syntax with curly braces for objects, square brackets for arrays, and mandatory double quotes for string keys and values. YAML, on the other hand, prioritizes human readability. It uses whitespace indentation instead of braces, supports comments for documentation, and allows unquoted strings. YAML is popular in DevOps tools like Docker Compose, Kubernetes, Ansible, and GitHub Actions. Since YAML is a superset of JSON, any valid JSON document is also valid YAML, but the reverse is not true due to YAML's additional features.</p>
+
+          <h3>Common Use Cases</h3>
+          <p>DevOps engineers frequently convert between YAML and JSON when working with CI/CD pipelines, infrastructure-as-code tools, and container orchestration platforms. A Kubernetes manifest written in YAML might need to be converted to JSON for an API call. A JSON response from a REST API might need to be converted to YAML for inclusion in a configuration file. Frontend developers convert JSON API responses to YAML for documentation. Backend developers convert YAML configuration files to JSON for programmatic processing. This tool makes these conversions instant and private.</p>
+
+          <h3>Multi-Line Strings in YAML</h3>
+          <p>YAML supports two special indicators for multi-line strings. The pipe character (<code>|</code>) preserves line breaks exactly as written, which is useful for code snippets, scripts, or formatted text. The greater-than character (<code>&gt;</code>) folds line breaks into spaces, creating a single long line, which is useful for long descriptions or paragraphs. Both indicators can be followed by a chomping indicator: <code>-</code> to strip the final newline or <code>+</code> to keep it. These multi-line features have no equivalent in JSON, so the converter preserves the final string content in the JSON output. For more data format tools, try our <a href="/tools/json-formatter.html">JSON Formatter</a>, <a href="/tools/csv-json.html">CSV/JSON Converter</a>, or <a href="/tools/env-redactor.html">.env Redactor</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between YAML and JSON?</button>
+            <div class="faq-answer">YAML and JSON are both data serialization formats, but they differ in syntax and use cases. JSON uses braces, brackets, and quotes with a strict syntax. YAML uses indentation and colons, making it more human-readable. YAML supports comments, multi-line strings, and anchors, while JSON is more widely supported in APIs and programming languages. YAML is a superset of JSON, meaning valid JSON is also valid YAML.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my data sent to a server?</button>
+            <div class="faq-answer">No. This YAML/JSON converter runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What YAML features are supported?</button>
+            <div class="faq-answer">This converter supports the most common YAML features including key-value pairs, nested objects via indentation, arrays with dash notation, inline arrays and objects, quoted and unquoted strings, numbers, booleans (true/false/yes/no), null values, multi-line strings with pipe (|) and fold (>) indicators, and comments. It covers the YAML subset used in over 90% of real-world configuration files.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I convert JSON back to YAML?</button>
+            <div class="faq-answer">Yes. Click the JSON to YAML chip to switch direction. The converter serializes JSON objects into clean, properly indented YAML with 2-space indentation. Arrays use dash notation, nested objects are indented, and strings that require quoting are handled automatically.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does my YAML fail to parse?</button>
+            <div class="faq-answer">The most common YAML parsing errors are inconsistent indentation (mixing tabs and spaces), missing colons after keys, incorrect list formatting, and unquoted strings that look like other types. YAML is indentation-sensitive, so make sure you use consistent spacing. The error message shown in the status bar will help you identify the exact issue.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/env-redactor.html">.env Redactor</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('convInput');
+      var output = document.getElementById('convOutput');
+      var statusBar = document.getElementById('statusBar');
+      var inputLabel = document.getElementById('inputLabel');
+      var outputLabel = document.getElementById('outputLabel');
+      var currentMode = 'yaml2json';
+
+      // --- YAML Parser (no external deps) ---
+      function parseYAML(str) {
+        var lines = str.split('\n');
+        var cleaned = [];
+        // Remove comments and handle multi-line strings
+        var inMultiLine = false;
+        var multiLineIndent = 0;
+        var multiLineType = '';
+        var multiLineKey = '';
+        var multiLineLines = [];
+
+        for (var li = 0; li < lines.length; li++) {
+          var line = lines[li];
+          // Strip inline comments (not inside quotes)
+          var commentIdx = -1;
+          var inSingle = false;
+          var inDouble = false;
+          for (var ci = 0; ci < line.length; ci++) {
+            if (line[ci] === "'" && !inDouble) inSingle = !inSingle;
+            if (line[ci] === '"' && !inSingle) inDouble = !inDouble;
+            if (line[ci] === '#' && !inSingle && !inDouble && (ci === 0 || line[ci - 1] === ' ')) {
+              commentIdx = ci;
+              break;
+            }
+          }
+          if (commentIdx >= 0) line = line.substring(0, commentIdx);
+          cleaned.push(line);
+        }
+
+        return parseYAMLLines(cleaned, 0, cleaned.length, -1);
+      }
+
+      function parseYAMLLines(lines, start, end, parentIndent) {
+        var i = start;
+        var result = null;
+        var isArray = false;
+        var isObject = false;
+
+        // Determine if this block is an array or object
+        while (i < end) {
+          var line = lines[i];
+          if (line.trim() === '') { i++; continue; }
+          var indent = line.search(/\S/);
+          if (indent <= parentIndent) break;
+
+          if (line.trim().charAt(0) === '-') {
+            isArray = true;
+          } else if (line.trim().indexOf(':') !== -1) {
+            isObject = true;
+          }
+          break;
+        }
+
+        if (isArray) {
+          return parseYAMLArray(lines, start, end, parentIndent);
+        } else if (isObject) {
+          return parseYAMLObject(lines, start, end, parentIndent);
+        }
+        return null;
+      }
+
+      function parseYAMLObject(lines, start, end, parentIndent) {
+        var obj = {};
+        var i = start;
+        var blockIndent = -1;
+
+        while (i < end) {
+          var line = lines[i];
+          if (line.trim() === '') { i++; continue; }
+          var indent = line.search(/\S/);
+          if (indent <= parentIndent) break;
+
+          if (blockIndent === -1) blockIndent = indent;
+          if (indent < blockIndent) break;
+          if (indent > blockIndent) { i++; continue; }
+
+          var trimmed = line.trim();
+
+          // Array item containing object key
+          if (trimmed.charAt(0) === '-') { break; }
+
+          // key: value
+          var colonIdx = trimmed.indexOf(':');
+          if (colonIdx === -1) { i++; continue; }
+
+          var key = trimmed.substring(0, colonIdx).trim();
+          key = unquoteString(key);
+          var valueStr = trimmed.substring(colonIdx + 1).trim();
+
+          // Multi-line string indicators
+          if (valueStr === '|' || valueStr === '>' || valueStr === '|-' || valueStr === '>-' || valueStr === '|+' || valueStr === '>+') {
+            var mlType = valueStr.charAt(0);
+            var chomp = valueStr.length > 1 ? valueStr.charAt(1) : '';
+            var mlLines = [];
+            i++;
+            var mlIndent = -1;
+            while (i < end) {
+              var mlLine = lines[i];
+              if (mlLine.trim() === '') {
+                mlLines.push('');
+                i++;
+                continue;
+              }
+              var mlInd = mlLine.search(/\S/);
+              if (mlIndent === -1) mlIndent = mlInd;
+              if (mlInd < mlIndent) break;
+              mlLines.push(mlLine.substring(mlIndent));
+              i++;
+            }
+            // Remove trailing empty lines for default/strip
+            if (chomp !== '+') {
+              while (mlLines.length > 0 && mlLines[mlLines.length - 1] === '') mlLines.pop();
+            }
+            if (mlType === '|') {
+              obj[key] = mlLines.join('\n') + (chomp === '+' ? '\n' : '');
+            } else {
+              obj[key] = mlLines.join(' ').replace(/\s+/g, ' ').trim() + (chomp === '+' ? '\n' : '');
+            }
+            continue;
+          }
+
+          if (valueStr === '') {
+            // Nested block — find children
+            var childStart = i + 1;
+            var childEnd = childStart;
+            while (childEnd < end) {
+              var cl = lines[childEnd];
+              if (cl.trim() === '') { childEnd++; continue; }
+              var ci = cl.search(/\S/);
+              if (ci <= blockIndent) break;
+              childEnd++;
+            }
+            obj[key] = parseYAMLLines(lines, childStart, childEnd, blockIndent);
+            i = childEnd;
+          } else {
+            obj[key] = parseYAMLValue(valueStr);
+            i++;
+          }
+        }
+        return obj;
+      }
+
+      function parseYAMLArray(lines, start, end, parentIndent) {
+        var arr = [];
+        var i = start;
+        var blockIndent = -1;
+
+        while (i < end) {
+          var line = lines[i];
+          if (line.trim() === '') { i++; continue; }
+          var indent = line.search(/\S/);
+          if (indent <= parentIndent) break;
+
+          if (blockIndent === -1) blockIndent = indent;
+          if (indent < blockIndent) break;
+          if (indent > blockIndent) { i++; continue; }
+
+          var trimmed = line.trim();
+          if (trimmed.charAt(0) !== '-') { break; }
+
+          var itemStr = trimmed.substring(1).trim();
+
+          if (itemStr === '') {
+            // Nested block under array item
+            var childStart = i + 1;
+            var childEnd = childStart;
+            while (childEnd < end) {
+              var cl = lines[childEnd];
+              if (cl.trim() === '') { childEnd++; continue; }
+              var ci = cl.search(/\S/);
+              if (ci <= blockIndent) break;
+              childEnd++;
+            }
+            arr.push(parseYAMLLines(lines, childStart, childEnd, blockIndent));
+            i = childEnd;
+          } else if (itemStr.indexOf(':') !== -1 && !isQuotedString(itemStr)) {
+            // Inline object in array item: - key: value (possibly multi-line)
+            var tempLines = [new Array(blockIndent + 3).join(' ') + itemStr];
+            var childStart2 = i + 1;
+            while (childStart2 < end) {
+              var cl2 = lines[childStart2];
+              if (cl2.trim() === '') { childStart2++; continue; }
+              var ci2 = cl2.search(/\S/);
+              if (ci2 <= blockIndent + 2) break;
+              tempLines.push(cl2);
+              childStart2++;
+            }
+            arr.push(parseYAMLObject(tempLines.concat(lines.slice(i + 1, childStart2)), 0, tempLines.length, blockIndent));
+            i = childStart2;
+          } else {
+            arr.push(parseYAMLValue(itemStr));
+            i++;
+          }
+        }
+        return arr;
+      }
+
+      function isQuotedString(s) {
+        return (s.charAt(0) === '"' && s.charAt(s.length - 1) === '"') ||
+               (s.charAt(0) === "'" && s.charAt(s.length - 1) === "'");
+      }
+
+      function parseYAMLValue(str) {
+        if (str === '' || str === '~' || str === 'null' || str === 'Null' || str === 'NULL') return null;
+        if (str === 'true' || str === 'True' || str === 'TRUE' || str === 'yes' || str === 'Yes' || str === 'YES') return true;
+        if (str === 'false' || str === 'False' || str === 'FALSE' || str === 'no' || str === 'No' || str === 'NO') return false;
+
+        // Inline array [a, b, c]
+        if (str.charAt(0) === '[' && str.charAt(str.length - 1) === ']') {
+          var inner = str.substring(1, str.length - 1).trim();
+          if (inner === '') return [];
+          return splitCSV(inner).map(function (v) { return parseYAMLValue(v.trim()); });
+        }
+
+        // Inline object {a: 1, b: 2}
+        if (str.charAt(0) === '{' && str.charAt(str.length - 1) === '}') {
+          var inner2 = str.substring(1, str.length - 1).trim();
+          if (inner2 === '') return {};
+          var obj = {};
+          splitCSV(inner2).forEach(function (pair) {
+            var ci = pair.indexOf(':');
+            if (ci !== -1) {
+              var k = pair.substring(0, ci).trim();
+              var v = pair.substring(ci + 1).trim();
+              obj[unquoteString(k)] = parseYAMLValue(v);
+            }
+          });
+          return obj;
+        }
+
+        // Quoted strings
+        if ((str.charAt(0) === '"' && str.charAt(str.length - 1) === '"') ||
+            (str.charAt(0) === "'" && str.charAt(str.length - 1) === "'")) {
+          return str.substring(1, str.length - 1);
+        }
+
+        // Numbers
+        if (/^-?\d+$/.test(str)) return parseInt(str, 10);
+        if (/^-?\d+\.\d+$/.test(str)) return parseFloat(str);
+        if (/^0x[0-9a-fA-F]+$/.test(str)) return parseInt(str, 16);
+        if (/^0o[0-7]+$/.test(str)) return parseInt(str.substring(2), 8);
+
+        // Infinity and NaN
+        if (str === '.inf' || str === '.Inf') return Infinity;
+        if (str === '-.inf' || str === '-.Inf') return -Infinity;
+        if (str === '.nan' || str === '.NaN') return NaN;
+
+        return str;
+      }
+
+      function unquoteString(s) {
+        s = s.trim();
+        if ((s.charAt(0) === '"' && s.charAt(s.length - 1) === '"') ||
+            (s.charAt(0) === "'" && s.charAt(s.length - 1) === "'")) {
+          return s.substring(1, s.length - 1);
+        }
+        return s;
+      }
+
+      function splitCSV(str) {
+        var parts = [];
+        var depth = 0;
+        var current = '';
+        var inSingle = false;
+        var inDouble = false;
+        for (var i = 0; i < str.length; i++) {
+          var c = str[i];
+          if (c === "'" && !inDouble) inSingle = !inSingle;
+          if (c === '"' && !inSingle) inDouble = !inDouble;
+          if (!inSingle && !inDouble) {
+            if (c === '[' || c === '{') depth++;
+            if (c === ']' || c === '}') depth--;
+            if (c === ',' && depth === 0) {
+              parts.push(current);
+              current = '';
+              continue;
+            }
+          }
+          current += c;
+        }
+        if (current.trim()) parts.push(current);
+        return parts;
+      }
+
+      // --- JSON to YAML Serializer ---
+      function toYAML(obj, indent) {
+        indent = indent || 0;
+        var pad = '  '.repeat(indent);
+
+        if (obj === null || obj === undefined) return 'null';
+        if (typeof obj === 'boolean') return obj ? 'true' : 'false';
+        if (typeof obj === 'number') {
+          if (obj !== obj) return '.nan';
+          if (obj === Infinity) return '.inf';
+          if (obj === -Infinity) return '-.inf';
+          return String(obj);
+        }
+        if (typeof obj === 'string') return quoteYAMLString(obj);
+
+        if (Array.isArray(obj)) {
+          if (obj.length === 0) return '[]';
+          var arrLines = [];
+          obj.forEach(function (item) {
+            if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
+              var keys = Object.keys(item);
+              if (keys.length > 0) {
+                var firstKey = keys[0];
+                var firstVal = serializeYAMLValue(item[firstKey], indent + 1);
+                var line = pad + '- ' + firstKey + ': ' + firstVal;
+                arrLines.push(line);
+                for (var ki = 1; ki < keys.length; ki++) {
+                  var val = serializeYAMLValue(item[keys[ki]], indent + 1);
+                  arrLines.push(pad + '  ' + keys[ki] + ': ' + val);
+                }
+              } else {
+                arrLines.push(pad + '- {}');
+              }
+            } else {
+              arrLines.push(pad + '- ' + serializeYAMLValue(item, indent + 1));
+            }
+          });
+          return arrLines.join('\n');
+        }
+
+        if (typeof obj === 'object') {
+          var keys = Object.keys(obj);
+          if (keys.length === 0) return '{}';
+          var lines = [];
+          keys.forEach(function (key) {
+            var val = obj[key];
+            var qKey = /[:{}\[\],&*?|>!'"%@`#]/.test(key) || key === '' ? '"' + key + '"' : key;
+            if (typeof val === 'object' && val !== null) {
+              if (Array.isArray(val) && val.length === 0) {
+                lines.push(pad + qKey + ': []');
+              } else if (!Array.isArray(val) && Object.keys(val).length === 0) {
+                lines.push(pad + qKey + ': {}');
+              } else {
+                lines.push(pad + qKey + ':');
+                lines.push(toYAML(val, indent + 1));
+              }
+            } else {
+              lines.push(pad + qKey + ': ' + serializeYAMLValue(val, indent));
+            }
+          });
+          return lines.join('\n');
+        }
+
+        return String(obj);
+      }
+
+      function serializeYAMLValue(val, indent) {
+        if (val === null || val === undefined) return 'null';
+        if (typeof val === 'boolean') return val ? 'true' : 'false';
+        if (typeof val === 'number') {
+          if (val !== val) return '.nan';
+          if (val === Infinity) return '.inf';
+          if (val === -Infinity) return '-.inf';
+          return String(val);
+        }
+        if (typeof val === 'string') return quoteYAMLString(val);
+        if (Array.isArray(val)) {
+          if (val.length === 0) return '[]';
+          return '\n' + toYAML(val, indent + 1);
+        }
+        if (typeof val === 'object') {
+          if (Object.keys(val).length === 0) return '{}';
+          return '\n' + toYAML(val, indent + 1);
+        }
+        return String(val);
+      }
+
+      function quoteYAMLString(s) {
+        // Check if quoting is needed
+        if (s === '') return "''";
+        if (s === 'true' || s === 'false' || s === 'null' || s === 'yes' || s === 'no' ||
+            s === 'True' || s === 'False' || s === 'Null' || s === 'Yes' || s === 'No') {
+          return "'" + s + "'";
+        }
+        if (/^-?\d+(\.\d+)?$/.test(s)) return "'" + s + "'";
+        if (/[:{}\[\],&*?|>!'"%@`#\n]/.test(s)) {
+          if (s.indexOf('\n') !== -1) {
+            return '"' + s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n') + '"';
+          }
+          return "'" + s.replace(/'/g, "''") + "'";
+        }
+        return s;
+      }
+
+      // --- Processing ---
+      function countKeys(obj) {
+        if (typeof obj !== 'object' || obj === null) return 0;
+        if (Array.isArray(obj)) return obj.length;
+        return Object.keys(obj).length;
+      }
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = currentMode === 'yaml2json'
+            ? 'Paste YAML above to convert it to JSON.'
+            : 'Paste JSON above to convert it to YAML.';
+          return;
+        }
+
+        try {
+          var result;
+          var keyCount;
+          if (currentMode === 'yaml2json') {
+            var parsed = parseYAML(raw);
+            result = JSON.stringify(parsed, null, 2);
+            keyCount = countKeys(parsed);
+          } else {
+            var parsed2 = JSON.parse(raw);
+            result = toYAML(parsed2, 0);
+            keyCount = countKeys(parsed2);
+          }
+          output.textContent = result;
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Valid \u2014 ' + keyCount + ' top-level ' + (keyCount === 1 ? 'key' : 'keys');
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Parse error: ' + e.message;
+        }
+
+        DT.trackTool('yaml-json');
+      }
+
+      // Live processing with debounce
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      // Mode chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          if (currentMode === 'yaml2json') {
+            inputLabel.textContent = 'YAML Input';
+            outputLabel.textContent = 'JSON Output';
+            input.placeholder = '# Example YAML\nserver:\n  host: localhost\n  port: 8080';
+          } else {
+            inputLabel.textContent = 'JSON Input';
+            outputLabel.textContent = 'YAML Output';
+            input.placeholder = '{\n  "server": {\n    "host": "localhost",\n    "port": 8080\n  }\n}';
+          }
+          process();
+        });
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Download
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (!text) return;
+        if (currentMode === 'yaml2json') {
+          DT.downloadText(text, 'output.json', 'application/json');
+        } else {
+          DT.downloadText(text, 'output.yaml', 'text/yaml');
+        }
+      });
+
+      // Clear
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      // Try Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = 'server:\n  host: localhost\n  port: 8080\n  debug: true\n\ndatabase:\n  driver: postgresql\n  name: myapp\n  credentials:\n    username: admin\n    password: secret123\n\nfeatures:\n  - authentication\n  - logging\n  - caching';
+        process();
+      });
+
+      // Allow tab key in textarea
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

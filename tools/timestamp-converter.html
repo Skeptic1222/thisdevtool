@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timestamp Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert Unix timestamps to human-readable dates and vice versa. Live epoch clock, UTC, ISO 8601, and relative time. Free, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/timestamp-converter.html">
+  <meta property="og:title" content="Timestamp Converter — DevToolbox">
+  <meta property="og:description" content="Free online Unix timestamp converter. Epoch to date, date to epoch, live clock. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/timestamp-converter.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Timestamp Converter",
+    "url": "https://thisdevtool.com/tools/timestamp-converter.html",
+    "description": "Convert Unix timestamps to human-readable dates and vice versa. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a Unix timestamp?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Unix timestamp (also called epoch time or POSIX time) is the number of seconds that have elapsed since January 1, 1970, 00:00:00 UTC. It is a widely used standard for representing time in computing because it is timezone-independent and easy to store as a single integer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between seconds and milliseconds timestamps?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Unix timestamps in seconds are 10 digits long (e.g., 1700000000) and count seconds since the epoch. Millisecond timestamps are 13 digits long (e.g., 1700000000000) and count milliseconds since the epoch. JavaScript's Date.now() returns milliseconds, while most Unix/Linux commands return seconds."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data processed on a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This timestamp converter runs entirely in your browser using JavaScript's built-in Date object. No data is sent to any server. The live clock and all conversions are computed locally on your device."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the Year 2038 problem?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Year 2038 problem occurs because many systems store Unix timestamps as 32-bit signed integers, which can only represent dates up to January 19, 2038, 03:14:07 UTC. After that, the integer overflows. Modern 64-bit systems and JavaScript (which uses 64-bit floats) are not affected by this limitation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is ISO 8601 format?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ISO 8601 is an international standard for date and time representation. It uses the format YYYY-MM-DDTHH:mm:ss.sssZ, where T separates date and time, and Z indicates UTC. For example, 2024-01-15T14:30:00.000Z. It is the most unambiguous way to represent dates in data exchange."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .ts-live-clock { background: var(--bg-card); border: 2px solid var(--accent); border-radius: var(--radius); padding: 1.25rem; text-align: center; margin-bottom: 1.5rem; }
+    .ts-live-clock .ts-epoch { font-family: 'SF Mono', 'Consolas', 'Monaco', monospace; font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .ts-live-clock .ts-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem; }
+    .ts-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+    .ts-section h3 { margin: 0 0 1rem 0; font-size: 1.1rem; }
+    .ts-result { background: var(--bg-main); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; font-family: 'SF Mono', 'Consolas', 'Monaco', monospace; font-size: 0.85rem; line-height: 1.8; margin-top: 0.75rem; min-height: 100px; }
+    .ts-result-row { display: flex; gap: 0.5rem; }
+    .ts-result-label { color: var(--text-secondary); min-width: 120px; flex-shrink: 0; }
+    .ts-result-value { color: var(--text-primary); word-break: break-all; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/cron-parser.html">Cron Parser</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Timestamp / Epoch Converter</h1>
+          <p class="tool-subtitle">Convert between Unix timestamps and human-readable dates. Live epoch clock included. 100% client-side.</p>
+
+          <!-- Live Clock -->
+          <div class="ts-live-clock">
+            <div class="ts-epoch" id="liveClock">—</div>
+            <div class="ts-label">Current Unix Timestamp (seconds)</div>
+          </div>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-unit="seconds">Seconds</button>
+            <button class="option-chip" data-unit="milliseconds">Milliseconds</button>
+          </div>
+
+          <!-- Timestamp to Date -->
+          <div class="ts-section">
+            <h3>Unix Timestamp &rarr; Human Date</h3>
+            <div class="input-row" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap;">
+              <div class="form-group" style="flex:1;min-width:200px;">
+                <label for="tsInput">Unix Timestamp</label>
+                <input type="number" id="tsInput" placeholder="e.g. 1700000000" style="width:100%;">
+              </div>
+              <button class="btn btn-primary" id="tsConvertBtn" style="height:42px;">Convert</button>
+              <button class="btn btn-secondary" id="tsNowBtn" style="height:42px;">Now</button>
+            </div>
+            <div class="ts-result" id="tsResult">
+              <div style="color:var(--text-secondary);">Enter a timestamp above and click Convert.</div>
+            </div>
+          </div>
+
+          <!-- Date to Timestamp -->
+          <div class="ts-section">
+            <h3>Human Date &rarr; Unix Timestamp</h3>
+            <div class="input-row" style="display:flex;gap:0.5rem;align-items:flex-end;flex-wrap:wrap;">
+              <div class="form-group" style="flex:1;min-width:200px;">
+                <label for="dateInput">Date &amp; Time</label>
+                <input type="datetime-local" id="dateInput" style="width:100%;">
+              </div>
+              <button class="btn btn-primary" id="dateConvertBtn" style="height:42px;">Convert</button>
+              <button class="btn btn-secondary" id="dateNowBtn" style="height:42px;">Now</button>
+            </div>
+            <div class="ts-result" id="dateResult">
+              <div style="color:var(--text-secondary);">Select a date above and click Convert.</div>
+            </div>
+          </div>
+
+          <!-- Copy Button -->
+          <div class="btn-group" style="margin-top:0.5rem;">
+            <button class="btn btn-sm btn-primary" id="copyBtn">Copy Results</button>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a timestamp or select a date to convert.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Timestamp Converter</h2>
+          <ol>
+            <li><strong>Choose your unit</strong> — select Seconds or Milliseconds depending on your timestamp format.</li>
+            <li><strong>Convert timestamp to date</strong> — enter a Unix timestamp in the first section and click Convert to see the human-readable date in multiple formats.</li>
+            <li><strong>Convert date to timestamp</strong> — pick a date and time in the second section and click Convert to get the Unix timestamp.</li>
+            <li><strong>Use the live clock</strong> — the current Unix timestamp updates every second at the top of the page.</li>
+            <li><strong>Copy results</strong> — click Copy Results to copy the last conversion output to your clipboard.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>This timestamp converter translates between <strong>Unix epoch timestamps</strong> (the number of seconds or milliseconds since January 1, 1970 UTC) and <strong>human-readable date strings</strong>. It displays results in multiple formats: UTC, your local timezone, ISO 8601, and a relative time description (like "3 days ago" or "in 2 hours"). The live clock at the top shows the current Unix timestamp updating in real time.</p>
+
+          <h3>Features</h3>
+          <ul>
+            <li><strong>Bidirectional conversion</strong> — timestamp to date and date to timestamp in one tool</li>
+            <li><strong>Seconds and milliseconds</strong> — supports both 10-digit (seconds) and 13-digit (milliseconds) timestamps</li>
+            <li><strong>Multiple output formats</strong> — UTC, local time, ISO 8601, and relative time</li>
+            <li><strong>Live epoch clock</strong> — current Unix timestamp updating every second</li>
+            <li><strong>Quick "Now" button</strong> — instantly fill in the current time for either direction</li>
+            <li><strong>Privacy</strong> — all conversions happen in your browser using JavaScript's Date object</li>
+          </ul>
+
+          <h3>Understanding Unix Timestamps</h3>
+          <p>The Unix epoch (or Unix time) was chosen as January 1, 1970, 00:00:00 UTC — the birth of the Unix operating system. Every second since then increments the timestamp by 1. At the time of writing, Unix timestamps are around 1.7 billion seconds. This simple integer representation makes it trivial to compute time differences, store dates in databases, and transmit dates across systems regardless of timezone.</p>
+
+          <h3>Seconds vs. Milliseconds</h3>
+          <p>The original Unix timestamp counts <strong>seconds</strong> and is 10 digits long (e.g., 1700000000). JavaScript, Java, and many modern APIs use <strong>milliseconds</strong> — 13 digits long (e.g., 1700000000000). This tool auto-detects the format based on magnitude, but you can also explicitly choose Seconds or Milliseconds using the chips above. If your timestamp is 10 digits, it is seconds; if it is 13 digits, it is milliseconds.</p>
+
+          <h3>The Year 2038 Problem</h3>
+          <p>On January 19, 2038, 32-bit signed integer timestamps will overflow, wrapping around to a date in 1901. This affects legacy C programs, embedded systems, and databases using 32-bit integers for time storage. Modern 64-bit systems and JavaScript (which uses 64-bit floating point numbers for timestamps) will not be affected. JavaScript's Date object can represent dates far beyond 2038.</p>
+
+          <h3>ISO 8601 and RFC 3339</h3>
+          <p>This tool shows dates in <strong>ISO 8601</strong> format (e.g., 2024-01-15T14:30:00.000Z), which is the international standard for date interchange. It is unambiguous — the "T" separates date from time, and "Z" means UTC. Most APIs, databases, and programming languages support ISO 8601 parsing and formatting. The closely related RFC 3339 is a profile of ISO 8601 used in internet protocols. For scheduling tasks based on timestamps, try our <a href="/tools/cron-parser.html">Cron Parser</a>. If you are working with JWT tokens that contain <code>exp</code> and <code>iat</code> claims, our <a href="/tools/jwt-decoder.html">JWT Decoder</a> displays these timestamps alongside human-readable dates. You can also generate time-sortable unique identifiers with our <a href="/tools/uuid-generator.html">UUID Generator</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a Unix timestamp?</button>
+            <div class="faq-answer">A Unix timestamp (also called epoch time or POSIX time) is the number of seconds that have elapsed since January 1, 1970, 00:00:00 UTC. It is a widely used standard for representing time in computing because it is timezone-independent and easy to store as a single integer.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between seconds and milliseconds timestamps?</button>
+            <div class="faq-answer">Unix timestamps in seconds are 10 digits long (e.g., 1700000000) and count seconds since the epoch. Millisecond timestamps are 13 digits long (e.g., 1700000000000) and count milliseconds since the epoch. JavaScript's Date.now() returns milliseconds, while most Unix/Linux commands return seconds.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my data processed on a server?</button>
+            <div class="faq-answer">No. This timestamp converter runs entirely in your browser using JavaScript's built-in Date object. No data is sent to any server. The live clock and all conversions are computed locally on your device.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the Year 2038 problem?</button>
+            <div class="faq-answer">The Year 2038 problem occurs because many systems store Unix timestamps as 32-bit signed integers, which can only represent dates up to January 19, 2038, 03:14:07 UTC. After that, the integer overflows. Modern 64-bit systems and JavaScript (which uses 64-bit floats) are not affected by this limitation.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is ISO 8601 format?</button>
+            <div class="faq-answer">ISO 8601 is an international standard for date and time representation. It uses the format YYYY-MM-DDTHH:mm:ss.sssZ, where T separates date and time, and Z indicates UTC. For example, 2024-01-15T14:30:00.000Z. It is the most unambiguous way to represent dates in data exchange.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/cron-parser.html">Cron Parser</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var tsInput = document.getElementById('tsInput');
+      var dateInput = document.getElementById('dateInput');
+      var tsResult = document.getElementById('tsResult');
+      var dateResult = document.getElementById('dateResult');
+      var statusBar = document.getElementById('statusBar');
+      var liveClock = document.getElementById('liveClock');
+      var currentUnit = 'seconds';
+      var lastCopyText = '';
+
+      // Live clock
+      function updateClock() {
+        var now = Math.floor(Date.now() / 1000);
+        liveClock.textContent = now;
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+
+      function relativeTime(date) {
+        var now = new Date();
+        var diffMs = date.getTime() - now.getTime();
+        var absDiff = Math.abs(diffMs);
+        var past = diffMs < 0;
+        var seconds = Math.floor(absDiff / 1000);
+        var minutes = Math.floor(seconds / 60);
+        var hours = Math.floor(minutes / 60);
+        var days = Math.floor(hours / 24);
+        var months = Math.floor(days / 30);
+        var years = Math.floor(days / 365);
+
+        var str;
+        if (seconds < 5) str = 'just now';
+        else if (seconds < 60) str = seconds + ' seconds';
+        else if (minutes < 60) str = minutes + ' minute' + (minutes !== 1 ? 's' : '');
+        else if (hours < 24) str = hours + ' hour' + (hours !== 1 ? 's' : '');
+        else if (days < 30) str = days + ' day' + (days !== 1 ? 's' : '');
+        else if (months < 12) str = months + ' month' + (months !== 1 ? 's' : '');
+        else str = years + ' year' + (years !== 1 ? 's' : '');
+
+        if (str === 'just now') return str;
+        return past ? str + ' ago' : 'in ' + str;
+      }
+
+      function formatResult(date) {
+        var ts = currentUnit === 'seconds'
+          ? Math.floor(date.getTime() / 1000)
+          : date.getTime();
+
+        var lines = [
+          { label: 'Unix (' + currentUnit + ')', value: ts },
+          { label: 'UTC', value: date.toUTCString() },
+          { label: 'Local', value: date.toLocaleString() },
+          { label: 'ISO 8601', value: date.toISOString() },
+          { label: 'Relative', value: relativeTime(date) }
+        ];
+
+        var html = '';
+        var copyText = '';
+        lines.forEach(function (row) {
+          html += '<div class="ts-result-row">' +
+            '<span class="ts-result-label">' + row.label + ':</span>' +
+            '<span class="ts-result-value">' + row.value + '</span></div>';
+          copyText += row.label + ': ' + row.value + '\n';
+        });
+
+        lastCopyText = copyText;
+        return html;
+      }
+
+      // Timestamp to Date
+      function convertTimestamp() {
+        var raw = tsInput.value.trim();
+        if (!raw) {
+          tsResult.innerHTML = '<div style="color:var(--text-secondary);">Enter a timestamp above and click Convert.</div>';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter a timestamp or select a date to convert.';
+          return;
+        }
+
+        var num = Number(raw);
+        if (isNaN(num)) {
+          tsResult.innerHTML = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid timestamp \u2014 enter a numeric value.';
+          return;
+        }
+
+        var ms = currentUnit === 'seconds' ? num * 1000 : num;
+        var date = new Date(ms);
+
+        if (isNaN(date.getTime())) {
+          tsResult.innerHTML = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid timestamp \u2014 could not convert to a valid date.';
+          return;
+        }
+
+        tsResult.innerHTML = formatResult(date);
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Valid timestamp \u2014 ' + date.toUTCString();
+        DT.trackTool('timestamp-converter');
+      }
+
+      document.getElementById('tsConvertBtn').addEventListener('click', convertTimestamp);
+      tsInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') convertTimestamp();
+      });
+      document.getElementById('tsNowBtn').addEventListener('click', function () {
+        var now = currentUnit === 'seconds' ? Math.floor(Date.now() / 1000) : Date.now();
+        tsInput.value = now;
+        convertTimestamp();
+      });
+
+      // Date to Timestamp
+      function convertDate() {
+        var raw = dateInput.value;
+        if (!raw) {
+          dateResult.innerHTML = '<div style="color:var(--text-secondary);">Select a date above and click Convert.</div>';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter a timestamp or select a date to convert.';
+          return;
+        }
+
+        var date = new Date(raw);
+        if (isNaN(date.getTime())) {
+          dateResult.innerHTML = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid date \u2014 please select a valid date and time.';
+          return;
+        }
+
+        dateResult.innerHTML = formatResult(date);
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Valid date \u2014 ' + date.toUTCString();
+        DT.trackTool('timestamp-converter');
+      }
+
+      document.getElementById('dateConvertBtn').addEventListener('click', convertDate);
+      document.getElementById('dateNowBtn').addEventListener('click', function () {
+        var now = new Date();
+        var local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        dateInput.value = local.toISOString().slice(0, 16);
+        convertDate();
+      });
+
+      // Unit chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentUnit = chip.getAttribute('data-unit');
+          // Re-run any existing conversions
+          if (tsInput.value.trim()) convertTimestamp();
+          if (dateInput.value) convertDate();
+        });
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (lastCopyText) DT.copyToClipboard(lastCopyText, this);
+      });
+    })();
+  </script>
+</body>
+</html>

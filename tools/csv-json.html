@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV &harr; JSON Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert CSV to JSON and JSON to CSV online. Auto-detects delimiters, handles quoted fields, and supports comma, tab, semicolon, and pipe separators. Free, no signup.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/csv-json.html">
+  <meta property="og:title" content="CSV &harr; JSON Converter — DevToolbox">
+  <meta property="og:description" content="Free online CSV to JSON and JSON to CSV converter. Auto-detect delimiters, proper quoting. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/csv-json.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSV to JSON Converter",
+    "url": "https://thisdevtool.com/tools/csv-json.html",
+    "description": "Convert CSV to JSON and JSON to CSV online. Auto-detect delimiters, handle quoted fields. Free, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does CSV to JSON conversion work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The converter reads the first row of the CSV as column headers. Each subsequent row becomes a JSON object where the keys are the header names and the values are the corresponding cell values. The result is a JSON array of objects. Quoted fields, escaped quotes, and various delimiters are handled automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What delimiters does this tool support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool supports comma (,), tab, semicolon (;), and pipe (|) delimiters. By default, it auto-detects the delimiter by analyzing the frequency of each character in the first line. You can also manually select a specific delimiter using the chips below the mode selector."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my CSV data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All CSV and JSON conversion happens entirely in your browser using JavaScript. Your data never leaves your device. There is no server-side processing, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the tool handle quoted fields in CSV?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The parser correctly handles RFC 4180 CSV rules: fields enclosed in double quotes can contain the delimiter character, newlines, and escaped double quotes (represented as two consecutive double quotes). For example, the field \"Hello, World\" with a comma inside is treated as a single value."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What JSON format does the JSON to CSV conversion expect?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The JSON input must be an array of objects, like [{\"name\": \"Alice\", \"age\": 30}, {\"name\": \"Bob\", \"age\": 25}]. The converter extracts all unique keys from all objects to form the CSV header row, then outputs each object as a row. Missing values are output as empty fields."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>CSV &harr; JSON Converter</h1>
+          <p class="tool-subtitle">Convert between CSV and JSON formats with auto-detected delimiters. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="csv2json">CSV &rarr; JSON</button>
+            <button class="option-chip" data-mode="json2csv">JSON &rarr; CSV</button>
+          </div>
+
+          <!-- Delimiter Chips -->
+          <div class="option-chips" id="delimiterChips" style="margin-top:0.25rem;">
+            <button class="option-chip active" data-delim="auto">Auto-detect</button>
+            <button class="option-chip" data-delim=",">Comma</button>
+            <button class="option-chip" data-delim="\t">Tab</button>
+            <button class="option-chip" data-delim=";">Semicolon</button>
+            <button class="option-chip" data-delim="|">Pipe</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="csvInput" rows="16" placeholder='Paste CSV data here...
+
+Example:
+name,email,age
+Alice,alice@example.com,30
+Bob,bob@example.com,25' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="csvOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste CSV or JSON above to convert.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the CSV &harr; JSON Converter</h2>
+          <ol>
+            <li><strong>Choose your conversion direction</strong> — CSV to JSON (default) or JSON to CSV.</li>
+            <li><strong>Paste your data</strong> into the input area on the left (or top on mobile).</li>
+            <li><strong>Select a delimiter</strong> — Auto-detect (default), Comma, Tab, Semicolon, or Pipe.</li>
+            <li><strong>View the result</strong> — converted data appears instantly on the right.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output to copy or download the result.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>This converter transforms data between <strong>CSV</strong> (Comma-Separated Values) and <strong>JSON</strong> (JavaScript Object Notation) formats. For CSV to JSON, it reads the first row as headers and converts each subsequent row into a JSON object. For JSON to CSV, it takes an array of objects, extracts all unique keys as headers, and generates properly quoted CSV output.</p>
+
+          <h3>Features</h3>
+          <ul>
+            <li><strong>Bidirectional conversion</strong> — CSV to JSON and JSON to CSV in one tool</li>
+            <li><strong>Auto-detect delimiter</strong> — automatically identifies commas, tabs, semicolons, or pipes</li>
+            <li><strong>RFC 4180 compliant</strong> — handles quoted fields, escaped quotes, and embedded delimiters</li>
+            <li><strong>Pretty-printed JSON</strong> — output JSON is formatted with 2-space indentation</li>
+            <li><strong>Proper CSV quoting</strong> — fields containing delimiters, quotes, or newlines are properly escaped</li>
+            <li><strong>Privacy</strong> — all processing happens in your browser, no data is ever uploaded</li>
+          </ul>
+
+          <h3>CSV Format Rules (RFC 4180)</h3>
+          <p>The CSV format, standardized in <strong>RFC 4180</strong>, has specific rules: fields are separated by the delimiter (usually a comma), records are separated by newlines, and fields containing the delimiter, double quotes, or newlines must be enclosed in double quotes. Within a quoted field, a double quote is escaped by doubling it (""). This tool handles all of these cases correctly.</p>
+
+          <h3>Delimiter Detection</h3>
+          <p>When auto-detect is enabled, the tool analyzes the first line of your CSV data and counts the frequency of each potential delimiter character (comma, tab, semicolon, pipe). The character that appears most frequently and consistently is chosen as the delimiter. This works well for most real-world data files, but you can always override the detection by manually selecting a delimiter.</p>
+
+          <h3>JSON to CSV: Handling Nested Objects</h3>
+          <p>When converting JSON to CSV, flat objects (where all values are strings, numbers, or booleans) map directly to CSV columns. Nested objects and arrays are converted to their JSON string representation in the CSV cell. For deeply nested data, consider flattening your JSON first using a tool like the JSON Formatter, then converting to CSV.</p>
+
+          <h3>Common Use Cases</h3>
+          <p>Developers and data analysts frequently need to convert between CSV and JSON when <strong>importing data into databases</strong>, <strong>processing API responses</strong>, <strong>creating data visualizations</strong>, <strong>migrating between systems</strong>, or <strong>preparing data for spreadsheets</strong>. This tool handles all of these workflows without requiring any software installation or data uploads. Once converted, format your JSON output with our <a href="/tools/json-formatter.html">JSON Formatter</a>, or convert between other formats using the <a href="/tools/yaml-json.html">YAML Converter</a> and <a href="/tools/sql-formatter.html">SQL Formatter</a>.</p>
+
+          <h3>RFC 4180 Compliance</h3>
+          <p>This converter follows the RFC 4180 standard for CSV parsing. Fields containing commas, double quotes, or newlines are enclosed in double quotes. Double quotes within quoted fields are escaped by doubling them. The first row is treated as a header row when converting to JSON, producing an array of objects with named keys rather than a flat array of arrays.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How does CSV to JSON conversion work?</button>
+            <div class="faq-answer">The converter reads the first row of the CSV as column headers. Each subsequent row becomes a JSON object where the keys are the header names and the values are the corresponding cell values. The result is a JSON array of objects. Quoted fields, escaped quotes, and various delimiters are handled automatically.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What delimiters does this tool support?</button>
+            <div class="faq-answer">This tool supports comma (,), tab, semicolon (;), and pipe (|) delimiters. By default, it auto-detects the delimiter by analyzing the frequency of each character in the first line. You can also manually select a specific delimiter using the chips below the mode selector.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my CSV data sent to a server?</button>
+            <div class="faq-answer">No. All CSV and JSON conversion happens entirely in your browser using JavaScript. Your data never leaves your device. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the tool handle quoted fields in CSV?</button>
+            <div class="faq-answer">The parser correctly handles RFC 4180 CSV rules: fields enclosed in double quotes can contain the delimiter character, newlines, and escaped double quotes (represented as two consecutive double quotes). For example, the field "Hello, World" with a comma inside is treated as a single value.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What JSON format does the JSON to CSV conversion expect?</button>
+            <div class="faq-answer">The JSON input must be an array of objects, like [{"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}]. The converter extracts all unique keys from all objects to form the CSV header row, then outputs each object as a row. Missing values are output as empty fields.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/sql-formatter.html">SQL Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('csvInput');
+      var output = document.getElementById('csvOutput');
+      var statusBar = document.getElementById('statusBar');
+      var delimiterChips = document.getElementById('delimiterChips');
+      var currentMode = 'csv2json';
+      var currentDelim = 'auto';
+
+      var delimMap = {
+        ',': ',',
+        '\\t': '\t',
+        ';': ';',
+        '|': '|'
+      };
+
+      function detectDelimiter(firstLine) {
+        var candidates = [',', '\t', ';', '|'];
+        var best = ',';
+        var bestCount = 0;
+        candidates.forEach(function (d) {
+          var count = (firstLine.split(d).length - 1);
+          if (count > bestCount) {
+            bestCount = count;
+            best = d;
+          }
+        });
+        return best;
+      }
+
+      // RFC 4180 compliant CSV parser
+      function parseCSV(text, delim) {
+        var rows = [];
+        var row = [];
+        var field = '';
+        var inQuotes = false;
+        var i = 0;
+
+        while (i < text.length) {
+          var ch = text[i];
+
+          if (inQuotes) {
+            if (ch === '"') {
+              if (i + 1 < text.length && text[i + 1] === '"') {
+                field += '"';
+                i += 2;
+              } else {
+                inQuotes = false;
+                i++;
+              }
+            } else {
+              field += ch;
+              i++;
+            }
+          } else {
+            if (ch === '"') {
+              inQuotes = true;
+              i++;
+            } else if (ch === delim) {
+              row.push(field);
+              field = '';
+              i++;
+            } else if (ch === '\r') {
+              if (i + 1 < text.length && text[i + 1] === '\n') {
+                i++;
+              }
+              row.push(field);
+              field = '';
+              rows.push(row);
+              row = [];
+              i++;
+            } else if (ch === '\n') {
+              row.push(field);
+              field = '';
+              rows.push(row);
+              row = [];
+              i++;
+            } else {
+              field += ch;
+              i++;
+            }
+          }
+        }
+
+        // Last field/row
+        if (field || row.length > 0) {
+          row.push(field);
+          rows.push(row);
+        }
+
+        // Remove trailing empty rows
+        while (rows.length > 0 && rows[rows.length - 1].length === 1 && rows[rows.length - 1][0] === '') {
+          rows.pop();
+        }
+
+        return rows;
+      }
+
+      function csvFieldEncode(val, delim) {
+        var str = String(val === null || val === undefined ? '' : val);
+        if (str.indexOf('"') !== -1 || str.indexOf(delim) !== -1 || str.indexOf('\n') !== -1 || str.indexOf('\r') !== -1) {
+          return '"' + str.replace(/"/g, '""') + '"';
+        }
+        return str;
+      }
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste CSV or JSON above to convert.';
+          return;
+        }
+
+        try {
+          if (currentMode === 'csv2json') {
+            var firstLine = raw.split('\n')[0];
+            var delim = currentDelim === 'auto' ? detectDelimiter(firstLine) : delimMap[currentDelim] || currentDelim;
+            var rows = parseCSV(raw, delim);
+
+            if (rows.length < 2) {
+              output.textContent = '';
+              statusBar.className = 'status-bar invalid';
+              statusBar.textContent = 'CSV must have at least a header row and one data row.';
+              return;
+            }
+
+            var headers = rows[0].map(function (h) { return h.trim(); });
+            var result = [];
+            for (var i = 1; i < rows.length; i++) {
+              var obj = {};
+              headers.forEach(function (key, j) {
+                obj[key] = rows[i][j] !== undefined ? rows[i][j] : '';
+              });
+              result.push(obj);
+            }
+
+            var jsonStr = JSON.stringify(result, null, 2);
+            output.textContent = jsonStr;
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Converted ' + result.length + ' row' + (result.length !== 1 ? 's' : '') + ', ' + headers.length + ' column' + (headers.length !== 1 ? 's' : '') +
+              (currentDelim === 'auto' ? ' (detected: ' + (delim === '\t' ? 'tab' : delim === ',' ? 'comma' : delim === ';' ? 'semicolon' : 'pipe') + ')' : '');
+          } else {
+            // JSON to CSV
+            var parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) {
+              throw new Error('JSON must be an array of objects.');
+            }
+            if (parsed.length === 0) {
+              throw new Error('JSON array is empty.');
+            }
+
+            // Extract all unique keys
+            var keySet = {};
+            parsed.forEach(function (obj) {
+              if (typeof obj === 'object' && obj !== null) {
+                Object.keys(obj).forEach(function (k) { keySet[k] = true; });
+              }
+            });
+            var keys = Object.keys(keySet);
+
+            if (keys.length === 0) {
+              throw new Error('No object keys found in the JSON array.');
+            }
+
+            var delim = currentDelim === 'auto' ? ',' : (delimMap[currentDelim] || currentDelim);
+            var csvLines = [];
+
+            // Header
+            csvLines.push(keys.map(function (k) { return csvFieldEncode(k, delim); }).join(delim));
+
+            // Data rows
+            parsed.forEach(function (obj) {
+              var row = keys.map(function (k) {
+                var val = obj[k];
+                if (typeof val === 'object' && val !== null) {
+                  val = JSON.stringify(val);
+                }
+                return csvFieldEncode(val, delim);
+              });
+              csvLines.push(row.join(delim));
+            });
+
+            var csvStr = csvLines.join('\n');
+            output.textContent = csvStr;
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Converted ' + parsed.length + ' row' + (parsed.length !== 1 ? 's' : '') + ', ' + keys.length + ' column' + (keys.length !== 1 ? 's' : '');
+          }
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+        }
+
+        DT.trackTool('csv-json');
+      }
+
+      // Live processing with debounce
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      // Mode chips
+      document.querySelectorAll('.option-chips:first-of-type .option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chips:first-of-type .option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+
+          // Update placeholder
+          if (currentMode === 'csv2json') {
+            input.placeholder = 'Paste CSV data here...\n\nExample:\nname,email,age\nAlice,alice@example.com,30\nBob,bob@example.com,25';
+            delimiterChips.style.display = '';
+          } else {
+            input.placeholder = 'Paste JSON array here...\n\nExample:\n[\n  {"name": "Alice", "email": "alice@example.com", "age": 30},\n  {"name": "Bob", "email": "bob@example.com", "age": 25}\n]';
+            delimiterChips.style.display = '';
+          }
+          process();
+        });
+      });
+
+      // Delimiter chips
+      delimiterChips.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          delimiterChips.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentDelim = chip.getAttribute('data-delim');
+          process();
+        });
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Download
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (!text) return;
+        if (currentMode === 'csv2json') {
+          DT.downloadText(text, 'output.json', 'application/json');
+        } else {
+          DT.downloadText(text, 'output.csv', 'text/csv');
+        }
+      });
+
+      // Clear
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      // Try Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = 'name,email,role,active\nAlice,alice@example.com,admin,true\nBob,bob@example.com,editor,true\nCharlie,charlie@example.com,viewer,false';
+        process();
+      });
+
+      // Allow tab key in textarea
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

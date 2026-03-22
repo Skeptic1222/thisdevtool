@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Contrast Checker — WCAG AA/AAA | DevToolbox</title>
+  <meta name="description" content="Check color contrast for WCAG 2.1 AA/AAA standards. Preview text on colors, get pass/fail results and suggestions. Free, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/color-contrast.html">
+  <meta property="og:title" content="Color Contrast Checker (WCAG) — DevToolbox">
+  <meta property="og:description" content="Free WCAG color contrast checker with AA/AAA pass/fail results and accessible color suggestions. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/color-contrast.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Color Contrast Checker (WCAG)",
+    "url": "https://thisdevtool.com/tools/color-contrast.html",
+    "description": "Check color contrast ratios against WCAG AA and AAA standards. Free, instant, 100% client-side.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is WCAG color contrast?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WCAG (Web Content Accessibility Guidelines) defines minimum contrast ratios between text and background colors to ensure readability for people with visual impairments. The contrast ratio ranges from 1:1 (no contrast) to 21:1 (maximum contrast, black on white)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between WCAG AA and AAA?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WCAG AA requires a contrast ratio of at least 4.5:1 for normal text and 3:1 for large text (18px+ bold or 24px+ regular). WCAG AAA requires 7:1 for normal text and 4.5:1 for large text. AA is the standard most websites aim for, while AAA provides enhanced accessibility."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is contrast ratio calculated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Contrast ratio is calculated using the relative luminance of two colors. First, each color's RGB values are converted to linear light values, then combined into a luminance value. The ratio is (L1 + 0.05) / (L2 + 0.05) where L1 is the lighter luminance and L2 is the darker."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What counts as large text in WCAG?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Large text is defined as 18 points (24px) or larger for regular weight, or 14 points (approximately 18.66px) or larger for bold weight. Large text has a lower contrast requirement because larger characters are inherently easier to read."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/wcag-palette.html">WCAG Palette</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Color Contrast Checker (WCAG)</h1>
+          <p class="tool-subtitle">Check if your color combination meets WCAG 2.1 accessibility standards for text contrast.</p>
+
+          <!-- Color Inputs -->
+          <div class="input-row" style="align-items:flex-end;margin-bottom:1rem;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="fgColor">Foreground (Text)</label>
+              <div style="display:flex;gap:0.5rem;align-items:center;">
+                <input type="color" id="fgColor" value="#000000" style="width:60px;height:40px;padding:2px;cursor:pointer;">
+                <input type="text" id="fgHex" value="#000000" maxlength="7" style="width:100px;max-width:100%;font-family:var(--font-mono);" aria-label="Foreground hex color">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <button class="btn btn-sm btn-secondary" id="swapBtn" title="Swap colors" style="padding:0.5rem 0.75rem;font-size:1rem;">&#8644;</button>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="bgColor">Background</label>
+              <div style="display:flex;gap:0.5rem;align-items:center;">
+                <input type="color" id="bgColor" value="#ffffff" style="width:60px;height:40px;padding:2px;cursor:pointer;">
+                <input type="text" id="bgHex" value="#ffffff" maxlength="7" style="width:100px;max-width:100%;font-family:var(--font-mono);" aria-label="Background hex color">
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div id="previewBox" style="background:#ffffff;color:#000000;padding:2rem;border-radius:var(--radius);text-align:center;margin:1rem 0;border:1px solid var(--border);">
+            <div style="font-size:24px;font-weight:700;margin-bottom:0.5rem;">Large Text (24px bold)</div>
+            <div style="font-size:16px;">Normal text sample — The quick brown fox jumps over the lazy dog.</div>
+            <div style="font-size:14px;margin-top:0.5rem;">Small text at 14px for detailed contrast checking.</div>
+          </div>
+
+          <!-- Contrast Ratio -->
+          <div style="text-align:center;margin:1rem 0;">
+            <div style="font-size:2rem;font-weight:700;" id="ratioDisplay">21.00:1</div>
+            <div style="font-size:0.875rem;color:var(--text-secondary);">Contrast Ratio</div>
+          </div>
+
+          <!-- WCAG Results Grid -->
+          <div id="wcagResults" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin:1rem 0;"></div>
+
+          <!-- Suggestions -->
+          <div id="suggestions" style="margin-top:1rem;"></div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Adjust foreground and background colors to check contrast.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Color Contrast Checker</h2>
+          <ol>
+            <li><strong>Set foreground color</strong> — use the color picker or type a hex value for your text color.</li>
+            <li><strong>Set background color</strong> — choose the background color your text will appear on.</li>
+            <li><strong>View results</strong> — the tool instantly shows the contrast ratio and WCAG AA/AAA pass/fail for normal and large text.</li>
+            <li><strong>Get suggestions</strong> — if your combination fails, the tool suggests the closest accessible colors.</li>
+            <li><strong>Swap colors</strong> — use the swap button to quickly check the reverse combination.</li>
+          </ol>
+
+          <h2>Understanding WCAG Contrast Requirements</h2>
+          <p>The Web Content Accessibility Guidelines (WCAG) 2.1 define minimum contrast ratios to ensure text is readable by people with moderately low vision. These guidelines are legally required in many jurisdictions and are considered best practice for all web design. Meeting contrast requirements helps everyone, not just people with disabilities — text is easier to read in bright sunlight, on low-quality monitors, and in other challenging viewing conditions.</p>
+
+          <h3>WCAG AA Standard</h3>
+          <p>Level AA is the standard compliance level that most websites and apps target. It requires a minimum contrast ratio of 4.5:1 for normal text (below 18pt / 24px) and 3:1 for large text (18pt+ bold or 24px+ regular). Level AA is required by the European Accessibility Act, Section 508 in the US, and the Accessibility for Ontarians with Disabilities Act in Canada.</p>
+
+          <h3>WCAG AAA Standard</h3>
+          <p>Level AAA is the enhanced compliance level, requiring 7:1 for normal text and 4.5:1 for large text. While not typically required by law, AAA compliance provides the best readability for the widest range of users. It is especially recommended for content-heavy sites like news, documentation, and government services.</p>
+
+          <h3>How Contrast Ratio Is Calculated</h3>
+          <p>The contrast ratio formula uses relative luminance, which accounts for how the human eye perceives different colors. The formula converts sRGB values to linear light using gamma correction, then calculates luminance as a weighted sum: <code>L = 0.2126*R + 0.7152*G + 0.0722*B</code>. The ratio between the lighter and darker luminance values, with an offset of 0.05, gives the contrast ratio on a scale from 1:1 to 21:1.</p>
+
+          <h3>Common Mistakes</h3>
+          <ul>
+            <li><strong>Gray text on white</strong> — light gray (#999) on white (#fff) has only 2.85:1 contrast, failing all WCAG levels</li>
+            <li><strong>Brand colors without testing</strong> — many brand colors fail contrast when used as text on white or dark backgrounds</li>
+            <li><strong>Placeholder text</strong> — input placeholder text is often too light to meet even AA standards</li>
+            <li><strong>Color alone for meaning</strong> — never rely solely on color to convey information (error states, status indicators)</li>
+          </ul>
+
+          <h3>Dark Mode and Contrast</h3>
+          <p>When designing for dark mode, many developers simply invert their light-mode colors. However, contrast requirements apply equally in both modes. White text on dark backgrounds can actually produce too much contrast (21:1 with pure white on pure black), which causes eye strain for some users. Consider using slightly off-white text (#e2e8f0) on dark backgrounds (#0f172a) for a comfortable reading experience that still exceeds AAA requirements. Always test your dark mode palette with this tool to verify compliance.</p>
+
+          <h3>Non-Text Contrast</h3>
+          <p>WCAG 2.1 also includes guidance on non-text contrast (Success Criterion 1.4.11). User interface components like buttons, input borders, and icons require a minimum 3:1 contrast ratio against their adjacent colors. This is separate from text contrast but equally important for usability. While this tool focuses on text contrast, the same ratio calculation applies — check your UI element colors against their surrounding backgrounds to ensure they are distinguishable by users with low vision. Generate a full set of accessible colors with our <a href="/tools/wcag-palette.html">WCAG Palette Generator</a>, explore color harmonies with the <a href="/tools/color-palette.html">Color Palette</a> tool, or pair your accessible colors with readable font sizes from the <a href="/tools/typography-scale.html">Typography Scale</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is WCAG color contrast?</button>
+            <div class="faq-answer">WCAG (Web Content Accessibility Guidelines) defines minimum contrast ratios between text and background colors to ensure readability for people with visual impairments. The contrast ratio ranges from 1:1 (no contrast) to 21:1 (maximum contrast, black on white).</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between WCAG AA and AAA?</button>
+            <div class="faq-answer">WCAG AA requires a contrast ratio of at least 4.5:1 for normal text and 3:1 for large text (18px+ bold or 24px+ regular). WCAG AAA requires 7:1 for normal text and 4.5:1 for large text. AA is the standard most websites aim for, while AAA provides enhanced accessibility.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How is contrast ratio calculated?</button>
+            <div class="faq-answer">Contrast ratio is calculated using the relative luminance of two colors. First, each color's RGB values are converted to linear light values, then combined into a luminance value. The ratio is (L1 + 0.05) / (L2 + 0.05) where L1 is the lighter luminance and L2 is the darker.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What counts as large text in WCAG?</button>
+            <div class="faq-answer">Large text is defined as 18 points (24px) or larger for regular weight, or 14 points (approximately 18.66px) or larger for bold weight. Large text has a lower contrast requirement because larger characters are inherently easier to read.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Accessibility</h4>
+        <a href="/tools/color-contrast.html">Contrast Checker</a>
+        <a href="/tools/wcag-palette.html">WCAG Palette</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+      </div>
+      <div class="footer-col">
+        <h4>Design</h4>
+        <a href="/tools/typography-scale.html">Typography Scale</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+        <a href="/tools/email-signature.html">Email Signature</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var statusBar = document.getElementById('statusBar');
+      var previewBox = document.getElementById('previewBox');
+      var ratioDisplay = document.getElementById('ratioDisplay');
+      var wcagResults = document.getElementById('wcagResults');
+      var suggestionsEl = document.getElementById('suggestions');
+
+      var fgPicker = document.getElementById('fgColor');
+      var bgPicker = document.getElementById('bgColor');
+      var fgHex = document.getElementById('fgHex');
+      var bgHex = document.getElementById('bgHex');
+
+      function luminance(hex) {
+        var r = parseInt(hex.slice(1, 3), 16) / 255;
+        var g = parseInt(hex.slice(3, 5), 16) / 255;
+        var b = parseInt(hex.slice(5, 7), 16) / 255;
+        r = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+        g = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+        b = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      }
+
+      function contrastRatio(hex1, hex2) {
+        var l1 = luminance(hex1);
+        var l2 = luminance(hex2);
+        var lighter = Math.max(l1, l2);
+        var darker = Math.min(l1, l2);
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+
+      function hexToHSL(hex) {
+        var r = parseInt(hex.slice(1, 3), 16) / 255;
+        var g = parseInt(hex.slice(3, 5), 16) / 255;
+        var b = parseInt(hex.slice(5, 7), 16) / 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        if (max === min) {
+          h = s = 0;
+        } else {
+          var d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+          }
+        }
+        return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+      }
+
+      function hslToHex(h, s, l) {
+        h = ((h % 360) + 360) % 360;
+        s = Math.max(0, Math.min(100, s)) / 100;
+        l = Math.max(0, Math.min(100, l)) / 100;
+        var c = (1 - Math.abs(2 * l - 1)) * s;
+        var x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        var m = l - c / 2;
+        var r, g, b;
+        if (h < 60) { r = c; g = x; b = 0; }
+        else if (h < 120) { r = x; g = c; b = 0; }
+        else if (h < 180) { r = 0; g = c; b = x; }
+        else if (h < 240) { r = 0; g = x; b = c; }
+        else if (h < 300) { r = x; g = 0; b = c; }
+        else { r = c; g = 0; b = x; }
+        r = Math.round((r + m) * 255);
+        g = Math.round((g + m) * 255);
+        b = Math.round((b + m) * 255);
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+      }
+
+      function findClosestPassing(fgHexVal, bgHexVal, targetRatio) {
+        var hsl = hexToHSL(fgHexVal);
+        var best = null;
+        var bestDiff = Infinity;
+
+        for (var l = 0; l <= 100; l++) {
+          var test = hslToHex(hsl.h, hsl.s, l);
+          var ratio = contrastRatio(test, bgHexVal);
+          if (ratio >= targetRatio) {
+            var diff = Math.abs(l - hsl.l);
+            if (diff < bestDiff) {
+              bestDiff = diff;
+              best = test;
+            }
+          }
+        }
+        return best;
+      }
+
+      function resultCard(label, required, ratio) {
+        var pass = ratio >= required;
+        var bg = pass ? '#dcfce7' : '#fef2f2';
+        var color = pass ? '#16a34a' : '#dc2626';
+        var icon = pass ? '\u2713 PASS' : '\u2717 FAIL';
+        var darkBg = pass ? '#064e3b' : '#451a1a';
+        return '<div style="padding:0.75rem;border-radius:var(--radius);border:1px solid ' + color + ';text-align:center;">' +
+          '<div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.25rem;">' + label + '</div>' +
+          '<div style="font-size:0.6875rem;color:var(--text-secondary);margin-bottom:0.375rem;">(' + required + ':1 required)</div>' +
+          '<div style="font-size:1rem;font-weight:700;color:' + color + ';">' + icon + '</div>' +
+          '</div>';
+      }
+
+      function update() {
+        var fg = fgPicker.value;
+        var bg = bgPicker.value;
+
+        previewBox.style.background = bg;
+        previewBox.style.color = fg;
+
+        var ratio = contrastRatio(fg, bg);
+        var display = ratio.toFixed(2) + ':1';
+        ratioDisplay.textContent = display;
+
+        // WCAG results
+        wcagResults.innerHTML =
+          resultCard('WCAG AA Normal Text', 4.5, ratio) +
+          resultCard('WCAG AA Large Text', 3, ratio) +
+          resultCard('WCAG AAA Normal Text', 7, ratio) +
+          resultCard('WCAG AAA Large Text', 4.5, ratio);
+
+        // Suggestions if failing
+        var aaFails = ratio < 4.5;
+        if (aaFails) {
+          var suggestion = findClosestPassing(fg, bg, 4.5);
+          if (suggestion) {
+            var sugRatio = contrastRatio(suggestion, bg).toFixed(2);
+            suggestionsEl.innerHTML =
+              '<div style="padding:0.75rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg-secondary);">' +
+              '<div style="font-size:0.8125rem;font-weight:600;margin-bottom:0.5rem;">Suggested Accessible Foreground</div>' +
+              '<div style="display:flex;align-items:center;gap:0.75rem;">' +
+              '<div style="width:40px;height:40px;border-radius:var(--radius);background:' + suggestion + ';border:1px solid var(--border);"></div>' +
+              '<div><code style="font-size:0.8125rem;">' + suggestion + '</code> \u2014 contrast ' + sugRatio + ':1 (passes AA)</div>' +
+              '<button class="btn btn-sm btn-primary use-suggestion-btn">Use</button>' +
+              '</div></div>';
+            suggestionsEl.querySelector('.use-suggestion-btn').addEventListener('click', function () {
+              fgPicker.value = suggestion;
+              fgHex.value = suggestion;
+              update();
+            });
+          } else {
+            suggestionsEl.innerHTML = '';
+          }
+        } else {
+          suggestionsEl.innerHTML = '';
+        }
+
+        // Status
+        var passes = [];
+        if (ratio >= 7) passes.push('AAA Normal', 'AAA Large', 'AA Normal', 'AA Large');
+        else if (ratio >= 4.5) passes.push('AA Normal', 'AA Large', 'AAA Large');
+        else if (ratio >= 3) passes.push('AA Large');
+
+        if (passes.length === 4) {
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Contrast ratio: ' + display + ' \u2014 Passes all WCAG levels';
+        } else if (passes.length > 0) {
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Contrast ratio: ' + display + ' \u2014 Passes ' + passes.join(', ');
+        } else {
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Contrast ratio: ' + display + ' \u2014 Fails all WCAG levels';
+        }
+
+        DT.trackTool('color-contrast');
+      }
+
+      // Sync pickers and hex inputs
+      fgPicker.addEventListener('input', function () { fgHex.value = this.value; update(); });
+      bgPicker.addEventListener('input', function () { bgHex.value = this.value; update(); });
+      fgHex.addEventListener('input', function () {
+        if (/^#[0-9a-f]{6}$/i.test(this.value)) { fgPicker.value = this.value; update(); }
+      });
+      bgHex.addEventListener('input', function () {
+        if (/^#[0-9a-f]{6}$/i.test(this.value)) { bgPicker.value = this.value; update(); }
+      });
+
+      // Swap
+      document.getElementById('swapBtn').addEventListener('click', function () {
+        var tmpColor = fgPicker.value;
+        fgPicker.value = bgPicker.value;
+        bgPicker.value = tmpColor;
+        fgHex.value = fgPicker.value;
+        bgHex.value = bgPicker.value;
+        update();
+      });
+
+      // Initial
+      update();
+    })();
+  </script>
+</body>
+</html>

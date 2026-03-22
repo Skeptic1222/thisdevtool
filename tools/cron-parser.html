@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cron Expression Parser — Free Online Cron Tool | DevToolbox</title>
+  <meta name="description" content="Parse and explain cron expressions online. See human-readable descriptions, next 5 run times, and field breakdowns. No signup, runs 100% in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/cron-parser.html">
+  <meta property="og:title" content="Cron Expression Parser — DevToolbox">
+  <meta property="og:description" content="Parse cron expressions into human-readable schedules with next execution times. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/cron-parser.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Cron Expression Parser",
+    "url": "https://thisdevtool.com/tools/cron-parser.html",
+    "description": "Parse and explain cron expressions online. See human-readable descriptions and next execution times. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a cron expression?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A cron expression is a string of five fields separated by spaces that defines a schedule for running automated tasks. The five fields represent minute (0-59), hour (0-23), day of month (1-31), month (1-12), and day of week (0-6, where 0 is Sunday). Cron is used in Unix/Linux systems, CI/CD pipelines, cloud schedulers, and job queues."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What do the special characters in cron mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The asterisk (*) means every possible value. A comma (,) separates a list of values (e.g., 1,3,5). A hyphen (-) defines a range (e.g., 1-5 means 1 through 5). A slash (/) defines a step (e.g., */5 means every 5 units). These can be combined: 1-30/5 means every 5th value from 1 to 30."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my cron expression sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This cron parser runs 100% in your browser using JavaScript. Your expression is parsed locally. There is no server-side processing, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool support 6-field or 7-field cron expressions?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool supports the standard 5-field cron format (minute, hour, day of month, month, day of week) used by most Unix crontabs, GitHub Actions, and cloud schedulers. Extended formats with seconds or year fields are not supported. If you have a 6-field expression, the first field is likely seconds — remove it to use the standard 5-field format."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I schedule a cron job for every weekday at 9 AM?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use the expression 0 9 * * 1-5. This breaks down as: minute 0, hour 9, any day of month, any month, and days 1-5 (Monday through Friday). You can also write it as 0 9 * * MON-FRI if your cron implementation supports day name abbreviations."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Cron Expression Parser</h1>
+          <p class="tool-subtitle">Parse cron expressions into human-readable schedules with next run times. 100% client-side.</p>
+
+          <!-- Cron Input -->
+          <div class="form-group">
+            <label for="cronInput">Cron Expression (5 fields)</label>
+            <div class="input-row" style="display:flex;gap:8px;align-items:center;">
+              <input type="text" id="cronInput" placeholder="* * * * *" value="0 0 * * *" spellcheck="false" style="flex:1;font-family:monospace;font-size:1.1em;letter-spacing:2px;">
+            </div>
+            <div style="font-size:0.85em;opacity:0.6;margin-top:4px;font-family:monospace;">
+              minute &nbsp; hour &nbsp; day-of-month &nbsp; month &nbsp; day-of-week
+            </div>
+          </div>
+
+          <!-- Example Button -->
+          <div style="margin-bottom:8px;">
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+          </div>
+
+          <!-- Preset Chips -->
+          <div class="option-chips">
+            <button class="option-chip" data-cron="* * * * *">Every minute</button>
+            <button class="option-chip" data-cron="0 * * * *">Every hour</button>
+            <button class="option-chip active" data-cron="0 0 * * *">Daily midnight</button>
+            <button class="option-chip" data-cron="0 0 * * 1">Weekly Monday</button>
+            <button class="option-chip" data-cron="0 0 1 * *">Monthly 1st</button>
+            <button class="option-chip" data-cron="">Custom</button>
+          </div>
+
+          <!-- Human-Readable Description -->
+          <div class="form-group" style="margin-top:16px;">
+            <div class="pane-label"><span>Description</span></div>
+            <div class="code-output" id="descriptionOutput" style="min-height:48px;font-size:1.1em;"></div>
+          </div>
+
+          <!-- Next 5 Run Times -->
+          <div class="form-group">
+            <div class="pane-label">
+              <span>Next 5 Execution Times</span>
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+            </div>
+            <div class="code-output" id="nextRunsOutput" style="min-height:120px;"></div>
+          </div>
+
+          <!-- Field Breakdown -->
+          <div class="form-group">
+            <div class="pane-label"><span>Field Breakdown</span></div>
+            <div id="fieldBreakdown" style="overflow-x:auto;"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a cron expression above or select a preset.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Cron Parser</h2>
+          <ol>
+            <li><strong>Enter a cron expression</strong> in the input field, or click a preset chip for common schedules.</li>
+            <li><strong>View the description</strong> — a human-readable explanation of when the job will run.</li>
+            <li><strong>Check next run times</strong> — the tool calculates the next 5 execution times from the current moment.</li>
+            <li><strong>Review the field breakdown</strong> — a table showing what each of the 5 fields means for your expression.</li>
+          </ol>
+
+          <h2>Understanding Cron Expressions</h2>
+          <p>Cron is a time-based job scheduling system used in Unix-like operating systems. A cron expression uses five fields to define a schedule, and the cron daemon checks every minute whether the current time matches any scheduled expression. When a match occurs, the associated command is executed. Cron is the backbone of automated task scheduling across servers, CI/CD pipelines, cloud functions, and container orchestration systems.</p>
+
+          <h3>The Five Cron Fields</h3>
+          <p>A standard cron expression consists of five space-separated fields, each representing a time unit:</p>
+          <ul>
+            <li><strong>Minute</strong> (0-59) — which minute of the hour the job runs</li>
+            <li><strong>Hour</strong> (0-23) — which hour of the day (in 24-hour format)</li>
+            <li><strong>Day of Month</strong> (1-31) — which day of the month</li>
+            <li><strong>Month</strong> (1-12) — which month of the year</li>
+            <li><strong>Day of Week</strong> (0-6) — which day of the week (0 = Sunday, 1 = Monday, ... 6 = Saturday)</li>
+          </ul>
+
+          <h3>Special Characters</h3>
+          <ul>
+            <li><strong>Asterisk (*)</strong> — matches every possible value for that field. <code>* * * * *</code> runs every minute.</li>
+            <li><strong>Comma (,)</strong> — specifies a list of values. <code>0 8,12,18 * * *</code> runs at 8 AM, noon, and 6 PM.</li>
+            <li><strong>Hyphen (-)</strong> — defines a range. <code>0 9-17 * * *</code> runs every hour from 9 AM to 5 PM.</li>
+            <li><strong>Slash (/)</strong> — defines a step. <code>*/15 * * * *</code> runs every 15 minutes. <code>0 */2 * * *</code> runs every 2 hours.</li>
+          </ul>
+
+          <h3>Common Cron Expressions</h3>
+          <ul>
+            <li><code>* * * * *</code> — every minute</li>
+            <li><code>0 * * * *</code> — every hour at minute 0</li>
+            <li><code>0 0 * * *</code> — daily at midnight</li>
+            <li><code>0 0 * * 0</code> — every Sunday at midnight</li>
+            <li><code>0 0 1 * *</code> — first day of every month at midnight</li>
+            <li><code>0 9 * * 1-5</code> — every weekday at 9 AM</li>
+            <li><code>*/5 * * * *</code> — every 5 minutes</li>
+            <li><code>0 0 1 1 *</code> — every January 1st at midnight (yearly)</li>
+          </ul>
+
+          <h3>Cron in Modern Platforms</h3>
+          <p>Beyond traditional Unix crontabs, cron expressions are used in GitHub Actions (<code>schedule</code> trigger), AWS CloudWatch Events, Azure Functions Timer Triggers, Google Cloud Scheduler, Kubernetes CronJobs, and nearly every CI/CD platform. The syntax is largely consistent, though some platforms add a sixth field for seconds and support additional features like <code>L</code> (last) and <code>W</code> (nearest weekday). Use our <a href="/tools/timestamp-converter.html">Timestamp Converter</a> to verify execution times in different timezones, or format your cron job's JSON config output with the <a href="/tools/json-formatter.html">JSON Formatter</a>.</p>
+
+          <h3>Debugging Cron Schedules</h3>
+          <p>Common mistakes with cron include confusing the order of fields, forgetting that hours use 24-hour format, and not accounting for timezone differences between the server and the expected execution time. Always verify your expression with a parser like this tool before deploying to production. The "next 5 run times" feature is particularly helpful for confirming the schedule matches your expectations.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a cron expression?</button>
+            <div class="faq-answer">A cron expression is a string of five fields separated by spaces that defines a schedule for running automated tasks. The five fields represent minute (0-59), hour (0-23), day of month (1-31), month (1-12), and day of week (0-6, where 0 is Sunday). Cron is used in Unix/Linux systems, CI/CD pipelines, cloud schedulers, and job queues.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What do the special characters in cron mean?</button>
+            <div class="faq-answer">The asterisk (*) means every possible value. A comma (,) separates a list of values (e.g., 1,3,5). A hyphen (-) defines a range (e.g., 1-5 means 1 through 5). A slash (/) defines a step (e.g., */5 means every 5 units). These can be combined: 1-30/5 means every 5th value from 1 to 30.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my cron expression sent to a server?</button>
+            <div class="faq-answer">No. This cron parser runs 100% in your browser using JavaScript. Your expression is parsed locally. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does this tool support 6-field or 7-field cron expressions?</button>
+            <div class="faq-answer">This tool supports the standard 5-field cron format (minute, hour, day of month, month, day of week) used by most Unix crontabs, GitHub Actions, and cloud schedulers. Extended formats with seconds or year fields are not supported. If you have a 6-field expression, the first field is likely seconds — remove it to use the standard 5-field format.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I schedule a cron job for every weekday at 9 AM?</button>
+            <div class="faq-answer">Use the expression 0 9 * * 1-5. This breaks down as: minute 0, hour 9, any day of month, any month, and days 1-5 (Monday through Friday). You can also write it as 0 9 * * MON-FRI if your cron implementation supports day name abbreviations.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/cron-parser.html">Cron Parser</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var cronInput = document.getElementById('cronInput');
+      var descriptionOutput = document.getElementById('descriptionOutput');
+      var nextRunsOutput = document.getElementById('nextRunsOutput');
+      var fieldBreakdown = document.getElementById('fieldBreakdown');
+      var statusBar = document.getElementById('statusBar');
+
+      var FIELD_NAMES = ['Minute', 'Hour', 'Day of Month', 'Month', 'Day of Week'];
+      var FIELD_RANGES = [[0, 59], [0, 23], [1, 31], [1, 12], [0, 6]];
+      var DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      var MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+      function parseField(field, min, max) {
+        var values = [];
+        var parts = field.split(',');
+        for (var i = 0; i < parts.length; i++) {
+          var part = parts[i].trim();
+          var stepMatch = part.match(/^(.+)\/(\d+)$/);
+          var step = stepMatch ? parseInt(stepMatch[2], 10) : 1;
+          var range = stepMatch ? stepMatch[1] : part;
+
+          var start, end;
+          if (range === '*') {
+            start = min;
+            end = max;
+          } else if (range.indexOf('-') !== -1) {
+            var rangeParts = range.split('-');
+            start = parseInt(rangeParts[0], 10);
+            end = parseInt(rangeParts[1], 10);
+          } else {
+            start = parseInt(range, 10);
+            end = start;
+          }
+
+          if (isNaN(start) || isNaN(end) || isNaN(step) || start < min || end > max || start > end || step < 1) {
+            return null;
+          }
+
+          for (var v = start; v <= end; v += step) {
+            if (values.indexOf(v) === -1) values.push(v);
+          }
+        }
+        values.sort(function (a, b) { return a - b; });
+        return values;
+      }
+
+      function describeField(field, idx) {
+        if (field === '*') return 'every ' + FIELD_NAMES[idx].toLowerCase();
+        var stepMatch = field.match(/^\*\/(\d+)$/);
+        if (stepMatch) return 'every ' + stepMatch[1] + ' ' + FIELD_NAMES[idx].toLowerCase() + (parseInt(stepMatch[1], 10) > 1 ? 's' : '');
+        if (idx === 4) {
+          // Day of week: convert to names
+          var vals = parseField(field, 0, 6);
+          if (vals) return vals.map(function (v) { return DAY_NAMES[v]; }).join(', ');
+        }
+        if (idx === 3) {
+          var mvals = parseField(field, 1, 12);
+          if (mvals) return mvals.map(function (v) { return MONTH_NAMES[v]; }).join(', ');
+        }
+        return field;
+      }
+
+      function buildDescription(fields) {
+        var min = fields[0], hr = fields[1], dom = fields[2], mon = fields[3], dow = fields[4];
+        var parts = [];
+
+        // Time
+        if (min === '*' && hr === '*') {
+          parts.push('Every minute');
+        } else if (min.match(/^\*\/\d+$/) && hr === '*') {
+          parts.push('Every ' + min.split('/')[1] + ' minutes');
+        } else if (hr === '*' && min !== '*') {
+          parts.push('At minute ' + min + ' of every hour');
+        } else if (hr !== '*' && min !== '*') {
+          var hrVals = parseField(hr, 0, 23);
+          var minVals = parseField(min, 0, 59);
+          if (hrVals && minVals && hrVals.length <= 4 && minVals.length <= 4) {
+            var times = [];
+            for (var h = 0; h < hrVals.length; h++) {
+              for (var m = 0; m < minVals.length; m++) {
+                times.push(String(hrVals[h]).padStart(2, '0') + ':' + String(minVals[m]).padStart(2, '0'));
+              }
+            }
+            parts.push('At ' + times.join(', '));
+          } else {
+            parts.push('At minute ' + min + ' past hour ' + hr);
+          }
+        } else if (hr.match(/^\*\/\d+$/)) {
+          parts.push('Every ' + hr.split('/')[1] + ' hours');
+        } else {
+          parts.push('At hour ' + hr + ', minute ' + min);
+        }
+
+        // Day of month
+        if (dom !== '*') {
+          parts.push('on day ' + dom + ' of the month');
+        }
+
+        // Month
+        if (mon !== '*') {
+          parts.push('in ' + describeField(mon, 3));
+        }
+
+        // Day of week
+        if (dow !== '*') {
+          parts.push('on ' + describeField(dow, 4));
+        }
+
+        return parts.join(', ');
+      }
+
+      function getNextRuns(fields, count) {
+        var parsed = [];
+        for (var i = 0; i < 5; i++) {
+          var vals = parseField(fields[i], FIELD_RANGES[i][0], FIELD_RANGES[i][1]);
+          if (!vals || vals.length === 0) return null;
+          parsed.push(vals);
+        }
+
+        var runs = [];
+        var d = new Date();
+        d.setSeconds(0, 0);
+        d.setMinutes(d.getMinutes() + 1); // Start from next minute
+
+        var maxIter = 525960; // ~1 year of minutes
+        for (var iter = 0; iter < maxIter && runs.length < count; iter++) {
+          var month = d.getMonth() + 1;
+          var dayOfMonth = d.getDate();
+          var dayOfWeek = d.getDay();
+          var hour = d.getHours();
+          var minute = d.getMinutes();
+
+          if (parsed[3].indexOf(month) !== -1 &&
+              parsed[2].indexOf(dayOfMonth) !== -1 &&
+              parsed[4].indexOf(dayOfWeek) !== -1 &&
+              parsed[1].indexOf(hour) !== -1 &&
+              parsed[0].indexOf(minute) !== -1) {
+            runs.push(new Date(d));
+          }
+          d.setMinutes(d.getMinutes() + 1);
+        }
+        return runs;
+      }
+
+      function process() {
+        var raw = cronInput.value.trim();
+        if (!raw) {
+          descriptionOutput.textContent = '';
+          nextRunsOutput.textContent = '';
+          fieldBreakdown.innerHTML = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter a cron expression above or select a preset.';
+          return;
+        }
+
+        var fields = raw.split(/\s+/);
+        if (fields.length !== 5) {
+          descriptionOutput.textContent = '';
+          nextRunsOutput.textContent = '';
+          fieldBreakdown.innerHTML = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid: expected 5 fields, got ' + fields.length + '.';
+          return;
+        }
+
+        // Validate all fields
+        for (var i = 0; i < 5; i++) {
+          var vals = parseField(fields[i], FIELD_RANGES[i][0], FIELD_RANGES[i][1]);
+          if (vals === null) {
+            descriptionOutput.textContent = '';
+            nextRunsOutput.textContent = '';
+            fieldBreakdown.innerHTML = '';
+            statusBar.className = 'status-bar invalid';
+            statusBar.textContent = 'Invalid ' + FIELD_NAMES[i].toLowerCase() + ' field: "' + fields[i] + '"';
+            return;
+          }
+        }
+
+        // Description
+        descriptionOutput.textContent = buildDescription(fields);
+
+        // Next 5 runs
+        var runs = getNextRuns(fields, 5);
+        if (runs && runs.length > 0) {
+          nextRunsOutput.textContent = runs.map(function (d, idx) {
+            return (idx + 1) + '.  ' + d.toLocaleString('en-US', {
+              weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+              hour: '2-digit', minute: '2-digit', hour12: true
+            });
+          }).join('\n');
+        } else {
+          nextRunsOutput.textContent = 'No upcoming executions found within the next year.';
+        }
+
+        // Field breakdown table
+        var tableHtml = '<table style="width:100%;border-collapse:collapse;font-size:0.9em;">';
+        tableHtml += '<thead><tr style="border-bottom:2px solid var(--border-color,#ddd);">';
+        tableHtml += '<th style="padding:6px 10px;text-align:left;">Field</th>';
+        tableHtml += '<th style="padding:6px 10px;text-align:left;">Value</th>';
+        tableHtml += '<th style="padding:6px 10px;text-align:left;">Range</th>';
+        tableHtml += '<th style="padding:6px 10px;text-align:left;">Description</th>';
+        tableHtml += '</tr></thead><tbody>';
+        for (var fi = 0; fi < 5; fi++) {
+          tableHtml += '<tr style="border-bottom:1px solid var(--border-color,#eee);">';
+          tableHtml += '<td style="padding:6px 10px;font-weight:600;">' + FIELD_NAMES[fi] + '</td>';
+          tableHtml += '<td style="padding:6px 10px;font-family:monospace;">' + fields[fi] + '</td>';
+          tableHtml += '<td style="padding:6px 10px;">' + FIELD_RANGES[fi][0] + '-' + FIELD_RANGES[fi][1] + '</td>';
+          tableHtml += '<td style="padding:6px 10px;">' + describeField(fields[fi], fi) + '</td>';
+          tableHtml += '</tr>';
+        }
+        tableHtml += '</tbody></table>';
+        fieldBreakdown.innerHTML = tableHtml;
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Valid cron expression';
+
+        DT.trackTool('cron-parser');
+      }
+
+      // Live processing with debounce
+      var debouncedProcess = DT.debounce(process, 150);
+      cronInput.addEventListener('input', function () {
+        // Deactivate preset chips when user types custom input
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        var customChip = document.querySelector('.option-chip[data-cron=""]');
+        if (customChip) customChip.classList.add('active');
+        debouncedProcess();
+      });
+
+      // Preset chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var cron = chip.getAttribute('data-cron');
+          if (cron) {
+            cronInput.value = cron;
+            process();
+          }
+          cronInput.focus();
+        });
+      });
+
+      // Copy next runs
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = nextRunsOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Try Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        cronInput.value = '*/15 9-17 * * 1-5';
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        var customChip = document.querySelector('.option-chip[data-cron=""]');
+        if (customChip) customChip.classList.add('active');
+        process();
+      });
+
+      // Process initial value
+      process();
+    })();
+  </script>
+</body>
+</html>

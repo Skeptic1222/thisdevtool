@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Table Builder — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Build markdown tables visually with a WYSIWYG editor. Set column alignment, import from CSV, and export clean markdown. Free, instant, no signup required.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/markdown-table-builder.html">
+  <meta property="og:title" content="Markdown Table Builder — DevToolbox">
+  <meta property="og:description" content="Free online markdown table builder with visual editor, column alignment, CSV import, and instant markdown output. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/markdown-table-builder.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Markdown Table Builder",
+    "url": "https://thisdevtool.com/tools/markdown-table-builder.html",
+    "description": "Build markdown tables visually with alignment, CSV import, and instant preview. Free, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a markdown table?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A markdown table is a way to display tabular data using plain text formatting. It uses pipes (|) to separate columns and hyphens (-) to create the header separator row. Markdown tables are widely used in GitHub READMEs, documentation sites, and static site generators like Jekyll and Hugo."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I set column alignment in markdown tables?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Column alignment is set in the separator row using colons. Left-aligned: ':---', center-aligned: ':---:', right-aligned: '---:'. This tool lets you set alignment per column with simple button clicks, and the correct markdown syntax is generated automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I import data from a CSV file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Paste CSV data into the import textarea and click 'Import CSV'. The tool will parse the comma-separated values and populate the table editor automatically. The first row of the CSV becomes the header row."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This markdown table builder runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What platforms support markdown tables?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Markdown tables are supported by GitHub, GitLab, Bitbucket, Reddit, Stack Overflow, Discord, Notion, Obsidian, Jekyll, Hugo, and most modern documentation platforms. They are part of the GitHub Flavored Markdown (GFM) specification."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">Markdown Preview</a>
+        <a href="/tools/json-formatter.html">CSV &harr; JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Markdown Table Builder</h1>
+          <p class="tool-subtitle">Build markdown tables visually. Edit cells, set alignment, import CSV, and copy the markdown. 100% client-side.</p>
+
+          <!-- Controls -->
+          <div class="input-row" style="margin-bottom:1rem; flex-wrap:wrap;">
+            <div class="form-group" style="flex:0 0 auto;">
+              <label>Rows</label>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <input type="number" id="rowCount" value="3" min="1" max="50" style="width:70px;max-width:100%;">
+                <button class="btn btn-sm btn-secondary" id="addRowBtn">+ Row</button>
+                <button class="btn btn-sm btn-secondary" id="delRowBtn">- Row</button>
+              </div>
+            </div>
+            <div class="form-group" style="flex:0 0 auto;">
+              <label>Columns</label>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <input type="number" id="colCount" value="3" min="1" max="20" style="width:70px;max-width:100%;">
+                <button class="btn btn-sm btn-secondary" id="addColBtn">+ Col</button>
+                <button class="btn btn-sm btn-secondary" id="delColBtn">- Col</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Alignment Controls -->
+          <div id="alignmentControls" style="margin-bottom:1rem;"></div>
+
+          <!-- Table Editor -->
+          <div style="overflow-x:auto; margin-bottom:1rem;">
+            <table id="tableEditor" style="width:100%; border-collapse:collapse;"></table>
+          </div>
+
+          <!-- CSV Import -->
+          <details style="margin-bottom:1rem;">
+            <summary style="cursor:pointer; font-size:0.875rem; font-weight:600; color:var(--text-secondary); padding:0.5rem 0;">Import from CSV</summary>
+            <div style="margin-top:0.5rem;">
+              <textarea id="csvInput" rows="4" placeholder="Paste CSV data here. The first row becomes the header.
+Name,Age,City
+Alice,30,New York
+Bob,25,London" spellcheck="false"></textarea>
+              <button class="btn btn-sm btn-primary" id="importCsvBtn" style="margin-top:0.5rem;">Import CSV</button>
+            </div>
+          </details>
+
+          <!-- Markdown Output -->
+          <div>
+            <div class="pane-label">
+              <span>Markdown Output</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+              </div>
+            </div>
+            <div class="code-output" id="markdownOutput" style="min-height:120px;"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Edit the table above. Markdown updates automatically.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Markdown Table Builder</h2>
+          <ol>
+            <li><strong>Set dimensions</strong> — use the Rows and Columns inputs to set your table size, or click + Row / + Col to add incrementally.</li>
+            <li><strong>Edit cells</strong> — click any cell in the visual table editor and type your content directly.</li>
+            <li><strong>Set alignment</strong> — use the Left / Center / Right buttons above each column to control text alignment.</li>
+            <li><strong>Import CSV</strong> — expand the "Import from CSV" section, paste your data, and click Import.</li>
+            <li><strong>Copy the markdown</strong> — the markdown output updates automatically. Click Copy or Download to export.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>The Markdown Table Builder provides a visual, WYSIWYG-style interface for creating markdown tables. Instead of manually typing pipes and hyphens, you edit cells in a real HTML table and the tool generates properly formatted markdown in real time. It supports per-column alignment (left, center, right), dynamic row and column management, and CSV import for quickly converting spreadsheet data into markdown format. The generated markdown is compatible with GitHub Flavored Markdown (GFM) and works on all major platforms.</p>
+
+          <h3>Features</h3>
+          <ul>
+            <li><strong>Visual editor</strong> — edit cells directly in a table with contenteditable support, just like a spreadsheet</li>
+            <li><strong>Auto-generated markdown</strong> — markdown output updates in real time as you type in any cell</li>
+            <li><strong>Column alignment</strong> — set left, center, or right alignment per column with one click</li>
+            <li><strong>Dynamic sizing</strong> — add or remove rows and columns at any time without losing existing data</li>
+            <li><strong>CSV import</strong> — paste comma-separated data to instantly populate the table</li>
+            <li><strong>Clean output</strong> — produces well-formatted markdown with proper pipe alignment</li>
+            <li><strong>Copy and download</strong> — export your markdown to clipboard or as a .md file</li>
+            <li><strong>Privacy</strong> — everything runs client-side, no data leaves your browser</li>
+          </ul>
+
+          <h3>Markdown Table Syntax</h3>
+          <p>Markdown tables use a simple plain-text format with pipes and hyphens. The first row is always the header, separated from the body by a row of hyphens. Each cell is separated by a pipe character (|). Here is an example of the basic syntax:</p>
+          <pre style="background:var(--bg-secondary); padding:1rem; border-radius:var(--radius); overflow-x:auto; font-size:0.875rem;">| Name  | Age | City     |
+| :---- | :-: | -------: |
+| Alice | 30  | New York |
+| Bob   | 25  | London   |</pre>
+          <p>In this example, the Name column is left-aligned (:----), Age is center-aligned (:-:), and City is right-aligned (----:). The alignment is controlled by the position of colons in the separator row.</p>
+
+          <h3>Column Alignment Options</h3>
+          <ul>
+            <li><strong>Left-aligned</strong> (<code>:---</code>) — text aligns to the left edge. This is the default for most markdown renderers.</li>
+            <li><strong>Center-aligned</strong> (<code>:---:</code>) — text is centered within the column. Good for numbers and short values.</li>
+            <li><strong>Right-aligned</strong> (<code>---:</code>) — text aligns to the right edge. Commonly used for numeric data like prices and counts.</li>
+          </ul>
+
+          <h3>Where to Use Markdown Tables</h3>
+          <p>Markdown tables are supported across a wide range of platforms and tools. They are a standard feature in GitHub Flavored Markdown, making them essential for README files, issue descriptions, pull request descriptions, and wiki pages. Documentation platforms like GitBook, Read the Docs, and MkDocs render markdown tables natively. Static site generators including Jekyll, Hugo, and Gatsby all support markdown tables in content files. Note-taking apps like Obsidian, Notion, and Typora also support the same syntax, making it a universal format for structured data in plain text. Preview your Markdown tables instantly with our <a href="/tools/markdown-preview.html">Markdown Preview</a>, convert tabular data to JSON with the <a href="/tools/csv-json.html">CSV/JSON Converter</a>, or generate placeholder content with the <a href="/tools/lorem-ipsum.html">Lorem Ipsum Generator</a>.</p>
+
+          <h3>Tips for Better Markdown Tables</h3>
+          <ul>
+            <li>Keep cell content concise — long text in cells makes tables hard to read in raw markdown</li>
+            <li>Use alignment to improve readability — right-align numbers, left-align text</li>
+            <li>Escape pipe characters within cells by using <code>\|</code> if your content contains the pipe symbol</li>
+            <li>For complex tables with merged cells or multi-line content, consider using HTML tables instead</li>
+            <li>Preview your tables on GitHub or a markdown renderer to verify formatting before publishing</li>
+          </ul>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a markdown table?</button>
+            <div class="faq-answer">A markdown table is a way to display tabular data using plain text formatting. It uses pipes (|) to separate columns and hyphens (-) to create the header separator row. Markdown tables are widely used in GitHub READMEs, documentation sites, and static site generators like Jekyll and Hugo.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I set column alignment in markdown tables?</button>
+            <div class="faq-answer">Column alignment is set in the separator row using colons. Left-aligned: ':---', center-aligned: ':---:', right-aligned: '---:'. This tool lets you set alignment per column with simple button clicks, and the correct markdown syntax is generated automatically.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I import data from a CSV file?</button>
+            <div class="faq-answer">Yes. Paste CSV data into the import textarea and click 'Import CSV'. The tool will parse the comma-separated values and populate the table editor automatically. The first row of the CSV becomes the header row.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my data sent to a server?</button>
+            <div class="faq-answer">No. This markdown table builder runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What platforms support markdown tables?</button>
+            <div class="faq-answer">Markdown tables are supported by GitHub, GitLab, Bitbucket, Reddit, Stack Overflow, Discord, Notion, Obsidian, Jekyll, Hugo, and most modern documentation platforms. They are part of the GitHub Flavored Markdown (GFM) specification.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/markdown-table-builder.html">Markdown Table</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/slug-generator.html">Slug Generator</a>
+        <a href="/tools/list-deduper.html">List Deduplicator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var tableEditor = document.getElementById('tableEditor');
+      var markdownOutput = document.getElementById('markdownOutput');
+      var statusBar = document.getElementById('statusBar');
+      var rowCountInput = document.getElementById('rowCount');
+      var colCountInput = document.getElementById('colCount');
+      var alignmentControls = document.getElementById('alignmentControls');
+
+      var rows = 3;
+      var cols = 3;
+      var alignments = []; // 'left', 'center', 'right' per column
+
+      function initAlignments() {
+        alignments = [];
+        for (var i = 0; i < cols; i++) {
+          alignments.push('left');
+        }
+      }
+      initAlignments();
+
+      function getCellData() {
+        var data = [];
+        var allRows = tableEditor.querySelectorAll('tr');
+        allRows.forEach(function (tr) {
+          var rowData = [];
+          tr.querySelectorAll('th, td').forEach(function (cell) {
+            rowData.push(cell.textContent.trim());
+          });
+          data.push(rowData);
+        });
+        return data;
+      }
+
+      function buildTable(data) {
+        var html = '<thead><tr>';
+        // Header row
+        for (var c = 0; c < cols; c++) {
+          var val = (data && data[0] && data[0][c]) ? data[0][c] : 'Header ' + (c + 1);
+          html += '<th contenteditable="true" style="border:1px solid var(--border); padding:0.5rem; min-width:80px; background:var(--bg-secondary); font-weight:600;">' + escapeHtml(val) + '</th>';
+        }
+        html += '</tr></thead><tbody>';
+        // Body rows
+        for (var r = 1; r <= rows; r++) {
+          html += '<tr>';
+          for (var c = 0; c < cols; c++) {
+            var val = (data && data[r] && data[r][c]) ? data[r][c] : '';
+            html += '<td contenteditable="true" style="border:1px solid var(--border); padding:0.5rem; min-width:80px;">' + escapeHtml(val) + '</td>';
+          }
+          html += '</tr>';
+        }
+        html += '</tbody>';
+        tableEditor.innerHTML = html;
+
+        // Attach input listeners for live markdown generation
+        tableEditor.querySelectorAll('th, td').forEach(function (cell) {
+          cell.addEventListener('input', debouncedGenerate);
+        });
+
+        buildAlignmentControls();
+        generateMarkdown();
+      }
+
+      function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function buildAlignmentControls() {
+        var html = '<div style="display:flex; gap:0.5rem; flex-wrap:wrap; font-size:0.75rem;">';
+        for (var c = 0; c < cols; c++) {
+          html += '<div style="display:flex; flex-direction:column; align-items:center; gap:0.25rem;">';
+          html += '<span style="color:var(--text-secondary); font-weight:600;">Col ' + (c + 1) + '</span>';
+          html += '<div style="display:flex; gap:2px;">';
+          html += '<button class="btn btn-sm ' + (alignments[c] === 'left' ? 'btn-primary' : 'btn-secondary') + '" data-col="' + c + '" data-align="left" style="padding:0.25rem 0.5rem; font-size:0.7rem;">L</button>';
+          html += '<button class="btn btn-sm ' + (alignments[c] === 'center' ? 'btn-primary' : 'btn-secondary') + '" data-col="' + c + '" data-align="center" style="padding:0.25rem 0.5rem; font-size:0.7rem;">C</button>';
+          html += '<button class="btn btn-sm ' + (alignments[c] === 'right' ? 'btn-primary' : 'btn-secondary') + '" data-col="' + c + '" data-align="right" style="padding:0.25rem 0.5rem; font-size:0.7rem;">R</button>';
+          html += '</div></div>';
+        }
+        html += '</div>';
+        alignmentControls.innerHTML = html;
+
+        // Alignment button listeners
+        alignmentControls.querySelectorAll('button').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var col = parseInt(btn.getAttribute('data-col'), 10);
+            var align = btn.getAttribute('data-align');
+            alignments[col] = align;
+            buildAlignmentControls();
+            generateMarkdown();
+          });
+        });
+      }
+
+      function generateMarkdown() {
+        var data = getCellData();
+        if (data.length === 0) return;
+
+        var header = data[0];
+        var body = data.slice(1);
+
+        // Build separator row
+        var separators = [];
+        for (var c = 0; c < cols; c++) {
+          var align = alignments[c] || 'left';
+          if (align === 'left') separators.push(':---');
+          else if (align === 'center') separators.push(':---:');
+          else separators.push('---:');
+        }
+
+        // Build markdown lines
+        var lines = [];
+        lines.push('| ' + header.map(function (h) { return h || ' '; }).join(' | ') + ' |');
+        lines.push('| ' + separators.join(' | ') + ' |');
+        body.forEach(function (row) {
+          var cells = [];
+          for (var c = 0; c < cols; c++) {
+            cells.push((row[c] || ' '));
+          }
+          lines.push('| ' + cells.join(' | ') + ' |');
+        });
+
+        markdownOutput.textContent = lines.join('\n');
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Table: ' + rows + ' row' + (rows !== 1 ? 's' : '') + ' \u00d7 ' + cols + ' column' + (cols !== 1 ? 's' : '');
+      }
+
+      var debouncedGenerate = DT.debounce(generateMarkdown, 150);
+
+      // Resize table
+      function resizeTable(newRows, newCols) {
+        var data = getCellData();
+        rows = newRows;
+        cols = newCols;
+        rowCountInput.value = rows;
+        colCountInput.value = cols;
+
+        // Expand alignments array if needed
+        while (alignments.length < cols) alignments.push('left');
+        alignments = alignments.slice(0, cols);
+
+        buildTable(data);
+      }
+
+      // Row/Col controls
+      document.getElementById('addRowBtn').addEventListener('click', function () {
+        resizeTable(rows + 1, cols);
+      });
+      document.getElementById('delRowBtn').addEventListener('click', function () {
+        if (rows > 1) resizeTable(rows - 1, cols);
+      });
+      document.getElementById('addColBtn').addEventListener('click', function () {
+        resizeTable(rows, cols + 1);
+      });
+      document.getElementById('delColBtn').addEventListener('click', function () {
+        if (cols > 1) resizeTable(rows, cols - 1);
+      });
+
+      rowCountInput.addEventListener('change', function () {
+        var val = parseInt(this.value, 10);
+        if (val >= 1 && val <= 50) resizeTable(val, cols);
+      });
+      colCountInput.addEventListener('change', function () {
+        var val = parseInt(this.value, 10);
+        if (val >= 1 && val <= 20) resizeTable(rows, val);
+      });
+
+      // CSV Import
+      document.getElementById('importCsvBtn').addEventListener('click', function () {
+        var csv = document.getElementById('csvInput').value.trim();
+        if (!csv) return;
+
+        var csvRows = csv.split('\n').map(function (line) {
+          // Simple CSV parsing (handles basic comma separation)
+          var cells = [];
+          var current = '';
+          var inQuotes = false;
+          for (var i = 0; i < line.length; i++) {
+            var ch = line[i];
+            if (ch === '"') {
+              inQuotes = !inQuotes;
+            } else if (ch === ',' && !inQuotes) {
+              cells.push(current.trim());
+              current = '';
+            } else {
+              current += ch;
+            }
+          }
+          cells.push(current.trim());
+          return cells;
+        });
+
+        if (csvRows.length === 0) return;
+
+        // Determine dimensions
+        var maxCols = 0;
+        csvRows.forEach(function (r) { if (r.length > maxCols) maxCols = r.length; });
+
+        rows = Math.max(csvRows.length - 1, 1);
+        cols = Math.max(maxCols, 1);
+        rowCountInput.value = rows;
+        colCountInput.value = cols;
+
+        // Expand alignments
+        while (alignments.length < cols) alignments.push('left');
+        alignments = alignments.slice(0, cols);
+
+        buildTable(csvRows);
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = markdownOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Download
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = markdownOutput.textContent;
+        if (text) DT.downloadText(text, 'table.md', 'text/markdown');
+      });
+
+      // Initialize table
+      buildTable();
+
+      DT.trackTool('markdown-table-builder');
+    })();
+  </script>
+</body>
+</html>

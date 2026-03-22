@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate QR codes from text or URLs online. Customize size, colors, and error correction. Download as PNG or SVG. Free, no signup, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/qr-code.html">
+  <meta property="og:title" content="QR Code Generator — DevToolbox">
+  <meta property="og:description" content="Free online QR code generator with custom colors, sizes, and error correction. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/qr-code.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "QR Code Generator",
+    "url": "https://thisdevtool.com/tools/qr-code.html",
+    "description": "Generate QR codes from text or URLs. Free, instant, 100% client-side.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a QR code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A QR (Quick Response) code is a two-dimensional barcode that can store text, URLs, contact information, and other data. It can be scanned by smartphone cameras and QR reader apps to quickly access the encoded content."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is error correction in QR codes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Error correction allows a QR code to remain scannable even if part of it is damaged or obscured. Level L recovers 7% of data, M recovers 15%, Q recovers 25%, and H recovers 30%. Higher levels make the QR code larger but more resilient."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The QR code is generated entirely in your browser using JavaScript and the Canvas API. Your text or URL never leaves your device."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the maximum data a QR code can hold?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A QR code can hold up to approximately 4,296 alphanumeric characters or 2,953 bytes of data at the lowest error correction level. In practice, shorter content produces smaller, more easily scannable codes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should I download PNG or SVG?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use PNG for sharing digitally, embedding in documents, or printing at a known size. Use SVG for print materials where you need the QR code to scale to any size without losing quality. SVG files are also smaller in file size."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>QR Code Generator</h1>
+          <p class="tool-subtitle">Enter text or a URL to generate a QR code. Customize size, colors, and error correction level.</p>
+
+          <!-- Error Correction Chips -->
+          <div class="option-chips">
+            <button class="option-chip" data-ec="L">L (7%)</button>
+            <button class="option-chip active" data-ec="M">M (15%)</button>
+            <button class="option-chip" data-ec="Q">Q (25%)</button>
+            <button class="option-chip" data-ec="H">H (30%)</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label"><span>Input</span></div>
+              <textarea id="qrInput" rows="5" placeholder="Enter text or URL...&#10;&#10;Example: https://thisdevtool.com" spellcheck="false"></textarea>
+
+              <div class="form-group" style="margin-top:1rem;">
+                <label>Size <span class="hint" id="sizeLabel">300px</span></label>
+                <input type="range" id="qrSize" min="100" max="500" value="300" step="10" style="width:100%;">
+              </div>
+              <div class="input-row">
+                <div class="form-group">
+                  <label for="fgColor">Foreground</label>
+                  <input type="color" id="fgColor" value="#000000" style="width:60px;height:36px;padding:2px;cursor:pointer;">
+                </div>
+                <div class="form-group">
+                  <label for="bgColorQr">Background</label>
+                  <input type="color" id="bgColorQr" value="#ffffff" style="width:60px;height:36px;padding:2px;cursor:pointer;">
+                </div>
+              </div>
+
+              <div class="btn-group">
+                <button class="btn btn-primary" id="generateBtn">Generate QR Code</button>
+                <button class="btn btn-secondary" id="exampleBtn">Try Example</button>
+              </div>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Preview</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="downloadPngBtn" disabled>PNG</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadSvgBtn" disabled>SVG</button>
+                </div>
+              </div>
+              <div id="qrPreview" style="display:flex;align-items:center;justify-content:center;min-height:300px;padding:1rem;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);">
+                <span style="color:var(--text-secondary);font-size:0.875rem;">QR code will appear here</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter text or a URL and click "Generate QR Code".
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the QR Code Generator</h2>
+          <ol>
+            <li><strong>Enter your content</strong> — type or paste text, a URL, email address, phone number, or any data you want to encode.</li>
+            <li><strong>Choose error correction</strong> — L (7%), M (15%), Q (25%), or H (30%). Higher levels make the code more resilient but larger.</li>
+            <li><strong>Customize appearance</strong> — adjust the size, foreground color, and background color to match your brand.</li>
+            <li><strong>Generate and download</strong> — click "Generate QR Code", then download as PNG (raster) or SVG (vector).</li>
+          </ol>
+
+          <h2>Understanding QR Codes</h2>
+          <p>QR codes (Quick Response codes) were invented in 1994 by Denso Wave for tracking automotive parts. They have since become ubiquitous in marketing, payments, authentication, and information sharing. A QR code encodes data in a grid of black and white modules (squares), which can be read by any smartphone camera or QR reader app.</p>
+
+          <h3>Error Correction Levels</h3>
+          <p>QR codes include Reed-Solomon error correction that allows the code to be read even if part of it is damaged or obscured. There are four levels:</p>
+          <ul>
+            <li><strong>Level L (Low)</strong> — 7% of data can be restored. Smallest code size.</li>
+            <li><strong>Level M (Medium)</strong> — 15% of data can be restored. Good default balance.</li>
+            <li><strong>Level Q (Quartile)</strong> — 25% of data can be restored. Recommended when code might be partially covered.</li>
+            <li><strong>Level H (High)</strong> — 30% of data can be restored. Best for codes with logos overlaid on top.</li>
+          </ul>
+
+          <h3>QR Code Versions</h3>
+          <p>QR codes come in 40 versions, from Version 1 (21x21 modules) to Version 40 (177x177 modules). The version is automatically selected based on the amount of data and the error correction level. Shorter content produces smaller, faster-to-scan codes. For URLs, consider using a URL shortener to keep the code compact.</p>
+
+          <h3>Best Practices</h3>
+          <ul>
+            <li><strong>Keep it short</strong> — shorter data means a smaller, more scannable QR code</li>
+            <li><strong>Test before printing</strong> — always scan the generated code with your phone before distributing</li>
+            <li><strong>Maintain contrast</strong> — dark foreground on light background works best for scanners</li>
+            <li><strong>Add a quiet zone</strong> — leave white space around the QR code for reliable scanning</li>
+            <li><strong>Use SVG for print</strong> — SVG scales to any size without losing quality</li>
+          </ul>
+
+          <h3>Common Use Cases</h3>
+          <p>QR codes are used for website links, Wi-Fi credentials, contact cards (vCard), event tickets, restaurant menus, payment links, app downloads, and authentication (two-factor auth). This generator handles all text-based content, making it versatile for any use case.</p>
+
+          <h3>QR Code Scanning</h3>
+          <p>Most modern smartphones can scan QR codes directly from their camera app without needing a separate QR reader. On iOS, simply open the Camera app and point it at the QR code — a notification will appear with the encoded content. On Android, Google Lens is built into most camera apps and handles QR scanning. For desktop, browser extensions or dedicated apps can scan QR codes from images or screenshots.</p>
+
+          <h3>Privacy and Security</h3>
+          <p>This QR code generator runs entirely in your browser. No data is sent to any server, no API calls are made, and no information is logged. The complete QR encoding algorithm — including data encoding, error correction with Reed-Solomon codes, matrix construction, and masking — runs in JavaScript on your device. This means you can safely generate QR codes containing sensitive information like Wi-Fi passwords or private URLs without worrying about data exposure. Add tracking to your QR code URLs with our <a href="/tools/utm-builder.html">UTM Builder</a>, create professional signatures with the <a href="/tools/email-signature.html">Email Signature</a> generator, or design brand assets with the <a href="/tools/favicon-generator.html">Favicon Generator</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a QR code?</button>
+            <div class="faq-answer">A QR (Quick Response) code is a two-dimensional barcode that can store text, URLs, contact information, and other data. It can be scanned by smartphone cameras and QR reader apps to quickly access the encoded content.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is error correction in QR codes?</button>
+            <div class="faq-answer">Error correction allows a QR code to remain scannable even if part of it is damaged or obscured. Level L recovers 7% of data, M recovers 15%, Q recovers 25%, and H recovers 30%. Higher levels make the QR code larger but more resilient.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my data sent to a server?</button>
+            <div class="faq-answer">No. The QR code is generated entirely in your browser using JavaScript and the Canvas API. Your text or URL never leaves your device.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the maximum data a QR code can hold?</button>
+            <div class="faq-answer">A QR code can hold up to approximately 4,296 alphanumeric characters or 2,953 bytes of data at the lowest error correction level. In practice, shorter content produces smaller, more easily scannable codes.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Should I download PNG or SVG?</button>
+            <div class="faq-answer">Use PNG for sharing digitally, embedding in documents, or printing at a known size. Use SVG for print materials where you need the QR code to scale to any size without losing quality. SVG files are also smaller in file size.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Generators</h4>
+        <a href="/tools/email-signature.html">Email Signature</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+        <a href="/tools/qr-code.html">QR Code Generator</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Design</h4>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <a href="/tools/color-contrast.html">Contrast Checker</a>
+        <a href="/tools/typography-scale.html">Typography Scale</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var currentEC = 'M';
+      var qrCanvas = null;
+      var qrModules = null;
+      var qrModuleCount = 0;
+
+      var statusBar = document.getElementById('statusBar');
+      var previewArea = document.getElementById('qrPreview');
+
+      // Size label
+      document.getElementById('qrSize').addEventListener('input', function () {
+        document.getElementById('sizeLabel').textContent = this.value + 'px';
+      });
+
+      // EC chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentEC = chip.getAttribute('data-ec');
+        });
+      });
+
+      // ---- Minimal QR Code Generator ----
+      // Self-contained QR code encoder supporting byte mode, EC levels L/M/Q/H
+      // Based on public domain algorithms for QR code generation
+
+      var QR = (function () {
+        // Error correction codewords and block info per version per EC level
+        // [total codewords, ec codewords per block, num blocks group1, data cw group1, num blocks group2, data cw group2]
+        var EC_TABLE = {
+          1:  { L:[26,7,1,19,0,0],   M:[26,10,1,16,0,0],  Q:[26,13,1,13,0,0],  H:[26,17,1,9,0,0] },
+          2:  { L:[44,10,1,34,0,0],  M:[44,16,1,28,0,0],  Q:[44,22,1,22,0,0],  H:[44,28,1,16,0,0] },
+          3:  { L:[70,15,1,55,0,0],  M:[70,26,1,44,0,0],  Q:[70,18,2,17,0,0],  H:[70,22,2,13,0,0] },
+          4:  { L:[100,20,1,80,0,0], M:[100,18,2,32,0,0], Q:[100,26,2,24,0,0], H:[100,16,4,9,0,0] },
+          5:  { L:[134,26,1,108,0,0],M:[134,24,2,43,0,0], Q:[134,18,2,15,2,16], H:[134,22,2,11,2,12] },
+          6:  { L:[172,18,2,68,0,0], M:[172,16,4,27,0,0], Q:[172,24,4,19,0,0], H:[172,28,4,15,0,0] },
+          7:  { L:[196,20,2,78,0,0], M:[196,18,4,31,0,0], Q:[196,18,2,14,4,15], H:[196,26,4,13,1,14] },
+          8:  { L:[242,24,2,97,0,0], M:[242,22,2,38,2,39], Q:[242,22,4,18,2,19], H:[242,26,4,14,2,15] },
+          9:  { L:[292,30,2,116,0,0],M:[292,22,3,36,2,37], Q:[292,20,4,16,4,17], H:[292,24,4,12,4,13] },
+          10: { L:[346,18,2,68,2,69],M:[346,26,4,43,1,44], Q:[346,24,6,19,2,20], H:[346,28,6,15,2,16] },
+          11: { L:[404,20,4,81,0,0], M:[404,30,1,50,4,51], Q:[404,28,4,22,4,23], H:[404,24,3,12,8,13] },
+          12: { L:[466,24,2,92,2,93],M:[466,22,6,36,2,37], Q:[466,26,4,20,6,21], H:[466,28,7,14,4,15] },
+          13: { L:[532,26,4,107,0,0],M:[532,22,8,37,1,38], Q:[532,24,8,20,4,21], H:[532,22,12,11,4,12] },
+          14: { L:[581,30,3,115,1,116],M:[581,24,4,40,5,41],Q:[581,20,11,16,5,17],H:[581,24,11,12,5,13] },
+          15: { L:[655,22,5,87,1,88],M:[655,24,5,41,5,42], Q:[655,30,5,24,7,25], H:[655,24,11,12,7,13] },
+          16: { L:[733,24,5,98,1,99],M:[733,28,7,45,3,46], Q:[733,24,15,19,2,20], H:[733,30,3,15,13,16] },
+          17: { L:[815,28,1,107,5,108],M:[815,28,10,46,1,47],Q:[815,28,1,22,15,23],H:[815,28,2,14,17,15] },
+          18: { L:[901,30,5,120,1,121],M:[901,26,9,43,4,44],Q:[901,28,17,22,1,23],H:[901,28,2,14,19,15] },
+          19: { L:[991,28,3,113,4,114],M:[991,26,3,44,11,45],Q:[991,26,17,21,4,22],H:[991,26,9,13,16,14] },
+          20: { L:[1085,28,3,107,5,108],M:[1085,26,3,41,13,42],Q:[1085,30,15,24,5,25],H:[1085,28,15,15,10,16] }
+        };
+
+        var ALIGNMENT_POSITIONS = {
+          2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],
+          7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50],
+          11:[6,30,54],12:[6,32,58],13:[6,34,62],14:[6,26,46,66],
+          15:[6,26,48,70],16:[6,26,50,74],17:[6,30,54,78],
+          18:[6,30,56,82],19:[6,30,58,86],20:[6,34,62,90]
+        };
+
+        // GF(256) math for Reed-Solomon
+        var gfExp = new Array(256);
+        var gfLog = new Array(256);
+        (function () {
+          var x = 1;
+          for (var i = 0; i < 255; i++) {
+            gfExp[i] = x;
+            gfLog[x] = i;
+            x <<= 1;
+            if (x >= 256) x ^= 0x11d;
+          }
+          gfExp[255] = gfExp[0];
+        })();
+
+        function gfMul(a, b) {
+          if (a === 0 || b === 0) return 0;
+          return gfExp[(gfLog[a] + gfLog[b]) % 255];
+        }
+
+        function rsGenPoly(nsym) {
+          var g = [1];
+          for (var i = 0; i < nsym; i++) {
+            var ng = new Array(g.length + 1);
+            ng[0] = 0;
+            for (var j = 0; j < g.length; j++) ng[j] = 0;
+            ng[g.length] = 0;
+            for (var j = 0; j < g.length; j++) {
+              ng[j + 1] ^= g[j];
+              ng[j] ^= gfMul(g[j], gfExp[i]);
+            }
+            g = ng;
+          }
+          return g;
+        }
+
+        function rsEncode(data, nsym) {
+          var gen = rsGenPoly(nsym);
+          var res = new Array(data.length + nsym);
+          for (var i = 0; i < res.length; i++) res[i] = 0;
+          for (var i = 0; i < data.length; i++) res[i] = data[i];
+          for (var i = 0; i < data.length; i++) {
+            var coef = res[i];
+            if (coef !== 0) {
+              for (var j = 0; j < gen.length; j++) {
+                res[i + j] ^= gfMul(gen[j], coef);
+              }
+            }
+          }
+          return res.slice(data.length);
+        }
+
+        function getVersion(dataLen, ecLevel) {
+          for (var v = 1; v <= 20; v++) {
+            var info = EC_TABLE[v][ecLevel];
+            var totalData = info[2] * info[3] + info[4] * info[5];
+            // byte mode: 4 bits mode + char count bits + data + terminator
+            var charCountBits = v <= 9 ? 8 : 16;
+            var availBits = totalData * 8;
+            var neededBits = 4 + charCountBits + dataLen * 8;
+            if (neededBits <= availBits) return v;
+          }
+          return -1;
+        }
+
+        function encodeData(text, version, ecLevel) {
+          var info = EC_TABLE[version][ecLevel];
+          var totalData = info[2] * info[3] + info[4] * info[5];
+          var charCountBits = version <= 9 ? 8 : 16;
+
+          // Build bit stream
+          var bits = [];
+          function addBits(val, len) {
+            for (var i = len - 1; i >= 0; i--) bits.push((val >> i) & 1);
+          }
+
+          // Mode indicator: byte mode = 0100
+          addBits(4, 4);
+          // Character count
+          addBits(text.length, charCountBits);
+          // Data
+          for (var i = 0; i < text.length; i++) {
+            addBits(text.charCodeAt(i) & 0xFF, 8);
+          }
+          // Terminator
+          var termLen = Math.min(4, totalData * 8 - bits.length);
+          addBits(0, termLen);
+          // Pad to byte boundary
+          while (bits.length % 8 !== 0) bits.push(0);
+          // Pad bytes
+          var padBytes = [0xEC, 0x11];
+          var pi = 0;
+          while (bits.length < totalData * 8) {
+            addBits(padBytes[pi % 2], 8);
+            pi++;
+          }
+
+          // Convert to bytes
+          var dataBytes = [];
+          for (var i = 0; i < bits.length; i += 8) {
+            var b = 0;
+            for (var j = 0; j < 8; j++) b = (b << 1) | bits[i + j];
+            dataBytes.push(b);
+          }
+
+          // Split into blocks and add EC
+          var ecPerBlock = info[1];
+          var blocks1 = info[2], dataCw1 = info[3];
+          var blocks2 = info[4], dataCw2 = info[5];
+          var dataBlocks = [];
+          var ecBlocks = [];
+          var offset = 0;
+
+          for (var i = 0; i < blocks1; i++) {
+            var block = dataBytes.slice(offset, offset + dataCw1);
+            dataBlocks.push(block);
+            ecBlocks.push(rsEncode(block, ecPerBlock));
+            offset += dataCw1;
+          }
+          for (var i = 0; i < blocks2; i++) {
+            var block = dataBytes.slice(offset, offset + dataCw2);
+            dataBlocks.push(block);
+            ecBlocks.push(rsEncode(block, ecPerBlock));
+            offset += dataCw2;
+          }
+
+          // Interleave
+          var result = [];
+          var maxDataLen = Math.max(dataCw1, dataCw2);
+          for (var i = 0; i < maxDataLen; i++) {
+            for (var j = 0; j < dataBlocks.length; j++) {
+              if (i < dataBlocks[j].length) result.push(dataBlocks[j][i]);
+            }
+          }
+          for (var i = 0; i < ecPerBlock; i++) {
+            for (var j = 0; j < ecBlocks.length; j++) {
+              if (i < ecBlocks[j].length) result.push(ecBlocks[j][i]);
+            }
+          }
+
+          return result;
+        }
+
+        function createMatrix(version) {
+          var size = version * 4 + 17;
+          var matrix = [];
+          var reserved = [];
+          for (var i = 0; i < size; i++) {
+            matrix[i] = new Array(size);
+            reserved[i] = new Array(size);
+            for (var j = 0; j < size; j++) {
+              matrix[i][j] = 0;
+              reserved[i][j] = false;
+            }
+          }
+
+          // Finder patterns
+          function placeFinderPattern(row, col) {
+            for (var r = -1; r <= 7; r++) {
+              for (var c = -1; c <= 7; c++) {
+                var rr = row + r, cc = col + c;
+                if (rr < 0 || rr >= size || cc < 0 || cc >= size) continue;
+                var val;
+                if (r === -1 || r === 7 || c === -1 || c === 7) val = 0;
+                else if (r === 0 || r === 6 || c === 0 || c === 6) val = 1;
+                else if (r >= 2 && r <= 4 && c >= 2 && c <= 4) val = 1;
+                else val = 0;
+                matrix[rr][cc] = val;
+                reserved[rr][cc] = true;
+              }
+            }
+          }
+
+          placeFinderPattern(0, 0);
+          placeFinderPattern(0, size - 7);
+          placeFinderPattern(size - 7, 0);
+
+          // Timing patterns
+          for (var i = 8; i < size - 8; i++) {
+            matrix[6][i] = i % 2 === 0 ? 1 : 0;
+            reserved[6][i] = true;
+            matrix[i][6] = i % 2 === 0 ? 1 : 0;
+            reserved[i][6] = true;
+          }
+
+          // Alignment patterns
+          if (ALIGNMENT_POSITIONS[version]) {
+            var pos = ALIGNMENT_POSITIONS[version];
+            for (var i = 0; i < pos.length; i++) {
+              for (var j = 0; j < pos.length; j++) {
+                var r = pos[i], c = pos[j];
+                if (reserved[r][c]) continue;
+                for (var dr = -2; dr <= 2; dr++) {
+                  for (var dc = -2; dc <= 2; dc++) {
+                    var val = (Math.abs(dr) === 2 || Math.abs(dc) === 2 || (dr === 0 && dc === 0)) ? 1 : 0;
+                    matrix[r + dr][c + dc] = val;
+                    reserved[r + dr][c + dc] = true;
+                  }
+                }
+              }
+            }
+          }
+
+          // Reserve format info areas
+          for (var i = 0; i < 8; i++) {
+            reserved[8][i] = true;
+            reserved[8][size - 1 - i] = true;
+            reserved[i][8] = true;
+            reserved[size - 1 - i][8] = true;
+          }
+          reserved[8][8] = true;
+          // Dark module
+          matrix[size - 8][8] = 1;
+          reserved[size - 8][8] = true;
+
+          // Reserve version info for v >= 7
+          if (version >= 7) {
+            for (var i = 0; i < 6; i++) {
+              for (var j = 0; j < 3; j++) {
+                reserved[i][size - 11 + j] = true;
+                reserved[size - 11 + j][i] = true;
+              }
+            }
+          }
+
+          return { matrix: matrix, reserved: reserved, size: size };
+        }
+
+        function placeData(matrix, reserved, size, data) {
+          var bitIndex = 0;
+          var bits = [];
+          for (var i = 0; i < data.length; i++) {
+            for (var j = 7; j >= 0; j--) bits.push((data[i] >> j) & 1);
+          }
+
+          var col = size - 1;
+          var goingUp = true;
+          while (col >= 0) {
+            if (col === 6) col--; // skip timing column
+            var rows = goingUp ? [] : [];
+            for (var r = 0; r < size; r++) {
+              var row = goingUp ? size - 1 - r : r;
+              for (var dc = 0; dc >= -1; dc--) {
+                var c = col + dc;
+                if (c < 0 || c >= size) continue;
+                if (reserved[row][c]) continue;
+                matrix[row][c] = bitIndex < bits.length ? bits[bitIndex] : 0;
+                bitIndex++;
+              }
+            }
+            goingUp = !goingUp;
+            col -= 2;
+          }
+        }
+
+        function applyMask(matrix, reserved, size, maskNum) {
+          var maskFn;
+          switch (maskNum) {
+            case 0: maskFn = function(r,c){return (r+c)%2===0;}; break;
+            case 1: maskFn = function(r,c){return r%2===0;}; break;
+            case 2: maskFn = function(r,c){return c%3===0;}; break;
+            case 3: maskFn = function(r,c){return (r+c)%3===0;}; break;
+            case 4: maskFn = function(r,c){return (Math.floor(r/2)+Math.floor(c/3))%2===0;}; break;
+            case 5: maskFn = function(r,c){return (r*c)%2+(r*c)%3===0;}; break;
+            case 6: maskFn = function(r,c){return ((r*c)%2+(r*c)%3)%2===0;}; break;
+            case 7: maskFn = function(r,c){return ((r+c)%2+(r*c)%3)%2===0;}; break;
+          }
+          for (var r = 0; r < size; r++) {
+            for (var c = 0; c < size; c++) {
+              if (!reserved[r][c] && maskFn(r, c)) {
+                matrix[r][c] ^= 1;
+              }
+            }
+          }
+        }
+
+        function placeFormatInfo(matrix, size, ecLevel, maskNum) {
+          var ecBits = { L: 1, M: 0, Q: 3, H: 2 };
+          var data = (ecBits[ecLevel] << 3) | maskNum;
+          var bits = data;
+          for (var i = 0; i < 10; i++) {
+            if (bits & (1 << (14 - i))) continue;
+            // BCH encoding
+          }
+          // Simple BCH(15,5) encoding
+          var g = 0x537;
+          var encoded = data << 10;
+          for (var i = 4; i >= 0; i--) {
+            if (encoded & (1 << (i + 10))) {
+              encoded ^= g << i;
+            }
+          }
+          var formatBits = ((data << 10) | encoded) ^ 0x5412;
+
+          // Place format bits
+          var positions1 = [[0,8],[1,8],[2,8],[3,8],[4,8],[5,8],[7,8],[8,8],[8,7],[8,5],[8,4],[8,3],[8,2],[8,1],[8,0]];
+          var positions2 = [[8,size-1],[8,size-2],[8,size-3],[8,size-4],[8,size-5],[8,size-6],[8,size-7],[8,size-8],[size-7,8],[size-6,8],[size-5,8],[size-4,8],[size-3,8],[size-2,8],[size-1,8]];
+
+          for (var i = 0; i < 15; i++) {
+            var bit = (formatBits >> (14 - i)) & 1;
+            matrix[positions1[i][0]][positions1[i][1]] = bit;
+            matrix[positions2[i][0]][positions2[i][1]] = bit;
+          }
+        }
+
+        function scoreMask(matrix, size) {
+          var penalty = 0;
+          // Rule 1: consecutive same-color modules in row/col
+          for (var r = 0; r < size; r++) {
+            var count = 1;
+            for (var c = 1; c < size; c++) {
+              if (matrix[r][c] === matrix[r][c-1]) { count++; }
+              else { if (count >= 5) penalty += count - 2; count = 1; }
+            }
+            if (count >= 5) penalty += count - 2;
+          }
+          for (var c = 0; c < size; c++) {
+            var count = 1;
+            for (var r = 1; r < size; r++) {
+              if (matrix[r][c] === matrix[r-1][c]) { count++; }
+              else { if (count >= 5) penalty += count - 2; count = 1; }
+            }
+            if (count >= 5) penalty += count - 2;
+          }
+          // Rule 2: 2x2 blocks
+          for (var r = 0; r < size - 1; r++) {
+            for (var c = 0; c < size - 1; c++) {
+              var v = matrix[r][c];
+              if (v === matrix[r][c+1] && v === matrix[r+1][c] && v === matrix[r+1][c+1]) penalty += 3;
+            }
+          }
+          return penalty;
+        }
+
+        function generate(text, ecLevel) {
+          if (!text) return null;
+          ecLevel = ecLevel || 'M';
+
+          // Encode as UTF-8 bytes
+          var utf8 = [];
+          for (var i = 0; i < text.length; i++) {
+            var code = text.charCodeAt(i);
+            if (code < 0x80) utf8.push(code);
+            else if (code < 0x800) { utf8.push(0xC0 | (code >> 6)); utf8.push(0x80 | (code & 0x3F)); }
+            else { utf8.push(0xE0 | (code >> 12)); utf8.push(0x80 | ((code >> 6) & 0x3F)); utf8.push(0x80 | (code & 0x3F)); }
+          }
+
+          var version = getVersion(utf8.length, ecLevel);
+          if (version < 0) return null;
+
+          var data = encodeData(String.fromCharCode.apply(null, utf8), version, ecLevel);
+          var matrixInfo = createMatrix(version);
+
+          // Try all masks and pick best
+          var bestMask = 0;
+          var bestScore = Infinity;
+          var bestMatrix = null;
+
+          for (var mask = 0; mask < 8; mask++) {
+            // Deep copy matrix
+            var m = [];
+            for (var r = 0; r < matrixInfo.size; r++) {
+              m[r] = matrixInfo.matrix[r].slice();
+            }
+            placeData(m, matrixInfo.reserved, matrixInfo.size, data);
+            applyMask(m, matrixInfo.reserved, matrixInfo.size, mask);
+            placeFormatInfo(m, matrixInfo.size, ecLevel, mask);
+            var score = scoreMask(m, matrixInfo.size);
+            if (score < bestScore) {
+              bestScore = score;
+              bestMask = mask;
+              bestMatrix = m;
+            }
+          }
+
+          return { modules: bestMatrix, size: matrixInfo.size, version: version };
+        }
+
+        return { generate: generate };
+      })();
+
+      // Render QR code to canvas
+      function renderToCanvas(qr, pixelSize, fgColor, bgColor) {
+        var moduleCount = qr.size;
+        var quiet = 4;
+        var totalModules = moduleCount + quiet * 2;
+        var moduleSize = Math.floor(pixelSize / totalModules);
+        if (moduleSize < 1) moduleSize = 1;
+        var canvasSize = totalModules * moduleSize;
+
+        var canvas = document.createElement('canvas');
+        canvas.width = canvasSize;
+        canvas.height = canvasSize;
+        var ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+        ctx.fillStyle = fgColor;
+        for (var r = 0; r < moduleCount; r++) {
+          for (var c = 0; c < moduleCount; c++) {
+            if (qr.modules[r][c]) {
+              ctx.fillRect((c + quiet) * moduleSize, (r + quiet) * moduleSize, moduleSize, moduleSize);
+            }
+          }
+        }
+        return canvas;
+      }
+
+      // Render QR to SVG string
+      function renderToSVG(qr, fgColor, bgColor) {
+        var moduleCount = qr.size;
+        var quiet = 4;
+        var total = moduleCount + quiet * 2;
+        var parts = [];
+        parts.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + total + ' ' + total + '" shape-rendering="crispEdges">');
+        parts.push('<rect width="' + total + '" height="' + total + '" fill="' + bgColor + '"/>');
+        parts.push('<path d="');
+        for (var r = 0; r < moduleCount; r++) {
+          for (var c = 0; c < moduleCount; c++) {
+            if (qr.modules[r][c]) {
+              parts.push('M' + (c + quiet) + ' ' + (r + quiet) + 'h1v1h-1z');
+            }
+          }
+        }
+        parts.push('" fill="' + fgColor + '"/>');
+        parts.push('</svg>');
+        return parts.join('');
+      }
+
+      // Try Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        document.getElementById('qrInput').value = 'https://thisdevtool.com';
+        document.getElementById('generateBtn').click();
+      });
+
+      // Generate button
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var text = document.getElementById('qrInput').value;
+        if (!text.trim()) {
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Please enter text or a URL to encode.';
+          return;
+        }
+
+        var size = parseInt(document.getElementById('qrSize').value);
+        var fgColor = document.getElementById('fgColor').value;
+        var bgColor = document.getElementById('bgColorQr').value;
+
+        var qr = QR.generate(text, currentEC);
+        if (!qr) {
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Data too long for QR code (max ~2000 characters). Try shorter text or lower error correction.';
+          return;
+        }
+
+        qrCanvas = renderToCanvas(qr, size, fgColor, bgColor);
+        qrModules = qr;
+
+        previewArea.innerHTML = '';
+        qrCanvas.style.cssText = 'max-width:100%;height:auto;border-radius:4px;';
+        previewArea.appendChild(qrCanvas);
+
+        document.getElementById('downloadPngBtn').disabled = false;
+        document.getElementById('downloadSvgBtn').disabled = false;
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'QR code generated \u2014 Version ' + qr.version + ', ' + qr.size + '\u00d7' + qr.size + ' modules';
+
+        DT.trackTool('qr-code');
+      });
+
+      // Download PNG
+      document.getElementById('downloadPngBtn').addEventListener('click', function () {
+        if (!qrCanvas) return;
+        var link = document.createElement('a');
+        link.download = 'qr-code.png';
+        link.href = qrCanvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+
+      // Download SVG
+      document.getElementById('downloadSvgBtn').addEventListener('click', function () {
+        if (!qrModules) return;
+        var fgColor = document.getElementById('fgColor').value;
+        var bgColor = document.getElementById('bgColorQr').value;
+        var svg = renderToSVG(qrModules, fgColor, bgColor);
+        DT.downloadText(svg, 'qr-code.svg', 'image/svg+xml');
+      });
+
+      // Tab in textarea
+      document.getElementById('qrInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WCAG Palette Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate accessible color palettes that pass WCAG AA or AAA contrast requirements. Find usable shades of any color against light or dark backgrounds. Free, no signup.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/wcag-palette.html">
+  <meta property="og:title" content="WCAG Palette Generator — DevToolbox">
+  <meta property="og:description" content="Free online accessible color palette generator. Find colors that pass WCAG AA/AAA contrast. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/wcag-palette.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "WCAG Palette Generator",
+    "url": "https://thisdevtool.com/tools/wcag-palette.html",
+    "description": "Generate accessible color palettes that pass WCAG contrast requirements. Free, instant, 100% client-side.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is an accessible color palette?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An accessible color palette is a set of colors that meet WCAG contrast ratio requirements when used as text on a specific background. This ensures that people with visual impairments, including color blindness and low vision, can read the text comfortably."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between AA and AAA compliance?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WCAG AA requires a minimum contrast ratio of 4.5:1 for normal text, while AAA requires 7:1. AA is the standard compliance level required by most accessibility laws. AAA provides enhanced readability and is recommended for text-heavy content like articles and documentation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does this tool find accessible colors?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool takes your base color's hue and saturation, then generates variations by adjusting the lightness from 5% to 95%. Each variation is tested against your chosen background color to determine if it meets the target WCAG contrast ratio. Only passing colors are shown in the palette."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use these colors with both light and dark backgrounds?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Each swatch shows pass/fail badges for AA and AAA against the selected background. You can switch between Light, Dark, or Custom backgrounds to see which shades work for each. Typically, darker shades pass on light backgrounds and lighter shades pass on dark backgrounds."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I export the accessible palette?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Click the export format chips below the palette to switch between CSS custom properties, SCSS variables, and Tailwind CSS config. Then click Copy to copy the code to your clipboard. Only the colors that pass the selected WCAG level are included in the export."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/color-contrast.html">Contrast Checker</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>WCAG Palette Generator</h1>
+          <p class="tool-subtitle">Find accessible shades of any color that pass WCAG AA or AAA contrast against your background.</p>
+
+          <!-- Inputs -->
+          <div class="input-row" style="align-items:flex-end;margin-bottom:1rem;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="baseColor">Base Color</label>
+              <div style="display:flex;gap:0.5rem;align-items:center;">
+                <input type="color" id="baseColor" value="#10b981" style="width:60px;height:40px;padding:2px;cursor:pointer;">
+                <input type="text" id="baseHex" value="#10b981" maxlength="7" style="width:100px;max-width:100%;font-family:var(--font-mono);" aria-label="Hex color value">
+              </div>
+            </div>
+          </div>
+
+          <!-- Target Level Chips -->
+          <div style="margin-bottom:1rem;">
+            <label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.375rem;">Target Level</label>
+            <div class="option-chips" id="levelChips">
+              <button class="option-chip active" data-level="aa">AA (4.5:1)</button>
+              <button class="option-chip" data-level="aaa">AAA (7:1)</button>
+            </div>
+          </div>
+
+          <!-- Background Chips -->
+          <div style="margin-bottom:1rem;">
+            <label style="font-size:0.875rem;font-weight:600;display:block;margin-bottom:0.375rem;">Background</label>
+            <div class="option-chips" id="bgChips">
+              <button class="option-chip active" data-bg="light">Light (#FFFFFF)</button>
+              <button class="option-chip" data-bg="dark">Dark (#1a1a2e)</button>
+              <button class="option-chip" data-bg="custom">Custom</button>
+            </div>
+            <div id="customBgRow" style="display:none;margin-top:0.5rem;">
+              <input type="color" id="customBg" value="#f0f0f0" style="width:60px;height:36px;padding:2px;cursor:pointer;">
+              <input type="text" id="customBgHex" value="#f0f0f0" maxlength="7" style="width:100px;max-width:100%;font-family:var(--font-mono);margin-left:0.5rem;" aria-label="Custom background hex color">
+            </div>
+          </div>
+
+          <!-- Palette Grid -->
+          <div id="paletteGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.75rem;margin:1rem 0;"></div>
+
+          <!-- Export -->
+          <div class="pane-label" style="margin-top:1.5rem;">
+            <span>Export (Passing Colors Only)</span>
+            <button class="btn btn-sm btn-primary" id="copyExportBtn">Copy</button>
+          </div>
+          <div class="option-chips" id="exportChips" style="margin-bottom:0.5rem;">
+            <button class="option-chip active" data-export="css">CSS Variables</button>
+            <button class="option-chip" data-export="tailwind">Tailwind</button>
+            <button class="option-chip" data-export="scss">SCSS</button>
+          </div>
+          <div class="code-output" id="exportOutput" style="min-height:80px;font-size:0.8125rem;"></div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Pick a base color, target level, and background to generate accessible variants.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the WCAG Palette Generator</h2>
+          <ol>
+            <li><strong>Pick a base color</strong> — this is the brand or design color you want to find accessible variants of.</li>
+            <li><strong>Choose a target level</strong> — AA (4.5:1) for standard compliance or AAA (7:1) for enhanced accessibility.</li>
+            <li><strong>Select the background</strong> — Light (#FFFFFF), Dark (#1a1a2e), or enter a custom background color.</li>
+            <li><strong>Review the palette</strong> — all generated shades show their contrast ratio and AA/AAA pass/fail badges.</li>
+            <li><strong>Export passing colors</strong> — copy as CSS variables, Tailwind config, or SCSS variables.</li>
+          </ol>
+
+          <h2>Why Accessible Colors Matter</h2>
+          <p>Approximately 1.3 billion people worldwide live with some form of visual impairment, according to the World Health Organization. Color contrast is one of the most fundamental accessibility requirements for digital content. When text does not have sufficient contrast against its background, users with low vision, color blindness, or simply suboptimal viewing conditions (bright sunlight, old monitors) cannot read it. Designing with accessible colors from the start is easier and cheaper than retrofitting later.</p>
+
+          <h3>Building an Accessible Design System</h3>
+          <p>Most design systems include a palette of color shades, typically numbered from 50 (lightest) to 900 (darkest). Not all shades in a standard palette will be accessible for text. This tool helps you identify which shades of your brand color can be safely used as text on your chosen background. You can then document these as your "accessible text colors" in your design system, preventing accessibility issues before they happen.</p>
+
+          <h3>The Lightness Approach</h3>
+          <p>This tool generates palette variants by keeping the hue and saturation of your base color constant while adjusting the lightness from 5% (nearly black) to 95% (nearly white) in 5% increments. Each variant is tested against your background for contrast compliance. This approach preserves the "feel" of your brand color while finding the specific shades that meet accessibility requirements.</p>
+
+          <h3>Light vs Dark Backgrounds</h3>
+          <p>The same color shade behaves very differently on light and dark backgrounds. A mid-tone green might pass AA on a white background but fail completely on a dark background (or vice versa). That is why this tool lets you test against different backgrounds. For a complete design system, test your palette against both light and dark themes to ensure accessibility in all modes.</p>
+
+          <h3>Legal Requirements</h3>
+          <p>Color contrast is not just a best practice — it is a legal requirement in many jurisdictions. The European Accessibility Act, the Americans with Disabilities Act (ADA), Section 508, and similar laws around the world reference WCAG 2.1 Level AA as the minimum standard. Non-compliance can result in lawsuits, fines, and reputational damage. Proactively designing with accessible colors protects your organization.</p>
+
+          <h3>Integrating with Your Design Workflow</h3>
+          <p>The most effective way to use this tool is during the early stages of your design process, before components are built. Start with your brand color, generate the accessible palette against both light and dark backgrounds, then use only the passing colors in your design tokens or style guide. This "accessible by default" approach eliminates the need for costly accessibility audits later. Export the palette as CSS variables or Tailwind config and share with your team so everyone uses the same verified colors.</p>
+
+          <h3>Color Blindness Considerations</h3>
+          <p>While WCAG contrast ratios ensure sufficient luminance contrast, they do not address color blindness. Approximately 8% of men and 0.5% of women have some form of color vision deficiency, with red-green color blindness being the most common. When building an accessible palette, avoid relying solely on color to distinguish information — always supplement color differences with text labels, icons, or patterns. For example, do not rely on green for success and red for error without also including a checkmark icon and an X icon respectively. Check individual color pairs with our <a href="/tools/color-contrast.html">Color Contrast Checker</a>, explore broader color harmonies with the <a href="/tools/color-palette.html">Color Palette</a> tool, or pair your accessible palette with harmonious type sizes using the <a href="/tools/typography-scale.html">Typography Scale</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is an accessible color palette?</button>
+            <div class="faq-answer">An accessible color palette is a set of colors that meet WCAG contrast ratio requirements when used as text on a specific background. This ensures that people with visual impairments, including color blindness and low vision, can read the text comfortably.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between AA and AAA compliance?</button>
+            <div class="faq-answer">WCAG AA requires a minimum contrast ratio of 4.5:1 for normal text, while AAA requires 7:1. AA is the standard compliance level required by most accessibility laws. AAA provides enhanced readability and is recommended for text-heavy content like articles and documentation.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does this tool find accessible colors?</button>
+            <div class="faq-answer">The tool takes your base color's hue and saturation, then generates variations by adjusting the lightness from 5% to 95%. Each variation is tested against your chosen background color to determine if it meets the target WCAG contrast ratio. Only passing colors are shown in the palette.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use these colors with both light and dark backgrounds?</button>
+            <div class="faq-answer">Each swatch shows pass/fail badges for AA and AAA against the selected background. You can switch between Light, Dark, or Custom backgrounds to see which shades work for each. Typically, darker shades pass on light backgrounds and lighter shades pass on dark backgrounds.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I export the accessible palette?</button>
+            <div class="faq-answer">Click the export format chips below the palette to switch between CSS custom properties, SCSS variables, and Tailwind CSS config. Then click Copy to copy the code to your clipboard. Only the colors that pass the selected WCAG level are included in the export.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Accessibility</h4>
+        <a href="/tools/color-contrast.html">Contrast Checker</a>
+        <a href="/tools/wcag-palette.html">WCAG Palette</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+      </div>
+      <div class="footer-col">
+        <h4>Design</h4>
+        <a href="/tools/typography-scale.html">Typography Scale</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+        <a href="/tools/email-signature.html">Email Signature</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var currentLevel = 'aa';
+      var currentBg = 'light';
+      var currentExport = 'css';
+      var passingColors = [];
+
+      var statusBar = document.getElementById('statusBar');
+      var paletteGrid = document.getElementById('paletteGrid');
+      var exportOutput = document.getElementById('exportOutput');
+
+      var basePicker = document.getElementById('baseColor');
+      var baseHexInput = document.getElementById('baseHex');
+
+      function luminance(hex) {
+        var r = parseInt(hex.slice(1, 3), 16) / 255;
+        var g = parseInt(hex.slice(3, 5), 16) / 255;
+        var b = parseInt(hex.slice(5, 7), 16) / 255;
+        r = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+        g = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+        b = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      }
+
+      function contrastRatio(hex1, hex2) {
+        var l1 = luminance(hex1);
+        var l2 = luminance(hex2);
+        var lighter = Math.max(l1, l2);
+        var darker = Math.min(l1, l2);
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+
+      function hexToHSL(hex) {
+        var r = parseInt(hex.slice(1, 3), 16) / 255;
+        var g = parseInt(hex.slice(3, 5), 16) / 255;
+        var b = parseInt(hex.slice(5, 7), 16) / 255;
+        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+        var h, s, l = (max + min) / 2;
+        if (max === min) {
+          h = s = 0;
+        } else {
+          var d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+          }
+        }
+        return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+      }
+
+      function hslToHex(h, s, l) {
+        h = ((h % 360) + 360) % 360;
+        s = Math.max(0, Math.min(100, s)) / 100;
+        l = Math.max(0, Math.min(100, l)) / 100;
+        var c = (1 - Math.abs(2 * l - 1)) * s;
+        var x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        var m = l - c / 2;
+        var r, g, b;
+        if (h < 60) { r = c; g = x; b = 0; }
+        else if (h < 120) { r = x; g = c; b = 0; }
+        else if (h < 180) { r = 0; g = c; b = x; }
+        else if (h < 240) { r = 0; g = x; b = c; }
+        else if (h < 300) { r = x; g = 0; b = c; }
+        else { r = c; g = 0; b = x; }
+        r = Math.round((r + m) * 255);
+        g = Math.round((g + m) * 255);
+        b = Math.round((b + m) * 255);
+        return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+      }
+
+      function getBackgroundHex() {
+        switch (currentBg) {
+          case 'light': return '#ffffff';
+          case 'dark': return '#1a1a2e';
+          case 'custom': return document.getElementById('customBg').value;
+          default: return '#ffffff';
+        }
+      }
+
+      function getMinRatio() {
+        return currentLevel === 'aaa' ? 7 : 4.5;
+      }
+
+      function generatePalette() {
+        var baseHex = basePicker.value;
+        var bgHex = getBackgroundHex();
+        var minRatio = getMinRatio();
+        var hsl = hexToHSL(baseHex);
+
+        var allShades = [];
+        for (var l = 5; l <= 95; l += 5) {
+          var testHex = hslToHex(hsl.h, hsl.s, l);
+          var ratio = contrastRatio(testHex, bgHex);
+          var aaPass = ratio >= 4.5;
+          var aaaPass = ratio >= 7;
+          allShades.push({
+            hex: testHex,
+            lightness: l,
+            ratio: ratio,
+            aaPass: aaPass,
+            aaaPass: aaaPass,
+            passes: ratio >= minRatio
+          });
+        }
+
+        passingColors = allShades.filter(function (s) { return s.passes; });
+
+        // Render all shades, highlight passing ones
+        paletteGrid.innerHTML = '';
+        allShades.forEach(function (shade) {
+          var textColor = shade.lightness > 55 ? '#111' : '#fff';
+          var opacity = shade.passes ? '1' : '0.4';
+          var border = shade.passes ? '2px solid var(--accent)' : '1px solid var(--border)';
+
+          var card = document.createElement('div');
+          card.style.cssText = 'border-radius:var(--radius);overflow:hidden;border:' + border + ';opacity:' + opacity + ';cursor:pointer;transition:opacity 0.15s;';
+
+          var aaBadge = shade.aaPass
+            ? '<span style="background:#16a34a;color:#fff;padding:1px 6px;border-radius:9999px;font-size:0.625rem;font-weight:700;">AA</span>'
+            : '<span style="background:#dc2626;color:#fff;padding:1px 6px;border-radius:9999px;font-size:0.625rem;font-weight:700;">AA</span>';
+          var aaaBadge = shade.aaaPass
+            ? '<span style="background:#16a34a;color:#fff;padding:1px 6px;border-radius:9999px;font-size:0.625rem;font-weight:700;">AAA</span>'
+            : '<span style="background:#dc2626;color:#fff;padding:1px 6px;border-radius:9999px;font-size:0.625rem;font-weight:700;">AAA</span>';
+
+          card.innerHTML =
+            '<div style="background:' + shade.hex + ';padding:1.25rem 0.5rem;text-align:center;">' +
+            '<div style="font-size:0.6875rem;font-weight:600;color:' + textColor + ';">' + shade.hex + '</div>' +
+            '</div>' +
+            '<div style="padding:0.375rem 0.5rem;font-size:0.6875rem;background:var(--bg-card);display:flex;justify-content:space-between;align-items:center;">' +
+            '<span style="color:var(--text-secondary);">' + shade.ratio.toFixed(1) + ':1</span>' +
+            '<span>' + aaBadge + ' ' + aaaBadge + '</span>' +
+            '</div>';
+
+          card.addEventListener('click', function () {
+            DT.copyToClipboard(shade.hex, null);
+            var label = card.querySelector('div div');
+            var orig = label.textContent;
+            label.textContent = 'Copied!';
+            setTimeout(function () { label.textContent = orig; }, 1000);
+          });
+
+          paletteGrid.appendChild(card);
+        });
+
+        renderExport();
+
+        var levelLabel = currentLevel === 'aaa' ? 'AAA' : 'AA';
+        statusBar.className = passingColors.length > 0 ? 'status-bar valid' : 'status-bar invalid';
+        statusBar.textContent = 'Generated ' + passingColors.length + ' accessible colors from ' + baseHex + ' \u2014 ' + levelLabel + ' compliant against ' + bgHex;
+
+        DT.trackTool('wcag-palette');
+      }
+
+      function renderExport() {
+        if (!passingColors.length) {
+          exportOutput.textContent = '/* No colors pass the selected WCAG level against this background */';
+          return;
+        }
+
+        var output = '';
+        switch (currentExport) {
+          case 'css':
+            output = ':root {\n';
+            passingColors.forEach(function (c, i) {
+              output += '  --accessible-' + (i + 1) + ': ' + c.hex + '; /* ' + c.ratio.toFixed(1) + ':1 */\n';
+            });
+            output += '}';
+            break;
+          case 'tailwind':
+            output = 'module.exports = {\n  theme: {\n    extend: {\n      colors: {\n        accessible: {\n';
+            passingColors.forEach(function (c, i) {
+              output += "          '" + ((i + 1) * 100) + "': '" + c.hex + "', // " + c.ratio.toFixed(1) + ':1\n';
+            });
+            output += '        }\n      }\n    }\n  }\n}';
+            break;
+          case 'scss':
+            passingColors.forEach(function (c, i) {
+              output += '$accessible-' + (i + 1) + ': ' + c.hex + '; // ' + c.ratio.toFixed(1) + ':1\n';
+            });
+            break;
+        }
+        exportOutput.textContent = output;
+      }
+
+      // Sync color inputs
+      basePicker.addEventListener('input', function () { baseHexInput.value = this.value; generatePalette(); });
+      baseHexInput.addEventListener('input', function () {
+        if (/^#[0-9a-f]{6}$/i.test(this.value)) { basePicker.value = this.value; generatePalette(); }
+      });
+
+      // Level chips
+      document.querySelectorAll('#levelChips .option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('#levelChips .option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentLevel = chip.getAttribute('data-level');
+          generatePalette();
+        });
+      });
+
+      // Background chips
+      document.querySelectorAll('#bgChips .option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('#bgChips .option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentBg = chip.getAttribute('data-bg');
+          document.getElementById('customBgRow').style.display = currentBg === 'custom' ? 'flex' : 'none';
+          generatePalette();
+        });
+      });
+
+      // Custom background sync
+      document.getElementById('customBg').addEventListener('input', function () {
+        document.getElementById('customBgHex').value = this.value;
+        generatePalette();
+      });
+      document.getElementById('customBgHex').addEventListener('input', function () {
+        if (/^#[0-9a-f]{6}$/i.test(this.value)) {
+          document.getElementById('customBg').value = this.value;
+          generatePalette();
+        }
+      });
+
+      // Export chips
+      document.querySelectorAll('#exportChips .option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('#exportChips .option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentExport = chip.getAttribute('data-export');
+          renderExport();
+        });
+      });
+
+      // Copy export
+      document.getElementById('copyExportBtn').addEventListener('click', function () {
+        var text = exportOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Initial render
+      generatePalette();
+    })();
+  </script>
+</body>
+</html>

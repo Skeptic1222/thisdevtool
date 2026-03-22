@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slug Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate SEO-friendly URL slugs from titles and text. Supports hyphens, underscores, dots, accent transliteration, stop word removal, and bulk processing. Free, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/slug-generator.html">
+  <meta property="og:title" content="Slug Generator — DevToolbox">
+  <meta property="og:description" content="Free online slug generator with accent transliteration, stop word removal, and bulk processing. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/slug-generator.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Slug Generator",
+    "url": "https://thisdevtool.com/tools/slug-generator.html",
+    "description": "Generate SEO-friendly URL slugs from titles. Transliterates accents, removes stop words, supports bulk processing. Free, 100% client-side.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a URL slug?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A URL slug is the part of a web address that identifies a specific page in a human-readable form. For example, in 'example.com/blog/my-awesome-post', the slug is 'my-awesome-post'. Good slugs are lowercase, use hyphens as separators, and contain only relevant keywords."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why should I remove stop words from slugs?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Removing stop words (like 'the', 'and', 'is', 'a') from slugs makes them shorter and more focused on keywords. Shorter slugs are easier to read, share, and remember. Search engines also prefer concise, keyword-rich URLs for ranking purposes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How are accented characters handled?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Accented characters are transliterated to their ASCII equivalents. For example, e with accent becomes 'e', n with tilde becomes 'n', u with umlaut becomes 'u'. This ensures slugs are compatible with all browsers and servers without encoding issues."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my text sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This slug generator runs 100% in your browser using JavaScript. Your text never leaves your machine. There is no server-side processing, no logging, and no data collection."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/list-deduper.html">Slug Normalizer</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Slug Generator</h1>
+          <p class="tool-subtitle">Generate clean, SEO-friendly URL slugs from titles. Enter one title per line for bulk processing. 100% client-side.</p>
+
+          <!-- Separator Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-sep="-">Standard (-)</button>
+            <button class="option-chip" data-sep="_">Underscore (_)</button>
+            <button class="option-chip" data-sep=".">Dot (.)</button>
+          </div>
+
+          <!-- Options -->
+          <div class="input-row" style="margin-bottom:1rem;">
+            <div class="form-group">
+              <label>Max Length <span class="hint">(0 = unlimited)</span></label>
+              <input type="number" id="maxLength" value="0" min="0" max="500">
+            </div>
+            <div class="form-group" style="display:flex; align-items:flex-end; padding-bottom:0.25rem;">
+              <label style="display:inline-flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                <input type="checkbox" id="removeStopWords"> Remove stop words
+              </label>
+            </div>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input (one title per line)</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="textInput" rows="14" placeholder="My Awesome Blog Post! (2024)
+Another Page: Why This Matters?
+Caf&eacute; &amp; R&eacute;sum&eacute; &mdash; Special Chars
+10 Tips for Better SEO in 2026
+How to Build a REST API with Node.js" spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Slugs</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="textOutput" style="min-height:300px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter titles above to generate slugs.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Slug Generator</h2>
+          <ol>
+            <li><strong>Enter your titles</strong> into the input area on the left (or top on mobile), one title per line.</li>
+            <li><strong>Choose a separator</strong> — hyphens (standard), underscores, or dots.</li>
+            <li><strong>Set options</strong> — optionally set a max length or enable stop word removal.</li>
+            <li><strong>View the slugs</strong> — clean, SEO-friendly slugs appear on the right instantly.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output to copy to clipboard or download as a text file.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>This slug generator converts titles, headings, and text into clean URL slugs suitable for blog posts, product pages, and any web content. It handles the full transformation pipeline: converting to lowercase, transliterating accented characters (like converting "caf&eacute;" to "cafe"), replacing spaces and special characters with your chosen separator, collapsing multiple separators, and trimming leading/trailing separators. All processing happens instantly in your browser.</p>
+
+          <h3>Features</h3>
+          <ul>
+            <li><strong>Accent transliteration</strong> — automatically converts accented and special characters to their ASCII equivalents (e with accent to e, n with tilde to n, u with umlaut to u, and many more)</li>
+            <li><strong>Three separator styles</strong> — hyphens (standard for URLs), underscores (common in file names), or dots (used in package names)</li>
+            <li><strong>Stop word removal</strong> — optionally remove common words like "the", "and", "a" for shorter, keyword-focused slugs</li>
+            <li><strong>Max length</strong> — truncate slugs at a maximum character count, breaking at word boundaries when possible</li>
+            <li><strong>Bulk processing</strong> — enter multiple titles (one per line) and generate all slugs at once</li>
+            <li><strong>Privacy</strong> — your text never leaves your browser, no data is collected</li>
+          </ul>
+
+          <h3>Best Practices for URL Slugs</h3>
+          <ul>
+            <li><strong>Keep slugs short</strong> — aim for 3-5 words. Shorter URLs are easier to share and remember.</li>
+            <li><strong>Use hyphens, not underscores</strong> — Google treats hyphens as word separators but underscores as joiners. "best-seo-tips" is better than "best_seo_tips" for search.</li>
+            <li><strong>Include your target keyword</strong> — place the primary keyword near the beginning of the slug.</li>
+            <li><strong>Avoid special characters</strong> — stick to lowercase letters, numbers, and hyphens for maximum compatibility.</li>
+            <li><strong>Remove stop words</strong> — words like "the", "and", "a" add length without SEO value.</li>
+            <li><strong>Be consistent</strong> — use the same slug format across your entire site for a clean URL structure.</li>
+          </ul>
+
+          <h3>Why Slugs Matter for SEO</h3>
+          <p>URL slugs are a ranking factor for search engines. A descriptive, keyword-rich slug tells both users and search engines what the page is about before they even visit it. Clean slugs also improve click-through rates in search results because users are more likely to click on a URL that clearly describes the content. Additionally, well-structured URLs make it easier to organize and maintain your website's content hierarchy, which helps search engine crawlers understand your site architecture.</p>
+
+          <h3>Accent Transliteration Reference</h3>
+          <p>The tool supports comprehensive transliteration of accented characters from multiple languages. French characters like &eacute;, &egrave;, &ecirc;, and &ccedil; are converted to their base letters. German umlauts (&auml;, &ouml;, &uuml;) become their closest ASCII equivalents. Spanish &ntilde; becomes n, and Nordic characters like &aring;, &aelig;, and &oslash; are also handled. This ensures your slugs work seamlessly across all browsers and servers without URL encoding issues. To normalize slugs in bulk, try our <a href="/tools/slug-normalizer.html">Slug Normalizer</a>. You can also transform text casing with the <a href="/tools/case-converter.html">Case Converter</a> or generate complete meta tags with the <a href="/tools/meta-tag-generator.html">Meta Tag Generator</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a URL slug?</button>
+            <div class="faq-answer">A URL slug is the part of a web address that identifies a specific page in a human-readable form. For example, in 'example.com/blog/my-awesome-post', the slug is 'my-awesome-post'. Good slugs are lowercase, use hyphens as separators, and contain only relevant keywords.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why should I remove stop words from slugs?</button>
+            <div class="faq-answer">Removing stop words (like 'the', 'and', 'is', 'a') from slugs makes them shorter and more focused on keywords. Shorter slugs are easier to read, share, and remember. Search engines also prefer concise, keyword-rich URLs for ranking purposes.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How are accented characters handled?</button>
+            <div class="faq-answer">Accented characters are transliterated to their ASCII equivalents. For example, e with accent becomes 'e', n with tilde becomes 'n', u with umlaut becomes 'u'. This ensures slugs are compatible with all browsers and servers without encoding issues.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my text sent to a server?</button>
+            <div class="faq-answer">No. This slug generator runs 100% in your browser using JavaScript. Your text never leaves your machine. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/slug-generator.html">Slug Generator</a>
+        <a href="/tools/lorem-ipsum.html">Lorem Ipsum</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('textInput');
+      var output = document.getElementById('textOutput');
+      var statusBar = document.getElementById('statusBar');
+      var maxLengthInput = document.getElementById('maxLength');
+      var removeStopWordsCheck = document.getElementById('removeStopWords');
+      var currentSep = '-';
+
+      // Comprehensive accent transliteration map
+      var TRANSLITERATE = {
+        '\u00e0':'a','\u00e1':'a','\u00e2':'a','\u00e3':'a','\u00e4':'a','\u00e5':'a','\u00e6':'ae',
+        '\u00c0':'a','\u00c1':'a','\u00c2':'a','\u00c3':'a','\u00c4':'a','\u00c5':'a','\u00c6':'ae',
+        '\u00e7':'c','\u00c7':'c',
+        '\u00e8':'e','\u00e9':'e','\u00ea':'e','\u00eb':'e',
+        '\u00c8':'e','\u00c9':'e','\u00ca':'e','\u00cb':'e',
+        '\u00ec':'i','\u00ed':'i','\u00ee':'i','\u00ef':'i',
+        '\u00cc':'i','\u00cd':'i','\u00ce':'i','\u00cf':'i',
+        '\u00f0':'d','\u00d0':'d',
+        '\u00f1':'n','\u00d1':'n',
+        '\u00f2':'o','\u00f3':'o','\u00f4':'o','\u00f5':'o','\u00f6':'o','\u00f8':'o',
+        '\u00d2':'o','\u00d3':'o','\u00d4':'o','\u00d5':'o','\u00d6':'o','\u00d8':'o',
+        '\u00f9':'u','\u00fa':'u','\u00fb':'u','\u00fc':'u',
+        '\u00d9':'u','\u00da':'u','\u00db':'u','\u00dc':'u',
+        '\u00fd':'y','\u00ff':'y','\u00dd':'y',
+        '\u00fe':'th','\u00de':'th',
+        '\u00df':'ss',
+        '\u0142':'l','\u0141':'l',
+        '\u017e':'z','\u017d':'z','\u017a':'z','\u0179':'z','\u017c':'z','\u017b':'z',
+        '\u0161':'s','\u0160':'s','\u015b':'s','\u015a':'s',
+        '\u010d':'c','\u010c':'c','\u0107':'c','\u0106':'c',
+        '\u0159':'r','\u0158':'r',
+        '\u0111':'d','\u0110':'d',
+        '\u0148':'n','\u0147':'n','\u0144':'n','\u0143':'n',
+        '\u0165':'t','\u0164':'t',
+        '\u011b':'e','\u011a':'e','\u0119':'e','\u0118':'e',
+        '\u0105':'a','\u0104':'a',
+        '\u016f':'u','\u016e':'u'
+      };
+
+      var STOP_WORDS = new Set([
+        'a','an','and','are','as','at','be','but','by','for','from','had','has','have','he',
+        'her','his','how','i','if','in','into','is','it','its','just','let','may','me','my',
+        'no','nor','not','of','on','or','our','own','say','she','so','some','than','that',
+        'the','their','them','then','there','these','they','this','to','us','was','we',
+        'were','what','when','where','which','who','why','will','with','would','you','your'
+      ]);
+
+      function transliterate(str) {
+        return str.split('').map(function (ch) {
+          return TRANSLITERATE[ch] || ch;
+        }).join('');
+      }
+
+      function generateSlug(title) {
+        var slug = transliterate(title);
+        slug = slug.toLowerCase();
+
+        // Replace non-alphanumeric with separator
+        slug = slug.replace(/[^a-z0-9]+/g, currentSep);
+
+        // Remove stop words if enabled
+        if (removeStopWordsCheck.checked) {
+          var parts = slug.split(currentSep).filter(function (w) {
+            return w.length > 0 && !STOP_WORDS.has(w);
+          });
+          slug = parts.join(currentSep);
+        }
+
+        // Collapse multiple separators
+        var sepRegex = new RegExp('\\' + currentSep + '+', 'g');
+        slug = slug.replace(sepRegex, currentSep);
+
+        // Trim leading/trailing separators
+        var trimRegex = new RegExp('^\\' + currentSep + '+|\\' + currentSep + '+$', 'g');
+        slug = slug.replace(trimRegex, '');
+
+        // Max length (truncate at word boundary if possible)
+        var maxLen = parseInt(maxLengthInput.value, 10) || 0;
+        if (maxLen > 0 && slug.length > maxLen) {
+          slug = slug.substring(0, maxLen);
+          // Try to break at last separator
+          var lastSep = slug.lastIndexOf(currentSep);
+          if (lastSep > maxLen * 0.5) {
+            slug = slug.substring(0, lastSep);
+          }
+          // Trim trailing separator
+          slug = slug.replace(new RegExp('\\' + currentSep + '+$'), '');
+        }
+
+        return slug;
+      }
+
+      function process() {
+        var text = input.value;
+        if (!text.trim()) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter titles above to generate slugs.';
+          return;
+        }
+
+        var lines = text.split('\n');
+        var slugs = [];
+        lines.forEach(function (line) {
+          if (line.trim()) {
+            slugs.push(generateSlug(line.trim()));
+          }
+        });
+
+        output.textContent = slugs.join('\n');
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Generated ' + slugs.length + ' slug' + (slugs.length !== 1 ? 's' : '');
+
+        DT.trackTool('slug-generator');
+      }
+
+      // Live processing with debounce
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+      maxLengthInput.addEventListener('input', debouncedProcess);
+      removeStopWordsCheck.addEventListener('change', process);
+
+      // Separator chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentSep = chip.getAttribute('data-sep');
+          process();
+        });
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Download
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.downloadText(text, 'slugs.txt', 'text/plain');
+      });
+
+      // Clear
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      // Try Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = 'My Awesome Blog Post! (2024)\nCaf\u00e9 & R\u00e9sum\u00e9\n10 Tips for Better SEO';
+        process();
+      });
+
+      // Allow tab key in textarea
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

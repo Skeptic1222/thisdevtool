@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>.env Redactor — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Redact sensitive values from .env files before sharing. Free .env redactor with multiple modes: full redaction, keys only, and partial masking. No signup, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/env-redactor.html">
+  <meta property="og:title" content=".env Redactor — DevToolbox">
+  <meta property="og:description" content="Free online .env file redactor. Safely remove or mask sensitive values before sharing configuration files. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/env-redactor.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": ".env Redactor",
+    "url": "https://thisdevtool.com/tools/env-redactor.html",
+    "description": "Redact sensitive values from .env files before sharing. Free, private, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is an .env file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An .env file (dotenv file) is a simple text file that stores environment variables as key-value pairs, one per line. It is used by applications to configure settings like database credentials, API keys, secret tokens, and service URLs without hardcoding them in source code. Common formats include KEY=VALUE, with support for comments (#) and quoted values."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my .env data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This .env redactor runs 100% in your browser using JavaScript. Your environment variables and secrets never leave your machine. There is no server-side processing, no logging, and no data collection. This is critical for a tool that handles sensitive credentials."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between the three redaction modes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Redact Values replaces all values with [REDACTED], preserving keys and structure. Keys Only strips values entirely, showing only the key names so recipients know what variables are needed. Mask Partial shows the first and last character of each value with asterisks in between (e.g., s*****t), giving a hint of the value without exposing the full secret."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool detect sensitive keys automatically?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The redactor highlights keys that match common secret patterns including API_KEY, SECRET, TOKEN, PASSWORD, CREDENTIAL, AUTH, PRIVATE, and similar names. All values are redacted regardless of key name, but the highlighted keys help you verify that sensitive variables are present and being protected."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this to share .env templates with my team?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The Keys Only mode is perfect for creating .env templates. It produces a clean list of required environment variable names that team members can fill in with their own values. Download the result as a .env.example file and commit it to your repository so new contributors know exactly which variables to configure."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>.env Redactor</h1>
+          <p class="tool-subtitle">Redact sensitive values from .env files before sharing. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="redact">Redact Values</button>
+            <button class="option-chip" data-mode="keys">Keys Only</button>
+            <button class="option-chip" data-mode="mask">Mask Partial</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="envInput" rows="16" placeholder="# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=myapp_production
+DB_USER=admin
+DB_PASSWORD=super_secret_password_123
+
+# API Keys
+STRIPE_SECRET_KEY=sk_live_abc123def456ghi789
+STRIPE_PUBLISHABLE_KEY=pk_live_xyz987uvw654rst321
+OPENAI_API_KEY=sk-proj-abcdefghijklmnop
+
+# Auth
+JWT_SECRET=my-ultra-secret-jwt-signing-key
+SESSION_SECRET=another_long_secret_value
+
+# Services
+REDIS_URL=redis://:password@redis.example.com:6379
+DATABASE_URL=&quot;postgresql://admin:secret@db.example.com:5432/myapp&quot;
+SMTP_PASSWORD='email_pass_123'
+
+# App Config
+NODE_ENV=production
+PORT=3000
+APP_URL=https://myapp.example.com" spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="envOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste your .env file above to redact sensitive values.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the .env Redactor</h2>
+          <ol>
+            <li><strong>Paste your .env file</strong> into the input area on the left (or top on mobile).</li>
+            <li><strong>Choose a redaction mode</strong> — "Redact Values" replaces all values with [REDACTED], "Keys Only" shows just the variable names, and "Mask Partial" reveals the first and last character with asterisks in between.</li>
+            <li><strong>View the result</strong> — the redacted output appears instantly on the right with a count of redacted values in the status bar.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output to copy the redacted content or download it as a .env file safe to share.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>The .env redactor strips sensitive information from environment variable files so you can safely share your configuration structure with team members, in bug reports, documentation, or Stack Overflow questions. It parses the standard .env file format, identifies key-value pairs, preserves comments and blank lines, and replaces values using your chosen redaction method. The entire process happens in your browser with zero network requests, making it safe to use with production credentials, API keys, and database passwords.</p>
+
+          <h3>Features</h3>
+          <ul>
+            <li><strong>Three redaction modes</strong> — full redaction, keys only, and partial masking to suit different sharing scenarios</li>
+            <li><strong>Secret pattern detection</strong> — automatically identifies keys containing API_KEY, SECRET, TOKEN, PASSWORD, CREDENTIAL, AUTH, and PRIVATE</li>
+            <li><strong>Comment preservation</strong> — comments and blank lines are kept in the output to maintain file organization</li>
+            <li><strong>Quoted value handling</strong> — correctly parses values wrapped in single or double quotes</li>
+            <li><strong>Live redaction</strong> — output updates as you type with a 150ms debounce</li>
+            <li><strong>Privacy</strong> — 100% client-side processing, your secrets never leave your browser</li>
+          </ul>
+
+          <h3>Redaction Modes Explained</h3>
+          <p>The <strong>Redact Values</strong> mode replaces every value with the string <code>[REDACTED]</code>. This is the safest option and is ideal when you need to share the full structure of your configuration file, including key names, comments, and ordering, without revealing any actual values. Recipients can see exactly which environment variables are needed and add their own values.</p>
+          <p>The <strong>Keys Only</strong> mode strips values entirely, producing output like <code>DB_HOST=</code>. This creates a clean .env template that serves as documentation for required variables. It is perfect for generating <code>.env.example</code> files to commit to your repository, following the twelve-factor app methodology of keeping configuration in the environment.</p>
+          <p>The <strong>Mask Partial</strong> mode reveals the first and last character of each value with asterisks in between. For example, <code>super_secret</code> becomes <code>s**********t</code>. This gives a hint of the value format without exposing the full secret, which can be useful for debugging or verifying that the correct credentials are being used without revealing them completely. Values shorter than three characters are fully masked.</p>
+
+          <h3>Why Redact .env Files?</h3>
+          <p>Environment variable files frequently contain highly sensitive data: database passwords, API keys with billing access, JWT signing secrets, OAuth client secrets, and encryption keys. Accidentally sharing these values can lead to unauthorized access, data breaches, unexpected charges from cloud providers, and compromised user accounts. The .env redactor provides a quick, reliable way to strip this sensitive data before sharing. Unlike manual editing, which is error-prone and tedious, automated redaction ensures every value is handled consistently.</p>
+
+          <h3>Common Secret Patterns</h3>
+          <p>The tool automatically detects keys that are likely to contain sensitive values. This includes any key containing the words SECRET, KEY, TOKEN, PASSWORD, PASS, CREDENTIAL, AUTH, PRIVATE, or CERTIFICATE. It also recognizes common specific patterns like DATABASE_URL, REDIS_URL, SMTP credentials, and AWS/GCP/Azure service credentials. While all values are redacted regardless of key name, the detection helps you verify that sensitive variables are present and being protected in your output. For related security tools, check out our <a href="/tools/hash-generator.html">Hash Generator</a> for creating checksums, <a href="/tools/password-generator.html">Password Generator</a> for strong secrets, and <a href="/tools/base64.html">Base64 Encoder</a> for encoding values.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is an .env file?</button>
+            <div class="faq-answer">An .env file (dotenv file) is a simple text file that stores environment variables as key-value pairs, one per line. It is used by applications to configure settings like database credentials, API keys, secret tokens, and service URLs without hardcoding them in source code. Common formats include KEY=VALUE, with support for comments (#) and quoted values.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my .env data sent to a server?</button>
+            <div class="faq-answer">No. This .env redactor runs 100% in your browser using JavaScript. Your environment variables and secrets never leave your machine. There is no server-side processing, no logging, and no data collection. This is critical for a tool that handles sensitive credentials.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between the three redaction modes?</button>
+            <div class="faq-answer">Redact Values replaces all values with [REDACTED], preserving keys and structure. Keys Only strips values entirely, showing only the key names so recipients know what variables are needed. Mask Partial shows the first and last character of each value with asterisks in between (e.g., s*****t), giving a hint of the value without exposing the full secret.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does this tool detect sensitive keys automatically?</button>
+            <div class="faq-answer">Yes. The redactor highlights keys that match common secret patterns including API_KEY, SECRET, TOKEN, PASSWORD, CREDENTIAL, AUTH, PRIVATE, and similar names. All values are redacted regardless of key name, but the highlighted keys help you verify that sensitive variables are present and being protected.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use this to share .env templates with my team?</button>
+            <div class="faq-answer">Yes. The Keys Only mode is perfect for creating .env templates. It produces a clean list of required environment variable names that team members can fill in with their own values. Download the result as a .env.example file and commit it to your repository so new contributors know exactly which variables to configure.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('envInput');
+      var output = document.getElementById('envOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'redact';
+
+      // Secret key patterns
+      var SECRET_PATTERNS = /(?:SECRET|KEY|TOKEN|PASSWORD|PASS|CREDENTIAL|AUTH|PRIVATE|CERTIFICATE|_URL|CONNECTION_STRING|SIGNING|ENCRYPT)/i;
+
+      function parseLine(line) {
+        // Returns { type, key, value, raw }
+        var trimmed = line.trim();
+
+        // Empty line
+        if (trimmed === '') return { type: 'empty', raw: line };
+
+        // Comment
+        if (trimmed.charAt(0) === '#') return { type: 'comment', raw: line };
+
+        // Key=value
+        var eqIdx = trimmed.indexOf('=');
+        if (eqIdx === -1) return { type: 'other', raw: line };
+
+        var key = trimmed.substring(0, eqIdx).trim();
+        var value = trimmed.substring(eqIdx + 1);
+
+        // Handle quoted values
+        var unquoted = value.trim();
+        var quote = '';
+        if ((unquoted.charAt(0) === '"' && unquoted.charAt(unquoted.length - 1) === '"') ||
+            (unquoted.charAt(0) === "'" && unquoted.charAt(unquoted.length - 1) === "'")) {
+          quote = unquoted.charAt(0);
+          unquoted = unquoted.substring(1, unquoted.length - 1);
+        }
+
+        return {
+          type: 'keyvalue',
+          key: key,
+          value: unquoted,
+          quote: quote,
+          isSensitive: SECRET_PATTERNS.test(key),
+          raw: line
+        };
+      }
+
+      function redactValue(value, mode, quote) {
+        quote = quote || '';
+        switch (mode) {
+          case 'redact':
+            return quote + '[REDACTED]' + quote;
+          case 'keys':
+            return '';
+          case 'mask':
+            if (value.length <= 2) {
+              return quote + '*'.repeat(value.length || 1) + quote;
+            }
+            var first = value.charAt(0);
+            var last = value.charAt(value.length - 1);
+            var middle = '*'.repeat(Math.min(value.length - 2, 8));
+            return quote + first + middle + last + quote;
+          default:
+            return quote + '[REDACTED]' + quote;
+        }
+      }
+
+      function process() {
+        var raw = input.value;
+        if (!raw.trim()) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste your .env file above to redact sensitive values.';
+          return;
+        }
+
+        var lines = raw.split('\n');
+        var resultLines = [];
+        var totalValues = 0;
+        var redactedCount = 0;
+        var sensitiveCount = 0;
+
+        lines.forEach(function (line) {
+          var parsed = parseLine(line);
+
+          if (parsed.type === 'keyvalue') {
+            totalValues++;
+            redactedCount++;
+            if (parsed.isSensitive) sensitiveCount++;
+
+            var redacted = redactValue(parsed.value, currentMode, parsed.quote);
+            resultLines.push(parsed.key + '=' + redacted);
+          } else {
+            resultLines.push(parsed.raw);
+          }
+        });
+
+        output.textContent = resultLines.join('\n');
+
+        statusBar.className = 'status-bar valid';
+        var msg = 'Redacted ' + redactedCount + ' of ' + totalValues + ' values \u2014 safe to share';
+        if (sensitiveCount > 0) {
+          msg += ' (' + sensitiveCount + ' sensitive ' + (sensitiveCount === 1 ? 'key' : 'keys') + ' detected)';
+        }
+        statusBar.textContent = msg;
+
+        DT.trackTool('env-redactor');
+      }
+
+      // Live processing with debounce
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      // Mode chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Download
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.downloadText(text, 'redacted.env', 'text/plain');
+      });
+
+      // Clear
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      // Try Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = '# Application Config\nAPP_NAME=DevToolbox\nAPP_ENV=production\nAPP_DEBUG=false\n\n# Database\nDB_HOST=db.example.com\nDB_PASSWORD=super_secret_pass_123\nDB_NAME=devtoolbox\n\n# API Keys\nSTRIPE_SECRET_KEY=sk_live_abc123xyz\nAWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE\nAWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\nSENDGRID_API_KEY=SG.abc123.xyz789';
+        process();
+      });
+
+      // Allow tab key in textarea
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

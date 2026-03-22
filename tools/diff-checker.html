@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diff Checker — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Compare two texts and find differences instantly. Line-by-line, word, and character diff with color-coded output. Free, no signup, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/diff-checker.html">
+  <meta property="og:title" content="Diff Checker — DevToolbox">
+  <meta property="og:description" content="Free online diff checker. Compare texts with line, word, and character-level diffing. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/diff-checker.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Diff Checker",
+    "url": "https://thisdevtool.com/tools/diff-checker.html",
+    "description": "Compare two texts and find differences instantly. Line, word, and character diff. Free, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a diff checker?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A diff checker is a tool that compares two pieces of text and highlights the differences between them. It shows which lines, words, or characters were added, removed, or changed. Diff checkers are essential for code review, document comparison, and version tracking."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my text data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This diff checker runs entirely in your browser using JavaScript. Your text never leaves your device. There is no server-side processing, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between line diff, word diff, and character diff?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Line diff compares text line by line and highlights entire lines that differ. Word diff breaks each changed line into individual words and highlights only the specific words that changed. Character diff provides the finest granularity, highlighting individual character-level changes within words. Use line diff for code, word diff for prose, and character diff for spotting typos."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the Ignore Whitespace option do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When Ignore Whitespace is enabled, the diff checker normalizes all whitespace (spaces, tabs, multiple spaces) before comparing. This means differences in indentation, trailing spaces, or spacing between words will not be flagged as changes. This is useful when comparing code that may have been reformatted."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I copy the diff output?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Click the Copy button to copy the diff output in a unified diff text format. Lines prefixed with + are additions and lines prefixed with - are deletions. This format is compatible with most version control tools and code review systems."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .diff-output { font-family: 'SF Mono', 'Consolas', 'Monaco', monospace; font-size: 0.85rem; line-height: 1.6; border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; min-height: 200px; overflow-x: auto; background: var(--bg-card); }
+    .diff-line { display: flex; gap: 0; }
+    .diff-line-num { min-width: 3rem; text-align: right; padding-right: 0.75rem; color: var(--text-secondary); user-select: none; flex-shrink: 0; }
+    .diff-line-content { flex: 1; white-space: pre-wrap; word-break: break-all; padding: 0 0.5rem; }
+    .diff-added { background: #d4edda; color: #155724; }
+    .diff-removed { background: #f8d7da; color: #721c24; }
+    .diff-added-word { background: #a3d9a5; border-radius: 2px; padding: 0 1px; }
+    .diff-removed-word { background: #f1a9a0; border-radius: 2px; padding: 0 1px; }
+    [data-theme="dark"] .diff-added { background: #1a3a2a; color: #a3d9a5; }
+    [data-theme="dark"] .diff-removed { background: #3a1a1a; color: #f1a9a0; }
+    [data-theme="dark"] .diff-added-word { background: #2a5a3a; }
+    [data-theme="dark"] .diff-removed-word { background: #5a2a2a; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Diff Checker</h1>
+          <p class="tool-subtitle">Compare two texts and see the differences highlighted. Line, word, or character level. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="line">Line Diff</button>
+            <button class="option-chip" data-mode="word">Word Diff</button>
+            <button class="option-chip" data-mode="char">Character Diff</button>
+            <button class="option-chip" data-mode="ignore-ws">Ignore Whitespace</button>
+          </div>
+
+          <!-- Two Input Areas -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Original</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearOriginal">Clear</button>
+              </div>
+              <textarea id="originalInput" rows="16" placeholder="Paste original text..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Modified</span>
+                <button class="btn btn-sm btn-secondary" id="clearModified">Clear</button>
+              </div>
+              <textarea id="modifiedInput" rows="16" placeholder="Paste modified text..." spellcheck="false"></textarea>
+            </div>
+          </div>
+
+          <!-- Diff Output -->
+          <div style="margin-top:1rem;">
+            <div class="pane-label">
+              <span>Diff Output</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              </div>
+            </div>
+            <div class="diff-output" id="diffOutput"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste text in both fields to compare.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Diff Checker</h2>
+          <ol>
+            <li><strong>Paste original text</strong> into the left (or top) input area.</li>
+            <li><strong>Paste modified text</strong> into the right (or bottom) input area.</li>
+            <li><strong>Choose a diff mode</strong> — Line Diff (default), Word Diff, Character Diff, or Ignore Whitespace.</li>
+            <li><strong>View the result</strong> — added lines appear in green, removed lines in red, unchanged lines in the default color.</li>
+            <li><strong>Copy the output</strong> — click Copy to get the unified diff as plain text.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>This diff checker compares two blocks of text and produces a color-coded visualization of the differences. It uses a longest common subsequence (LCS) algorithm to determine the minimal set of changes needed to transform the original text into the modified text. The output clearly marks additions, deletions, and unchanged content so you can quickly identify what changed.</p>
+
+          <h3>Features</h3>
+          <ul>
+            <li><strong>Line-level diffing</strong> — compares text line by line, perfect for code and configuration files</li>
+            <li><strong>Word-level diffing</strong> — highlights individual word changes within lines, ideal for documents and prose</li>
+            <li><strong>Character-level diffing</strong> — finest granularity, highlights every character difference</li>
+            <li><strong>Ignore whitespace</strong> — normalizes spacing before comparing, useful when only content matters</li>
+            <li><strong>Line numbers</strong> — both original and modified line numbers displayed alongside the diff</li>
+            <li><strong>Privacy</strong> — everything runs in your browser, no data sent anywhere</li>
+          </ul>
+
+          <h3>Diff Algorithms Explained</h3>
+          <p>The core of any diff tool is the algorithm used to determine the <strong>longest common subsequence</strong> (LCS) between two sequences. The LCS represents the portions of text that are identical in both inputs. Once the LCS is computed, everything not in the LCS is either an addition (in the modified text but not the original) or a deletion (in the original but not the modified).</p>
+
+          <h3>When to Use Each Diff Mode</h3>
+          <p><strong>Line Diff</strong> is best for comparing source code, log files, or any structured text where changes typically affect entire lines. <strong>Word Diff</strong> works well for natural language text, documentation, and content where individual word changes matter. <strong>Character Diff</strong> is useful for spotting typos, single-character changes, or comparing very similar strings. <strong>Ignore Whitespace</strong> is invaluable when comparing code that has been reformatted with different indentation styles.</p>
+
+          <h3>Common Use Cases</h3>
+          <p>Developers use diff checkers for <strong>code review</strong> (comparing old and new versions of code), <strong>configuration auditing</strong> (detecting changes in config files), <strong>content editing</strong> (tracking changes in articles or documentation), <strong>debugging</strong> (comparing expected vs. actual output), and <strong>merge conflict resolution</strong> (understanding conflicting changes). This tool gives you instant access to all these capabilities without installing any software. For code formatting before comparing, try our <a href="/tools/json-formatter.html">JSON Formatter</a>, <a href="/tools/markdown-preview.html">Markdown Preview</a>, or <a href="/tools/case-converter.html">Case Converter</a>.</p>
+
+          <h3>Understanding the Output</h3>
+          <p>In the diff output, <span style="background:#d4edda;padding:0 4px;">green lines</span> represent additions (text that exists in the modified version but not the original). <span style="background:#f8d7da;padding:0 4px;">Red lines</span> represent deletions (text that was in the original but removed in the modified version). Unmarked lines are unchanged and provide context for the changes around them.</p>
+
+          <h3>Unified Diff Format</h3>
+          <p>When you copy the diff output, it follows the unified diff format used by Git and most version control systems. Lines beginning with <code>+</code> were added, lines beginning with <code>-</code> were removed, and unmarked lines provide context. This format can be shared with teammates or saved for later reference.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a diff checker?</button>
+            <div class="faq-answer">A diff checker is a tool that compares two pieces of text and highlights the differences between them. It shows which lines, words, or characters were added, removed, or changed. Diff checkers are essential for code review, document comparison, and version tracking.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my text data sent to a server?</button>
+            <div class="faq-answer">No. This diff checker runs entirely in your browser using JavaScript. Your text never leaves your device. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between line diff, word diff, and character diff?</button>
+            <div class="faq-answer">Line diff compares text line by line and highlights entire lines that differ. Word diff breaks each changed line into individual words and highlights only the specific words that changed. Character diff provides the finest granularity, highlighting individual character-level changes within words. Use line diff for code, word diff for prose, and character diff for spotting typos.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does the Ignore Whitespace option do?</button>
+            <div class="faq-answer">When Ignore Whitespace is enabled, the diff checker normalizes all whitespace (spaces, tabs, multiple spaces) before comparing. This means differences in indentation, trailing spaces, or spacing between words will not be flagged as changes. This is useful when comparing code that may have been reformatted.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I copy the diff output?</button>
+            <div class="faq-answer">Yes. Click the Copy button to copy the diff output in a unified diff text format. Lines prefixed with + are additions and lines prefixed with - are deletions. This format is compatible with most version control tools and code review systems.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/sql-formatter.html">SQL Formatter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var originalInput = document.getElementById('originalInput');
+      var modifiedInput = document.getElementById('modifiedInput');
+      var diffOutput = document.getElementById('diffOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'line';
+      var ignoreWS = false;
+      var lastDiffText = '';
+
+      // LCS-based diff for arrays of tokens
+      function lcs(a, b) {
+        var m = a.length, n = b.length;
+        var dp = [];
+        var i, j;
+        for (i = 0; i <= m; i++) {
+          dp[i] = [];
+          for (j = 0; j <= n; j++) {
+            dp[i][j] = 0;
+          }
+        }
+        for (i = 1; i <= m; i++) {
+          for (j = 1; j <= n; j++) {
+            if (a[i - 1] === b[j - 1]) {
+              dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+              dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+          }
+        }
+        // Backtrack to get diff
+        var result = [];
+        i = m; j = n;
+        while (i > 0 || j > 0) {
+          if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
+            result.unshift({ type: 'equal', value: a[i - 1] });
+            i--; j--;
+          } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+            result.unshift({ type: 'add', value: b[j - 1] });
+            j--;
+          } else {
+            result.unshift({ type: 'remove', value: a[i - 1] });
+            i--;
+          }
+        }
+        return result;
+      }
+
+      function normalizeWS(str) {
+        return str.replace(/\s+/g, ' ').trim();
+      }
+
+      function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function wordDiffLine(oldLine, newLine) {
+        var oldWords = oldLine.split(/(\s+)/);
+        var newWords = newLine.split(/(\s+)/);
+        var diff = lcs(oldWords, newWords);
+        var removedHtml = '';
+        var addedHtml = '';
+        diff.forEach(function (d) {
+          if (d.type === 'equal') {
+            removedHtml += escapeHtml(d.value);
+            addedHtml += escapeHtml(d.value);
+          } else if (d.type === 'remove') {
+            removedHtml += '<span class="diff-removed-word">' + escapeHtml(d.value) + '</span>';
+          } else {
+            addedHtml += '<span class="diff-added-word">' + escapeHtml(d.value) + '</span>';
+          }
+        });
+        return { removed: removedHtml, added: addedHtml };
+      }
+
+      function charDiffLine(oldLine, newLine) {
+        var oldChars = oldLine.split('');
+        var newChars = newLine.split('');
+        var diff = lcs(oldChars, newChars);
+        var removedHtml = '';
+        var addedHtml = '';
+        diff.forEach(function (d) {
+          if (d.type === 'equal') {
+            removedHtml += escapeHtml(d.value);
+            addedHtml += escapeHtml(d.value);
+          } else if (d.type === 'remove') {
+            removedHtml += '<span class="diff-removed-word">' + escapeHtml(d.value) + '</span>';
+          } else {
+            addedHtml += '<span class="diff-added-word">' + escapeHtml(d.value) + '</span>';
+          }
+        });
+        return { removed: removedHtml, added: addedHtml };
+      }
+
+      function process() {
+        var origText = originalInput.value;
+        var modText = modifiedInput.value;
+
+        if (!origText && !modText) {
+          diffOutput.innerHTML = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste text in both fields to compare.';
+          lastDiffText = '';
+          return;
+        }
+
+        var origLines = origText.split('\n');
+        var modLines = modText.split('\n');
+
+        var cmpOrig = origLines;
+        var cmpMod = modLines;
+        if (ignoreWS) {
+          cmpOrig = origLines.map(normalizeWS);
+          cmpMod = modLines.map(normalizeWS);
+        }
+
+        var diff = lcs(cmpOrig, cmpMod);
+
+        var html = '';
+        var unifiedText = '';
+        var additions = 0, deletions = 0, unchanged = 0;
+        var origNum = 0, modNum = 0;
+
+        diff.forEach(function (d) {
+          if (d.type === 'equal') {
+            origNum++; modNum++;
+            unchanged++;
+            var idx = cmpOrig.indexOf(d.value, origNum - 1);
+            var displayLine = origLines[origNum - 1] || d.value;
+            html += '<div class="diff-line">' +
+              '<span class="diff-line-num">' + origNum + '</span>' +
+              '<span class="diff-line-num">' + modNum + '</span>' +
+              '<span class="diff-line-content">' + escapeHtml(displayLine) + '</span></div>';
+            unifiedText += '  ' + displayLine + '\n';
+          } else if (d.type === 'remove') {
+            origNum++;
+            deletions++;
+            var remLine = origLines[origNum - 1] || d.value;
+            if ((currentMode === 'word' || currentMode === 'char') && diff.some(function (dd, i) { return dd.type === 'add'; })) {
+              html += '<div class="diff-line diff-removed">' +
+                '<span class="diff-line-num">' + origNum + '</span>' +
+                '<span class="diff-line-num"></span>' +
+                '<span class="diff-line-content">- ' + escapeHtml(remLine) + '</span></div>';
+            } else {
+              html += '<div class="diff-line diff-removed">' +
+                '<span class="diff-line-num">' + origNum + '</span>' +
+                '<span class="diff-line-num"></span>' +
+                '<span class="diff-line-content">- ' + escapeHtml(remLine) + '</span></div>';
+            }
+            unifiedText += '- ' + remLine + '\n';
+          } else {
+            modNum++;
+            additions++;
+            var addLine = modLines[modNum - 1] || d.value;
+            html += '<div class="diff-line diff-added">' +
+              '<span class="diff-line-num"></span>' +
+              '<span class="diff-line-num">' + modNum + '</span>' +
+              '<span class="diff-line-content">+ ' + escapeHtml(addLine) + '</span></div>';
+            unifiedText += '+ ' + addLine + '\n';
+          }
+        });
+
+        // Rebuild with word/char highlighting for changed lines
+        if (currentMode === 'word' || currentMode === 'char') {
+          html = '';
+          unifiedText = '';
+          origNum = 0; modNum = 0;
+          var i = 0;
+          while (i < diff.length) {
+            var d = diff[i];
+            if (d.type === 'equal') {
+              origNum++; modNum++;
+              var displayLine = origLines[origNum - 1] || d.value;
+              html += '<div class="diff-line">' +
+                '<span class="diff-line-num">' + origNum + '</span>' +
+                '<span class="diff-line-num">' + modNum + '</span>' +
+                '<span class="diff-line-content">' + escapeHtml(displayLine) + '</span></div>';
+              unifiedText += '  ' + displayLine + '\n';
+              i++;
+            } else if (d.type === 'remove' && i + 1 < diff.length && diff[i + 1].type === 'add') {
+              origNum++; modNum++;
+              var oldLine = origLines[origNum - 1] || d.value;
+              var newLine = modLines[modNum - 1] || diff[i + 1].value;
+              var detail = currentMode === 'word' ? wordDiffLine(oldLine, newLine) : charDiffLine(oldLine, newLine);
+              html += '<div class="diff-line diff-removed">' +
+                '<span class="diff-line-num">' + origNum + '</span>' +
+                '<span class="diff-line-num"></span>' +
+                '<span class="diff-line-content">- ' + detail.removed + '</span></div>';
+              html += '<div class="diff-line diff-added">' +
+                '<span class="diff-line-num"></span>' +
+                '<span class="diff-line-num">' + modNum + '</span>' +
+                '<span class="diff-line-content">+ ' + detail.added + '</span></div>';
+              unifiedText += '- ' + oldLine + '\n+ ' + newLine + '\n';
+              i += 2;
+            } else if (d.type === 'remove') {
+              origNum++;
+              var remLine = origLines[origNum - 1] || d.value;
+              html += '<div class="diff-line diff-removed">' +
+                '<span class="diff-line-num">' + origNum + '</span>' +
+                '<span class="diff-line-num"></span>' +
+                '<span class="diff-line-content">- ' + escapeHtml(remLine) + '</span></div>';
+              unifiedText += '- ' + remLine + '\n';
+              i++;
+            } else {
+              modNum++;
+              var addLine = modLines[modNum - 1] || d.value;
+              html += '<div class="diff-line diff-added">' +
+                '<span class="diff-line-num"></span>' +
+                '<span class="diff-line-num">' + modNum + '</span>' +
+                '<span class="diff-line-content">+ ' + escapeHtml(addLine) + '</span></div>';
+              unifiedText += '+ ' + addLine + '\n';
+              i++;
+            }
+          }
+        }
+
+        diffOutput.innerHTML = html;
+        lastDiffText = unifiedText;
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = additions + ' addition' + (additions !== 1 ? 's' : '') + ', ' +
+          deletions + ' deletion' + (deletions !== 1 ? 's' : '') + ', ' +
+          unchanged + ' unchanged line' + (unchanged !== 1 ? 's' : '');
+
+        DT.trackTool('diff-checker');
+      }
+
+      // Live processing with debounce
+      var debouncedProcess = DT.debounce(process, 150);
+      originalInput.addEventListener('input', debouncedProcess);
+      modifiedInput.addEventListener('input', debouncedProcess);
+
+      // Mode chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var mode = chip.getAttribute('data-mode');
+          if (mode === 'ignore-ws') {
+            ignoreWS = !ignoreWS;
+            chip.classList.toggle('active', ignoreWS);
+          } else {
+            document.querySelectorAll('.option-chip:not([data-mode="ignore-ws"])').forEach(function (c) {
+              c.classList.remove('active');
+            });
+            chip.classList.add('active');
+            currentMode = mode;
+          }
+          process();
+        });
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (lastDiffText) DT.copyToClipboard(lastDiffText, this);
+      });
+
+      // Clear buttons
+      document.getElementById('clearOriginal').addEventListener('click', function () {
+        originalInput.value = '';
+        process();
+        originalInput.focus();
+      });
+      document.getElementById('clearModified').addEventListener('click', function () {
+        modifiedInput.value = '';
+        process();
+        modifiedInput.focus();
+      });
+
+      // Try Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        originalInput.value = 'function greet(name) {\n  console.log("Hello, " + name);\n  return true;\n}';
+        modifiedInput.value = 'function greet(name, greeting) {\n  const msg = greeting || "Hello";\n  console.log(msg + ", " + name + "!");\n  return msg;\n}';
+        process();
+      });
+
+      // Tab key support for both textareas
+      [originalInput, modifiedInput].forEach(function (ta) {
+        ta.addEventListener('keydown', function (e) {
+          if (e.key === 'Tab') {
+            e.preventDefault();
+            var start = this.selectionStart;
+            var end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 2;
+            debouncedProcess();
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

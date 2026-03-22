@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JWT Decoder — Free Online JSON Web Token Tool | DevToolbox</title>
+  <meta name="description" content="Decode and inspect JSON Web Tokens online. Free JWT debugger — view header, payload, claims, and expiration. No validation, no signup, runs in browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/jwt-decoder.html">
+  <meta property="og:title" content="JWT Decoder — DevToolbox">
+  <meta property="og:description" content="Decode and inspect JSON Web Tokens with expiration checking and claim analysis. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/jwt-decoder.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JWT Decoder",
+    "url": "https://thisdevtool.com/tools/jwt-decoder.html",
+    "description": "Decode JSON Web Tokens online. View header, payload, expiration, and claims. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a JSON Web Token (JWT)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A JSON Web Token (JWT) is a compact, URL-safe token format used for securely transmitting information between parties as a JSON object. JWTs consist of three Base64url-encoded parts separated by dots: a header (algorithm and type), a payload (claims and data), and a signature (for verification). JWTs are widely used for authentication and authorization in web applications."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool validate JWT signatures?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool only decodes and displays the contents of a JWT. It does NOT validate the signature. Anyone can create a JWT with any payload, so you should never trust a JWT's contents without verifying its signature on your server using the appropriate secret or public key."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my JWT token sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This JWT decoder runs 100% in your browser using JavaScript. Your token never leaves your machine. There is no server-side processing, no logging, and no data collection. However, be cautious about pasting production tokens — treat JWTs like passwords."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are JWT claims like exp, iat, and nbf?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JWT claims are statements about the token subject. The exp (expiration) claim is a Unix timestamp after which the token should be rejected. The iat (issued at) claim records when the token was created. The nbf (not before) claim specifies the earliest time the token should be accepted. These time-based claims help ensure tokens are only valid during their intended window."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my JWT have three parts separated by dots?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A JWT consists of three Base64url-encoded parts separated by dots: the header (specifies the algorithm and token type), the payload (contains the claims and data), and the signature (created by signing the header and payload with a secret or private key). The format is: header.payload.signature."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>JWT Decoder</h1>
+          <p class="tool-subtitle">Decode and inspect JSON Web Tokens. View header, payload, and expiration. 100% client-side.</p>
+
+          <!-- Warning Banner -->
+          <div style="background:var(--warning-bg, #fef3cd);border:1px solid var(--warning-border, #ffc107);border-radius:8px;padding:12px 16px;margin-bottom:16px;color:var(--warning-text, #856404);font-size:0.95em;">
+            <strong>Warning:</strong> This tool decodes JWTs but does <strong>NOT</strong> validate signatures. Never trust a JWT without server-side signature verification.
+          </div>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="decoded">Decoded</button>
+            <button class="option-chip" data-mode="raw">Raw Parts</button>
+          </div>
+
+          <!-- Input -->
+          <div class="form-group">
+            <div class="pane-label">
+              <span>JWT Token</span>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+            <textarea id="toolInput" rows="6" placeholder="Paste your JWT token here...
+
+Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" spellcheck="false"></textarea>
+          </div>
+
+          <!-- Output Sections -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Header</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyHeaderBtn">Copy</button>
+                </div>
+              </div>
+              <div class="code-output" id="headerOutput" style="min-height:120px;"></div>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Payload</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyPayloadBtn">Copy</button>
+                </div>
+              </div>
+              <div class="code-output" id="payloadOutput" style="min-height:120px;"></div>
+            </div>
+          </div>
+
+          <!-- Signature Section -->
+          <div class="form-group" style="margin-top:12px;">
+            <div class="pane-label"><span>Signature</span></div>
+            <div class="code-output" id="signatureOutput" style="min-height:48px;"></div>
+          </div>
+
+          <!-- Time Claims -->
+          <div id="timeClaimsSection" style="display:none;margin-top:12px;">
+            <div class="pane-label"><span>Time Claims</span></div>
+            <div class="code-output" id="timeClaims" style="min-height:48px;"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a JWT token above to decode it.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the JWT Decoder</h2>
+          <ol>
+            <li><strong>Paste your JWT token</strong> into the input area above. The token should have three parts separated by dots.</li>
+            <li><strong>View the decoded header and payload</strong> — the header shows the algorithm and token type, the payload shows all claims and data.</li>
+            <li><strong>Check expiration</strong> — if the token contains <code>exp</code>, <code>iat</code>, or <code>nbf</code> claims, the Time Claims section shows human-readable dates and whether the token is expired.</li>
+            <li><strong>Switch to Raw Parts mode</strong> to see the original Base64url-encoded parts of each section.</li>
+          </ol>
+
+          <h2>Understanding JSON Web Tokens</h2>
+          <p>JSON Web Tokens (JWTs, pronounced "jots") are an open standard (RFC 7519) for securely transmitting information between parties as a compact, self-contained JSON object. JWTs are widely used in modern web applications for authentication, authorization, and information exchange. When a user logs in, the server creates a JWT containing the user's identity and permissions, signs it with a secret key, and returns it to the client. The client includes this token in subsequent requests, and the server verifies the signature to authenticate the request.</p>
+
+          <h3>JWT Structure</h3>
+          <p>A JWT consists of three parts separated by dots (<code>.</code>):</p>
+          <ul>
+            <li><strong>Header</strong> — contains the token type (<code>"typ": "JWT"</code>) and the signing algorithm (<code>"alg": "HS256"</code>, <code>"RS256"</code>, etc.)</li>
+            <li><strong>Payload</strong> — contains the claims, which are statements about the user and additional metadata. Standard claims include <code>sub</code> (subject), <code>iss</code> (issuer), <code>exp</code> (expiration), <code>iat</code> (issued at), and <code>aud</code> (audience)</li>
+            <li><strong>Signature</strong> — created by signing the encoded header and payload with the secret or private key using the specified algorithm</li>
+          </ul>
+
+          <h3>Common JWT Claims</h3>
+          <ul>
+            <li><strong>sub</strong> (subject) — identifies the principal that is the subject of the JWT, typically a user ID</li>
+            <li><strong>iss</strong> (issuer) — identifies who issued the JWT</li>
+            <li><strong>aud</strong> (audience) — identifies the recipients the JWT is intended for</li>
+            <li><strong>exp</strong> (expiration time) — Unix timestamp after which the token must not be accepted</li>
+            <li><strong>iat</strong> (issued at) — Unix timestamp when the token was created</li>
+            <li><strong>nbf</strong> (not before) — Unix timestamp before which the token must not be accepted</li>
+            <li><strong>jti</strong> (JWT ID) — unique identifier for the token, useful for preventing token replay</li>
+          </ul>
+
+          <h3>Security Considerations</h3>
+          <p>While JWTs are convenient, they come with security considerations. Never store sensitive information in the payload, as it is only Base64-encoded and not encrypted — use our <a href="/tools/base64.html">Base64 Encoder</a> to inspect the raw encoding. Always verify the signature on the server side before trusting a token's claims. Use short expiration times and refresh tokens to limit the window of compromise if a token is stolen. Consider using the <code>HttpOnly</code> and <code>Secure</code> cookie flags when storing JWTs in cookies to prevent XSS attacks.</p>
+
+          <h3>JWT vs. Session Tokens</h3>
+          <p>Traditional session-based authentication stores session data on the server and sends only a session ID to the client. JWTs are self-contained: all necessary information is encoded in the token itself, eliminating the need for server-side session storage. This makes JWTs ideal for stateless APIs, microservice architectures, and cross-domain authentication. However, JWTs cannot be easily revoked before expiration without maintaining a server-side blacklist, which is a trade-off to consider. To format the decoded JSON payload, paste it into our <a href="/tools/json-formatter.html">JSON Formatter</a>, or convert <code>exp</code> and <code>iat</code> timestamps with the <a href="/tools/timestamp-converter.html">Timestamp Converter</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a JSON Web Token (JWT)?</button>
+            <div class="faq-answer">A JSON Web Token (JWT) is a compact, URL-safe token format used for securely transmitting information between parties as a JSON object. JWTs consist of three Base64url-encoded parts separated by dots: a header (algorithm and type), a payload (claims and data), and a signature (for verification). JWTs are widely used for authentication and authorization in web applications.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does this tool validate JWT signatures?</button>
+            <div class="faq-answer">No. This tool only decodes and displays the contents of a JWT. It does NOT validate the signature. Anyone can create a JWT with any payload, so you should never trust a JWT's contents without verifying its signature on your server using the appropriate secret or public key.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my JWT token sent to a server?</button>
+            <div class="faq-answer">No. This JWT decoder runs 100% in your browser using JavaScript. Your token never leaves your machine. There is no server-side processing, no logging, and no data collection. However, be cautious about pasting production tokens — treat JWTs like passwords.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What are JWT claims like exp, iat, and nbf?</button>
+            <div class="faq-answer">JWT claims are statements about the token subject. The exp (expiration) claim is a Unix timestamp after which the token should be rejected. The iat (issued at) claim records when the token was created. The nbf (not before) claim specifies the earliest time the token should be accepted. These time-based claims help ensure tokens are only valid during their intended window.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does my JWT have three parts separated by dots?</button>
+            <div class="faq-answer">A JWT consists of three Base64url-encoded parts separated by dots: the header (specifies the algorithm and token type), the payload (contains the claims and data), and the signature (created by signing the header and payload with a secret or private key). The format is: header.payload.signature.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('toolInput');
+      var headerOutput = document.getElementById('headerOutput');
+      var payloadOutput = document.getElementById('payloadOutput');
+      var signatureOutput = document.getElementById('signatureOutput');
+      var timeClaimsSection = document.getElementById('timeClaimsSection');
+      var timeClaims = document.getElementById('timeClaims');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'decoded';
+
+      function base64UrlDecode(str) {
+        var b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4 !== 0) b64 += '=';
+        var binaryStr = atob(b64);
+        var bytes = new Uint8Array(binaryStr.length);
+        for (var i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+        return new TextDecoder().decode(bytes);
+      }
+
+      function toHex(str) {
+        var hex = '';
+        for (var i = 0; i < str.length; i++) {
+          hex += str.charCodeAt(i).toString(16).padStart(2, '0');
+        }
+        return hex;
+      }
+
+      function formatTimestamp(ts) {
+        var d = new Date(ts * 1000);
+        return d.toUTCString() + ' (' + d.toLocaleString() + ')';
+      }
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          headerOutput.textContent = '';
+          payloadOutput.textContent = '';
+          signatureOutput.textContent = '';
+          timeClaimsSection.style.display = 'none';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste a JWT token above to decode it.';
+          return;
+        }
+
+        var parts = raw.split('.');
+        if (parts.length !== 3) {
+          headerOutput.textContent = '';
+          payloadOutput.textContent = '';
+          signatureOutput.textContent = '';
+          timeClaimsSection.style.display = 'none';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid JWT format: expected 3 dot-separated parts, found ' + parts.length + '.';
+          return;
+        }
+
+        try {
+          var headerJson, payloadJson, headerObj, payloadObj;
+
+          if (currentMode === 'decoded') {
+            headerJson = base64UrlDecode(parts[0]);
+            payloadJson = base64UrlDecode(parts[1]);
+            headerObj = JSON.parse(headerJson);
+            payloadObj = JSON.parse(payloadJson);
+            headerOutput.textContent = JSON.stringify(headerObj, null, 2);
+            payloadOutput.textContent = JSON.stringify(payloadObj, null, 2);
+          } else {
+            headerOutput.textContent = parts[0];
+            payloadJson = base64UrlDecode(parts[1]);
+            payloadObj = JSON.parse(payloadJson);
+            payloadOutput.textContent = parts[1];
+          }
+
+          // Signature
+          var sigBinary = atob(parts[2].replace(/-/g, '+').replace(/_/g, '/') + '==');
+          if (currentMode === 'decoded') {
+            signatureOutput.textContent = toHex(sigBinary);
+          } else {
+            signatureOutput.textContent = parts[2];
+          }
+
+          // Time claims
+          var hasTimeClaims = payloadObj.exp || payloadObj.iat || payloadObj.nbf;
+          if (hasTimeClaims) {
+            timeClaimsSection.style.display = 'block';
+            var timeLines = [];
+            if (payloadObj.iat) {
+              timeLines.push('Issued At (iat):   ' + formatTimestamp(payloadObj.iat));
+            }
+            if (payloadObj.nbf) {
+              timeLines.push('Not Before (nbf):  ' + formatTimestamp(payloadObj.nbf));
+            }
+            if (payloadObj.exp) {
+              var now = Math.floor(Date.now() / 1000);
+              var expDate = formatTimestamp(payloadObj.exp);
+              if (payloadObj.exp < now) {
+                timeLines.push('Expires (exp):     ' + expDate + '  [EXPIRED]');
+              } else {
+                var remaining = payloadObj.exp - now;
+                var days = Math.floor(remaining / 86400);
+                var hours = Math.floor((remaining % 86400) / 3600);
+                var mins = Math.floor((remaining % 3600) / 60);
+                var timeStr = '';
+                if (days > 0) timeStr += days + 'd ';
+                if (hours > 0) timeStr += hours + 'h ';
+                timeStr += mins + 'm remaining';
+                timeLines.push('Expires (exp):     ' + expDate + '  [' + timeStr + ']');
+              }
+            }
+            timeClaims.textContent = timeLines.join('\n');
+          } else {
+            timeClaimsSection.style.display = 'none';
+          }
+
+          // Status bar
+          if (payloadObj.exp) {
+            var nowSec = Math.floor(Date.now() / 1000);
+            if (payloadObj.exp < nowSec) {
+              statusBar.className = 'status-bar invalid';
+              statusBar.textContent = 'Valid JWT \u2014 EXPIRED (expired ' + new Date(payloadObj.exp * 1000).toLocaleString() + ')';
+            } else {
+              statusBar.className = 'status-bar valid';
+              statusBar.textContent = 'Valid JWT \u2014 expires ' + new Date(payloadObj.exp * 1000).toLocaleString();
+            }
+          } else {
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Valid JWT \u2014 no expiration claim';
+          }
+        } catch (e) {
+          headerOutput.textContent = '';
+          payloadOutput.textContent = '';
+          signatureOutput.textContent = '';
+          timeClaimsSection.style.display = 'none';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid JWT: ' + e.message;
+        }
+
+        DT.trackTool('jwt-decoder');
+      }
+
+      // Live processing with debounce
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      // Mode chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      // Copy Header
+      document.getElementById('copyHeaderBtn').addEventListener('click', function () {
+        var text = headerOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Copy Payload
+      document.getElementById('copyPayloadBtn').addEventListener('click', function () {
+        var text = payloadOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Clear
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      // Try Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MjYyMzkwMjIsInJvbGUiOiJhZG1pbiJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+        process();
+      });
+
+      // Allow tab key in textarea
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
