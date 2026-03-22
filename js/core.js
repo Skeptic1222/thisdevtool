@@ -168,7 +168,7 @@
 
   // --- Google Analytics (GA4) ---
   // Replace G-XXXXXXXXXX with your actual GA4 Measurement ID
-  var GA_ID = 'G-XXXXXXXXXX';
+  var GA_ID = 'G-4676WGM9FD';
   if (GA_ID !== 'G-XXXXXXXXXX') {
     var gaScript = document.createElement('script');
     gaScript.async = true;
