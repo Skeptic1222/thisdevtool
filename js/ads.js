@@ -1,7 +1,7 @@
 (function() {
   'use strict';
   // DevToolbox Ad Loader
-  // Currently a stub — populate with AdSense ad unit IDs after approval
+  var AD_CLIENT = 'ca-pub-5845159962709002';
 
   var AD_UNITS = {
     'top-banner': '',    // AdSense ad unit ID for top banner
@@ -9,23 +9,19 @@
     'sidebar': ''        // AdSense ad unit ID for sidebar
   };
 
-  function loadAds() {
-    // Check consent
-    var consent = window.DevToolboxConsent ? window.DevToolboxConsent.getConsent() : null;
-    if (!consent || !consent.ads) return;
+  // Always load AdSense verification script (required for site approval)
+  if (AD_CLIENT && !document.querySelector('script[src*="adsbygoogle"]')) {
+    var script = document.createElement('script');
+    script.async = true;
+    script.crossOrigin = 'anonymous';
+    script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + AD_CLIENT;
+    document.head.appendChild(script);
+  }
 
+  function loadAds() {
     // Check if ad units are configured
     var hasUnits = Object.keys(AD_UNITS).some(function(k) { return AD_UNITS[k] !== ''; });
-    if (!hasUnits) return; // No ad units configured yet
-
-    // Load AdSense script if not already loaded
-    if (!document.querySelector('script[src*="adsbygoogle"]')) {
-      var script = document.createElement('script');
-      script.async = true;
-      script.crossOrigin = 'anonymous';
-      script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
-      document.head.appendChild(script);
-    }
+    if (!hasUnits) return;
 
     // Replace placeholder ad slots with actual ad units
     document.querySelectorAll('.ad-slot[data-ad]').forEach(function(slot) {
@@ -37,7 +33,7 @@
       var ins = document.createElement('ins');
       ins.className = 'adsbygoogle';
       ins.style.display = 'block';
-      ins.setAttribute('data-ad-client', ''); // Fill after AdSense approval
+      ins.setAttribute('data-ad-client', AD_CLIENT);
       ins.setAttribute('data-ad-slot', unitId);
       ins.setAttribute('data-ad-format', 'auto');
       ins.setAttribute('data-full-width-responsive', 'true');
@@ -48,15 +44,4 @@
   }
 
   window.DevToolboxAds = { load: loadAds };
-
-  // Auto-load if consent already granted
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      var consent = window.DevToolboxConsent ? window.DevToolboxConsent.getConsent() : null;
-      if (consent && consent.ads) loadAds();
-    });
-  } else {
-    var consent = window.DevToolboxConsent ? window.DevToolboxConsent.getConsent() : null;
-    if (consent && consent.ads) loadAds();
-  }
 })();
