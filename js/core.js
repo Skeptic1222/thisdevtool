@@ -182,7 +182,7 @@
 
   // --- Cookiebot Consent ---
   // Replace XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX with your Cookiebot ID
-  var COOKIEBOT_ID = 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX';
+  var COOKIEBOT_ID = '9362730c-1d81-419b-8f5f-21130b3ab7e5';
   if (COOKIEBOT_ID !== 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX') {
     var cbScript = document.createElement('script');
     cbScript.id = 'Cookiebot';
