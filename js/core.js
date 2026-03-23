@@ -163,6 +163,147 @@
           event_label: toolName
         });
       }
+    },
+
+    // --- IndexedDB Helper ---
+    db: {
+      _db: null,
+      open: function () {
+        var self = this;
+        if (self._db) return Promise.resolve(self._db);
+        return new Promise(function (resolve, reject) {
+          var req = indexedDB.open('DevToolbox', 1);
+          req.onupgradeneeded = function (e) {
+            var db = e.target.result;
+            if (!db.objectStoreNames.contains('tool-history')) db.createObjectStore('tool-history');
+            if (!db.objectStoreNames.contains('favorites')) db.createObjectStore('favorites');
+            if (!db.objectStoreNames.contains('settings')) db.createObjectStore('settings');
+          };
+          req.onsuccess = function (e) { self._db = e.target.result; resolve(self._db); };
+          req.onerror = function () { reject(req.error); };
+        });
+      },
+      get: function (store, key) {
+        return this.open().then(function (db) {
+          return new Promise(function (resolve, reject) {
+            var tx = db.transaction(store, 'readonly');
+            var req = tx.objectStore(store).get(key);
+            req.onsuccess = function () { resolve(req.result); };
+            req.onerror = function () { reject(req.error); };
+          });
+        });
+      },
+      put: function (store, key, value) {
+        return this.open().then(function (db) {
+          return new Promise(function (resolve, reject) {
+            var tx = db.transaction(store, 'readwrite');
+            var req = tx.objectStore(store).put(value, key);
+            req.onsuccess = function () { resolve(); };
+            req.onerror = function () { reject(req.error); };
+          });
+        });
+      },
+      delete: function (store, key) {
+        return this.open().then(function (db) {
+          return new Promise(function (resolve, reject) {
+            var tx = db.transaction(store, 'readwrite');
+            var req = tx.objectStore(store).delete(key);
+            req.onsuccess = function () { resolve(); };
+            req.onerror = function () { reject(req.error); };
+          });
+        });
+      }
+    },
+
+    // --- Web Worker Spawner ---
+    runWorker: function (fn, data) {
+      return new Promise(function (resolve, reject) {
+        var blob = new Blob([
+          'self.onmessage=function(e){var r=(' + fn.toString() + ')(e.data);self.postMessage(r);}'
+        ], { type: 'application/javascript' });
+        var url = URL.createObjectURL(blob);
+        var worker = new Worker(url);
+        worker.onmessage = function (e) {
+          resolve(e.data);
+          worker.terminate();
+          URL.revokeObjectURL(url);
+        };
+        worker.onerror = function (e) {
+          reject(e);
+          worker.terminate();
+          URL.revokeObjectURL(url);
+        };
+        worker.postMessage(data);
+      });
+    },
+
+    // --- URL State Management ---
+    getParam: function (key) {
+      return new URLSearchParams(window.location.search).get(key);
+    },
+
+    setParam: function (key, value) {
+      var params = new URLSearchParams(window.location.search);
+      if (value === null || value === undefined || value === '') {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+      var qs = params.toString();
+      history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
+    },
+
+    // --- File Drag-Drop Helper ---
+    enableDragDrop: function (element, onFile, options) {
+      options = options || {};
+      var accept = options.accept || null;
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function (evt) {
+        element.addEventListener(evt, function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+      });
+      element.addEventListener('dragenter', function () {
+        element.classList.add('drag-active');
+      });
+      element.addEventListener('dragover', function () {
+        element.classList.add('drag-active');
+      });
+      element.addEventListener('dragleave', function (e) {
+        if (!element.contains(e.relatedTarget)) element.classList.remove('drag-active');
+      });
+      element.addEventListener('drop', function (e) {
+        element.classList.remove('drag-active');
+        var files = e.dataTransfer.files;
+        if (files.length > 0) {
+          if (accept && !files[0].type.match(accept)) {
+            DevToolbox.toast('Invalid file type', 'error');
+            return;
+          }
+          onFile(files[0]);
+        }
+      });
+    },
+
+    // --- Toast Notifications ---
+    toast: function (message, type, duration) {
+      type = type || 'info';
+      duration = duration || 3000;
+      var container = document.getElementById('toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+      }
+      var t = document.createElement('div');
+      t.className = 'toast toast-' + type;
+      t.textContent = message;
+      container.appendChild(t);
+      requestAnimationFrame(function () { t.classList.add('toast-show'); });
+      setTimeout(function () {
+        t.classList.remove('toast-show');
+        setTimeout(function () { t.remove(); }, 300);
+      }, duration);
     }
   };
 
@@ -200,6 +341,11 @@
     if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
 
     initFAQ();
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(function () {});
+    }
 
     // Keyboard shortcut: Ctrl+Enter to reprocess
     document.addEventListener('keydown', function (e) {
