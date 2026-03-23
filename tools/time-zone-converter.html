@@ -407,10 +407,14 @@
       var srcTz = document.getElementById('srcTz').value;
       if (!date) { setStatus('info', 'Enter a date and time to convert.'); renderResults(null); return; }
 
-      // The datetime-local value is always treated as local browser time,
+      // The datetime-local value is parsed as browser local time,
       // but we want to interpret it as the chosen srcTz.
-      // Strategy: render the datetime in srcTz and compute the offset difference.
-      var utcMs = date.getTime();
+      // Compute the offset difference between local TZ and srcTz, then adjust.
+      var localTz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      var localDate = new Date(date.toLocaleString('en-US', { timeZone: localTz }));
+      var srcDate = new Date(date.toLocaleString('en-US', { timeZone: srcTz }));
+      var offsetDiff = localDate - srcDate;
+      date = new Date(date.getTime() + offsetDiff);
 
       // Build results
       var results = DEFAULT_RESULT_TZS.map(function(iana) {

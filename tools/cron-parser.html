@@ -319,7 +319,19 @@
       var DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       var MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-      function parseField(field, min, max) {
+      var DOW_NAMES = { SUN:0, MON:1, TUE:2, WED:3, THU:4, FRI:5, SAT:6 };
+      var MON_NAMES = { JAN:1, FEB:2, MAR:3, APR:4, MAY:5, JUN:6, JUL:7, AUG:8, SEP:9, OCT:10, NOV:11, DEC:12 };
+
+      function resolveNames(field, names) {
+        return field.replace(/[A-Za-z]{3}/g, function (m) {
+          var u = m.toUpperCase();
+          return names[u] !== undefined ? String(names[u]) : m;
+        });
+      }
+
+      function parseField(field, min, max, fieldIdx) {
+        if (fieldIdx === 3) field = resolveNames(field, MON_NAMES);
+        if (fieldIdx === 4) field = resolveNames(field, DOW_NAMES);
         var values = [];
         var parts = field.split(',');
         for (var i = 0; i < parts.length; i++) {
@@ -359,11 +371,11 @@
         if (stepMatch) return 'every ' + stepMatch[1] + ' ' + FIELD_NAMES[idx].toLowerCase() + (parseInt(stepMatch[1], 10) > 1 ? 's' : '');
         if (idx === 4) {
           // Day of week: convert to names
-          var vals = parseField(field, 0, 6);
+          var vals = parseField(field, 0, 6, 4);
           if (vals) return vals.map(function (v) { return DAY_NAMES[v]; }).join(', ');
         }
         if (idx === 3) {
-          var mvals = parseField(field, 1, 12);
+          var mvals = parseField(field, 1, 12, 3);
           if (mvals) return mvals.map(function (v) { return MONTH_NAMES[v]; }).join(', ');
         }
         return field;
@@ -381,8 +393,8 @@
         } else if (hr === '*' && min !== '*') {
           parts.push('At minute ' + min + ' of every hour');
         } else if (hr !== '*' && min !== '*') {
-          var hrVals = parseField(hr, 0, 23);
-          var minVals = parseField(min, 0, 59);
+          var hrVals = parseField(hr, 0, 23, 1);
+          var minVals = parseField(min, 0, 59, 0);
           if (hrVals && minVals && hrVals.length <= 4 && minVals.length <= 4) {
             var times = [];
             for (var h = 0; h < hrVals.length; h++) {
@@ -421,7 +433,7 @@
       function getNextRuns(fields, count) {
         var parsed = [];
         for (var i = 0; i < 5; i++) {
-          var vals = parseField(fields[i], FIELD_RANGES[i][0], FIELD_RANGES[i][1]);
+          var vals = parseField(fields[i], FIELD_RANGES[i][0], FIELD_RANGES[i][1], i);
           if (!vals || vals.length === 0) return null;
           parsed.push(vals);
         }
@@ -474,7 +486,7 @@
 
         // Validate all fields
         for (var i = 0; i < 5; i++) {
-          var vals = parseField(fields[i], FIELD_RANGES[i][0], FIELD_RANGES[i][1]);
+          var vals = parseField(fields[i], FIELD_RANGES[i][0], FIELD_RANGES[i][1], i);
           if (vals === null) {
             descriptionOutput.textContent = '';
             nextRunsOutput.textContent = '';

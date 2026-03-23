@@ -358,6 +358,8 @@ Example:
         if (mode === 'dataclass') {
           lines.push('@dataclass');
           lines.push('class ' + name + ':');
+          var requiredFields = [];
+          var optionalFields = [];
           for (var k = 0; k < keys.length; k++) {
             var key = keys[k];
             var fname = sanitizeFieldName(key);
@@ -367,8 +369,11 @@ Example:
             if (val === null) defaultVal = ' = None';
             else if (Array.isArray(val)) defaultVal = ' = field(default_factory=list)';
             else defaultVal = '';
-            lines.push('    ' + fname + ': ' + pyType + defaultVal);
+            var fieldLine = '    ' + fname + ': ' + pyType + defaultVal;
+            if (defaultVal) optionalFields.push(fieldLine);
+            else requiredFields.push(fieldLine);
           }
+          requiredFields.concat(optionalFields).forEach(function (fl) { lines.push(fl); });
         } else if (mode === 'typeddict') {
           lines.push('class ' + name + '(TypedDict):');
           for (var k = 0; k < keys.length; k++) {
