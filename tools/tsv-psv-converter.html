@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>TSV/PSV/CSV Delimiter Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert between CSV, TSV, PSV (pipe), SSV (semicolon), and custom delimiters online. Auto-detects format, handles quoted fields, previews as table. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/tsv-psv-converter.html">
+  <meta property="og:title" content="TSV/PSV/CSV Delimiter Converter — DevToolbox">
+  <meta property="og:description" content="Convert CSV to TSV, TSV to CSV, PSV to CSV and more. Auto-detects delimiter, handles quoted fields, live table preview. Free online tool.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/tsv-psv-converter.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "TSV/PSV/CSV Delimiter Converter",
+    "url": "https://thisdevtool.com/tools/tsv-psv-converter.html",
+    "description": "Convert between CSV, TSV, PSV, SSV, and custom delimiters. Auto-detects format, handles quoted fields, live table preview. Free, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between CSV, TSV, and PSV?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSV (Comma-Separated Values) uses a comma to separate fields. TSV (Tab-Separated Values) uses a tab character. PSV (Pipe-Separated Values) uses a pipe symbol |. SSV (Semicolon-Separated Values) uses a semicolon, common in Europe where commas are used as decimal separators. All formats use the same row-per-line structure."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the auto-detect feature work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The auto-detect feature analyses the first few lines of your input and counts the occurrences of common delimiter characters (comma, tab, pipe, semicolon) outside of quoted strings. The character that appears most consistently across rows is selected as the delimiter."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool handle fields that contain the delimiter character?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. RFC 4180 specifies that fields containing the delimiter, double quotes, or newlines must be wrapped in double quotes. This tool correctly parses and re-encodes quoted fields, including fields that contain commas, tabs, pipes, or embedded quote characters."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All parsing and conversion runs entirely in your browser. Your data never leaves your device. There is no server, no upload, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What file types can I download the output as?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You can download the converted output as a .csv, .tsv, or .txt file depending on the output format you chose. The download button automatically uses the correct extension for the selected output delimiter."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/csv-json.html">CSV/JSON</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>TSV / PSV / CSV Delimiter Converter</h1>
+          <p class="tool-subtitle">Convert between CSV, TSV, PSV (pipe), SSV (semicolon), and custom delimiters. Auto-detects input format.</p>
+
+          <!-- Input / Output Format Row -->
+          <div class="option-chips">
+            <span class="option-chip-label">Input:
+              <select id="inputFmt" class="inline-select">
+                <option value="auto">Auto-detect</option>
+                <option value=",">CSV (comma)</option>
+                <option value="\t">TSV (tab)</option>
+                <option value="|">PSV (pipe)</option>
+                <option value=";">SSV (semicolon)</option>
+                <option value="custom-in">Custom…</option>
+              </select>
+              <input id="customIn" type="text" maxlength="3" placeholder=":" class="inline-input" style="width:2.5rem;display:none;">
+            </span>
+            <span style="font-size:1.2rem;padding:0 0.25rem;">&#8594;</span>
+            <span class="option-chip-label">Output:
+              <select id="outputFmt" class="inline-select">
+                <option value=",">CSV (comma)</option>
+                <option value="\t">TSV (tab)</option>
+                <option value="|">PSV (pipe)</option>
+                <option value=";">SSV (semicolon)</option>
+                <option value="custom-out">Custom…</option>
+              </select>
+              <input id="customOut" type="text" maxlength="3" placeholder=":" class="inline-input" style="width:2.5rem;display:none;">
+            </span>
+          </div>
+
+          <!-- Extra Options -->
+          <div class="option-chips" style="margin-top:0.5rem;">
+            <label class="option-chip-label" style="display:flex;align-items:center;gap:0.4rem;">
+              <input id="headerRow" type="checkbox" checked> Header row
+            </label>
+            <label class="option-chip-label" style="display:flex;align-items:center;gap:0.4rem;">
+              <input id="trimSpaces" type="checkbox"> Trim whitespace
+            </label>
+            <label class="option-chip-label" style="display:flex;align-items:center;gap:0.4rem;">
+              <input id="alwaysQuote" type="checkbox"> Always quote output
+            </label>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="csvInput" rows="16" placeholder="Paste CSV, TSV, PSV, or any delimited text here…
+
+name,age,city
+Alice,30,New York
+Bob,25,\"Los Angeles, CA\"
+Carol,35,Chicago" spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="csvOutput" style="min-height:340px;white-space:pre;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste delimited text above to convert.
+          </div>
+
+          <!-- Table Preview -->
+          <div id="previewSection" style="display:none;margin-top:1.5rem;">
+            <h3 style="font-size:1rem;margin-bottom:0.75rem;">Table Preview <span id="previewMeta" style="font-weight:400;color:var(--text-secondary);font-size:0.85rem;"></span></h3>
+            <div class="table-preview-wrap">
+              <table id="previewTable" class="preview-table"></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Delimiter Converter</h2>
+          <ol>
+            <li><strong>Paste your data</strong> into the input area on the left (or top on mobile).</li>
+            <li><strong>Select the input format</strong> — or leave it on "Auto-detect" and the tool will figure it out.</li>
+            <li><strong>Choose the output format</strong> — CSV, TSV, PSV, SSV, or a custom character.</li>
+            <li><strong>Configure options</strong> — toggle header row, trim whitespace, or always-quote output fields.</li>
+            <li><strong>Review the table preview</strong> — verify columns look correct before copying or downloading.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output with the correct file extension.</li>
+          </ol>
+
+          <h2>CSV, TSV, PSV and SSV Explained</h2>
+          <p>Delimited text files are one of the oldest and most universal data interchange formats. Every spreadsheet application, database, and data processing tool can read and write them. The core idea is simple: fields on each row are separated by a delimiter character, and rows are separated by newlines. The four most common delimiter conventions are:</p>
+
+          <ul>
+            <li><strong>CSV — Comma-Separated Values</strong>: the most common format. Used by Excel, Google Sheets, PostgreSQL <code>COPY</code>, MySQL exports, and countless APIs. RFC 4180 is the informal standard. Fields containing commas are wrapped in double quotes.</li>
+            <li><strong>TSV — Tab-Separated Values</strong>: uses a tab character (<code>\t</code>) as the delimiter. Preferred when data contains commas — no quoting is required for most text fields. Popular in bioinformatics, MySQL <code>LOAD DATA INFILE</code>, and Unix pipeline tools.</li>
+            <li><strong>PSV — Pipe-Separated Values</strong>: uses the pipe character (<code>|</code>) as the delimiter. Common in legacy systems, SQL query output formatters (e.g., MySQL CLI display format), and log processing pipelines where commas and tabs may appear in data.</li>
+            <li><strong>SSV — Semicolon-Separated Values</strong>: uses a semicolon (<code>;</code>). Standard in European locales where Excel uses semicolons as the CSV delimiter because commas are used as decimal separators (1.234,56 vs 1,234.56).</li>
+          </ul>
+
+          <h3>Quoted Fields and Embedded Delimiters</h3>
+          <p>RFC 4180 specifies that a field containing the delimiter, a double-quote, or a newline must be enclosed in double quotes. A double-quote within a quoted field is escaped by doubling it (<code>""</code>). This tool fully implements this quoting behaviour in both parsing and emission. For example, a CSV field containing <code>New York, NY</code> is stored as <code>"New York, NY"</code> in the file. When converting to TSV, the tool unquotes the field (since the output delimiter is tab, not comma) and emits <code>New York, NY</code> without quotes.</p>
+
+          <h3>Auto-Detection Algorithm</h3>
+          <p>The auto-detect feature analyses the first five rows of your input and counts occurrences of comma, tab, pipe, and semicolon characters outside of quoted strings. The delimiter character that appears most consistently — the same count across all sampled rows — is selected. If the data is ambiguous (for example, a single row), the tool defaults to comma. You can always override auto-detection using the input format selector.</p>
+
+          <h3>When to Use Each Format</h3>
+          <ul>
+            <li><strong>Use CSV</strong> when sending data to Excel, Google Sheets, or any spreadsheet — it is the universal spreadsheet import format</li>
+            <li><strong>Use TSV</strong> when your data contains commas and you want to avoid quoting complexity — TSV is simpler to parse in scripts</li>
+            <li><strong>Use PSV</strong> when working with legacy database exports or log files from tools that output pipe-delimited records</li>
+            <li><strong>Use SSV</strong> when your audience uses European locale settings — Excel on those systems opens <code>.csv</code> files using semicolons</li>
+            <li><strong>Use a custom delimiter</strong> when you are designing a proprietary data format or working with a system that uses an uncommon separator</li>
+          </ul>
+
+          <h3>Related Tools</h3>
+          <p>After converting your delimited file, you might want to convert it to JSON for use in a web application — use our <a href="/tools/csv-json.html">CSV to JSON Converter</a>. If you need to inspect or transform JSON data, the <a href="/tools/json-formatter.html">JSON Formatter</a> is the best starting point. For YAML-based workflows such as GitHub Actions or Kubernetes, the <a href="/tools/json-to-yaml-advanced.html">JSON to YAML Converter</a> completes the pipeline.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between CSV, TSV, and PSV?</button>
+            <div class="faq-answer">CSV (Comma-Separated Values) uses a comma to separate fields. TSV (Tab-Separated Values) uses a tab character. PSV (Pipe-Separated Values) uses a pipe symbol |. SSV (Semicolon-Separated Values) uses a semicolon. All formats use the same row-per-line structure.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the auto-detect feature work?</button>
+            <div class="faq-answer">The auto-detect feature analyses the first few lines of your input and counts occurrences of common delimiter characters (comma, tab, pipe, semicolon) outside of quoted strings. The character that appears most consistently across rows is selected as the delimiter.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does this tool handle fields that contain the delimiter character?</button>
+            <div class="faq-answer">Yes. RFC 4180 specifies that fields containing the delimiter, double quotes, or newlines must be wrapped in double quotes. This tool correctly parses and re-encodes quoted fields, including fields that contain commas, tabs, pipes, or embedded quote characters.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my data sent to a server?</button>
+            <div class="faq-answer">No. All parsing and conversion runs entirely in your browser. Your data never leaves your device. There is no server, no upload, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What file types can I download the output as?</button>
+            <div class="faq-answer">You can download the converted output as a .csv, .tsv, or .txt file depending on the output format you chose. The download button automatically uses the correct extension and MIME type for the selected output delimiter.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+        <a href="/tools/json-to-yaml-advanced.html">JSON &harr; YAML</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/line-number-tool.html">Line Number Tool</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <style>
+    .inline-select {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .inline-input {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+    .option-chip-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      cursor: default;
+      white-space: nowrap;
+    }
+    .table-preview-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .preview-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.85rem;
+      font-family: var(--font-mono, monospace);
+    }
+    .preview-table th {
+      background: var(--bg-secondary);
+      padding: 6px 12px;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    .preview-table td {
+      padding: 5px 12px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-primary);
+    }
+    .preview-table tr:last-child td { border-bottom: none; }
+    .preview-table th:last-child,
+    .preview-table td:last-child { border-right: none; }
+    .preview-table tr:hover td { background: var(--bg-secondary); }
+  </style>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input     = document.getElementById('csvInput');
+      var output    = document.getElementById('csvOutput');
+      var statusBar = document.getElementById('statusBar');
+
+      var EXAMPLE_CSV = 'name,age,city,salary\nAlice,30,"New York, NY",75000\nBob,25,"Los Angeles, CA",62000\nCarol,35,Chicago,88000\nDave,28,"Austin, TX",71000\nEve,32,"Seattle, WA",95000';
+
+      // ── CSV Parser ────────────────────────────────────────────────────────
+
+      function parseDelimited(text, delim) {
+        if (delim === '\\t' || delim === '\t') delim = '\t';
+        var rows = [];
+        var lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+        // Remove trailing empty line
+        while (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
+
+        for (var i = 0; i < lines.length; i++) {
+          rows.push(parseLine(lines[i], delim));
+        }
+        return rows;
+      }
+
+      function parseLine(line, delim) {
+        var fields = [];
+        var field = '';
+        var inQuote = false;
+        var j = 0;
+        while (j < line.length) {
+          var ch = line[j];
+          if (inQuote) {
+            if (ch === '"') {
+              if (j + 1 < line.length && line[j + 1] === '"') {
+                field += '"';
+                j += 2;
+              } else {
+                inQuote = false;
+                j++;
+              }
+            } else {
+              field += ch;
+              j++;
+            }
+          } else {
+            if (ch === '"' && field === '') {
+              inQuote = true;
+              j++;
+            } else if (line.slice(j, j + delim.length) === delim) {
+              fields.push(field);
+              field = '';
+              j += delim.length;
+            } else {
+              field += ch;
+              j++;
+            }
+          }
+        }
+        fields.push(field);
+        return fields;
+      }
+
+      // ── CSV Emitter ───────────────────────────────────────────────────────
+
+      function emitDelimited(rows, delim, alwaysQuote, trimSpaces) {
+        if (delim === '\\t') delim = '\t';
+        return rows.map(function (row) {
+          return row.map(function (field) {
+            if (trimSpaces) field = field.trim();
+            var needsQuote = alwaysQuote ||
+              field.indexOf(delim) !== -1 ||
+              field.indexOf('"') !== -1 ||
+              field.indexOf('\n') !== -1 ||
+              field.indexOf('\r') !== -1;
+            if (needsQuote) {
+              return '"' + field.replace(/"/g, '""') + '"';
+            }
+            return field;
+          }).join(delim);
+        }).join('\n');
+      }
+
+      // ── Auto-detect delimiter ─────────────────────────────────────────────
+
+      function detectDelimiter(text) {
+        var candidates = [',', '\t', '|', ';'];
+        var sampleLines = text.replace(/\r\n/g, '\n').split('\n').slice(0, 6).filter(function (l) { return l.trim(); });
+        if (sampleLines.length === 0) return ',';
+
+        var scores = {};
+        candidates.forEach(function (d) { scores[d] = 0; });
+
+        candidates.forEach(function (delim) {
+          var counts = sampleLines.map(function (line) { return countOutsideQuotes(line, delim); });
+          if (counts.length === 0 || counts[0] === 0) return;
+          var allSame = counts.every(function (c) { return c === counts[0]; });
+          scores[delim] = counts[0] * (allSame ? 2 : 1);
+        });
+
+        var best = ',';
+        var bestScore = 0;
+        candidates.forEach(function (d) {
+          if (scores[d] > bestScore) { bestScore = scores[d]; best = d; }
+        });
+        return best;
+      }
+
+      function countOutsideQuotes(line, delim) {
+        var count = 0, inQ = false;
+        for (var i = 0; i < line.length; i++) {
+          if (line[i] === '"') inQ = !inQ;
+          if (!inQ && line.slice(i, i + delim.length) === delim) count++;
+        }
+        return count;
+      }
+
+      // ── Delimiter resolution ──────────────────────────────────────────────
+
+      function resolveDelim(selectId, customId) {
+        var sel = document.getElementById(selectId).value;
+        if (sel === 'custom-in' || sel === 'custom-out') {
+          return document.getElementById(customId).value || ',';
+        }
+        return sel;
+      }
+
+      // ── Build table preview ───────────────────────────────────────────────
+
+      function buildPreview(rows, hasHeader) {
+        var table = document.getElementById('previewTable');
+        var section = document.getElementById('previewSection');
+        var meta = document.getElementById('previewMeta');
+        table.innerHTML = '';
+
+        var MAX_ROWS = 50;
+        var displayRows = rows.slice(0, hasHeader ? MAX_ROWS + 1 : MAX_ROWS);
+        var colCount = rows.reduce(function (m, r) { return Math.max(m, r.length); }, 0);
+        var rowCount = rows.length - (hasHeader ? 1 : 0);
+
+        meta.textContent = rowCount + ' row' + (rowCount !== 1 ? 's' : '') + ', ' + colCount + ' column' + (colCount !== 1 ? 's' : '');
+
+        var startRow = 0;
+        if (hasHeader && displayRows.length > 0) {
+          var thead = document.createElement('thead');
+          var headTr = document.createElement('tr');
+          var headerRow = displayRows[0];
+          for (var c = 0; c < colCount; c++) {
+            var th = document.createElement('th');
+            th.textContent = headerRow[c] !== undefined ? headerRow[c] : '';
+            headTr.appendChild(th);
+          }
+          thead.appendChild(headTr);
+          table.appendChild(thead);
+          startRow = 1;
+        }
+
+        var tbody = document.createElement('tbody');
+        for (var r = startRow; r < displayRows.length; r++) {
+          var tr = document.createElement('tr');
+          for (var cc = 0; cc < colCount; cc++) {
+            var td = document.createElement('td');
+            td.textContent = displayRows[r][cc] !== undefined ? displayRows[r][cc] : '';
+            tr.appendChild(td);
+          }
+          tbody.appendChild(tr);
+        }
+        table.appendChild(tbody);
+
+        if (rows.length > MAX_ROWS + (hasHeader ? 1 : 0)) {
+          var info = document.createElement('caption');
+          info.style.cssText = 'caption-side:bottom;font-size:0.8rem;color:var(--text-secondary);padding:6px;text-align:center;';
+          info.textContent = 'Showing first ' + MAX_ROWS + ' rows of ' + rowCount;
+          table.appendChild(info);
+        }
+
+        section.style.display = rows.length > 0 ? '' : 'none';
+      }
+
+      // ── Extension / MIME helpers ──────────────────────────────────────────
+
+      function getExt(delim) {
+        if (delim === ',') return '.csv';
+        if (delim === '\t' || delim === '\\t') return '.tsv';
+        return '.txt';
+      }
+
+      function getMime(delim) {
+        if (delim === ',') return 'text/csv';
+        if (delim === '\t' || delim === '\\t') return 'text/tab-separated-values';
+        return 'text/plain';
+      }
+
+      function delimName(delim) {
+        if (delim === ',') return 'CSV';
+        if (delim === '\t' || delim === '\\t') return 'TSV';
+        if (delim === '|') return 'PSV';
+        if (delim === ';') return 'SSV';
+        return 'Custom';
+      }
+
+      // ── Process ───────────────────────────────────────────────────────────
+
+      function process() {
+        var raw = input.value;
+        if (!raw.trim()) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste delimited text above to convert.';
+          document.getElementById('previewSection').style.display = 'none';
+          return;
+        }
+
+        try {
+          var inFmtSel = document.getElementById('inputFmt').value;
+          var inDelim;
+          if (inFmtSel === 'auto') {
+            inDelim = detectDelimiter(raw);
+          } else if (inFmtSel === 'custom-in') {
+            inDelim = document.getElementById('customIn').value || ',';
+          } else {
+            inDelim = inFmtSel;
+          }
+          if (inDelim === '\\t') inDelim = '\t';
+
+          var outFmtSel = document.getElementById('outputFmt').value;
+          var outDelim = resolveDelim('outputFmt', 'customOut');
+          if (outDelim === '\\t') outDelim = '\t';
+
+          var trim = document.getElementById('trimSpaces').checked;
+          var alwaysQ = document.getElementById('alwaysQuote').checked;
+          var hasHeader = document.getElementById('headerRow').checked;
+
+          var rows = parseDelimited(raw, inDelim);
+          if (rows.length === 0) throw new Error('No rows found');
+
+          var colCount = rows.reduce(function (m, r) { return Math.max(m, r.length); }, 0);
+          var rowCount = rows.length - (hasHeader ? 1 : 0);
+
+          var converted = emitDelimited(rows, outDelim, alwaysQ, trim);
+          output.textContent = converted;
+
+          var inName  = delimName(inDelim);
+          var outName = delimName(outDelim);
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Converted ' + inName + ' \u2192 ' + outName + ' \u2014 ' + rowCount + ' row' + (rowCount !== 1 ? 's' : '') + ', ' + colCount + ' column' + (colCount !== 1 ? 's' : '');
+
+          buildPreview(rows, hasHeader);
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+          document.getElementById('previewSection').style.display = 'none';
+        }
+
+        DT.trackTool('tsv-psv-converter');
+      }
+
+      var debouncedProcess = DT.debounce(process, 200);
+
+      // ── Events ────────────────────────────────────────────────────────────
+
+      input.addEventListener('input', debouncedProcess);
+
+      ['inputFmt', 'outputFmt', 'headerRow', 'trimSpaces', 'alwaysQuote'].forEach(function (id) {
+        document.getElementById(id).addEventListener('change', process);
+      });
+      ['customIn', 'customOut'].forEach(function (id) {
+        document.getElementById(id).addEventListener('input', DT.debounce(process, 400));
+      });
+
+      // Show/hide custom delimiter inputs
+      document.getElementById('inputFmt').addEventListener('change', function () {
+        document.getElementById('customIn').style.display = this.value === 'custom-in' ? '' : 'none';
+      });
+      document.getElementById('outputFmt').addEventListener('change', function () {
+        document.getElementById('customOut').style.display = this.value === 'custom-out' ? '' : 'none';
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (!text) return;
+        var outDelim = resolveDelim('outputFmt', 'customOut');
+        DT.downloadText(text, 'converted' + getExt(outDelim), getMime(outDelim));
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = EXAMPLE_CSV;
+        document.getElementById('inputFmt').value = ',';
+        document.getElementById('outputFmt').value = '\t';
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var s = this.selectionStart, en = this.selectionEnd;
+          this.value = this.value.substring(0, s) + '  ' + this.value.substring(en);
+          this.selectionStart = this.selectionEnd = s + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

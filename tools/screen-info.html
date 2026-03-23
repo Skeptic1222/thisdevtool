@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Screen Information Detector — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Detect your screen resolution, viewport size, device pixel ratio, color depth, orientation, touch support, OS, browser, connection type, and battery status. Free, instant, client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/screen-info.html">
+  <meta property="og:title" content="Screen Information Detector — DevToolbox">
+  <meta property="og:description" content="Instantly see your screen width, height, viewport, DPR, color depth, orientation, OS, browser, network, and battery. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/screen-info.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <style>
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+    }
+    .info-card-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .info-card-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: var(--font-mono, monospace);
+      word-break: break-word;
+    }
+    .info-card-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+    .mq-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .mq-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.3rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .mq-list li:last-child { border-bottom: none; }
+    .badge-yes { color: #10b981; font-weight: 700; }
+    .badge-no { color: #ef4444; font-weight: 700; }
+    .section-heading {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin: 1.5rem 0 0.5rem;
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Screen Information Detector",
+    "url": "https://thisdevtool.com/tools/screen-info.html",
+    "description": "Detect screen resolution, viewport, DPR, color depth, orientation, touch, OS, browser, connection, and battery status instantly in the browser.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is device pixel ratio (DPR)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Device pixel ratio (DPR) is the ratio of physical pixels to CSS logical pixels on a screen. A DPR of 2 means the screen has 4 physical pixels for every 1 CSS pixel — common on Retina and high-DPI displays. DPR affects how sharp images and SVGs appear at different zoom levels."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between screen resolution and viewport size?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Screen resolution is the total number of physical pixels your display has (e.g., 2560×1440). Viewport size is the portion of the browser window where the web page is rendered — it excludes browser chrome, toolbars, and scrollbars. CSS media queries respond to viewport size, not screen resolution."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the color depth value work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Color depth (bits per pixel) indicates how many colors a screen can display. 24-bit color (8 bits per channel × 3 channels) supports ~16.7 million colors. 30-bit or 32-bit displays support HDR and wider color gamuts. Most modern monitors report 24 or 30 bits."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why is connection info useful for developers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Network Information API exposes the connection effective type (4g, 3g, 2g, slow-2g), downlink speed, and RTT. Developers can use this to adapt content delivery — for example, loading lower-resolution images or skipping autoplay video on slow connections."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is any of this data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All information shown is read directly from your browser's JavaScript APIs and displayed locally. No data is transmitted, stored, or logged anywhere."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/browser-feature-detector.html">Feature Detector</a>
+        <a href="/tools/user-agent-parser.html">UA Parser</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Screen Information Detector</h1>
+          <p class="tool-subtitle">Your browser, screen, device, network, and battery details — detected instantly with zero data sent to any server.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="all">All Info</button>
+            <button class="option-chip" data-mode="screen">Screen</button>
+            <button class="option-chip" data-mode="browser">Browser</button>
+            <button class="option-chip" data-mode="network">Network</button>
+          </div>
+
+          <div style="margin-top:1rem;display:flex;gap:0.75rem;flex-wrap:wrap;">
+            <button class="btn btn-sm btn-primary" id="refreshBtn">Refresh</button>
+            <button class="btn btn-sm btn-secondary" id="copyReportBtn">Copy Report</button>
+            <button class="btn btn-sm btn-secondary" id="downloadBtn">Download Report</button>
+          </div>
+
+          <div id="infoContainer"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Loading screen information...
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>What This Tool Detects</h2>
+          <p>The Screen Information Detector reads data from multiple browser JavaScript APIs and presents it in a clear, organized format. This is useful for debugging responsive design issues, testing across different devices, generating bug reports, and understanding exactly what capabilities a user's browser has.</p>
+
+          <h3>Screen Properties</h3>
+          <ul>
+            <li><strong>Screen Width &times; Height</strong> — total physical pixel dimensions of the display</li>
+            <li><strong>Viewport Width &times; Height</strong> — the usable area of the browser window (changes when you resize or zoom)</li>
+            <li><strong>Device Pixel Ratio (DPR)</strong> — ratio of physical pixels to CSS pixels (2x on Retina, 3x on mobile high-DPI displays)</li>
+            <li><strong>Color Depth</strong> — bits per pixel (24 = 16.7M colors, 30 = HDR)</li>
+            <li><strong>Orientation</strong> — portrait or landscape, and the rotation angle</li>
+          </ul>
+
+          <h3>Browser and Device Properties</h3>
+          <ul>
+            <li><strong>User Agent</strong> — the raw browser identification string</li>
+            <li><strong>Browser &amp; Version</strong> — detected browser name and major version</li>
+            <li><strong>Operating System</strong> — detected platform (Windows, macOS, iOS, Android, Linux)</li>
+            <li><strong>Touch Support</strong> — whether the device reports touch input capability</li>
+            <li><strong>Max Touch Points</strong> — maximum simultaneous touch points the hardware supports</li>
+            <li><strong>Language</strong> — browser locale setting</li>
+            <li><strong>Timezone</strong> — IANA timezone string from Intl API</li>
+            <li><strong>Cookie &amp; JavaScript enabled</strong> — basic capability flags</li>
+          </ul>
+
+          <h3>Network Information (where available)</h3>
+          <p>The Network Information API (supported in Chrome and Edge) exposes the connection effective type, estimated downlink speed, and round-trip time. This helps developers build adaptive experiences — loading lighter assets on slow connections or enabling offline-first features when online connectivity is poor.</p>
+
+          <h3>Battery Status (where available)</h3>
+          <p>The Battery Status API (supported in Chrome/Android) reports the charging state, battery level percentage, and estimated time to full charge or discharge. While less commonly needed, this can help power-aware web apps reduce CPU-intensive operations when battery is low.</p>
+
+          <h3>Media Query Results</h3>
+          <p>This tool also tests a set of standard CSS media queries in real time and shows which ones match your current device and viewport. This is extremely useful for debugging why a responsive layout is not applying the expected styles — you can see exactly which breakpoints are active and which feature queries (hover, pointer type, prefers-color-scheme, prefers-reduced-motion) apply to your environment.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is device pixel ratio (DPR)?</button>
+            <div class="faq-answer">Device pixel ratio (DPR) is the ratio of physical pixels to CSS logical pixels. A DPR of 2 means the screen has 4 physical pixels for every 1 CSS pixel — common on Retina and high-DPI displays.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between screen resolution and viewport size?</button>
+            <div class="faq-answer">Screen resolution is the total physical pixel count of your display. Viewport size is the browser rendering area — CSS media queries respond to this, not the raw screen resolution.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does the color depth value work?</button>
+            <div class="faq-answer">Color depth (bits per pixel) indicates how many colors the screen can display. 24-bit supports ~16.7 million colors. 30-bit or 32-bit supports HDR and wider color gamuts.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why is connection info useful for developers?</button>
+            <div class="faq-answer">The Network Information API exposes effective connection type (4g/3g/2g), downlink speed, and RTT. Developers use this to adapt content delivery — loading lighter images or disabling autoplay on slow connections.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is any of this data sent to a server?</button>
+            <div class="faq-answer">No. All information is read from local browser APIs and displayed on-page only. No data is transmitted, stored, or logged anywhere.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/screen-info.html">Screen Info</a>
+        <a href="/tools/browser-feature-detector.html">Feature Detector</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Accessibility</h4>
+        <a href="/tools/color-blindness-sim.html">Color Blindness Sim</a>
+        <a href="/tools/color-contrast.html">Contrast Checker</a>
+        <a href="/tools/wcag-palette.html">WCAG Palette</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      var DT = DevToolbox;
+      var currentMode = 'all';
+      var reportData = {};
+
+      function detectBrowser(ua) {
+        if (/Edg\//.test(ua)) return 'Microsoft Edge ' + (ua.match(/Edg\/(\S+)/)||['','?'])[1];
+        if (/OPR\//.test(ua)) return 'Opera ' + (ua.match(/OPR\/(\S+)/)||['','?'])[1];
+        if (/Chrome\//.test(ua)) return 'Chrome ' + (ua.match(/Chrome\/(\S+)/)||['','?'])[1];
+        if (/Firefox\//.test(ua)) return 'Firefox ' + (ua.match(/Firefox\/(\S+)/)||['','?'])[1];
+        if (/Safari\//.test(ua) && /Version\//.test(ua)) return 'Safari ' + (ua.match(/Version\/(\S+)/)||['','?'])[1];
+        return 'Unknown';
+      }
+
+      function detectOS(ua) {
+        if (/Windows NT 10/.test(ua)) return 'Windows 10/11';
+        if (/Windows NT 6\.3/.test(ua)) return 'Windows 8.1';
+        if (/Windows NT 6\.1/.test(ua)) return 'Windows 7';
+        if (/Windows/.test(ua)) return 'Windows';
+        if (/iPhone/.test(ua)) return 'iOS (iPhone)';
+        if (/iPad/.test(ua)) return 'iOS (iPad)';
+        if (/Android/.test(ua)) {
+          var v = ua.match(/Android ([^;)]+)/);
+          return 'Android' + (v ? ' ' + v[1] : '');
+        }
+        if (/Mac OS X/.test(ua)) {
+          var m = ua.match(/Mac OS X ([^);]+)/);
+          return 'macOS' + (m ? ' ' + m[1].replace(/_/g,'.') : '');
+        }
+        if (/Linux/.test(ua)) return 'Linux';
+        return 'Unknown OS';
+      }
+
+      var MQ_TESTS = [
+        { label: 'max-width: 480px (mobile)', query: '(max-width: 480px)' },
+        { label: 'max-width: 768px (tablet)', query: '(max-width: 768px)' },
+        { label: 'max-width: 1024px (laptop)', query: '(max-width: 1024px)' },
+        { label: 'min-width: 1200px (desktop)', query: '(min-width: 1200px)' },
+        { label: 'orientation: portrait', query: '(orientation: portrait)' },
+        { label: 'orientation: landscape', query: '(orientation: landscape)' },
+        { label: 'prefers-color-scheme: dark', query: '(prefers-color-scheme: dark)' },
+        { label: 'prefers-reduced-motion', query: '(prefers-reduced-motion: reduce)' },
+        { label: 'hover: hover', query: '(hover: hover)' },
+        { label: 'pointer: fine (mouse)', query: '(pointer: fine)' },
+        { label: 'pointer: coarse (touch)', query: '(pointer: coarse)' },
+        { label: 'display-mode: standalone', query: '(display-mode: standalone)' },
+        { label: 'min-resolution: 2dppx (HiDPI)', query: '(min-resolution: 2dppx)' }
+      ];
+
+      function card(title, value, sub) {
+        return '<div class="info-card"><div class="info-card-title">' + title + '</div>' +
+          '<div class="info-card-value">' + value + '</div>' +
+          (sub ? '<div class="info-card-sub">' + sub + '</div>' : '') + '</div>';
+      }
+
+      function yn(val) {
+        return val ? '<span class="badge-yes">Yes</span>' : '<span class="badge-no">No</span>';
+      }
+
+      function gatherData() {
+        var ua = navigator.userAgent;
+        var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        reportData = {
+          screenWidth: screen.width,
+          screenHeight: screen.height,
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
+          availWidth: screen.availWidth,
+          availHeight: screen.availHeight,
+          dpr: window.devicePixelRatio,
+          colorDepth: screen.colorDepth,
+          orientation: screen.orientation ? screen.orientation.type : (window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'),
+          orientationAngle: screen.orientation ? screen.orientation.angle : 0,
+          touchSupport: ('ontouchstart' in window) || navigator.maxTouchPoints > 0,
+          maxTouchPoints: navigator.maxTouchPoints || 0,
+          browser: detectBrowser(ua),
+          os: detectOS(ua),
+          language: navigator.language,
+          languages: (navigator.languages || [navigator.language]).join(', '),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          cookiesEnabled: navigator.cookieEnabled,
+          userAgent: ua,
+          platform: navigator.platform || 'unknown',
+          vendor: navigator.vendor || 'unknown',
+          hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+          deviceMemory: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'unknown',
+          connection: conn ? {
+            type: conn.effectiveType || conn.type || 'unknown',
+            downlink: conn.downlink ? conn.downlink + ' Mbps' : 'unknown',
+            rtt: conn.rtt !== undefined ? conn.rtt + ' ms' : 'unknown',
+            saveData: conn.saveData ? 'On' : 'Off'
+          } : null
+        };
+        return reportData;
+      }
+
+      function renderCards(d) {
+        var container = document.getElementById('infoContainer');
+        var html = '';
+
+        if (currentMode === 'all' || currentMode === 'screen') {
+          html += '<p class="section-heading">Display &amp; Viewport</p><div class="info-grid">';
+          html += card('Screen Resolution', d.screenWidth + ' &times; ' + d.screenHeight + 'px', 'Available: ' + d.availWidth + ' &times; ' + d.availHeight + 'px');
+          html += card('Viewport Size', d.viewportWidth + ' &times; ' + d.viewportHeight + 'px', 'Resize window to update');
+          html += card('Device Pixel Ratio', d.dpr + 'x', d.dpr >= 2 ? 'Retina / HiDPI display' : 'Standard density display');
+          html += card('Color Depth', d.colorDepth + '-bit', d.colorDepth >= 30 ? 'HDR capable' : d.colorDepth >= 24 ? '16.7M colors' : 'Limited color depth');
+          html += card('Orientation', d.orientation, 'Angle: ' + d.orientationAngle + '&deg;');
+          html += card('Touch Support', d.touchSupport ? 'Yes' : 'No', 'Max touch points: ' + d.maxTouchPoints);
+          html += '</div>';
+        }
+
+        if (currentMode === 'all' || currentMode === 'browser') {
+          html += '<p class="section-heading">Browser &amp; System</p><div class="info-grid">';
+          html += card('Browser', d.browser, d.vendor ? 'Vendor: ' + d.vendor : '');
+          html += card('Operating System', d.os, 'Platform: ' + d.platform);
+          html += card('Language', d.language, d.languages !== d.language ? 'All: ' + d.languages : '');
+          html += card('Timezone', d.timezone, '');
+          html += card('CPU Cores', d.hardwareConcurrency + '', 'logical processors');
+          html += card('Device Memory', d.deviceMemory, '');
+          html += card('Cookies Enabled', d.cookiesEnabled ? 'Yes' : 'No', '');
+          html += '</div>';
+          html += '<p class="section-heading">User Agent</p>';
+          html += '<div style="font-family:var(--font-mono,monospace);font-size:0.75rem;word-break:break-all;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;color:var(--text-muted);">' + d.userAgent.replace(/</g,'&lt;') + '</div>';
+        }
+
+        if (currentMode === 'all' || currentMode === 'network') {
+          html += '<p class="section-heading">Network</p><div class="info-grid">';
+          if (d.connection) {
+            html += card('Connection Type', d.connection.type.toUpperCase(), '');
+            html += card('Downlink', d.connection.downlink, '');
+            html += card('Round Trip Time', d.connection.rtt, '');
+            html += card('Data Saver', d.connection.saveData, '');
+          } else {
+            html += card('Network API', 'Not supported', 'Chrome/Edge only');
+          }
+          html += '</div>';
+
+          html += '<p class="section-heading">Battery (where supported)</p>';
+          html += '<div id="batterySection"><div class="info-grid" id="batteryGrid"><div class="info-card"><div class="info-card-title">Battery API</div><div class="info-card-value">Checking...</div></div></div></div>';
+        }
+
+        if (currentMode === 'all') {
+          html += '<p class="section-heading">CSS Media Query Results</p>';
+          html += '<ul class="mq-list">';
+          MQ_TESTS.forEach(function (mq) {
+            var match = window.matchMedia(mq.query).matches;
+            html += '<li><span>' + mq.label + '</span>' + (match ? '<span class="badge-yes">Match</span>' : '<span class="badge-no">No match</span>') + '</li>';
+          });
+          html += '</ul>';
+        }
+
+        container.innerHTML = html;
+
+        // Battery API (async)
+        if ((currentMode === 'all' || currentMode === 'network') && navigator.getBattery) {
+          navigator.getBattery().then(function (b) {
+            var grid = document.getElementById('batteryGrid');
+            if (!grid) return;
+            grid.innerHTML =
+              card('Charging', b.charging ? 'Yes' : 'No', '') +
+              card('Battery Level', Math.round(b.level * 100) + '%', '') +
+              card('Charge Time', b.chargingTime === Infinity ? 'N/A' : Math.round(b.chargingTime / 60) + ' min', '') +
+              card('Discharge Time', b.dischargingTime === Infinity ? 'N/A' : Math.round(b.dischargingTime / 60) + ' min', '');
+          }).catch(function () {
+            var grid = document.getElementById('batteryGrid');
+            if (grid) grid.innerHTML = card('Battery API', 'Permission denied or unavailable', '');
+          });
+        } else {
+          var battSection = document.getElementById('batterySection');
+          if (battSection && !navigator.getBattery) {
+            battSection.innerHTML = '<div class="info-grid">' + card('Battery API', 'Not supported', 'Firefox/Safari/iOS') + '</div>';
+          }
+        }
+      }
+
+      function run() {
+        var d = gatherData();
+        renderCards(d);
+        var sb = document.getElementById('statusBar');
+        sb.className = 'status-bar valid';
+        sb.textContent = d.screenWidth + '\xD7' + d.screenHeight + ' — ' + d.dpr + 'x DPR — ' + d.browser.split(' ')[0] + ' ' + d.browser.split(' ')[1];
+        DT.trackTool('screen-info');
+      }
+
+      function buildReport() {
+        var d = reportData;
+        var lines = [
+          '=== Screen Information Report ===',
+          'Generated: ' + new Date().toISOString(),
+          '',
+          '-- Display --',
+          'Screen: ' + d.screenWidth + 'x' + d.screenHeight,
+          'Viewport: ' + d.viewportWidth + 'x' + d.viewportHeight,
+          'DPR: ' + d.dpr,
+          'Color Depth: ' + d.colorDepth + '-bit',
+          'Orientation: ' + d.orientation,
+          '',
+          '-- Browser --',
+          'Browser: ' + d.browser,
+          'OS: ' + d.os,
+          'Language: ' + d.language,
+          'Timezone: ' + d.timezone,
+          'Cores: ' + d.hardwareConcurrency,
+          'Memory: ' + d.deviceMemory,
+          '',
+          '-- Network --'
+        ];
+        if (d.connection) {
+          lines.push('Type: ' + d.connection.type, 'Downlink: ' + d.connection.downlink, 'RTT: ' + d.connection.rtt);
+        } else {
+          lines.push('Network API: Not supported');
+        }
+        lines.push('', '-- User Agent --', d.userAgent, '', '-- Media Queries --');
+        MQ_TESTS.forEach(function (mq) {
+          lines.push((window.matchMedia(mq.query).matches ? '[MATCH] ' : '[    ] ') + mq.label);
+        });
+        return lines.join('\n');
+      }
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          run();
+        });
+      });
+
+      document.getElementById('refreshBtn').addEventListener('click', run);
+
+      document.getElementById('copyReportBtn').addEventListener('click', function () {
+        DT.copyToClipboard(buildReport(), this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        DT.downloadText(buildReport(), 'screen-info-report.txt', 'text/plain');
+      });
+
+      // Auto-refresh on resize
+      var debouncedRun = DT.debounce(run, 300);
+      window.addEventListener('resize', debouncedRun);
+      window.addEventListener('orientationchange', debouncedRun);
+
+      run();
+    })();
+  </script>
+</body>
+</html>

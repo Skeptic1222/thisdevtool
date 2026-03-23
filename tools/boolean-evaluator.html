@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Boolean Logic Truth Table Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate truth tables for any boolean expression. Supports AND, OR, NOT, XOR, NAND, NOR, IMPLIES. Karnaugh map for 2–4 variables. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/boolean-evaluator.html">
+  <meta property="og:title" content="Boolean Logic Truth Table Generator — DevToolbox">
+  <meta property="og:description" content="Free online boolean truth table generator with Karnaugh map. Supports AND, OR, NOT, XOR, NAND, NOR, IMPLIES. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/boolean-evaluator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Boolean Logic Truth Table Generator",
+    "url": "https://thisdevtool.com/tools/boolean-evaluator.html",
+    "description": "Generate truth tables for boolean expressions with AND, OR, NOT, XOR, NAND, NOR, IMPLIES operators. Includes Karnaugh map for 2-4 variables.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What operators does the boolean evaluator support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The evaluator supports AND, OR, NOT, XOR (exclusive or), NAND, NOR, and IMPLIES (→ or =>). You can use full words or symbols: & or AND, | or OR, ! or NOT, ^ or XOR. Parentheses are fully supported for grouping."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a truth table?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A truth table systematically lists all possible input combinations for a boolean expression and shows the output for each combination. For n variables there are 2^n rows. Truth tables are used to verify logical equivalence, understand circuit behavior, and simplify expressions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a Karnaugh map (K-map)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Karnaugh map is a visual method for simplifying boolean expressions. It arranges truth table outputs in a grid using Gray code ordering, making it easy to identify groups of adjacent 1s that can be combined to minimize the expression. This tool generates K-maps for 2, 3, and 4 variables."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I write NOT in the expression?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You can write NOT in three ways: using the word 'NOT' (e.g., NOT A), using the exclamation mark '!' (e.g., !A), or using the tilde '~' (e.g., ~A). All three are equivalent and can be used anywhere in the expression."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between XOR and OR?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "OR (inclusive or) returns true if at least one input is true — including when both are true. XOR (exclusive or) returns true only when exactly one input is true, but not when both are true. For example: 1 OR 1 = 1, but 1 XOR 1 = 0."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .bool-input-row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+    .bool-expr-input { flex: 1; min-width: 200px; padding: .6rem .75rem; font-size: 1rem; font-family: 'Fira Code', 'Consolas', monospace; border: 1.5px solid var(--border); border-radius: 8px; background: var(--input-bg); color: var(--text-primary); }
+    .bool-expr-input:focus { outline: none; border-color: #10b981; }
+    .bool-expr-input.valid { border-color: #10b981; }
+    .bool-expr-input.invalid { border-color: #ef4444; }
+    .op-ref { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .75rem; }
+    .op-tag { padding: .2rem .55rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; font-family: 'Fira Code', 'Consolas', monospace; font-size: .8rem; color: var(--text-secondary); cursor: pointer; user-select: none; }
+    .op-tag:hover { border-color: #10b981; color: #10b981; }
+    .truth-table-wrap { overflow-x: auto; margin-top: 1rem; }
+    .truth-table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+    .truth-table th { background: var(--bg-secondary); padding: .45rem .6rem; text-align: center; border: 1px solid var(--border); font-family: 'Fira Code', 'Consolas', monospace; font-weight: 600; white-space: nowrap; }
+    .truth-table th.result-col { color: #10b981; }
+    .truth-table td { padding: .35rem .6rem; text-align: center; border: 1px solid var(--border); font-family: 'Fira Code', 'Consolas', monospace; }
+    .truth-table tr:nth-child(even) td { background: var(--bg-secondary); }
+    .truth-table td.val-true { color: #10b981; font-weight: 700; }
+    .truth-table td.val-false { color: var(--text-secondary); }
+    .truth-table td.result-true { background: #10b98122; color: #10b981; font-weight: 700; }
+    .truth-table td.result-false { background: #ef444422; color: #ef4444; }
+    .kmap-section { margin-top: 1.5rem; }
+    .kmap-section h3 { font-size: .9rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .5rem; }
+    .kmap-wrap { overflow-x: auto; }
+    .kmap-table { border-collapse: collapse; font-size: .88rem; }
+    .kmap-table th { background: var(--bg-secondary); padding: .5rem .75rem; border: 1px solid var(--border); font-family: 'Fira Code', 'Consolas', monospace; text-align: center; min-width: 50px; }
+    .kmap-table td { padding: .5rem .75rem; border: 1px solid var(--border); text-align: center; font-family: 'Fira Code', 'Consolas', monospace; font-weight: 700; min-width: 50px; }
+    .kmap-table td.k1 { background: #10b98133; color: #10b981; }
+    .kmap-table td.k0 { background: var(--bg-secondary); color: var(--text-secondary); }
+    .summary-pills { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .75rem; }
+    .summary-pill { padding: .25rem .65rem; border-radius: 20px; font-size: .8rem; border: 1px solid var(--border); background: var(--bg-secondary); }
+    .bool-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .75rem; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Boolean Logic Truth Table Generator</h1>
+          <p class="tool-subtitle">Enter a boolean expression to generate its truth table. Variables A–F are auto-detected. Supports AND, OR, NOT, XOR, NAND, NOR, IMPLIES.</p>
+
+          <!-- Operator reference -->
+          <div class="op-ref" id="opRef">
+            <span class="op-tag" data-insert="AND">AND</span>
+            <span class="op-tag" data-insert="OR">OR</span>
+            <span class="op-tag" data-insert="NOT ">NOT</span>
+            <span class="op-tag" data-insert="XOR">XOR</span>
+            <span class="op-tag" data-insert="NAND">NAND</span>
+            <span class="op-tag" data-insert="NOR">NOR</span>
+            <span class="op-tag" data-insert="IMPLIES">IMPLIES</span>
+            <span class="op-tag" data-insert="(">(</span>
+            <span class="op-tag" data-insert=")">)</span>
+          </div>
+
+          <!-- Expression Input -->
+          <div class="bool-input-row">
+            <input type="text" id="exprInput" class="bool-expr-input" placeholder="A AND (B OR NOT C)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+          </div>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="01">Show 0 / 1</button>
+            <button class="option-chip" data-mode="tf">Show T / F</button>
+            <button class="option-chip" data-mode="bool">Show true / false</button>
+          </div>
+
+          <!-- Actions -->
+          <div class="bool-actions">
+            <button class="btn btn-primary" id="evalBtn">Generate Table</button>
+            <button class="btn btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-secondary" id="copyBtn">Copy Table</button>
+            <button class="btn btn-secondary" id="downloadBtn">Download CSV</button>
+          </div>
+
+          <!-- Summary pills -->
+          <div class="summary-pills" id="summaryPills" style="display:none;"></div>
+
+          <!-- Truth Table -->
+          <div class="truth-table-wrap" id="tableWrap" style="display:none;">
+            <table class="truth-table" id="truthTable"></table>
+          </div>
+
+          <!-- Karnaugh Map -->
+          <div class="kmap-section" id="kmapSection" style="display:none;">
+            <h3>Karnaugh Map</h3>
+            <div class="kmap-wrap" id="kmapWrap"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a boolean expression above and click Generate Table.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Boolean Truth Table Generator</h2>
+          <ol>
+            <li><strong>Type a boolean expression</strong> using variables A, B, C, D, E, or F and operators. Or click operator buttons to insert them.</li>
+            <li><strong>Click "Generate Table"</strong> — the truth table is created for all combinations of your variables.</li>
+            <li><strong>Review the Karnaugh map</strong> below (for 2–4 variables) to visualize groupings for simplification.</li>
+            <li><strong>Copy or download</strong> the truth table as CSV for use in reports or coursework.</li>
+          </ol>
+
+          <h2>Supported Operators and Syntax</h2>
+          <p>The evaluator accepts both word-form and symbol-form operators:</p>
+          <ul>
+            <li><strong>AND</strong> — also <code>&amp;&amp;</code>, <code>&amp;</code>, <code>*</code></li>
+            <li><strong>OR</strong> — also <code>||</code>, <code>|</code>, <code>+</code></li>
+            <li><strong>NOT</strong> — also <code>!</code>, <code>~</code></li>
+            <li><strong>XOR</strong> — also <code>^</code></li>
+            <li><strong>NAND</strong> — NOT (A AND B)</li>
+            <li><strong>NOR</strong> — NOT (A OR B)</li>
+            <li><strong>IMPLIES</strong> — also <code>=&gt;</code>, <code>-&gt;</code>; equivalent to NOT A OR B</li>
+          </ul>
+          <p>Variables are single letters A through F (case-insensitive). Parentheses are fully supported for grouping sub-expressions. Example expressions: <code>A AND (B OR NOT C)</code>, <code>(A XOR B) NAND C</code>, <code>A IMPLIES (B AND C)</code>.</p>
+
+          <h2>Understanding the Karnaugh Map</h2>
+          <p>A Karnaugh map (K-map) arranges truth table outputs in a 2D grid using Gray code ordering (00, 01, 11, 10) so that adjacent cells differ by only one variable. Groups of adjacent 1s (called "prime implicants") can be circled to eliminate variables and produce a minimized sum-of-products expression. Groups must be powers of 2 (1, 2, 4, 8, 16 cells) and can wrap around edges. K-maps work for 2, 3, and 4 variables. For 5+ variables, Quine-McCluskey or computer-aided methods are preferred.</p>
+
+          <h3>Practical Applications of Boolean Logic</h3>
+          <p>Boolean algebra is the mathematical foundation of digital circuits, programming, and search queries. In hardware design, logic gates (AND, OR, NOT, NAND, NOR, XOR) implement boolean expressions directly in silicon. CPU arithmetic units, memory decoders, and flip-flops are all constructed from these gates. In programming, conditional statements rely on boolean expressions to control program flow. Database queries use AND, OR, and NOT to filter records. Search engines use boolean operators for advanced queries. Understanding truth tables helps you debug complex conditionals, verify that your logic handles all edge cases, and simplify redundant conditions. For other logic-related developer tools, see the <a href="/tools/regex-tester.html">Regex Tester</a> or <a href="/tools/json-formatter.html">JSON Formatter</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What operators does the boolean evaluator support?</button>
+            <div class="faq-answer">The evaluator supports AND, OR, NOT, XOR, NAND, NOR, and IMPLIES. You can use full words or symbols: &amp; or AND, | or OR, ! or NOT, ^ or XOR. Parentheses are fully supported for grouping.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a truth table?</button>
+            <div class="faq-answer">A truth table lists all possible input combinations for a boolean expression and shows the output for each. For n variables there are 2^n rows. Truth tables verify logical equivalence, show circuit behavior, and help simplify expressions.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a Karnaugh map (K-map)?</button>
+            <div class="faq-answer">A Karnaugh map is a visual method for simplifying boolean expressions. It arranges truth table outputs in a grid using Gray code ordering, making it easy to identify groups of adjacent 1s that can be combined to minimize the expression. This tool generates K-maps for 2, 3, and 4 variables.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I write NOT in the expression?</button>
+            <div class="faq-answer">You can write NOT using the word "NOT" (e.g., NOT A), the exclamation mark "!" (e.g., !A), or the tilde "~" (e.g., ~A). All three are equivalent and can be used anywhere in the expression.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between XOR and OR?</button>
+            <div class="faq-answer">OR (inclusive or) returns true if at least one input is true — including when both are true. XOR (exclusive or) returns true only when exactly one input is true. For example: 1 OR 1 = 1, but 1 XOR 1 = 0.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/boolean-evaluator.html">Boolean Evaluator</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Math Tools</h4>
+        <a href="/tools/statistics-calculator.html">Statistics Calculator</a>
+        <a href="/tools/matrix-calculator.html">Matrix Calculator</a>
+        <a href="/tools/percentage-calculator.html">Percentage Calculator</a>
+        <a href="/tools/random-number-generator.html">Random Numbers</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = '01';
+    var lastTable = null;
+    var lastVars = [];
+    var lastExpr = '';
+
+    // --- Tokenizer / Parser ---
+    function tokenize(expr) {
+      // Normalize operators
+      var s = expr.toUpperCase()
+        .replace(/=>/g, ' IMPLIES ')
+        .replace(/->/g, ' IMPLIES ')
+        .replace(/IMPLIES/g, ' IMPLIES ')
+        .replace(/NAND/g, ' NAND ')
+        .replace(/NOR/g, ' NOR ')
+        .replace(/XNOR/g, ' XNOR ')
+        .replace(/XOR/g, ' XOR ')
+        .replace(/AND/g, ' AND ')
+        .replace(/OR/g, ' OR ')
+        .replace(/NOT/g, ' NOT ')
+        .replace(/&&/g, ' AND ')
+        .replace(/\|\|/g, ' OR ')
+        .replace(/&/g, ' AND ')
+        .replace(/\|/g, ' OR ')
+        .replace(/~/g, ' NOT ')
+        .replace(/!/g, ' NOT ')
+        .replace(/\^/g, ' XOR ')
+        .replace(/\*/g, ' AND ')
+        .replace(/\+/g, ' OR ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      var tokens = [];
+      var i = 0;
+      while (i < s.length) {
+        if (s[i] === ' ') { i++; continue; }
+        if (s[i] === '(' || s[i] === ')') { tokens.push(s[i]); i++; continue; }
+        // Word token
+        var j = i;
+        while (j < s.length && s[j] !== ' ' && s[j] !== '(' && s[j] !== ')') j++;
+        var word = s.slice(i, j);
+        if (word) tokens.push(word);
+        i = j;
+      }
+      return tokens;
+    }
+
+    function extractVars(tokens) {
+      var seen = {};
+      var vars = [];
+      var kw = { AND:1, OR:1, NOT:1, XOR:1, NAND:1, NOR:1, XNOR:1, IMPLIES:1, TRUE:1, FALSE:1, '(':1, ')':1 };
+      tokens.forEach(function (t) {
+        if (!kw[t] && /^[A-Z]$/.test(t) && !seen[t]) { seen[t] = true; vars.push(t); }
+      });
+      return vars.sort();
+    }
+
+    // Pratt parser: returns an AST node
+    // Precedence: NOT(5) > AND(4) > XOR(3) > NAND(3) > NOR(3) > XNOR(3) > OR(2) > IMPLIES(1)
+    function parse(tokens) {
+      var pos = 0;
+
+      function peek() { return tokens[pos]; }
+      function consume() { return tokens[pos++]; }
+
+      function parseExpr(minPrec) {
+        var left = parseUnary();
+        while (true) {
+          var op = peek();
+          var prec = getPrec(op);
+          if (prec === 0 || prec < minPrec) break;
+          consume();
+          var right = parseExpr(prec + (isRightAssoc(op) ? 0 : 1));
+          left = { op: op, left: left, right: right };
+        }
+        return left;
+      }
+
+      function getPrec(op) {
+        var p = { IMPLIES: 1, OR: 2, NOR: 3, XOR: 3, XNOR: 3, NAND: 3, AND: 4 };
+        return p[op] || 0;
+      }
+      function isRightAssoc(op) { return op === 'IMPLIES'; }
+
+      function parseUnary() {
+        if (peek() === 'NOT') { consume(); return { op: 'NOT', arg: parseUnary() }; }
+        if (peek() === '(') {
+          consume();
+          var e = parseExpr(0);
+          if (peek() === ')') consume();
+          return e;
+        }
+        var tok = consume();
+        if (tok === 'TRUE' || tok === '1') return { val: true };
+        if (tok === 'FALSE' || tok === '0') return { val: false };
+        return { var: tok };
+      }
+
+      var ast = parseExpr(0);
+      return ast;
+    }
+
+    function evalAST(node, env) {
+      if (node.val !== undefined) return node.val;
+      if (node.var !== undefined) return !!env[node.var];
+      if (node.op === 'NOT') return !evalAST(node.arg, env);
+      var l = evalAST(node.left, env);
+      var r = evalAST(node.right, env);
+      switch (node.op) {
+        case 'AND': return l && r;
+        case 'OR': return l || r;
+        case 'XOR': return l !== r;
+        case 'NAND': return !(l && r);
+        case 'NOR': return !(l || r);
+        case 'XNOR': return l === r;
+        case 'IMPLIES': return !l || r;
+      }
+      return false;
+    }
+
+    function fmtBool(b) {
+      if (currentMode === '01') return b ? '1' : '0';
+      if (currentMode === 'tf') return b ? 'T' : 'F';
+      return b ? 'true' : 'false';
+    }
+
+    function evaluate() {
+      var expr = document.getElementById('exprInput').value.trim();
+      if (!expr) {
+        setStatus('info', 'Enter a boolean expression above and click Generate Table.');
+        document.getElementById('tableWrap').style.display = 'none';
+        document.getElementById('kmapSection').style.display = 'none';
+        document.getElementById('summaryPills').style.display = 'none';
+        document.getElementById('exprInput').className = 'bool-expr-input';
+        return;
+      }
+
+      var tokens, vars, ast;
+      try {
+        tokens = tokenize(expr);
+        vars = extractVars(tokens);
+        if (vars.length === 0) { throw new Error('No variables (A–F) found in expression.'); }
+        if (vars.length > 6) { throw new Error('Maximum 6 variables (A–F) supported.'); }
+        ast = parse(tokens.slice());
+      } catch (e) {
+        setStatus('invalid', 'Parse error: ' + e.message);
+        document.getElementById('exprInput').className = 'bool-expr-input invalid';
+        return;
+      }
+
+      document.getElementById('exprInput').className = 'bool-expr-input valid';
+
+      var n = vars.length;
+      var rows = Math.pow(2, n);
+      var table = [];
+      var trueCount = 0;
+
+      for (var i = 0; i < rows; i++) {
+        var env = {};
+        for (var v = 0; v < n; v++) {
+          env[vars[v]] = !!(i >> (n - 1 - v) & 1);
+        }
+        var result;
+        try { result = evalAST(ast, env); } catch (e) { result = false; }
+        if (result) trueCount++;
+        table.push({ env: env, result: result });
+      }
+
+      lastTable = table;
+      lastVars = vars;
+      lastExpr = expr;
+
+      // Build HTML table
+      var headCells = vars.map(function (v) { return '<th>' + v + '</th>'; }).join('') + '<th class="result-col">' + escHtml(expr) + '</th>';
+      var bodyRows = table.map(function (row) {
+        var cells = vars.map(function (v) {
+          var b = row.env[v];
+          return '<td class="' + (b ? 'val-true' : 'val-false') + '">' + fmtBool(b) + '</td>';
+        }).join('');
+        cells += '<td class="' + (row.result ? 'result-true' : 'result-false') + '">' + fmtBool(row.result) + '</td>';
+        return '<tr>' + cells + '</tr>';
+      }).join('');
+
+      document.getElementById('truthTable').innerHTML = '<thead><tr>' + headCells + '</tr></thead><tbody>' + bodyRows + '</tbody>';
+      document.getElementById('tableWrap').style.display = '';
+
+      // Summary pills
+      var pills = [
+        { label: vars.length + ' variable' + (vars.length !== 1 ? 's' : '') },
+        { label: rows + ' rows' },
+        { label: trueCount + ' true (' + (trueCount / rows * 100).toFixed(0) + '%)' },
+        { label: (rows - trueCount) + ' false' }
+      ];
+      document.getElementById('summaryPills').innerHTML = pills.map(function (p) {
+        return '<span class="summary-pill">' + p.label + '</span>';
+      }).join('');
+      document.getElementById('summaryPills').style.display = '';
+
+      // Karnaugh map (2, 3, 4 vars)
+      if (n >= 2 && n <= 4) {
+        renderKmap(table, vars);
+        document.getElementById('kmapSection').style.display = '';
+      } else {
+        document.getElementById('kmapSection').style.display = 'none';
+      }
+
+      setStatus('valid', vars.length + ' variable' + (vars.length !== 1 ? 's' : '') + ' — ' + rows + ' rows — Expression: ' + expr);
+      DT.trackTool('boolean-evaluator');
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Karnaugh map rendering
+    function renderKmap(table, vars) {
+      var n = vars.length;
+      var gray = function(bits, n2) {
+        var codes = [];
+        for (var i = 0; i < Math.pow(2, n2); i++) {
+          var g = i ^ (i >> 1);
+          var s = g.toString(2).padStart(n2, '0');
+          codes.push(s);
+        }
+        return codes;
+      };
+
+      // Build lookup: bitmask -> result
+      var lookup = {};
+      table.forEach(function (row, idx) { lookup[idx] = row.result; });
+
+      var html = '';
+      if (n === 2) {
+        // Rows: A, Cols: B
+        var rowVars = [vars[0]], colVars = [vars[1]];
+        var rowCodes = gray(null, 1), colCodes = gray(null, 1);
+        html = buildKmap(rowVars, colVars, rowCodes, colCodes, lookup, vars);
+      } else if (n === 3) {
+        // Rows: A, Cols: BC
+        var rowVars = [vars[0]], colVars = [vars[1], vars[2]];
+        var rowCodes = gray(null, 1), colCodes = gray(null, 2);
+        html = buildKmap(rowVars, colVars, rowCodes, colCodes, lookup, vars);
+      } else if (n === 4) {
+        // Rows: AB, Cols: CD
+        var rowVars = [vars[0], vars[1]], colVars = [vars[2], vars[3]];
+        var rowCodes = gray(null, 2), colCodes = gray(null, 2);
+        html = buildKmap(rowVars, colVars, rowCodes, colCodes, lookup, vars);
+      }
+      document.getElementById('kmapWrap').innerHTML = html;
+    }
+
+    function buildKmap(rowVars, colVars, rowCodes, colCodes, lookup, allVars) {
+      var html = '<table class="kmap-table">';
+      // Header
+      html += '<thead><tr><th>' + rowVars.join('') + ' \\ ' + colVars.join('') + '</th>';
+      colCodes.forEach(function (cc) { html += '<th>' + cc + '</th>'; });
+      html += '</tr></thead><tbody>';
+      rowCodes.forEach(function (rc) {
+        html += '<tr><th>' + rc + '</th>';
+        colCodes.forEach(function (cc) {
+          var binStr = rc + cc;
+          var idx = parseInt(binStr, 2);
+          // Map to the row index by variable ordering
+          var actualIdx = 0;
+          var combinedVars = rowVars.concat(colVars);
+          for (var i = 0; i < combinedVars.length; i++) {
+            var varIdx = allVars.indexOf(combinedVars[i]);
+            var bit = parseInt(binStr[i], 2);
+            actualIdx |= (bit << (allVars.length - 1 - varIdx));
+          }
+          var val = lookup[actualIdx] ? 1 : 0;
+          html += '<td class="k' + val + '">' + val + '</td>';
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      return html;
+    }
+
+    function setStatus(cls, msg) {
+      var el = document.getElementById('statusBar');
+      el.className = 'status-bar ' + cls;
+      el.textContent = msg;
+    }
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        if (lastTable) evaluate();
+      });
+    });
+
+    // Op tag inserts
+    document.querySelectorAll('.op-tag').forEach(function (tag) {
+      tag.addEventListener('click', function () {
+        var inp = document.getElementById('exprInput');
+        var ins = ' ' + tag.getAttribute('data-insert') + ' ';
+        var start = inp.selectionStart, end = inp.selectionEnd;
+        inp.value = inp.value.slice(0, start) + ins + inp.value.slice(end);
+        inp.selectionStart = inp.selectionEnd = start + ins.length;
+        inp.focus();
+      });
+    });
+
+    document.getElementById('evalBtn').addEventListener('click', evaluate);
+
+    var debouncedEval = DT.debounce(evaluate, 300);
+    document.getElementById('exprInput').addEventListener('input', debouncedEval);
+    document.getElementById('exprInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); evaluate(); }
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('exprInput').value = 'A AND (B OR NOT C)';
+      evaluate();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('exprInput').value = '';
+      document.getElementById('exprInput').className = 'bool-expr-input';
+      document.getElementById('tableWrap').style.display = 'none';
+      document.getElementById('kmapSection').style.display = 'none';
+      document.getElementById('summaryPills').style.display = 'none';
+      lastTable = null;
+      setStatus('info', 'Enter a boolean expression above and click Generate Table.');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      if (!lastTable || !lastVars.length) return;
+      var lines = [lastVars.join('\t') + '\t' + lastExpr];
+      lastTable.forEach(function (row) {
+        var vals = lastVars.map(function (v) { return fmtBool(row.env[v]); });
+        vals.push(fmtBool(row.result));
+        lines.push(vals.join('\t'));
+      });
+      DT.copyToClipboard(lines.join('\n'), this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      if (!lastTable || !lastVars.length) return;
+      var lines = [lastVars.join(',') + ',' + '"' + lastExpr.replace(/"/g, '""') + '"'];
+      lastTable.forEach(function (row) {
+        var vals = lastVars.map(function (v) { return fmtBool(row.env[v]); });
+        vals.push(fmtBool(row.result));
+        lines.push(vals.join(','));
+      });
+      DT.downloadText(lines.join('\n'), 'truth-table.csv', 'text/csv');
+    });
+  })();
+  </script>
+</body>
+</html>

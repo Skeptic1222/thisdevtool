@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Browser Feature Detector — Web API Support Checker | DevToolbox</title>
+  <meta name="description" content="Test your browser's support for 40+ Web APIs: Web Crypto, Service Workers, WebGL, WebGPU, WebRTC, WebSocket, Notifications, Geolocation, IndexedDB, and more. Free, instant, client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/browser-feature-detector.html">
+  <meta property="og:title" content="Browser Feature Detector — DevToolbox">
+  <meta property="og:description" content="Instantly check which Web APIs your browser supports. Green/red badges, score, and exportable report. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/browser-feature-detector.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <style>
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+    .feature-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.85rem;
+    }
+    .feature-row.supported { border-left: 3px solid #10b981; }
+    .feature-row.unsupported { border-left: 3px solid #ef4444; }
+    .feature-row.partial { border-left: 3px solid #f59e0b; }
+    .feat-icon { font-size: 1rem; flex-shrink: 0; }
+    .feat-name { flex: 1; font-weight: 600; color: var(--text); }
+    .feat-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+    .badge-supported { background: #10b981; color: #fff; border-radius: 99px; padding: 1px 8px; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+    .badge-unsupported { background: #ef4444; color: #fff; border-radius: 99px; padding: 1px 8px; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+    .badge-partial { background: #f59e0b; color: #fff; border-radius: 99px; padding: 1px 8px; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+    .score-bar-wrapper { background: var(--border); border-radius: 99px; height: 10px; margin: 0.75rem 0; overflow: hidden; }
+    .score-bar-fill { height: 10px; border-radius: 99px; background: linear-gradient(90deg, #10b981, #06b6d4); transition: width 0.5s ease; }
+    .score-display { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+    .score-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .section-heading {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin: 1.5rem 0 0.5rem;
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Browser Feature Detector",
+    "url": "https://thisdevtool.com/tools/browser-feature-detector.html",
+    "description": "Test your browser's support for 40+ Web APIs including Web Crypto, Service Workers, WebGL, WebGPU, WebRTC, Notifications, and more. Get a score and export a full report.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What does the feature detection score mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The score is the count of supported APIs out of the total tested. A higher score means more web platform features are available in your browser. A score of 100% is impossible in most environments because some APIs (like WebGPU or SharedArrayBuffer) are behind security flags or intentionally blocked."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do some APIs show as unsupported in Chrome?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Some APIs require explicit user permission (Notifications, Geolocation), a secure context (HTTPS only), or specific hardware. SharedArrayBuffer also requires cross-origin isolation headers. Detection can only test API presence, not permission state."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between feature detection and user agent sniffing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Feature detection checks whether a specific API exists in the browser at runtime (e.g., typeof ServiceWorker !== 'undefined'). User agent sniffing reads the browser's name string to infer support. Feature detection is more reliable because it directly tests capability rather than guessing from a version string."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is WebGPU and why might it be unsupported?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WebGPU is a next-generation graphics API for the web, providing access to GPU rendering pipelines with better performance than WebGL. It requires hardware support, driver updates, and is gradually rolling out. As of 2024, it is available in Chrome 113+ on supported hardware but not yet in Safari or Firefox stable."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this tool to generate a bug report?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Click 'Export Report' to download a plain-text summary of all detected API support, your user agent, and your browser score. This is useful for attaching to bug reports, support tickets, or compatibility documentation."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/screen-info.html">Screen Info</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Browser Feature Detector</h1>
+          <p class="tool-subtitle">Instantly test your browser's support for 40+ Web APIs and get a compatibility score.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="all">All APIs</button>
+            <button class="option-chip" data-mode="supported">Supported Only</button>
+            <button class="option-chip" data-mode="unsupported">Missing Only</button>
+            <button class="option-chip" data-mode="security">Security</button>
+            <button class="option-chip" data-mode="media">Media &amp; Graphics</button>
+            <button class="option-chip" data-mode="storage">Storage</button>
+          </div>
+
+          <div style="margin-top:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+            <div>
+              <div class="score-display" id="scoreDisplay">0/0</div>
+              <div class="score-label" id="scoreLabel">APIs supported</div>
+            </div>
+            <div style="flex:1;min-width:150px;">
+              <div class="score-bar-wrapper"><div class="score-bar-fill" id="scoreBar" style="width:0%;"></div></div>
+              <div id="scorePct" style="font-size:0.8rem;color:var(--text-muted);"></div>
+            </div>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy Report</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Export Report</button>
+            </div>
+          </div>
+
+          <div id="featureContainer"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Running feature detection...
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>What Is Browser Feature Detection?</h2>
+          <p>Browser feature detection is the practice of testing whether a particular Web API or capability exists in the current browser at runtime, rather than assuming support based on the browser name. This is the recommended approach for progressive enhancement and graceful degradation in modern web development.</p>
+
+          <h3>Why Feature Detection Matters</h3>
+          <p>The web platform evolves rapidly. New APIs ship in one browser months or years before others. Your users may be on Chrome, Firefox, Safari, Edge, or a mobile browser — and each has different levels of support. By detecting features at runtime, you can provide fallbacks for missing capabilities, add polyfills only when needed, and use modern APIs where available without breaking older browsers. Frameworks like Modernizr popularized this approach; this tool applies the same principle with no dependencies.</p>
+
+          <h3>API Categories Tested</h3>
+          <ul>
+            <li><strong>Security APIs</strong> — Web Crypto API, SharedArrayBuffer, HTTPS detection, Cross-Origin Isolation, Trusted Types</li>
+            <li><strong>Workers &amp; Threading</strong> — Service Workers, Web Workers, Worklets, SharedArrayBuffer</li>
+            <li><strong>Media &amp; Graphics</strong> — WebGL, WebGL2, WebGPU, Canvas 2D, OffscreenCanvas, WebRTC, MediaDevices, Picture-in-Picture, Screen Capture</li>
+            <li><strong>Storage</strong> — IndexedDB, localStorage, sessionStorage, Cache API, File System Access API, Storage Manager</li>
+            <li><strong>Communication</strong> — WebSocket, WebRTC, Fetch API, BroadcastChannel, MessageChannel</li>
+            <li><strong>Device &amp; Hardware</strong> — Geolocation, Battery API, Bluetooth, USB, Serial, NFC, Gamepad, Accelerometer/Gyroscope</li>
+            <li><strong>Observers</strong> — IntersectionObserver, MutationObserver, ResizeObserver, PerformanceObserver</li>
+            <li><strong>Permissions &amp; Notifications</strong> — Notifications API, Push API, Permissions API</li>
+            <li><strong>Speech &amp; AI</strong> — SpeechRecognition, SpeechSynthesis, AI/LLM browser APIs</li>
+          </ul>
+
+          <h3>Understanding the Score</h3>
+          <p>The compatibility score is the number of detected APIs divided by the total APIs tested. A score of 100% is not expected or necessary — some APIs require specific hardware (WebGPU, Bluetooth), others require explicit permission (Notifications, Geolocation), and some are security-gated (SharedArrayBuffer requires cross-origin isolation headers). The score is most useful for comparing browsers side-by-side or tracking how a browser's support improves across versions.</p>
+
+          <h3>Exporting for Bug Reports</h3>
+          <p>The Export Report button generates a plain-text document listing every tested API, its support status, your user agent string, and your final score. This is useful when filing browser compatibility bug reports with development teams, comparing environments during QA testing, or documenting minimum browser requirements for a project's README.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What does the feature detection score mean?</button>
+            <div class="faq-answer">The score is the count of supported APIs out of the total tested. A score of 100% is not expected because some APIs require hardware, permissions, or security flags not always present.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why do some APIs show as unsupported in Chrome?</button>
+            <div class="faq-answer">Some APIs require explicit user permission (Notifications, Geolocation), HTTPS context, or hardware support. Detection tests API presence, not permission state.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between feature detection and user agent sniffing?</button>
+            <div class="faq-answer">Feature detection tests whether an API exists at runtime. User agent sniffing reads the browser name string. Feature detection is more reliable because it directly tests capability rather than guessing from a version string.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is WebGPU and why might it be unsupported?</button>
+            <div class="faq-answer">WebGPU is a next-generation GPU graphics API. It requires hardware support and driver updates. Available in Chrome 113+ on supported hardware, but not yet in Safari or Firefox stable.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I use this to generate a bug report?</button>
+            <div class="faq-answer">Yes. Click "Export Report" to download a plain-text summary of all API support, your user agent, and your score. Attach it to bug reports or compatibility documentation.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/browser-feature-detector.html">Feature Detector</a>
+        <a href="/tools/screen-info.html">Screen Info</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Security</h4>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      var DT = DevToolbox;
+
+      function checkWebGL() {
+        try {
+          var c = document.createElement('canvas');
+          return !!(c.getContext('webgl') || c.getContext('experimental-webgl'));
+        } catch (e) { return false; }
+      }
+      function checkWebGL2() {
+        try { return !!document.createElement('canvas').getContext('webgl2'); } catch (e) { return false; }
+      }
+      function checkCanvas2D() {
+        try { return !!document.createElement('canvas').getContext('2d'); } catch (e) { return false; }
+      }
+      function checkLocalStorage() {
+        try { localStorage.setItem('_dt_test', '1'); localStorage.removeItem('_dt_test'); return true; } catch (e) { return false; }
+      }
+      function checkSpeechRecognition() {
+        return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+      }
+      function checkWebRTC() {
+        return !!(window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection);
+      }
+
+      var FEATURES = [
+        // Security
+        { key: 'webcrypto', label: 'Web Crypto API', category: 'security', desc: 'Cryptographic operations in the browser', check: function() { return !!(window.crypto && window.crypto.subtle); } },
+        { key: 'https', label: 'Secure Context (HTTPS)', category: 'security', desc: 'Required for many modern APIs', check: function() { return window.isSecureContext !== false; } },
+        { key: 'sharedarraybuffer', label: 'SharedArrayBuffer', category: 'security', desc: 'Shared memory between workers (requires COOP/COEP)', check: function() { return typeof SharedArrayBuffer !== 'undefined'; } },
+        { key: 'trustedtypes', label: 'Trusted Types', category: 'security', desc: 'XSS mitigation API', check: function() { return !!(window.trustedTypes); } },
+        { key: 'permissions', label: 'Permissions API', category: 'security', desc: 'Query permission state without prompting', check: function() { return !!(navigator.permissions); } },
+        // Workers & Threading
+        { key: 'serviceworker', label: 'Service Workers', category: 'workers', desc: 'Offline-first, background sync, push', check: function() { return 'serviceWorker' in navigator; } },
+        { key: 'webworker', label: 'Web Workers', category: 'workers', desc: 'Background JavaScript threads', check: function() { return typeof Worker !== 'undefined'; } },
+        { key: 'sharedworker', label: 'Shared Workers', category: 'workers', desc: 'Workers shared across browser tabs', check: function() { return typeof SharedWorker !== 'undefined'; } },
+        { key: 'broadcastchannel', label: 'BroadcastChannel', category: 'workers', desc: 'Tab-to-tab messaging', check: function() { return typeof BroadcastChannel !== 'undefined'; } },
+        // Media & Graphics
+        { key: 'webgl', label: 'WebGL', category: 'media', desc: '2D/3D GPU rendering', check: checkWebGL },
+        { key: 'webgl2', label: 'WebGL2', category: 'media', desc: 'OpenGL ES 3.0 in the browser', check: checkWebGL2 },
+        { key: 'webgpu', label: 'WebGPU', category: 'media', desc: 'Next-gen GPU API (Chrome 113+)', check: function() { return typeof navigator.gpu !== 'undefined'; } },
+        { key: 'canvas2d', label: 'Canvas 2D', category: 'media', desc: 'Hardware-accelerated 2D drawing', check: checkCanvas2D },
+        { key: 'offscreencanvas', label: 'OffscreenCanvas', category: 'media', desc: 'Canvas in a Web Worker', check: function() { return typeof OffscreenCanvas !== 'undefined'; } },
+        { key: 'webrtc', label: 'WebRTC', category: 'media', desc: 'Real-time peer-to-peer communication', check: checkWebRTC },
+        { key: 'mediadevices', label: 'MediaDevices (Camera/Mic)', category: 'media', desc: 'Access camera and microphone', check: function() { return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia); } },
+        { key: 'mediacapture', label: 'Screen Capture', category: 'media', desc: 'Capture screen/window', check: function() { return !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia); } },
+        { key: 'pip', label: 'Picture-in-Picture', category: 'media', desc: 'Floating video overlay', check: function() { return typeof document.pictureInPictureEnabled !== 'undefined'; } },
+        { key: 'audiocontext', label: 'Web Audio API', category: 'media', desc: 'Advanced audio processing', check: function() { return !!(window.AudioContext || window.webkitAudioContext); } },
+        { key: 'midiapi', label: 'Web MIDI', category: 'media', desc: 'MIDI device access', check: function() { return !!(navigator.requestMIDIAccess); } },
+        // Storage
+        { key: 'indexeddb', label: 'IndexedDB', category: 'storage', desc: 'Client-side structured database', check: function() { return typeof indexedDB !== 'undefined'; } },
+        { key: 'localstorage', label: 'localStorage', category: 'storage', desc: 'Simple key-value persistent storage', check: checkLocalStorage },
+        { key: 'sessionstorage', label: 'sessionStorage', category: 'storage', desc: 'Session-scoped storage', check: function() { return typeof sessionStorage !== 'undefined'; } },
+        { key: 'cacheapi', label: 'Cache API', category: 'storage', desc: 'Network request/response caching', check: function() { return typeof caches !== 'undefined'; } },
+        { key: 'filesystemaccess', label: 'File System Access API', category: 'storage', desc: 'Read/write local files with permission', check: function() { return typeof window.showOpenFilePicker === 'function'; } },
+        { key: 'storagemanager', label: 'Storage Manager', category: 'storage', desc: 'Query and request persistent storage', check: function() { return !!(navigator.storage && navigator.storage.estimate); } },
+        // Communication
+        { key: 'websocket', label: 'WebSocket', category: 'comm', desc: 'Full-duplex TCP connections', check: function() { return typeof WebSocket !== 'undefined'; } },
+        { key: 'fetchapi', label: 'Fetch API', category: 'comm', desc: 'Modern HTTP requests', check: function() { return typeof fetch === 'function'; } },
+        { key: 'beacon', label: 'Beacon API', category: 'comm', desc: 'Reliable fire-and-forget requests', check: function() { return typeof navigator.sendBeacon === 'function'; } },
+        { key: 'eventstream', label: 'Server-Sent Events', category: 'comm', desc: 'Server push via HTTP', check: function() { return typeof EventSource !== 'undefined'; } },
+        // Device & Hardware
+        { key: 'geolocation', label: 'Geolocation', category: 'device', desc: 'GPS/location access', check: function() { return 'geolocation' in navigator; } },
+        { key: 'clipboard', label: 'Clipboard API', category: 'device', desc: 'Async clipboard read/write', check: function() { return !!(navigator.clipboard); } },
+        { key: 'bluetooth', label: 'Web Bluetooth', category: 'device', desc: 'BLE device communication', check: function() { return !!(navigator.bluetooth); } },
+        { key: 'webusb', label: 'WebUSB', category: 'device', desc: 'USB device access', check: function() { return !!(navigator.usb); } },
+        { key: 'serial', label: 'Web Serial', category: 'device', desc: 'Serial port access', check: function() { return !!(navigator.serial); } },
+        { key: 'vibrate', label: 'Vibration API', category: 'device', desc: 'Device vibration (mobile)', check: function() { return typeof navigator.vibrate === 'function'; } },
+        { key: 'battery', label: 'Battery Status API', category: 'device', desc: 'Battery level and charging state', check: function() { return typeof navigator.getBattery === 'function'; } },
+        { key: 'gamepad', label: 'Gamepad API', category: 'device', desc: 'Controller input', check: function() { return typeof navigator.getGamepads === 'function'; } },
+        { key: 'sensors', label: 'Device Orientation', category: 'device', desc: 'Accelerometer/gyroscope', check: function() { return typeof DeviceOrientationEvent !== 'undefined'; } },
+        // Observers
+        { key: 'intersectionobserver', label: 'IntersectionObserver', category: 'observer', desc: 'Detect elements entering viewport', check: function() { return typeof IntersectionObserver !== 'undefined'; } },
+        { key: 'mutationobserver', label: 'MutationObserver', category: 'observer', desc: 'Watch DOM changes', check: function() { return typeof MutationObserver !== 'undefined'; } },
+        { key: 'resizeobserver', label: 'ResizeObserver', category: 'observer', desc: 'Watch element size changes', check: function() { return typeof ResizeObserver !== 'undefined'; } },
+        { key: 'performanceobserver', label: 'PerformanceObserver', category: 'observer', desc: 'Web performance timing metrics', check: function() { return typeof PerformanceObserver !== 'undefined'; } },
+        // Notifications & Push
+        { key: 'notifications', label: 'Notifications API', category: 'notify', desc: 'Desktop/push notifications', check: function() { return typeof Notification !== 'undefined'; } },
+        { key: 'pushapi', label: 'Push API', category: 'notify', desc: 'Server push via service worker', check: function() { return typeof PushManager !== 'undefined'; } },
+        // Speech & AI
+        { key: 'speechrecognition', label: 'Speech Recognition', category: 'speech', desc: 'Voice to text (Web Speech API)', check: checkSpeechRecognition },
+        { key: 'speechsynthesis', label: 'Speech Synthesis', category: 'speech', desc: 'Text to speech', check: function() { return typeof speechSynthesis !== 'undefined'; } },
+        { key: 'ai', label: 'Browser AI API', category: 'speech', desc: 'On-device LLM (Chrome Canary)', check: function() { return typeof window.ai !== 'undefined' || typeof window.LanguageModel !== 'undefined'; } }
+      ];
+
+      var CATEGORY_LABELS = {
+        security: 'Security', workers: 'Workers & Threading', media: 'Media & Graphics',
+        storage: 'Storage', comm: 'Communication', device: 'Device & Hardware',
+        observer: 'Observers', notify: 'Notifications & Push', speech: 'Speech & AI'
+      };
+
+      var results = [];
+      var currentMode = 'all';
+
+      function runDetection() {
+        results = FEATURES.map(function (f) {
+          var supported = false;
+          try { supported = !!f.check(); } catch (e) { supported = false; }
+          return { feature: f, supported: supported };
+        });
+      }
+
+      function renderResults() {
+        var container = document.getElementById('featureContainer');
+        var filtered = results;
+
+        if (currentMode === 'supported') {
+          filtered = results.filter(function (r) { return r.supported; });
+        } else if (currentMode === 'unsupported') {
+          filtered = results.filter(function (r) { return !r.supported; });
+        } else if (currentMode === 'security') {
+          filtered = results.filter(function (r) { return r.feature.category === 'security'; });
+        } else if (currentMode === 'media') {
+          filtered = results.filter(function (r) { return r.feature.category === 'media'; });
+        } else if (currentMode === 'storage') {
+          filtered = results.filter(function (r) { return r.feature.category === 'storage'; });
+        }
+
+        // Group by category
+        var grouped = {};
+        filtered.forEach(function (r) {
+          var cat = r.feature.category;
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(r);
+        });
+
+        var html = '';
+        Object.keys(grouped).forEach(function (cat) {
+          html += '<p class="section-heading">' + (CATEGORY_LABELS[cat] || cat) + '</p>';
+          html += '<div class="feature-grid">';
+          grouped[cat].forEach(function (r) {
+            var cls = r.supported ? 'supported' : 'unsupported';
+            var badge = r.supported
+              ? '<span class="badge-supported">Yes</span>'
+              : '<span class="badge-unsupported">No</span>';
+            html += '<div class="feature-row ' + cls + '">' +
+              '<div><div class="feat-name">' + r.feature.label + '</div><div class="feat-desc">' + r.feature.desc + '</div></div>' +
+              badge + '</div>';
+          });
+          html += '</div>';
+        });
+
+        container.innerHTML = html;
+
+        // Score
+        var supported = results.filter(function (r) { return r.supported; }).length;
+        var total = results.length;
+        var pct = Math.round((supported / total) * 100);
+        document.getElementById('scoreDisplay').textContent = supported + '/' + total;
+        document.getElementById('scoreLabel').textContent = 'APIs supported';
+        document.getElementById('scoreBar').style.width = pct + '%';
+        document.getElementById('scorePct').textContent = pct + '% compatibility';
+
+        var sb = document.getElementById('statusBar');
+        sb.className = 'status-bar ' + (pct >= 80 ? 'valid' : pct >= 50 ? 'info' : 'invalid');
+        sb.textContent = supported + '/' + total + ' APIs supported (' + pct + '%)';
+
+        DT.trackTool('browser-feature-detector');
+      }
+
+      function buildReport() {
+        var lines = [
+          '=== Browser Feature Detection Report ===',
+          'Generated: ' + new Date().toISOString(),
+          'User Agent: ' + navigator.userAgent,
+          ''
+        ];
+        var supported = results.filter(function (r) { return r.supported; }).length;
+        lines.push('Score: ' + supported + '/' + results.length + ' (' + Math.round(supported/results.length*100) + '%)');
+        lines.push('');
+        var grouped = {};
+        results.forEach(function (r) {
+          var cat = r.feature.category;
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(r);
+        });
+        Object.keys(grouped).forEach(function (cat) {
+          lines.push('--- ' + (CATEGORY_LABELS[cat] || cat) + ' ---');
+          grouped[cat].forEach(function (r) {
+            lines.push((r.supported ? '[YES] ' : '[ NO] ') + r.feature.label + ' — ' + r.feature.desc);
+          });
+          lines.push('');
+        });
+        return lines.join('\n');
+      }
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          renderResults();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        DT.copyToClipboard(buildReport(), this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        DT.downloadText(buildReport(), 'browser-features.txt', 'text/plain');
+      });
+
+      runDetection();
+      renderResults();
+    })();
+  </script>
+</body>
+</html>

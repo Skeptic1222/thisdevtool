@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Base64 to Image Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Decode Base64 strings or data URIs back to images. Auto-detect format. Preview instantly. Download as PNG, JPEG, GIF, or WebP. Validate base64 input. 100% client-side, no upload.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/base64-to-image.html">
+  <meta property="og:title" content="Base64 to Image Converter — DevToolbox">
+  <meta property="og:description" content="Paste a Base64 string or data URI to preview and download the image. Auto-detects format. No upload — runs entirely in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/base64-to-image.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Base64 to Image Converter",
+    "url": "https://thisdevtool.com/tools/base64-to-image.html",
+    "description": "Decode Base64 strings or data URIs back to images. Auto-detect image format. Preview and download. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I convert a Base64 string back to an image?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Paste the Base64 string or full data URI into the input area. The tool will automatically decode it and show a preview. If you pasted just a raw Base64 string without the data:image/... prefix, the tool will attempt to detect the image format from the data itself. Click Download to save the image file."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between a data URI and a raw Base64 string?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A data URI includes a prefix that specifies the MIME type: 'data:image/png;base64,iVBOR...'. A raw Base64 string is just the encoded data without the prefix: 'iVBOR...'. This tool accepts both formats — it will detect the data URI prefix automatically, or try to detect the image type from the raw data."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What image formats can I decode?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PNG, JPEG, GIF, WebP, SVG, BMP, and any other image format your browser supports. If a data URI is provided, the MIME type is read from the prefix. For raw Base64 strings, the tool reads the magic bytes at the start of the decoded data to identify the format."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I identify an invalid Base64 string?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Valid Base64 strings contain only A-Z, a-z, 0-9, +, /, and = (padding). The length should be a multiple of 4 characters. Common problems include spaces or line breaks (which this tool strips automatically), incorrect padding, or non-Base64 characters. The status bar will show an error if the string cannot be decoded."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the Base64 data processed on a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Everything runs in your browser. The Base64 string is decoded using the browser's built-in atob() function and displayed as an image. No data is sent to any server."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .b64-input-wrap { position: relative; }
+    .b64-input-wrap textarea { width: 100%; min-height: 120px; font-family: var(--font-mono); font-size: 0.78rem; resize: vertical; }
+    .char-count { position: absolute; bottom: 0.4rem; right: 0.6rem; font-size: 0.7rem; color: var(--text-muted); pointer-events: none; }
+    .preview-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin: 1rem 0; }
+    .preview-box.hidden { display: none; }
+    .preview-inner { display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap; }
+    .preview-image-wrap { flex-shrink: 0; background: repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 0 0 / 16px 16px; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
+    .preview-image-wrap img { max-width: 220px; max-height: 220px; display: block; }
+    .image-meta { flex: 1; min-width: 160px; }
+    .meta-row { display: flex; justify-content: space-between; padding: 0.35rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; gap: 1rem; }
+    .meta-row:last-child { border-bottom: none; }
+    .meta-label { color: var(--text-muted); font-weight: 600; }
+    .meta-val { font-family: var(--font-mono); font-weight: 700; color: var(--accent); }
+    .action-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+    .fmt-dl-select { padding: 0.35rem 0.7rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/image-to-base64.html">Image → Base64</a>
+        <a href="/tools/base64.html">Text Base64</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Base64 to Image Converter</h1>
+          <p class="tool-subtitle">Paste a Base64 string or data URI. Preview the image instantly and download it. Auto-detects format.</p>
+
+          <!-- Chips: strip whitespace, validate -->
+          <div class="option-chips">
+            <button class="option-chip active" id="chipStrip" data-opt="strip">Auto-strip whitespace</button>
+            <button class="option-chip" id="chipValidate" data-opt="validate">Validate only</button>
+          </div>
+
+          <!-- Input -->
+          <div class="pane-label" style="margin-bottom:0.4rem;">
+            <span>Base64 Input</span>
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+          </div>
+          <div class="b64-input-wrap">
+            <textarea id="b64Input" placeholder="Paste a data URI:  data:image/png;base64,iVBOR...
+Or just raw Base64:  iVBORw0KGgoAAAANSUhEUgAA..." spellcheck="false"></textarea>
+            <span class="char-count" id="charCount">0 chars</span>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-box hidden" id="previewBox">
+            <div class="preview-inner">
+              <div class="preview-image-wrap">
+                <img id="previewImg" src="" alt="Decoded image preview">
+              </div>
+              <div class="image-meta">
+                <div class="meta-row"><span class="meta-label">Format</span><span class="meta-val" id="metaFmt">—</span></div>
+                <div class="meta-row"><span class="meta-label">Dimensions</span><span class="meta-val" id="metaDims">—</span></div>
+                <div class="meta-row"><span class="meta-label">Decoded size</span><span class="meta-val" id="metaSize">—</span></div>
+                <div class="meta-row"><span class="meta-label">Base64 chars</span><span class="meta-val" id="metaChars">—</span></div>
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="btn btn-sm btn-primary" id="downloadBtn">Download Image</button>
+              <select class="fmt-dl-select" id="dlFormat">
+                <option value="auto">Auto (original format)</option>
+                <option value="image/png">PNG</option>
+                <option value="image/jpeg">JPEG</option>
+                <option value="image/webp">WebP</option>
+              </select>
+              <button class="btn btn-sm btn-secondary" id="copyUriBtn">Copy Data URI</button>
+            </div>
+          </div>
+
+          <!-- Status bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a Base64 string or data URI above.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Decode a Base64 Image</h2>
+          <ol>
+            <li><strong>Paste the string</strong> — either a full data URI (<code>data:image/png;base64,...</code>) or a raw Base64 string.</li>
+            <li><strong>Preview loads instantly</strong> — the image renders in the preview box. Format, dimensions, and file sizes are shown.</li>
+            <li><strong>Download</strong> — click Download to save the image file. Choose a specific format in the dropdown to convert it.</li>
+            <li><strong>Copy data URI</strong> — use the Copy Data URI button if you need to re-embed the image elsewhere.</li>
+          </ol>
+
+          <h2>Understanding Base64 Image Data</h2>
+          <p>Base64 encoding converts binary image data into a string of printable ASCII characters. This makes it possible to embed images in HTML, CSS, JSON, API responses, and any text-based format. The reverse process — decoding Base64 back to an image — is equally common. Developers encounter Base64 images when working with REST APIs that return embedded thumbnails, database records that store images as text, email HTML templates, JSON configuration files, and browser localStorage or IndexedDB.</p>
+
+          <h3>Data URI Format</h3>
+          <p>A complete data URI has three parts separated by commas and colons: the scheme (<code>data:</code>), the media type with encoding (<code>image/png;base64</code>), and the encoded data. The media type tells the browser what kind of data follows. When you paste a data URI into this tool, the MIME type is extracted from the prefix to ensure the downloaded file has the correct extension and format.</p>
+
+          <h3>Raw Base64 Without a Data URI Prefix</h3>
+          <p>Sometimes you have just the raw Base64 string without the <code>data:image/...</code> prefix. This happens when working with APIs, databases, or tools that store only the encoded bytes. In this case, this tool reads the first few decoded bytes (called magic bytes or file signatures) to identify the format: PNG files start with <code>\x89PNG</code>, JPEG files start with <code>\xFF\xD8\xFF</code>, GIF files start with <code>GIF87a</code> or <code>GIF89a</code>, and WebP files start with <code>RIFF...WEBP</code>.</p>
+
+          <h3>Downloading in a Different Format</h3>
+          <p>The download format selector lets you convert the image to PNG, JPEG, or WebP on download. This works by drawing the decoded image onto an HTML canvas element and then exporting the canvas in the desired format. Note that converting to JPEG will lose any transparency channel — transparent pixels become white on a JPEG background. PNG and WebP both support transparency.</p>
+
+          <h3>Common Base64 Issues</h3>
+          <p>The most common problem with Base64 strings is extra whitespace — line breaks, spaces, and tabs are not valid Base64 characters and will cause decoding to fail. This tool automatically strips whitespace before attempting to decode. Another common issue is truncated Base64 strings: if the original image was cut off during copying or transmission, the decoded result will be corrupt. The tool validates the decoded data by attempting to load it as an image and will show an error if the image fails to load.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I convert a Base64 string back to an image?</button>
+            <div class="faq-answer">Paste the Base64 string or full data URI into the input area. The tool will decode it and show a preview. Click Download to save the image file.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between a data URI and a raw Base64 string?</button>
+            <div class="faq-answer">A data URI includes a MIME type prefix: "data:image/png;base64,iVBOR...". A raw Base64 string is just the encoded data without a prefix. This tool accepts both — it detects the data URI prefix automatically, or tries to identify the format from the decoded bytes.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What image formats can I decode?</button>
+            <div class="faq-answer">PNG, JPEG, GIF, WebP, SVG, BMP, and any other image format your browser supports. If a data URI is provided, the MIME type is read from the prefix. For raw Base64, the tool reads magic bytes to identify the format.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I identify an invalid Base64 string?</button>
+            <div class="faq-answer">Valid Base64 contains only A-Z, a-z, 0-9, +, /, and = padding. Common problems are spaces or line breaks (stripped automatically), incorrect padding, or non-Base64 characters. The status bar shows an error if decoding fails.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is the Base64 data processed on a server?</button>
+            <div class="faq-answer">No. Everything runs in your browser. The Base64 string is decoded using the browser's built-in atob() function and displayed as an image. No data is sent to any server.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Images</h4>
+        <a href="/tools/base64-to-image.html">Base64 → Image</a>
+        <a href="/tools/image-to-base64.html">Image → Base64</a>
+        <a href="/tools/image-color-picker.html">Color Picker</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Encoding</h4>
+        <a href="/tools/base64.html">Text Base64</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/html-entity-encoder.html">HTML Entities</a>
+        <a href="/tools/data-url-creator.html">Data URL Creator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var b64Input = document.getElementById('b64Input');
+      var previewBox = document.getElementById('previewBox');
+      var previewImg = document.getElementById('previewImg');
+      var statusBar = document.getElementById('statusBar');
+      var charCount = document.getElementById('charCount');
+      var currentDataURI = '';
+      var currentMime = 'image/png';
+
+      // A small 1x1 transparent PNG for the example
+      var EXAMPLE = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVR42mNk+M9Qz0AEYBxVSF+FABJADveRUH1HAAAAAElFTkSuQmCC';
+
+      function detectMimeFromBytes(bytes) {
+        if (bytes[0] === 0x89 && bytes[1] === 0x50) return 'image/png';
+        if (bytes[0] === 0xFF && bytes[1] === 0xD8) return 'image/jpeg';
+        if (bytes[0] === 0x47 && bytes[1] === 0x49) return 'image/gif';
+        if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[8] === 0x57) return 'image/webp';
+        if (bytes[0] === 0x42 && bytes[1] === 0x4D) return 'image/bmp';
+        // SVG (text)
+        return 'image/png';
+      }
+
+      function mimeToExt(mime) {
+        var map = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp', 'image/bmp': 'bmp', 'image/svg+xml': 'svg' };
+        return map[mime] || 'png';
+      }
+
+      function decode() {
+        var raw = b64Input.value;
+        charCount.textContent = raw.length + ' chars';
+
+        if (!raw.trim()) {
+          previewBox.classList.add('hidden');
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste a Base64 string or data URI above.';
+          currentDataURI = '';
+          return;
+        }
+
+        var stripped = raw.replace(/\s/g, '');
+        var dataUri = '';
+        var mime = 'image/png';
+
+        if (/^data:image\/[a-z+]+;base64,/i.test(stripped)) {
+          // Full data URI
+          dataUri = stripped;
+          mime = stripped.match(/^data:([^;]+);/)[1];
+        } else {
+          // Raw Base64 — try to detect format
+          try {
+            var binary = atob(stripped.replace(/[^A-Za-z0-9+/=]/g, ''));
+            var bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            mime = detectMimeFromBytes(bytes);
+            dataUri = 'data:' + mime + ';base64,' + stripped;
+          } catch (e) {
+            statusBar.className = 'status-bar invalid';
+            statusBar.textContent = 'Invalid Base64: ' + e.message;
+            previewBox.classList.add('hidden');
+            return;
+          }
+        }
+
+        currentDataURI = dataUri;
+        currentMime = mime;
+
+        // Load as image to validate
+        var img = new Image();
+        img.onload = function () {
+          previewImg.src = dataUri;
+          document.getElementById('metaFmt').textContent = mime;
+          document.getElementById('metaDims').textContent = img.naturalWidth + ' × ' + img.naturalHeight;
+
+          // Estimate decoded byte size from base64 length
+          var b64Part = dataUri.split(',')[1] || '';
+          var padding = (b64Part.match(/=+$/) || [''])[0].length;
+          var byteLen = Math.floor(b64Part.length * 0.75) - padding;
+          document.getElementById('metaSize').textContent = DT.formatBytes(byteLen);
+          document.getElementById('metaChars').textContent = b64Part.length.toLocaleString();
+
+          previewBox.classList.remove('hidden');
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Valid ' + mime + ' — ' + img.naturalWidth + '×' + img.naturalHeight + ' — ' + DT.formatBytes(byteLen);
+
+          DT.trackTool('base64-to-image');
+        };
+        img.onerror = function () {
+          previewBox.classList.add('hidden');
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Could not decode as a valid image. Check that the Base64 string is complete and uncorrupted.';
+        };
+        img.src = dataUri;
+      }
+
+      var debouncedDecode = DT.debounce(decode, 300);
+      b64Input.addEventListener('input', function () {
+        charCount.textContent = b64Input.value.length + ' chars';
+        debouncedDecode();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        b64Input.value = EXAMPLE;
+        decode();
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        b64Input.value = '';
+        previewBox.classList.add('hidden');
+        currentDataURI = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste a Base64 string or data URI above.';
+        charCount.textContent = '0 chars';
+        b64Input.focus();
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        if (!currentDataURI) return;
+        var fmtSelect = document.getElementById('dlFormat').value;
+        var mime = fmtSelect === 'auto' ? currentMime : fmtSelect;
+        var ext = mimeToExt(mime);
+
+        if (fmtSelect === 'auto') {
+          // Direct download
+          var a = document.createElement('a');
+          a.href = currentDataURI;
+          a.download = 'image.' + ext;
+          a.click();
+        } else {
+          // Convert via canvas
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext('2d');
+          var img = new Image();
+          img.onload = function () {
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob(function (blob) {
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              a.href = url;
+              a.download = 'image.' + ext;
+              a.click();
+              setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+            }, mime);
+          };
+          img.src = currentDataURI;
+        }
+      });
+
+      document.getElementById('copyUriBtn').addEventListener('click', function () {
+        if (currentDataURI) DT.copyToClipboard(currentDataURI, this);
+      });
+
+      // Chips just affect whitespace stripping (already auto)
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

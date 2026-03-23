@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Matrix Calculator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Online matrix calculator: add, subtract, multiply, transpose, determinant, inverse, scalar multiply for 2×2 to 5×5 matrices. Visual grids, step-by-step results. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/matrix-calculator.html">
+  <meta property="og:title" content="Matrix Calculator — DevToolbox">
+  <meta property="og:description" content="Free online matrix calculator with visual input grids. Add, subtract, multiply, transpose, determinant, inverse. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/matrix-calculator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Matrix Calculator",
+    "url": "https://thisdevtool.com/tools/matrix-calculator.html",
+    "description": "Online matrix calculator supporting addition, subtraction, multiplication, transpose, determinant, inverse, and scalar multiplication for matrices up to 5×5.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "When can you multiply two matrices?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Matrix multiplication A×B is only possible when the number of columns in A equals the number of rows in B. The result has the same number of rows as A and the same number of columns as B. For example, a 3×2 matrix can be multiplied by a 2×4 matrix to get a 3×4 result."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When does a matrix have an inverse?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A square matrix has an inverse only if its determinant is non-zero (it is non-singular). If the determinant is 0, the matrix is singular and has no inverse. This calculator will report when a matrix is singular."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the determinant of a matrix?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The determinant is a scalar value computed from a square matrix. It tells you if the matrix is invertible (non-zero determinant), the scaling factor of a linear transformation, and has applications in solving systems of linear equations via Cramer's rule."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is matrix transposition?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Transposing a matrix flips it over its main diagonal — rows become columns and columns become rows. A matrix of size m×n becomes n×m after transposition. It is denoted Aᵀ."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is scalar multiplication?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Scalar multiplication multiplies every element of a matrix by a single number (the scalar). For example, multiplying matrix A by scalar k produces a new matrix where every entry a_ij becomes k × a_ij."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .matrix-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 600px) { .matrix-layout { grid-template-columns: 1fr; } }
+    .matrix-panel { }
+    .matrix-panel h3 { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; color: var(--text-primary); }
+    .matrix-size-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; font-size: .88rem; }
+    .matrix-size-row select { padding: .3rem .5rem; border: 1.5px solid var(--border); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); font-size: .88rem; }
+    .matrix-size-row select:focus { outline: none; border-color: #10b981; }
+    .matrix-grid { display: inline-grid; gap: 4px; }
+    .matrix-grid input { width: 52px; height: 40px; text-align: center; padding: 2px; font-size: .9rem; border: 1.5px solid var(--border); border-radius: 5px; background: var(--input-bg); color: var(--text-primary); box-sizing: border-box; }
+    .matrix-grid input:focus { outline: none; border-color: #10b981; }
+    .matrix-bracket-wrap { display: flex; align-items: center; gap: 6px; }
+    .matrix-bracket { font-size: 2.5rem; color: var(--text-secondary); line-height: 1; user-select: none; }
+    .result-matrix-wrap { margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border: 1.5px solid var(--border); border-radius: 10px; }
+    .result-matrix-wrap h3 { font-size: .9rem; font-weight: 600; color: var(--text-secondary); margin-bottom: .5rem; text-transform: uppercase; letter-spacing: .05em; }
+    .result-grid { display: inline-grid; gap: 4px; }
+    .result-cell { min-width: 60px; height: 36px; display: flex; align-items: center; justify-content: center; font-family: 'Fira Code', 'Consolas', monospace; font-size: .88rem; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
+    .scalar-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .75rem; font-size: .88rem; }
+    .scalar-row input { width: 80px; padding: .35rem .5rem; border: 1.5px solid var(--border); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); font-size: .9rem; text-align: center; }
+    .steps-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; font-size: .85rem; font-family: 'Fira Code', 'Consolas', monospace; line-height: 1.6; white-space: pre-wrap; word-break: break-word; margin-top: .75rem; max-height: 300px; overflow-y: auto; }
+    .matrix-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
+    .single-result { font-size: 1.4rem; font-weight: 700; color: #10b981; padding: .5rem; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/statistics-calculator.html">Statistics</a>
+        <a href="/tools/percentage-calculator.html">Percentages</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Matrix Calculator</h1>
+          <p class="tool-subtitle">Enter values in the matrix grids and select an operation. Supports 2×2 to 5×5 matrices.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="add">Add (A+B)</button>
+            <button class="option-chip" data-mode="sub">Subtract (A−B)</button>
+            <button class="option-chip" data-mode="mul">Multiply (A×B)</button>
+            <button class="option-chip" data-mode="scalar">Scalar ×</button>
+            <button class="option-chip" data-mode="transpose">Transpose (Aᵀ)</button>
+            <button class="option-chip" data-mode="det">Determinant</button>
+            <button class="option-chip" data-mode="inv">Inverse (A⁻¹)</button>
+          </div>
+
+          <!-- Scalar input (shown only for scalar mode) -->
+          <div id="scalarRow" class="scalar-row" style="display:none;">
+            <label>Scalar value:</label>
+            <input type="number" id="scalarVal" value="2" step="any" placeholder="2">
+          </div>
+
+          <!-- Matrix inputs -->
+          <div class="matrix-layout">
+            <div class="matrix-panel" id="panelA">
+              <h3>Matrix A</h3>
+              <div class="matrix-size-row">
+                <label>Rows:</label>
+                <select id="aRows"><option>2</option><option>3</option><option>4</option><option>5</option></select>
+                <label>Cols:</label>
+                <select id="aCols"><option>2</option><option>3</option><option>4</option><option>5</option></select>
+              </div>
+              <div class="matrix-bracket-wrap">
+                <div class="matrix-bracket">[</div>
+                <div class="matrix-grid" id="gridA"></div>
+                <div class="matrix-bracket">]</div>
+              </div>
+            </div>
+            <div class="matrix-panel" id="panelB">
+              <h3>Matrix B</h3>
+              <div class="matrix-size-row">
+                <label>Rows:</label>
+                <select id="bRows"><option>2</option><option>3</option><option>4</option><option>5</option></select>
+                <label>Cols:</label>
+                <select id="bCols"><option>2</option><option>3</option><option>4</option><option>5</option></select>
+              </div>
+              <div class="matrix-bracket-wrap">
+                <div class="matrix-bracket">[</div>
+                <div class="matrix-grid" id="gridB"></div>
+                <div class="matrix-bracket">]</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Result -->
+          <div class="result-matrix-wrap" id="resultWrap" style="display:none;">
+            <h3 id="resultTitle">Result</h3>
+            <div id="resultContent"></div>
+          </div>
+
+          <!-- Steps -->
+          <div id="stepsWrap" style="display:none;">
+            <div style="font-size:.85rem;font-weight:600;color:var(--text-secondary);margin:.75rem 0 .25rem;text-transform:uppercase;letter-spacing:.05em;">Step-by-step</div>
+            <div class="steps-box" id="stepsBox"></div>
+          </div>
+
+          <div class="matrix-actions">
+            <button class="btn btn-primary" id="calcBtn">Calculate</button>
+            <button class="btn btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-secondary" id="copyBtn">Copy Result</button>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter matrix values and click Calculate.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Matrix Calculator</h2>
+          <ol>
+            <li><strong>Select an operation</strong> using the chips: Add, Subtract, Multiply, Scalar, Transpose, Determinant, or Inverse.</li>
+            <li><strong>Set matrix dimensions</strong> using the rows/cols dropdowns (2 to 5 for each dimension).</li>
+            <li><strong>Enter values</strong> directly into the grid cells. Use decimals or negatives freely.</li>
+            <li><strong>Click Calculate</strong> to see the result matrix and a step-by-step breakdown.</li>
+          </ol>
+
+          <h2>Matrix Operations Explained</h2>
+
+          <h3>Addition and Subtraction</h3>
+          <p>Matrix addition (A + B) and subtraction (A − B) require both matrices to have identical dimensions. The result is computed element-by-element: each cell (i,j) of the result equals A[i][j] ± B[i][j]. These operations are commutative for addition (A+B = B+A) but not for subtraction.</p>
+
+          <h3>Matrix Multiplication</h3>
+          <p>Matrix multiplication A×B requires the number of columns in A to equal the number of rows in B. If A is m×n and B is n×p, the result is m×p. Each element result[i][j] is the dot product of row i of A with column j of B. Unlike scalar multiplication, matrix multiplication is generally not commutative (A×B ≠ B×A).</p>
+
+          <h3>Scalar Multiplication</h3>
+          <p>Multiplying a matrix by a scalar k produces a new matrix where every element is multiplied by k. This scales the entire matrix uniformly without changing its structure or the relative proportions of its elements.</p>
+
+          <h3>Transpose</h3>
+          <p>The transpose of matrix A (written Aᵀ) swaps rows and columns. Element (i,j) of A becomes element (j,i) of Aᵀ. A symmetric matrix equals its own transpose. Transposition is used in computing dot products, adjusting data table orientations, and in many machine learning algorithms.</p>
+
+          <h3>Determinant</h3>
+          <p>The determinant is a scalar value associated with any square matrix. For a 2×2 matrix [[a,b],[c,d]], det = ad − bc. For larger matrices, this calculator uses cofactor expansion (Laplace expansion). A non-zero determinant means the matrix is invertible; a zero determinant means it is singular. The determinant also represents the scaling factor of the linear transformation described by the matrix.</p>
+
+          <h3>Matrix Inverse</h3>
+          <p>The inverse of square matrix A (written A⁻¹) is the matrix such that A × A⁻¹ = I (the identity matrix). An inverse only exists if the determinant is non-zero. This calculator uses the adjugate matrix method for 2×2 to 4×4, and Gaussian elimination for 5×5. Inverses are essential for solving systems of linear equations, computer graphics transformations, and cryptography. For statistical applications of matrices, see the <a href="/tools/statistics-calculator.html">Statistics Calculator</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">When can you multiply two matrices?</button>
+            <div class="faq-answer">Matrix multiplication A×B is only possible when the number of columns in A equals the number of rows in B. The result has the same number of rows as A and the same number of columns as B. For example, a 3×2 matrix multiplied by a 2×4 matrix yields a 3×4 result.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">When does a matrix have an inverse?</button>
+            <div class="faq-answer">A square matrix has an inverse only if its determinant is non-zero (non-singular). If the determinant is 0, the matrix is singular and has no inverse. This calculator reports when a matrix is singular.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the determinant of a matrix?</button>
+            <div class="faq-answer">The determinant is a scalar computed from a square matrix. It tells you if the matrix is invertible (non-zero = invertible), represents the scaling factor of a linear transformation, and is used in Cramer's rule for solving linear systems.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is matrix transposition?</button>
+            <div class="faq-answer">Transposing flips a matrix over its main diagonal — rows become columns. A matrix of size m×n becomes n×m after transposition, denoted Aᵀ.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is scalar multiplication?</button>
+            <div class="faq-answer">Scalar multiplication multiplies every element of a matrix by a single number (the scalar). For example, multiplying matrix A by scalar k produces a new matrix where every entry a_ij becomes k × a_ij.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Math Tools</h4>
+        <a href="/tools/matrix-calculator.html">Matrix Calculator</a>
+        <a href="/tools/statistics-calculator.html">Statistics Calculator</a>
+        <a href="/tools/percentage-calculator.html">Percentage Calculator</a>
+        <a href="/tools/random-number-generator.html">Random Numbers</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/boolean-evaluator.html">Boolean Evaluator</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'add';
+    var lastResult = '';
+
+    // --- Matrix helpers ---
+    function makeMatrix(rows, cols, fill) {
+      var m = [];
+      for (var r = 0; r < rows; r++) { m.push([]); for (var c = 0; c < cols; c++) m[r].push(fill !== undefined ? fill : 0); }
+      return m;
+    }
+
+    function getMatrix(id, rows, cols) {
+      var m = [];
+      for (var r = 0; r < rows; r++) {
+        m.push([]);
+        for (var c = 0; c < cols; c++) {
+          var inp = document.getElementById(id + '_' + r + '_' + c);
+          m[r].push(inp ? (parseFloat(inp.value) || 0) : 0);
+        }
+      }
+      return m;
+    }
+
+    function renderGrid(id, rows, cols) {
+      var grid = document.getElementById(id);
+      grid.style.gridTemplateColumns = 'repeat(' + cols + ', 52px)';
+      var html = '';
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          html += '<input type="number" id="' + id + '_' + r + '_' + c + '" value="0" step="any" aria-label="Row ' + (r+1) + ' Col ' + (c+1) + '">';
+        }
+      }
+      grid.innerHTML = html;
+    }
+
+    function renderResult(matrix, title) {
+      var rows = matrix.length, cols = matrix[0].length;
+      var grid = document.createElement('div');
+      grid.className = 'result-grid';
+      grid.style.gridTemplateColumns = 'repeat(' + cols + ', auto)';
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          var cell = document.createElement('div');
+          cell.className = 'result-cell';
+          cell.textContent = fmtN(matrix[r][c]);
+          grid.appendChild(cell);
+        }
+      }
+      document.getElementById('resultTitle').textContent = title;
+      var wrap = document.createElement('div');
+      wrap.style.display = 'flex';
+      wrap.style.alignItems = 'center';
+      wrap.style.gap = '6px';
+      var bl = document.createElement('div'); bl.className = 'matrix-bracket'; bl.textContent = '[';
+      var br = document.createElement('div'); br.className = 'matrix-bracket'; br.textContent = ']';
+      wrap.appendChild(bl); wrap.appendChild(grid); wrap.appendChild(br);
+      document.getElementById('resultContent').innerHTML = '';
+      document.getElementById('resultContent').appendChild(wrap);
+      document.getElementById('resultWrap').style.display = '';
+
+      // Store text result
+      var rows2 = [];
+      for (var i = 0; i < rows; i++) rows2.push(matrix[i].map(fmtN).join('\t'));
+      lastResult = rows2.join('\n');
+    }
+
+    function renderScalar(val, title) {
+      document.getElementById('resultTitle').textContent = title;
+      document.getElementById('resultContent').innerHTML = '<div class="single-result">' + fmtN(val) + '</div>';
+      document.getElementById('resultWrap').style.display = '';
+      lastResult = String(fmtN(val));
+    }
+
+    function fmtN(v) {
+      if (Math.abs(v) < 1e-10 && v !== 0) v = 0;
+      var s = parseFloat(v.toFixed(6));
+      return s % 1 === 0 ? s.toString() : parseFloat(v.toFixed(4)).toString();
+    }
+
+    function addSteps(html) {
+      document.getElementById('stepsBox').innerHTML = html;
+      document.getElementById('stepsWrap').style.display = html ? '' : 'none';
+    }
+
+    // --- Operations ---
+    function opAdd(A, rA, cA, B, rB, cB, sub) {
+      if (rA !== rB || cA !== cB) return { error: 'Matrices must have the same dimensions for ' + (sub ? 'subtraction' : 'addition') + '.' };
+      var R = makeMatrix(rA, cA);
+      var steps = 'Element-wise ' + (sub ? 'subtraction' : 'addition') + ' (' + rA + '×' + cA + '):\n';
+      for (var r = 0; r < rA; r++) for (var c = 0; c < cA; c++) {
+        R[r][c] = sub ? A[r][c] - B[r][c] : A[r][c] + B[r][c];
+        steps += 'R[' + r + '][' + c + '] = ' + fmtN(A[r][c]) + (sub ? ' - ' : ' + ') + fmtN(B[r][c]) + ' = ' + fmtN(R[r][c]) + '\n';
+      }
+      return { matrix: R, steps: steps, title: (sub ? 'A − B' : 'A + B') + ' (' + rA + '×' + cA + ')' };
+    }
+
+    function opMul(A, rA, cA, B, rB, cB) {
+      if (cA !== rB) return { error: 'Cannot multiply: A has ' + cA + ' columns but B has ' + rB + ' rows. Number of columns in A must equal number of rows in B.' };
+      var R = makeMatrix(rA, cB);
+      var steps = 'Matrix multiplication (' + rA + '×' + cA + ') × (' + rB + '×' + cB + ') = (' + rA + '×' + cB + '):\n';
+      for (var r = 0; r < rA; r++) for (var c = 0; c < cB; c++) {
+        var parts = [];
+        for (var k = 0; k < cA; k++) { R[r][c] += A[r][k] * B[k][c]; parts.push(fmtN(A[r][k]) + '×' + fmtN(B[k][c])); }
+        steps += 'R[' + r + '][' + c + '] = ' + parts.join(' + ') + ' = ' + fmtN(R[r][c]) + '\n';
+      }
+      return { matrix: R, steps: steps, title: 'A × B (' + rA + '×' + cB + ')' };
+    }
+
+    function opScalar(A, rA, cA, k) {
+      var R = makeMatrix(rA, cA);
+      var steps = 'Scalar multiplication (k = ' + fmtN(k) + '):\n';
+      for (var r = 0; r < rA; r++) for (var c = 0; c < cA; c++) {
+        R[r][c] = A[r][c] * k;
+        steps += fmtN(k) + ' × A[' + r + '][' + c + '](' + fmtN(A[r][c]) + ') = ' + fmtN(R[r][c]) + '\n';
+      }
+      return { matrix: R, steps: steps, title: k + ' × A (' + rA + '×' + cA + ')' };
+    }
+
+    function opTranspose(A, rA, cA) {
+      var R = makeMatrix(cA, rA);
+      for (var r = 0; r < rA; r++) for (var c = 0; c < cA; c++) R[c][r] = A[r][c];
+      return { matrix: R, steps: 'Transpose: rows and columns are swapped.\nResult is ' + cA + '×' + rA + '.', title: 'Aᵀ (' + cA + '×' + rA + ')' };
+    }
+
+    function determinant(M, n) {
+      if (n === 1) return M[0][0];
+      if (n === 2) return M[0][0] * M[1][1] - M[0][1] * M[1][0];
+      var det = 0;
+      for (var c = 0; c < n; c++) {
+        det += Math.pow(-1, c) * M[0][c] * determinant(minor(M, 0, c, n), n - 1);
+      }
+      return det;
+    }
+
+    function minor(M, row, col, n) {
+      var sub = [];
+      for (var r = 0; r < n; r++) {
+        if (r === row) continue;
+        var row2 = [];
+        for (var c = 0; c < n; c++) { if (c !== col) row2.push(M[r][c]); }
+        sub.push(row2);
+      }
+      return sub;
+    }
+
+    function opDet(A, rA, cA) {
+      if (rA !== cA) return { error: 'Determinant requires a square matrix (n×n).' };
+      var det = determinant(A, rA);
+      var steps = 'Determinant of ' + rA + '×' + rA + ' matrix = ' + fmtN(det) + '\n';
+      if (rA === 2) steps += 'det = a·d − b·c = (' + fmtN(A[0][0]) + '·' + fmtN(A[1][1]) + ') − (' + fmtN(A[0][1]) + '·' + fmtN(A[1][0]) + ') = ' + fmtN(det);
+      else steps += 'Computed via cofactor expansion along row 0.';
+      return { scalar: det, steps: steps, title: 'det(A) = ' + fmtN(det) };
+    }
+
+    function opInverse(A, rA, cA) {
+      if (rA !== cA) return { error: 'Inverse requires a square matrix.' };
+      var det = determinant(A, rA);
+      if (Math.abs(det) < 1e-12) return { error: 'Matrix is singular (determinant = 0). No inverse exists.' };
+      var n = rA;
+      // Augmented matrix [A | I]
+      var aug = [];
+      for (var r = 0; r < n; r++) {
+        aug.push([]);
+        for (var c = 0; c < n; c++) aug[r].push(A[r][c]);
+        for (var c2 = 0; c2 < n; c2++) aug[r].push(c2 === r ? 1 : 0);
+      }
+      // Gauss-Jordan elimination
+      for (var col = 0; col < n; col++) {
+        var pivRow = col;
+        for (var r2 = col + 1; r2 < n; r2++) if (Math.abs(aug[r2][col]) > Math.abs(aug[pivRow][col])) pivRow = r2;
+        var tmp = aug[col]; aug[col] = aug[pivRow]; aug[pivRow] = tmp;
+        var piv = aug[col][col];
+        for (var c3 = 0; c3 < 2 * n; c3++) aug[col][c3] /= piv;
+        for (var r3 = 0; r3 < n; r3++) {
+          if (r3 !== col) { var f = aug[r3][col]; for (var c4 = 0; c4 < 2 * n; c4++) aug[r3][c4] -= f * aug[col][c4]; }
+        }
+      }
+      var inv = [];
+      for (var r4 = 0; r4 < n; r4++) { inv.push([]); for (var c5 = n; c5 < 2 * n; c5++) inv[r4].push(aug[r4][c5]); }
+      return { matrix: inv, steps: 'Inverse computed via Gauss-Jordan elimination.\ndet(A) = ' + fmtN(det) + '\nResult is A⁻¹ such that A × A⁻¹ = I', title: 'A⁻¹ (' + n + '×' + n + ')' };
+    }
+
+    function getSize(prefix) {
+      return {
+        rows: parseInt(document.getElementById(prefix + 'Rows').value, 10),
+        cols: parseInt(document.getElementById(prefix + 'Cols').value, 10)
+      };
+    }
+
+    function setStatus(cls, msg) {
+      var el = document.getElementById('statusBar');
+      el.className = 'status-bar ' + cls;
+      el.textContent = msg;
+    }
+
+    function calculate() {
+      var sA = getSize('a'), sB = getSize('b');
+      var A = getMatrix('gridA', sA.rows, sA.cols);
+      var B = getMatrix('gridB', sB.rows, sB.cols);
+      var res;
+
+      switch (currentMode) {
+        case 'add': res = opAdd(A, sA.rows, sA.cols, B, sB.rows, sB.cols, false); break;
+        case 'sub': res = opAdd(A, sA.rows, sA.cols, B, sB.rows, sB.cols, true); break;
+        case 'mul': res = opMul(A, sA.rows, sA.cols, B, sB.rows, sB.cols); break;
+        case 'scalar': res = opScalar(A, sA.rows, sA.cols, parseFloat(document.getElementById('scalarVal').value) || 0); break;
+        case 'transpose': res = opTranspose(A, sA.rows, sA.cols); break;
+        case 'det': res = opDet(A, sA.rows, sA.cols); break;
+        case 'inv': res = opInverse(A, sA.rows, sA.cols); break;
+        default: return;
+      }
+
+      if (res.error) {
+        setStatus('invalid', res.error);
+        document.getElementById('resultWrap').style.display = 'none';
+        document.getElementById('stepsWrap').style.display = 'none';
+        return;
+      }
+
+      if (res.matrix) { renderResult(res.matrix, res.title); }
+      else if (res.scalar !== undefined) { renderScalar(res.scalar, res.title); }
+      addSteps(res.steps);
+      setStatus('valid', res.title);
+      DT.trackTool('matrix-calculator');
+    }
+
+    // Build/rebuild grids when size changes
+    function rebuildGrid(id, rowsSel, colsSel) {
+      var r = parseInt(document.getElementById(rowsSel).value, 10);
+      var c = parseInt(document.getElementById(colsSel).value, 10);
+      renderGrid(id, r, c);
+    }
+
+    ['aRows', 'aCols'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', function () { rebuildGrid('gridA', 'aRows', 'aCols'); });
+    });
+    ['bRows', 'bCols'].forEach(function (id) {
+      document.getElementById(id).addEventListener('change', function () { rebuildGrid('gridB', 'bRows', 'bCols'); });
+    });
+
+    // Mode chips
+    var singleMatrixModes = ['scalar', 'transpose', 'det', 'inv'];
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        var single = singleMatrixModes.indexOf(currentMode) !== -1;
+        document.getElementById('panelB').style.opacity = single ? '.3' : '1';
+        document.getElementById('panelB').style.pointerEvents = single ? 'none' : '';
+        document.getElementById('scalarRow').style.display = currentMode === 'scalar' ? '' : 'none';
+        document.getElementById('resultWrap').style.display = 'none';
+        document.getElementById('stepsWrap').style.display = 'none';
+        setStatus('info', 'Enter values and click Calculate.');
+      });
+    });
+
+    document.getElementById('calcBtn').addEventListener('click', calculate);
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      // Fill with interesting example based on mode
+      document.getElementById('aRows').value = '3';
+      document.getElementById('aCols').value = '3';
+      document.getElementById('bRows').value = '3';
+      document.getElementById('bCols').value = '3';
+      rebuildGrid('gridA', 'aRows', 'aCols');
+      rebuildGrid('gridB', 'bRows', 'bCols');
+      var exA = [[1,2,3],[4,5,6],[7,8,9]];
+      var exB = [[9,8,7],[6,5,4],[3,2,1]];
+      for (var r = 0; r < 3; r++) for (var c = 0; c < 3; c++) {
+        var ia = document.getElementById('gridA_' + r + '_' + c);
+        var ib = document.getElementById('gridB_' + r + '_' + c);
+        if (ia) ia.value = exA[r][c];
+        if (ib) ib.value = exB[r][c];
+      }
+      calculate();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.querySelectorAll('#gridA input, #gridB input').forEach(function (inp) { inp.value = '0'; });
+      document.getElementById('resultWrap').style.display = 'none';
+      document.getElementById('stepsWrap').style.display = 'none';
+      setStatus('info', 'Enter matrix values and click Calculate.');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      if (lastResult) DT.copyToClipboard(lastResult, this);
+    });
+
+    // Initialize grids
+    rebuildGrid('gridA', 'aRows', 'aCols');
+    rebuildGrid('gridB', 'bRows', 'bCols');
+  })();
+  </script>
+</body>
+</html>

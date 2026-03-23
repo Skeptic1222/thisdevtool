@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Number to Words Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert numbers to English words instantly. Supports integers up to trillions, ordinal forms, currency mode, and negative numbers. Free, no signup, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/number-to-words.html">
+  <meta property="og:title" content="Number to Words Converter — DevToolbox">
+  <meta property="og:description" content="Free online number to words converter. Supports trillions, ordinals, currency ($1,234.56 → dollars and cents), and negatives. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/number-to-words.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Number to Words Converter",
+    "url": "https://thisdevtool.com/tools/number-to-words.html",
+    "description": "Convert any number to English words — including ordinals, currency, and negatives — up to trillions.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the largest number this tool can convert?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool supports numbers up to 999 trillion (999,999,999,999,999). Beyond that, JavaScript's number precision begins to degrade. For extremely large numbers consider using BigInt-based libraries."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does ordinal conversion work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ordinal mode converts a number to its word form and adds the correct suffix — first, second, third, fourth, etc. For example, 42 becomes 'forty-second' and 101 becomes 'one hundred and first'."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I convert decimal numbers to words?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. In Standard mode, decimal points are read digit-by-digit after 'point'. In Currency mode, the decimal portion is converted to cents (e.g., $1.99 → 'one dollar and ninety-nine cents')."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What currency does the currency mode support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The currency mode defaults to US dollars and cents. The format follows standard legal/financial writing: 'one thousand two hundred thirty-four dollars and fifty-six cents'."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this tool useful for legal documents and cheques?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The currency mode output follows conventions used on legal cheques and financial documents. Always verify the output manually before using it on official documents."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/timestamp-converter.html">Timestamps</a>
+        <a href="/tools/uuid-generator.html">UUID</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Number to Words Converter</h1>
+          <p class="tool-subtitle">Convert any number to English words — integers, ordinals, currency, and negatives up to trillions.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="standard">Standard</button>
+            <button class="option-chip" data-mode="ordinal">Ordinal</button>
+            <button class="option-chip" data-mode="currency">Currency ($)</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Number Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="numInput" rows="6" placeholder="Enter a number, e.g. 42&#10;Supports: 1000000, -99, 3.14, 1234.56&#10;One number per line for batch conversion." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Words Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="numOutput" style="min-height:160px;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a number above to convert it to words.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Number to Words Converter</h2>
+          <ol>
+            <li><strong>Enter a number</strong> in the input box — integers, decimals, and negatives are all accepted.</li>
+            <li><strong>Choose a mode</strong> — Standard (forty-two), Ordinal (forty-second), or Currency ($1.50 → one dollar and fifty cents).</li>
+            <li><strong>Batch convert</strong> — paste multiple numbers, one per line, to convert them all at once.</li>
+            <li><strong>Copy or download</strong> the result using the buttons above the output panel.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>The Number to Words Converter translates numeric values into their full English word representation. It is useful for legal documents, bank cheques, invoices, educational exercises, and any situation where a number must be written out in full. The conversion algorithm handles the full English naming system from ones through trillions, following standard US English conventions.</p>
+
+          <h3>Supported Modes</h3>
+          <ul>
+            <li><strong>Standard</strong> — converts integers and decimals to words. Decimals are read digit-by-digit after "point" (e.g., 3.14 → "three point one four").</li>
+            <li><strong>Ordinal</strong> — converts a number to its ordinal word form (1st → "first", 42nd → "forty-second", 101st → "one hundred and first").</li>
+            <li><strong>Currency</strong> — formats the number as a dollar amount. The integer portion becomes dollars and the decimal portion becomes cents (e.g., $1,234.56 → "one thousand two hundred thirty-four dollars and fifty-six cents").</li>
+          </ul>
+
+          <h3>Number Scale Supported</h3>
+          <ul>
+            <li>Ones: zero through nineteen</li>
+            <li>Tens: twenty through ninety</li>
+            <li>Hundreds, thousands, millions, billions, trillions</li>
+            <li>Negative numbers: prefixed with "negative"</li>
+            <li>Maximum value: 999 trillion (999,999,999,999,999)</li>
+          </ul>
+
+          <h3>Common Use Cases</h3>
+          <p>Writing cheques is one of the most common reasons people need number-to-words conversion. Banks require the written amount to match the numeric amount, and having a reliable converter removes any ambiguity. Legal contracts also require spelled-out amounts — for example, a lease agreement might state "One Thousand Five Hundred Dollars ($1,500) per month." Invoice generation tools and accounting software also use this conversion to produce human-readable receipts and statements.</p>
+
+          <h3>Educational and Programming Uses</h3>
+          <p>Number-to-words conversion is a classic programming challenge used in coding interviews and computer science education. It tests understanding of recursion, modular arithmetic, and edge cases (zero, teens, multiples of ten). This tool can serve as a reference implementation — paste in a large number to verify your own algorithm's output. Teachers also use such tools to create math worksheets where students must match numbers to their word forms.</p>
+
+          <h3>International Variations</h3>
+          <p>This tool uses American English naming conventions. Note that British English uses "and" more frequently (e.g., "one hundred and forty-two" vs American "one hundred forty-two"). The "billion" scale also differs internationally — in the US short scale, 1 billion = 10^9, while in some European countries the long scale defines 1 billion = 10^12. This tool uses the US short scale. For currency conversion in other denominations (euros, pounds, etc.), simply note the output uses "dollars and cents" — adapt the unit labels as needed for your use case.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is the largest number this tool can convert?</button>
+            <div class="faq-answer">This tool supports numbers up to 999 trillion (999,999,999,999,999). Beyond that, JavaScript's floating-point precision begins to degrade. For extremely large numbers consider using BigInt-based libraries.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does ordinal conversion work?</button>
+            <div class="faq-answer">Ordinal mode converts a number to its word form and applies the correct suffix — first, second, third, fourth, and so on. For example, 42 becomes "forty-second" and 101 becomes "one hundred and first".</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I convert decimal numbers to words?</button>
+            <div class="faq-answer">Yes. In Standard mode, decimals are read digit-by-digit after "point". In Currency mode, the decimal is converted to cents (e.g., $1.99 → "one dollar and ninety-nine cents").</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What currency does the currency mode support?</button>
+            <div class="faq-answer">The currency mode defaults to US dollars and cents. The format follows standard legal/financial writing: "one thousand two hundred thirty-four dollars and fifty-six cents".</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is this tool useful for legal documents and cheques?</button>
+            <div class="faq-answer">Yes. The currency mode output follows conventions used on legal cheques and financial documents. Always verify the output manually before using it on official documents.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/number-to-words.html">Number to Words</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/lorem-ipsum.html">Lorem Ipsum</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      var DT = DevToolbox;
+
+      var ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven',
+        'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen',
+        'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+      var tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+      var ordinalOnes = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh',
+        'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth',
+        'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth'];
+      var ordinalTens = ['', '', 'twentieth', 'thirtieth', 'fortieth', 'fiftieth',
+        'sixtieth', 'seventieth', 'eightieth', 'ninetieth'];
+
+      function convertHundreds(n, useOrdinal) {
+        if (n === 0) return useOrdinal ? 'zeroth' : 'zero';
+        var result = '';
+        if (n >= 100) {
+          result += ones[Math.floor(n / 100)] + ' hundred';
+          n %= 100;
+          if (n > 0) result += ' and ';
+        }
+        if (n > 0) {
+          if (useOrdinal) {
+            if (n < 20) {
+              result += ordinalOnes[n];
+            } else {
+              var t = Math.floor(n / 10);
+              var o = n % 10;
+              if (o === 0) {
+                result += ordinalTens[t];
+              } else {
+                result += tens[t] + '-' + ordinalOnes[o];
+              }
+            }
+          } else {
+            if (n < 20) {
+              result += ones[n];
+            } else {
+              result += tens[Math.floor(n / 10)];
+              if (n % 10 > 0) result += '-' + ones[n % 10];
+            }
+          }
+        }
+        return result;
+      }
+
+      function intToWords(n, useOrdinal) {
+        if (n === 0) return useOrdinal ? 'zeroth' : 'zero';
+        if (n < 0) return 'negative ' + intToWords(-n, useOrdinal);
+
+        var scales = [
+          { value: 1000000000000, name: 'trillion' },
+          { value: 1000000000, name: 'billion' },
+          { value: 1000000, name: 'million' },
+          { value: 1000, name: 'thousand' },
+          { value: 100, name: 'hundred' }
+        ];
+
+        var parts = [];
+        var remaining = n;
+        for (var i = 0; i < scales.length - 1; i++) {
+          var s = scales[i];
+          if (remaining >= s.value) {
+            var chunk = Math.floor(remaining / s.value);
+            remaining %= s.value;
+            parts.push(convertHundreds(chunk, false) + ' ' + s.name);
+          }
+        }
+
+        if (remaining > 0) {
+          parts.push(convertHundreds(remaining, useOrdinal && parts.length === 0));
+        }
+
+        if (useOrdinal && parts.length > 0) {
+          // Add ordinal suffix to last part's scale
+          var last = parts[parts.length - 1];
+          var scaleMap = {
+            'trillion': 'trillionth', 'billion': 'billionth',
+            'million': 'millionth', 'thousand': 'thousandth'
+          };
+          for (var key in scaleMap) {
+            if (last.endsWith(' ' + key)) {
+              parts[parts.length - 1] = last.slice(0, -key.length) + scaleMap[key];
+              break;
+            }
+          }
+        }
+
+        return parts.join(', ');
+      }
+
+      function convertNumber(raw, mode) {
+        raw = raw.trim();
+        if (!raw) return '';
+
+        var isNeg = raw.startsWith('-');
+        var absRaw = isNeg ? raw.slice(1) : raw;
+        var clean = absRaw.replace(/,/g, '');
+
+        if (!/^[0-9]*\.?[0-9]+$/.test(clean)) return 'Invalid number: ' + raw;
+
+        var num = parseFloat(clean);
+        if (isNaN(num)) return 'Invalid number: ' + raw;
+        if (Math.abs(num) > 999999999999999) return 'Number too large (max: 999 trillion)';
+
+        if (mode === 'currency') {
+          var parts = clean.split('.');
+          var dollars = parseInt(parts[0], 10);
+          var cents = parts[1] ? parseInt((parts[1] + '00').slice(0, 2), 10) : 0;
+          var dollarWord = intToWords(dollars, false);
+          var result = (isNeg ? 'negative ' : '') + dollarWord + (dollars === 1 ? ' dollar' : ' dollars');
+          if (cents > 0) {
+            result += ' and ' + intToWords(cents, false) + (cents === 1 ? ' cent' : ' cents');
+          }
+          return result;
+        }
+
+        if (mode === 'ordinal') {
+          if (!Number.isInteger(num)) return 'Ordinal mode requires whole numbers';
+          var n = Math.floor(Math.abs(num));
+          return (isNeg ? 'negative ' : '') + intToWords(n, true);
+        }
+
+        // Standard mode
+        var parts2 = clean.split('.');
+        var intPart = parseInt(parts2[0], 10);
+        var intWords = (isNeg ? 'negative ' : '') + intToWords(intPart, false);
+        if (parts2[1]) {
+          var decDigits = parts2[1].split('').map(function (d) { return ones[parseInt(d, 10)] || 'zero'; });
+          return intWords + ' point ' + decDigits.join(' ');
+        }
+        return intWords;
+      }
+
+      var input = document.getElementById('numInput');
+      var output = document.getElementById('numOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'standard';
+
+      function process() {
+        var raw = input.value;
+        if (!raw.trim()) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter a number above to convert it to words.';
+          return;
+        }
+
+        var lines = raw.split('\n').filter(function (l) { return l.trim(); });
+        var results = lines.map(function (line) { return convertNumber(line, currentMode); });
+        output.textContent = results.join('\n');
+
+        var firstValid = lines[0] ? convertNumber(lines[0], currentMode) : '';
+        var hasError = results.some(function (r) { return r.startsWith('Invalid') || r.startsWith('Number too'); });
+        statusBar.className = 'status-bar ' + (hasError ? 'invalid' : 'valid');
+        if (hasError) {
+          statusBar.textContent = 'One or more entries could not be converted.';
+        } else if (lines.length === 1) {
+          statusBar.textContent = lines[0].trim().replace(/,/g, '') + ' = ' + firstValid;
+        } else {
+          statusBar.textContent = lines.length + ' numbers converted to ' + currentMode + ' words.';
+        }
+
+        DT.trackTool('number-to-words');
+      }
+
+      var debouncedProcess = DT.debounce(process, 200);
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.downloadText(text, 'number-to-words.txt', 'text/plain');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        output.textContent = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter a number above to convert it to words.';
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        var examples = {
+          standard: '42\n1000\n-99\n3.14\n1000000',
+          ordinal: '1\n2\n3\n42\n101',
+          currency: '1234.56\n0.99\n1000000.00\n-50.00'
+        };
+        input.value = examples[currentMode] || examples.standard;
+        process();
+      });
+    })();
+  </script>
+</body>
+</html>

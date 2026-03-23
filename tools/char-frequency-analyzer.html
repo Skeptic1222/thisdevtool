@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Character Frequency Analyzer — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Analyze character frequency in any text. Bar chart, sort by frequency or alphabetical, case-sensitive toggle, percentage view, Unicode support, CSV export. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/char-frequency-analyzer.html">
+  <meta property="og:title" content="Character Frequency Analyzer — DevToolbox">
+  <meta property="og:description" content="Paste text to get a character frequency table with bar chart visualization. Sort, filter, export to CSV. Unicode-safe.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/char-frequency-analyzer.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Character Frequency Analyzer",
+    "url": "https://thisdevtool.com/tools/char-frequency-analyzer.html",
+    "description": "Analyze character frequency in text with bar chart visualization, sort options, and CSV export. Unicode-safe, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is character frequency analysis?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Character frequency analysis counts how often each character appears in a text and expresses the count as a raw number and as a percentage of the total character count. It is used in linguistics, cryptography, data analysis, and text processing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the most frequent letter in English?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In standard English text, the letter 'e' is the most frequent, appearing roughly 12.7% of the time. Following 'e' are 't' (~9.1%), 'a' (~8.2%), 'o' (~7.5%), 'i' (~7.0%), 'n' (~6.7%), and 's' (~6.3%). Space is typically the most frequent character overall in natural language text."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is character frequency used in cryptography?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In classical cryptography, frequency analysis was the primary technique for breaking substitution ciphers. By comparing the frequency of ciphertext symbols to known letter frequencies in the target language, codebreakers could deduce which cipher characters map to which plaintext letters. The Caesar cipher, Vigenère cipher, and other classical ciphers are all vulnerable to frequency analysis."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does 'case sensitive' mean in character analysis?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When case-sensitive mode is ON, 'A' and 'a' are counted separately. When OFF (case-insensitive), all input is converted to lowercase before counting, so both 'A' and 'a' contribute to the count of 'a'. Case-insensitive mode is usually better for natural language analysis; case-sensitive is useful for code and data format analysis."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool support Unicode characters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. This tool counts Unicode code points using JavaScript's built-in string handling, which correctly handles characters from any language including emoji, CJK characters, Arabic, Hebrew, and other non-ASCII scripts. Emoji sequences made up of multiple code points are each counted individually."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .freq-controls {
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: .6rem;
+    }
+    .freq-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .freq-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+    }
+    .freq-table th {
+      background: var(--bg-alt, #f3f4f6);
+      padding: .45rem .7rem;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .freq-table th:hover { color: #10b981; }
+    [data-theme="dark"] .freq-table th { background: #1f2937; }
+    .freq-table td { padding: .38rem .7rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .freq-table tbody tr:last-child td { border-bottom: none; }
+    .freq-table tbody tr:hover td { background: #10b98111; }
+    .char-cell {
+      font-family: var(--font-mono, monospace);
+      font-size: 1.05rem;
+      font-weight: 700;
+      min-width: 32px;
+      text-align: center;
+    }
+    .bar-cell { min-width: 120px; }
+    .bar-track {
+      background: var(--border);
+      border-radius: 4px;
+      height: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+    .bar-fill {
+      height: 100%;
+      background: #10b981;
+      border-radius: 4px;
+      transition: width .25s;
+    }
+    .pct-cell { color: var(--text-muted, #6b7280); font-size: .82rem; min-width: 58px; }
+    .summary-row {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-bottom: .6rem;
+    }
+    .summary-pill {
+      background: var(--bg-alt, #f3f4f6);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: .3rem .75rem;
+      font-size: .8rem;
+      font-weight: 500;
+    }
+    [data-theme="dark"] .summary-pill { background: #1f2937; }
+    .sort-indicator { font-size: .7rem; margin-left: .25rem; }
+    .filter-input {
+      padding: .38rem .6rem;
+      border: 2px solid var(--border);
+      border-radius: 7px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: .85rem;
+      outline: none;
+      transition: border-color .15s;
+      width: 130px;
+    }
+    .filter-input:focus { border-color: #10b981; }
+    .toggle-pill {
+      padding: .35rem .75rem;
+      border-radius: 20px;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .toggle-pill.active {
+      border-color: #10b981;
+      background: #10b98122;
+      color: #10b981;
+    }
+    .top-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: .6rem 0;
+    }
+    .chart-row {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .82rem;
+    }
+    .chart-label {
+      font-family: var(--font-mono, monospace);
+      font-weight: 700;
+      min-width: 22px;
+      text-align: right;
+    }
+    .chart-bar-wrap { flex: 1; background: var(--border); border-radius: 4px; height: 18px; overflow: hidden; }
+    .chart-bar { height: 100%; background: #10b981; border-radius: 4px; transition: width .3s; }
+    .chart-count { min-width: 40px; text-align: right; color: var(--text-muted, #6b7280); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Character Frequency Analyzer</h1>
+          <p class="tool-subtitle">Paste any text to analyze character frequency with bar chart, percentages, and CSV export. Unicode-safe. 100% client-side.</p>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input Text</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="textInput" rows="12" placeholder="Paste any text here to analyze character frequency..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Top 20 Characters</span>
+              </div>
+              <div class="top-chart" id="topChart"></div>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="freq-controls">
+            <button class="toggle-pill active" id="toggleCase" title="Toggle case sensitivity">Case Sensitive: OFF</button>
+            <button class="toggle-pill active" id="toggleSpaces" title="Include/exclude spaces">Show Spaces</button>
+            <button class="toggle-pill active" id="toggleSpecial" title="Include/exclude special chars">Show Special</button>
+            <input type="text" class="filter-input" id="filterInput" placeholder="Filter chars...">
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy CSV</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Download CSV</button>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div class="summary-row" id="summaryRow"></div>
+
+          <!-- Sort controls -->
+          <div class="freq-table-wrap">
+            <table class="freq-table" id="freqTable">
+              <thead>
+                <tr>
+                  <th data-col="rank">#</th>
+                  <th data-col="char">Char</th>
+                  <th data-col="code">Code</th>
+                  <th data-col="count" class="sorted-desc">Count <span class="sort-indicator">&#9660;</span></th>
+                  <th data-col="pct">%</th>
+                  <th data-col="bar">Frequency</th>
+                </tr>
+              </thead>
+              <tbody id="freqBody"></tbody>
+            </table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste text above to analyze character frequency.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Character Frequency Analyzer</h2>
+          <ol>
+            <li><strong>Paste your text</strong> into the input area — any length, any language.</li>
+            <li><strong>Toggle options</strong> — turn case sensitivity on/off, show or hide spaces and special characters.</li>
+            <li><strong>Sort the table</strong> — click any column header to sort by character, count, percentage, or Unicode code point.</li>
+            <li><strong>Filter</strong> — type in the filter box to search for specific characters in the results.</li>
+            <li><strong>Export</strong> — copy the frequency table as CSV or download it as a .csv file for spreadsheet analysis.</li>
+          </ol>
+
+          <h2>What is Character Frequency Analysis?</h2>
+          <p>Character frequency analysis counts how often each character appears in a text sample, then ranks them by occurrence. The result is a frequency distribution — a snapshot of which characters dominate the text. In English prose, vowels and common consonants appear most often; in source code, operators and brackets may dominate; in data files, digits and delimiters are most frequent.</p>
+
+          <h3>Applications of Frequency Analysis</h3>
+          <ul>
+            <li><strong>Cryptography</strong> — Frequency analysis was the breakthrough that cracked substitution ciphers in the 9th century. By matching cipher symbol frequencies to known letter distributions, codebreakers identify the most likely mappings. The Caesar cipher and simple substitution ciphers are trivially broken this way.</li>
+            <li><strong>Linguistics</strong> — Comparing character frequencies between texts reveals authorship patterns, language identification, and writing style. The Zipf distribution predicts that character frequency ranks follow a power law in natural language.</li>
+            <li><strong>Data quality</strong> — Analyzing character frequencies in CSV, JSON, or database exports quickly reveals encoding issues, unexpected special characters, or corruption.</li>
+            <li><strong>Compression</strong> — Huffman coding, used in ZIP, JPEG, and PNG, assigns shorter bit codes to more frequent characters. A frequency table is the first step in building a Huffman tree.</li>
+            <li><strong>Keyboard layout design</strong> — The Dvorak and Colemak keyboard layouts place the most frequent English characters on the home row, reducing finger travel.</li>
+          </ul>
+
+          <h3>English Letter Frequencies</h3>
+          <p>In typical English text, the letter frequencies (case-insensitive, excluding spaces and punctuation) follow a well-known distribution: E (12.7%), T (9.1%), A (8.2%), O (7.5%), I (7.0%), N (6.7%), S (6.3%), H (6.1%), R (6.0%), D (4.3%), L (4.0%), C (2.8%), U (2.8%), M (2.4%), W (2.4%), F (2.2%), G (2.0%), Y (2.0%), P (1.9%), B (1.5%), V (1.0%), K (0.8%), J (0.2%), X (0.2%), Q (0.1%), Z (0.1%). Checking your text against these percentages can reveal the language, the text type, or potential encoding issues.</p>
+
+          <h3>Unicode and Non-ASCII Text</h3>
+          <p>Modern text often contains characters outside the ASCII range — accented letters (é, ñ, ü), CJK characters (漢字), emoji (😀), mathematical symbols (∑, π), and more. This analyzer processes all Unicode characters correctly using JavaScript's native string handling. Each Unicode code point is counted individually, and the Unicode code point number (U+XXXX) is displayed in the table for reference. This makes the tool useful for analyzing multilingual content, source code with special symbols, or data files with unexpected encoding.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is character frequency analysis?</button>
+            <div class="faq-answer">Character frequency analysis counts how often each character appears in text and expresses it as a count and percentage of the total. It's used in linguistics, cryptography, data quality checking, and text compression algorithm design.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the most frequent letter in English?</button>
+            <div class="faq-answer">'E' is the most frequent letter in English at about 12.7% of all letters. The top 5 are E, T, A, O, I. Space is typically the most frequent character overall in natural language text when all characters are included.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How is frequency analysis used in cryptography?</button>
+            <div class="faq-answer">In classical cryptography, frequency analysis cracks substitution ciphers by matching cipher-symbol frequencies to known letter distributions. If the most common cipher character is 'X' and 'e' is the most common English letter, 'X' likely represents 'e'. This approach broke the Caesar cipher and many others.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does case-sensitive mean here?</button>
+            <div class="faq-answer">With case sensitivity OFF, 'A' and 'a' are merged into a single 'a' entry. With it ON, uppercase and lowercase letters are counted separately. Case-insensitive is better for natural language analysis; case-sensitive is useful for code and format analysis.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does this support Unicode and emoji?</button>
+            <div class="faq-answer">Yes. The tool processes all Unicode code points including emoji, CJK characters, Arabic, Hebrew, and other non-ASCII scripts. Each code point's Unicode number (U+XXXX) is shown in the results table.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/char-frequency-analyzer.html">Char Frequency</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/list-deduper.html">List Deduper</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var caseSensitive = false;
+    var showSpaces = true;
+    var showSpecial = true;
+    var sortCol = 'count';
+    var sortDir = 'desc';
+    var filterStr = '';
+    var lastData = [];
+
+    function charLabel(ch) {
+      if (ch === ' ') return '&#9251;'; // visible space symbol ␣
+      if (ch === '\t') return '&#8677;'; // tab
+      if (ch === '\n') return '&#8629;'; // newline
+      if (ch === '\r') return 'CR';
+      return ch;
+    }
+
+    function codePoint(ch) {
+      return 'U+' + ch.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0');
+    }
+
+    function isLetter(ch) { return /\p{L}/u.test(ch); }
+    function isDigit(ch) { return /\p{Nd}/u.test(ch); }
+    function isSpace(ch) { return /\s/.test(ch); }
+
+    function processText() {
+      var raw = document.getElementById('textInput').value;
+      if (!raw) {
+        lastData = [];
+        render([]);
+        document.getElementById('statusBar').className = 'status-bar info';
+        document.getElementById('statusBar').textContent = 'Paste text above to analyze character frequency.';
+        document.getElementById('summaryRow').innerHTML = '';
+        document.getElementById('topChart').innerHTML = '';
+        return;
+      }
+
+      var text = caseSensitive ? raw : raw.toLowerCase();
+      var freq = {};
+      for (var i = 0; i < text.length; i++) {
+        var ch = text[i];
+        if (!showSpaces && isSpace(ch)) continue;
+        if (!showSpecial && !isLetter(ch) && !isDigit(ch) && !isSpace(ch)) continue;
+        freq[ch] = (freq[ch] || 0) + 1;
+      }
+
+      var total = Object.keys(freq).reduce(function (s, k) { return s + freq[k]; }, 0);
+      var totalAll = raw.length;
+      var unique = Object.keys(freq).length;
+
+      lastData = Object.keys(freq).map(function (ch) {
+        return { ch: ch, count: freq[ch], pct: (freq[ch] / total * 100) };
+      });
+
+      // Summary
+      var topEntry = lastData.slice().sort(function (a, b) { return b.count - a.count; })[0];
+      var letters = lastData.filter(function (d) { return isLetter(d.ch); });
+      var digits = lastData.filter(function (d) { return isDigit(d.ch); });
+      document.getElementById('summaryRow').innerHTML =
+        '<span class="summary-pill">Total chars: ' + totalAll + '</span>' +
+        '<span class="summary-pill">Counted: ' + total + '</span>' +
+        '<span class="summary-pill">Unique: ' + unique + '</span>' +
+        '<span class="summary-pill">Letters: ' + letters.length + '</span>' +
+        '<span class="summary-pill">Digits: ' + digits.length + '</span>' +
+        (topEntry ? '<span class="summary-pill">Most: \'' + topEntry.ch + '\' (' + topEntry.pct.toFixed(1) + '%)</span>' : '');
+
+      // Top chart
+      var top20 = lastData.slice().sort(function (a, b) { return b.count - a.count; }).slice(0, 20);
+      var maxCount = top20.length > 0 ? top20[0].count : 1;
+      var chartHtml = top20.map(function (d) {
+        var pct = (d.count / maxCount * 100);
+        var label = d.ch === ' ' ? '&nbsp;·&nbsp;' : d.ch === '\n' ? '\\n' : d.ch === '\t' ? '\\t' : d.ch;
+        return '<div class="chart-row"><span class="chart-label">' + label + '</span>' +
+          '<div class="chart-bar-wrap"><div class="chart-bar" style="width:' + pct + '%"></div></div>' +
+          '<span class="chart-count">' + d.count + '</span></div>';
+      }).join('');
+      document.getElementById('topChart').innerHTML = chartHtml;
+
+      var topLabel = topEntry ? "'" + (topEntry.ch === ' ' ? 'space' : topEntry.ch) + "' (" + topEntry.pct.toFixed(1) + '%' + ')' : '—';
+      document.getElementById('statusBar').className = 'status-bar valid';
+      document.getElementById('statusBar').textContent = unique + ' unique characters — Most: ' + topLabel;
+
+      renderSorted();
+      DT.trackTool('char-frequency-analyzer');
+    }
+
+    function sortData(data) {
+      return data.slice().sort(function (a, b) {
+        var av, bv;
+        if (sortCol === 'char') { av = a.ch; bv = b.ch; }
+        else if (sortCol === 'code') { av = a.ch.charCodeAt(0); bv = b.ch.charCodeAt(0); }
+        else if (sortCol === 'pct') { av = a.pct; bv = b.pct; }
+        else { av = a.count; bv = b.count; }
+        if (av < bv) return sortDir === 'asc' ? -1 : 1;
+        if (av > bv) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    function renderSorted() {
+      var filtered = lastData.filter(function (d) {
+        if (!filterStr) return true;
+        return d.ch.toLowerCase().includes(filterStr.toLowerCase()) ||
+          codePoint(d.ch).toLowerCase().includes(filterStr.toLowerCase());
+      });
+      var sorted = sortData(filtered);
+      render(sorted);
+    }
+
+    function render(data) {
+      var maxCount = data.length > 0 ? Math.max.apply(null, data.map(function (d) { return d.count; })) : 1;
+      var html = '';
+      data.forEach(function (d, i) {
+        var barPct = (d.count / maxCount * 100).toFixed(1);
+        var label = d.ch === ' ' ? '<span title="space">&#9251;</span>'
+                  : d.ch === '\n' ? '<span title="newline">\\n</span>'
+                  : d.ch === '\t' ? '<span title="tab">\\t</span>'
+                  : d.ch;
+        html += '<tr>' +
+          '<td>' + (i + 1) + '</td>' +
+          '<td class="char-cell">' + label + '</td>' +
+          '<td style="font-size:.75rem;color:var(--text-muted)">' + codePoint(d.ch) + '</td>' +
+          '<td><strong>' + d.count + '</strong></td>' +
+          '<td class="pct-cell">' + d.pct.toFixed(2) + '%</td>' +
+          '<td class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:' + barPct + '%"></div></div></td>' +
+          '</tr>';
+      });
+      document.getElementById('freqBody').innerHTML = html;
+    }
+
+    // Sort headers
+    document.querySelectorAll('.freq-table th[data-col]').forEach(function (th) {
+      th.addEventListener('click', function () {
+        var col = th.getAttribute('data-col');
+        if (col === 'bar' || col === 'rank') return;
+        if (sortCol === col) {
+          sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortCol = col;
+          sortDir = col === 'char' || col === 'code' ? 'asc' : 'desc';
+        }
+        document.querySelectorAll('.freq-table th').forEach(function (h) {
+          h.classList.remove('sorted-asc', 'sorted-desc');
+          var ind = h.querySelector('.sort-indicator');
+          if (ind) ind.remove();
+        });
+        th.classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+        var span = document.createElement('span');
+        span.className = 'sort-indicator';
+        span.innerHTML = sortDir === 'asc' ? '&#9650;' : '&#9660;';
+        th.appendChild(span);
+        renderSorted();
+      });
+    });
+
+    // Toggle buttons
+    document.getElementById('toggleCase').addEventListener('click', function () {
+      caseSensitive = !caseSensitive;
+      this.textContent = 'Case Sensitive: ' + (caseSensitive ? 'ON' : 'OFF');
+      this.classList.toggle('active', !caseSensitive);
+      processText();
+    });
+    document.getElementById('toggleSpaces').addEventListener('click', function () {
+      showSpaces = !showSpaces;
+      this.textContent = showSpaces ? 'Show Spaces' : 'Hide Spaces';
+      this.classList.toggle('active', showSpaces);
+      processText();
+    });
+    document.getElementById('toggleSpecial').addEventListener('click', function () {
+      showSpecial = !showSpecial;
+      this.textContent = showSpecial ? 'Show Special' : 'Hide Special';
+      this.classList.toggle('active', showSpecial);
+      processText();
+    });
+
+    document.getElementById('filterInput').addEventListener('input', function () {
+      filterStr = this.value;
+      renderSorted();
+    });
+
+    // CSV export helpers
+    function toCsv() {
+      var rows = ['Character,Unicode,Count,Percentage'];
+      var sorted = sortData(lastData);
+      sorted.forEach(function (d) {
+        var ch = d.ch === '"' ? '""' : d.ch;
+        rows.push('"' + ch + '",' + codePoint(d.ch) + ',' + d.count + ',' + d.pct.toFixed(4) + '%');
+      });
+      return rows.join('\n');
+    }
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var csv = toCsv();
+      if (csv) DT.copyToClipboard(csv, this);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var csv = toCsv();
+      if (csv) DT.downloadText(csv, 'char-frequency.csv', 'text/csv');
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('textInput').value = '';
+      processText();
+      document.getElementById('textInput').focus();
+    });
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('textInput').value = 'The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.';
+      processText();
+    });
+
+    var dp = DT.debounce(processText, 200);
+    document.getElementById('textInput').addEventListener('input', dp);
+  })();
+  </script>
+</body>
+</html>

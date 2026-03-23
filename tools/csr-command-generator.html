@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>OpenSSL CSR Command Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate OpenSSL CSR commands online. Fill in Common Name, Organization, Country, Key Size, SAN entries. Outputs commands for CSR generation, self-signed certs, key generation, and CSR verification. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/csr-command-generator.html">
+  <meta property="og:title" content="OpenSSL CSR Command Generator — DevToolbox">
+  <meta property="og:description" content="Generate OpenSSL commands for CSR creation, self-signed certificates, key generation, and SAN support. Instant, free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/csr-command-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "OpenSSL CSR Command Generator",
+    "url": "https://thisdevtool.com/tools/csr-command-generator.html",
+    "description": "Generate OpenSSL commands for CSR generation, self-signed certificates, key generation, and SAN support.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a CSR and why do I need one?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Certificate Signing Request (CSR) is a block of encoded text that contains your public key and identity information (domain name, organization, country, etc.). You send this to a Certificate Authority (CA) like Let's Encrypt, DigiCert, or Sectigo. The CA verifies your identity and returns a signed TLS/SSL certificate that browsers will trust. Without a CSR, you cannot obtain a CA-signed certificate for HTTPS."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is RSA 2048 vs RSA 4096 vs ECDSA?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "RSA 2048 is the current minimum recommended key size for RSA. It provides adequate security and is universally compatible. RSA 4096 doubles the key size for extra security but increases TLS handshake time slightly. ECDSA (Elliptic Curve) with P-256 or P-384 provides equivalent security to RSA 3072 or 7680 with much smaller key sizes, resulting in faster TLS performance. Most modern CAs and clients support all three; ECDSA P-256 is increasingly the recommended choice for new deployments."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are Subject Alternative Names (SANs)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Subject Alternative Names (SANs) are additional hostnames or IP addresses that a single certificate can cover. For example, a certificate with CN=example.com can also cover www.example.com and api.example.com by listing them as SANs. Modern browsers require that the domain be listed as a SAN (not just the CN field) for validation. Wildcard certificates (*.example.com) cover all first-level subdomains as a SAN. Multi-domain certificates (MDCs) can include completely different domains as SANs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it safe to enter my domain and organization details into this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. This tool runs 100% in your browser and never sends any data to a server. All processing happens locally in JavaScript. The tool generates OpenSSL command strings that you then run on your own machine. No private keys are generated or transmitted — only the text of the commands you need to run."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between a CSR and a self-signed certificate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A CSR is submitted to a Certificate Authority, which signs and returns a trusted certificate. A self-signed certificate is signed by your own private key instead of a CA. Browsers do not trust self-signed certificates for public websites and will show a security warning. Self-signed certificates are appropriate for development environments, internal tools, and testing — anywhere where you control the clients and can install your own root CA certificate. For production public websites, always use a CA-signed certificate (Let's Encrypt provides free ones)."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .csr-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem 1.25rem; }
+    @media (max-width: 640px) { .csr-form { grid-template-columns: 1fr; } }
+    .form-field { display: flex; flex-direction: column; gap: 0.25rem; }
+    .form-field label { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+    .form-field input, .form-field select, .form-field textarea {
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: var(--font);
+      transition: border-color 0.15s;
+    }
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .form-field .field-hint { font-size: 0.75rem; color: var(--text-secondary); }
+    .form-field.full-width { grid-column: 1 / -1; }
+    .san-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.4rem; }
+    .san-row input { flex: 1; }
+    .san-row button { flex-shrink: 0; }
+    .output-block { margin-top: 0.75rem; }
+    .output-block h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem; color: var(--text); display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+    .output-block pre {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.5;
+      color: var(--text);
+      margin: 0;
+    }
+    .output-block pre .cmd-comment { color: var(--text-secondary); }
+    .output-block pre .cmd-keyword { color: var(--accent); font-weight: 700; }
+    .output-block pre .cmd-flag { color: var(--accent-secondary); }
+    .expected-files { margin-top: 0.4rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .expected-files code { font-family: var(--font-mono); background: var(--bg-secondary); padding: 1px 5px; border-radius: 3px; }
+    .section-divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hash-identifier.html">Hash Identifier</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>OpenSSL CSR Command Generator</h1>
+          <p class="tool-subtitle">Fill in your certificate details to generate ready-to-run OpenSSL commands for CSR creation, self-signed certificates, key generation, and CSR verification.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="rsa">RSA</button>
+            <button class="option-chip" data-mode="ecdsa">ECDSA</button>
+          </div>
+
+          <!-- Form -->
+          <div class="tool-inner" style="padding:1rem 0 0 0;">
+            <div class="csr-form" id="csrForm">
+              <div class="form-field">
+                <label for="commonName">Common Name (CN) <span style="color:var(--error)">*</span></label>
+                <input type="text" id="commonName" placeholder="example.com" value="example.com">
+                <span class="field-hint">The domain name the certificate will secure (e.g. example.com or *.example.com)</span>
+              </div>
+              <div class="form-field">
+                <label for="organization">Organization (O)</label>
+                <input type="text" id="organization" placeholder="ACME Corp Ltd" value="">
+              </div>
+              <div class="form-field">
+                <label for="orgUnit">Org Unit (OU)</label>
+                <input type="text" id="orgUnit" placeholder="IT Department" value="">
+              </div>
+              <div class="form-field">
+                <label for="country">Country (C)</label>
+                <input type="text" id="country" placeholder="US" maxlength="2" value="US">
+                <span class="field-hint">2-letter ISO country code (e.g. US, GB, DE)</span>
+              </div>
+              <div class="form-field">
+                <label for="state">State / Province (ST)</label>
+                <input type="text" id="state" placeholder="California" value="">
+              </div>
+              <div class="form-field">
+                <label for="locality">City / Locality (L)</label>
+                <input type="text" id="locality" placeholder="San Francisco" value="">
+              </div>
+              <div class="form-field">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="admin@example.com" value="">
+              </div>
+              <div class="form-field" id="rsaKeySizeField">
+                <label for="keySize">Key Size</label>
+                <select id="keySize">
+                  <option value="2048" selected>RSA 2048 (recommended)</option>
+                  <option value="3072">RSA 3072</option>
+                  <option value="4096">RSA 4096 (high security)</option>
+                </select>
+              </div>
+              <div class="form-field" id="ecCurveField" style="display:none;">
+                <label for="ecCurve">EC Curve</label>
+                <select id="ecCurve">
+                  <option value="prime256v1" selected>P-256 / prime256v1 (recommended)</option>
+                  <option value="secp384r1">P-384 / secp384r1</option>
+                  <option value="secp521r1">P-521 / secp521r1</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="keyFileName">Key filename</label>
+                <input type="text" id="keyFileName" placeholder="private.key" value="private.key">
+              </div>
+              <div class="form-field">
+                <label for="csrFileName">CSR filename</label>
+                <input type="text" id="csrFileName" placeholder="domain.csr" value="domain.csr">
+              </div>
+              <div class="form-field">
+                <label for="certFileName">Cert filename (self-signed)</label>
+                <input type="text" id="certFileName" placeholder="domain.crt" value="domain.crt">
+              </div>
+              <div class="form-field">
+                <label for="certDays">Self-signed validity (days)</label>
+                <input type="number" id="certDays" value="365" min="1" max="3650">
+              </div>
+              <div class="form-field full-width">
+                <label>Subject Alternative Names (SANs)</label>
+                <div id="sanList">
+                  <div class="san-row">
+                    <input type="text" class="san-input" placeholder="www.example.com or IP:192.168.1.1">
+                    <button class="btn btn-sm btn-secondary san-remove-btn" title="Remove">&#x2715;</button>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-secondary" id="addSanBtn" style="align-self:flex-start;margin-top:0.4rem;">+ Add SAN</button>
+                <span class="field-hint">Add additional domains or IPs. Use "IP:1.2.3.4" for IP addresses. Wildcards like *.example.com are also valid.</span>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
+              <button class="btn btn-primary" id="generateBtn">Generate Commands</button>
+              <button class="btn btn-secondary" id="exampleBtn">Load Example</button>
+              <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            </div>
+
+            <hr class="section-divider">
+
+            <!-- Output -->
+            <div id="outputSection" style="display:none;">
+              <div class="output-block">
+                <h3>
+                  <span>1. Generate Private Key</span>
+                  <button class="btn btn-sm btn-secondary copy-cmd-btn" data-target="cmd1">Copy</button>
+                </h3>
+                <pre id="cmd1"></pre>
+                <div class="expected-files" id="files1"></div>
+              </div>
+
+              <div class="output-block">
+                <h3>
+                  <span>2. Generate CSR from Private Key</span>
+                  <button class="btn btn-sm btn-secondary copy-cmd-btn" data-target="cmd2">Copy</button>
+                </h3>
+                <pre id="cmd2"></pre>
+                <div class="expected-files" id="files2"></div>
+              </div>
+
+              <div class="output-block">
+                <h3>
+                  <span>3. (Alternative) Generate Key + CSR in One Step</span>
+                  <button class="btn btn-sm btn-secondary copy-cmd-btn" data-target="cmd3">Copy</button>
+                </h3>
+                <pre id="cmd3"></pre>
+                <div class="expected-files" id="files3"></div>
+              </div>
+
+              <div class="output-block">
+                <h3>
+                  <span>4. Generate Self-Signed Certificate</span>
+                  <button class="btn btn-sm btn-secondary copy-cmd-btn" data-target="cmd4">Copy</button>
+                </h3>
+                <pre id="cmd4"></pre>
+                <div class="expected-files" id="files4"></div>
+              </div>
+
+              <div class="output-block">
+                <h3>
+                  <span>5. Verify CSR Contents</span>
+                  <button class="btn btn-sm btn-secondary copy-cmd-btn" data-target="cmd5">Copy</button>
+                </h3>
+                <pre id="cmd5"></pre>
+              </div>
+
+              <div class="output-block" id="sanConfBlock" style="display:none;">
+                <h3>
+                  <span>6. OpenSSL SAN Config File (san.cnf)</span>
+                  <button class="btn btn-sm btn-secondary copy-cmd-btn" data-target="cmd6">Copy</button>
+                </h3>
+                <pre id="cmd6"></pre>
+                <div class="expected-files">Save this as <code>san.cnf</code>, then use it in commands 2/3/4 with <code>-config san.cnf</code> and <code>-extensions v3_req</code></div>
+              </div>
+
+              <div style="margin-top:1rem;display:flex;gap:0.75rem;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-primary" id="copyAllBtn">Copy All Commands</button>
+                <button class="btn btn-sm btn-secondary" id="downloadBtn">Download as .sh</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Fill in the form and click Generate Commands.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the CSR Command Generator</h2>
+          <ol>
+            <li><strong>Choose key type</strong> — select RSA (default, widest compatibility) or ECDSA (smaller keys, faster TLS handshakes).</li>
+            <li><strong>Enter your Common Name (CN)</strong> — this is the primary domain name the certificate will secure. For wildcard certificates, use *.example.com. For multi-domain certs, use the primary domain here and add others as SANs.</li>
+            <li><strong>Fill in organization details</strong> — Organization (O), Country (C), State (ST), and Locality (L) are typically required by paid CAs for OV (Organization Validated) certificates. For DV (Domain Validated) certificates from Let's Encrypt, they are optional.</li>
+            <li><strong>Add Subject Alternative Names</strong> — for any certificate that needs to cover multiple domains or IPs (e.g. both example.com and www.example.com), add them as SANs. Modern browsers require the domain to be listed as a SAN.</li>
+            <li><strong>Click Generate Commands</strong> — the tool generates ready-to-run OpenSSL shell commands. Copy each command or download the full script as a .sh file.</li>
+          </ol>
+
+          <h2>Understanding the Generated Commands</h2>
+          <p>The tool generates five types of OpenSSL commands:</p>
+          <ul>
+            <li><strong>Key generation</strong> — creates your RSA or ECDSA private key file. Keep this file secure and never share it. The private key is used to sign your CSR and later to decrypt TLS sessions.</li>
+            <li><strong>CSR generation from existing key</strong> — creates a CSR from an existing private key. Use this if you already have a private key and want to renew or replace your certificate without generating a new key pair.</li>
+            <li><strong>Key + CSR in one step</strong> — the most common approach for new deployments. Generates both the private key and CSR in a single command.</li>
+            <li><strong>Self-signed certificate</strong> — creates a certificate signed by your own private key. Useful for development and testing. Set the validity period with the <code>-days</code> flag.</li>
+            <li><strong>CSR verification</strong> — reads the generated CSR and displays its contents in human-readable form. Use this to verify the domain name, organization, and SANs are correct before submitting to a CA.</li>
+          </ul>
+
+          <h3>RSA vs. ECDSA: Which Should You Choose?</h3>
+          <p>RSA 2048 is the safe default — it has been the industry standard for over a decade, is supported by every CA and TLS client, and provides adequate security. RSA 4096 offers a larger security margin but generates slightly larger key files and takes marginally longer for TLS handshakes. ECDSA (Elliptic Curve DSA) with P-256 provides equivalent security to RSA 3072 but with a 256-bit key (much smaller). ECDSA keys result in faster TLS handshakes and smaller certificate files, which is why major web platforms like Google, Cloudflare, and Facebook have migrated to ECDSA. If your CA supports ECDSA (all major ones do), P-256 is the recommended choice for new deployments in 2024 and beyond.</p>
+
+          <h3>Subject Alternative Names (SANs) Explained</h3>
+          <p>A single TLS certificate can cover multiple hostnames using the Subject Alternative Name (SAN) extension. For example, a certificate can cover example.com, www.example.com, api.example.com, and staging.example.com with a single CSR. This is more efficient than obtaining separate certificates for each subdomain. Wildcard SANs like *.example.com cover all immediate subdomains (www, api, mail) but not sub-subdomains (app.api.example.com). For IP addresses, prefix with "IP:" in the SAN field (e.g. "IP:192.168.1.100") — this is required for certificates used with direct IP access rather than domain names.</p>
+
+          <h3>Working with Let's Encrypt</h3>
+          <p>Let's Encrypt (via Certbot or ACME protocol) automates the entire CSR → certificate process. You do not need to manually generate CSRs for Let's Encrypt unless you are using a manual/DNS challenge or a custom ACME client. However, understanding CSRs is valuable for migrating certificates, working with internal CAs, generating certificates for on-premises servers not reachable by ACME, or using paid OV/EV certificates that require manual submission to a CA portal. The commands generated by this tool work with any CA that accepts PEM-format CSRs.</p>
+
+          <h3>Security Best Practices</h3>
+          <ul>
+            <li><strong>Never share your private key</strong> — the .key file must stay on your server. If it is compromised, revoke your certificate immediately and generate a new key pair.</li>
+            <li><strong>Use strong key sizes</strong> — RSA 2048+ or ECDSA P-256+ for all new certificates.</li>
+            <li><strong>Verify the CSR</strong> — always run the verify command before submitting to a CA to confirm the CN and SANs are correct.</li>
+            <li><strong>Set appropriate certificate validity</strong> — CAs now issue certificates for a maximum of 398 days. Let's Encrypt uses 90 days. Self-signed certificates can be longer but should still be rotated regularly.</li>
+            <li><strong>Store private keys with restricted permissions</strong> — on Linux, use <code>chmod 600 private.key</code> to restrict access to the file owner only.</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a CSR and why do I need one?</button>
+            <div class="faq-answer">A Certificate Signing Request (CSR) is a block of encoded text containing your public key and identity information (domain name, organization, country, etc.). You send this to a Certificate Authority (CA) like Let's Encrypt, DigiCert, or Sectigo. The CA verifies your identity and returns a signed TLS/SSL certificate that browsers will trust. Without a CSR, you cannot obtain a CA-signed certificate for HTTPS.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is RSA 2048 vs RSA 4096 vs ECDSA?</button>
+            <div class="faq-answer">RSA 2048 is the current minimum recommended key size and is universally compatible. RSA 4096 doubles the key size for extra security with minor performance cost. ECDSA with P-256 provides equivalent security to RSA 3072 with much smaller keys and faster TLS handshakes. Most modern CAs and clients support all three; ECDSA P-256 is increasingly the recommended choice for new deployments.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are Subject Alternative Names (SANs)?</button>
+            <div class="faq-answer">SANs are additional hostnames or IPs that a single certificate can cover. For example, a certificate can cover example.com and www.example.com and api.example.com with one CSR by listing them as SANs. Modern browsers require the domain to be listed as a SAN (not just the CN field). Wildcard certs (*.example.com) cover all first-level subdomains as a SAN.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is it safe to enter my domain and organization details into this tool?</button>
+            <div class="faq-answer">Yes. This tool runs 100% in your browser and never sends any data to a server. All processing happens locally in JavaScript. The tool generates OpenSSL command strings that you run on your own machine. No private keys are generated or transmitted by this tool.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between a CSR and a self-signed certificate?</button>
+            <div class="faq-answer">A CSR is submitted to a Certificate Authority, which returns a trusted certificate. A self-signed certificate is signed by your own private key and is not trusted by browsers (they show a security warning). Self-signed certificates are appropriate for development and internal tools. For production public websites, use a CA-signed certificate — Let's Encrypt provides free DV certificates.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Security Tools</h4>
+        <a href="/tools/csr-command-generator.html">CSR Generator</a>
+        <a href="/tools/hash-identifier.html">Hash Identifier</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var keyType = 'rsa';
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        keyType = chip.getAttribute('data-mode');
+        document.getElementById('rsaKeySizeField').style.display = keyType === 'rsa' ? '' : 'none';
+        document.getElementById('ecCurveField').style.display = keyType === 'ecdsa' ? '' : 'none';
+      });
+    });
+
+    // SAN management
+    var sanList = document.getElementById('sanList');
+
+    function addSanRow(value) {
+      var row = document.createElement('div');
+      row.className = 'san-row';
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'san-input';
+      inp.placeholder = 'www.example.com or IP:192.168.1.1';
+      if (value) inp.value = value;
+      var rmBtn = document.createElement('button');
+      rmBtn.className = 'btn btn-sm btn-secondary san-remove-btn';
+      rmBtn.title = 'Remove';
+      rmBtn.innerHTML = '&#x2715;';
+      rmBtn.addEventListener('click', function () {
+        if (sanList.children.length > 1) row.remove();
+        else inp.value = '';
+      });
+      row.appendChild(inp);
+      row.appendChild(rmBtn);
+      sanList.appendChild(row);
+    }
+
+    // Wire first row remove btn
+    document.querySelector('.san-remove-btn').addEventListener('click', function () {
+      var inp = this.previousElementSibling;
+      if (sanList.children.length > 1) this.parentElement.remove();
+      else inp.value = '';
+    });
+
+    document.getElementById('addSanBtn').addEventListener('click', function () {
+      addSanRow('');
+    });
+
+    function getSans() {
+      return Array.from(sanList.querySelectorAll('.san-input'))
+        .map(function (i) { return i.value.trim(); })
+        .filter(function (v) { return v.length > 0; });
+    }
+
+    function escShell(s) {
+      // Escape for shell double-quote context
+      return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+    }
+
+    function buildSubject() {
+      var cn = document.getElementById('commonName').value.trim();
+      var o  = document.getElementById('organization').value.trim();
+      var ou = document.getElementById('orgUnit').value.trim();
+      var c  = document.getElementById('country').value.trim().toUpperCase().slice(0,2);
+      var st = document.getElementById('state').value.trim();
+      var l  = document.getElementById('locality').value.trim();
+      var em = document.getElementById('email').value.trim();
+      var parts = [];
+      if (c)  parts.push('C=' + escShell(c));
+      if (st) parts.push('ST=' + escShell(st));
+      if (l)  parts.push('L=' + escShell(l));
+      if (o)  parts.push('O=' + escShell(o));
+      if (ou) parts.push('OU=' + escShell(ou));
+      if (cn) parts.push('CN=' + escShell(cn));
+      if (em) parts.push('emailAddress=' + escShell(em));
+      return '/' + parts.join('/');
+    }
+
+    function buildSanConf() {
+      var sans = getSans();
+      var cn = document.getElementById('commonName').value.trim();
+      var o  = document.getElementById('organization').value.trim();
+      var c  = document.getElementById('country').value.trim().toUpperCase().slice(0,2);
+      var st = document.getElementById('state').value.trim();
+      var l  = document.getElementById('locality').value.trim();
+      var ou = document.getElementById('orgUnit').value.trim();
+      var em = document.getElementById('email').value.trim();
+
+      // Combine CN + SANs, CN first if it's a domain-like
+      var allSans = [];
+      // Include CN as a SAN (required by modern browsers)
+      if (cn) allSans.push(cn.startsWith('*.') || cn.indexOf('.') > -1 ? 'DNS:' + cn : 'DNS:' + cn);
+      sans.forEach(function (s) {
+        if (s.startsWith('IP:') || s.startsWith('DNS:')) allSans.push(s);
+        else if (/^\d+\.\d+\.\d+\.\d+$/.test(s)) allSans.push('IP:' + s);
+        else allSans.push('DNS:' + s);
+      });
+      // Deduplicate
+      var seen = {};
+      allSans = allSans.filter(function (s) { if (seen[s]) return false; seen[s] = true; return true; });
+
+      var lines = [];
+      lines.push('[req]');
+      lines.push('default_bits       = ' + (keyType === 'rsa' ? document.getElementById('keySize').value : '256'));
+      lines.push('prompt             = no');
+      lines.push('default_md         = sha256');
+      lines.push('req_extensions     = v3_req');
+      lines.push('distinguished_name = dn');
+      lines.push('');
+      lines.push('[dn]');
+      if (c)  lines.push('C  = ' + c);
+      if (st) lines.push('ST = ' + st);
+      if (l)  lines.push('L  = ' + l);
+      if (o)  lines.push('O  = ' + o);
+      if (ou) lines.push('OU = ' + ou);
+      if (cn) lines.push('CN = ' + cn);
+      if (em) lines.push('emailAddress = ' + em);
+      lines.push('');
+      lines.push('[v3_req]');
+      lines.push('subjectAltName = @alt_names');
+      lines.push('');
+      lines.push('[alt_names]');
+      var dnIdx = 1, ipIdx = 1;
+      allSans.forEach(function (s) {
+        if (s.startsWith('IP:')) { lines.push('IP.' + (ipIdx++) + ' = ' + s.slice(3)); }
+        else { lines.push('DNS.' + (dnIdx++) + ' = ' + s.replace(/^DNS:/,'')); }
+      });
+      return lines.join('\n');
+    }
+
+    function generate() {
+      var cn = document.getElementById('commonName').value.trim();
+      if (!cn) {
+        document.getElementById('statusBar').className = 'status-bar invalid';
+        document.getElementById('statusBar').textContent = 'Common Name (CN) is required — enter a domain name.';
+        return;
+      }
+      var keyFile  = document.getElementById('keyFileName').value.trim() || 'private.key';
+      var csrFile  = document.getElementById('csrFileName').value.trim() || 'domain.csr';
+      var certFile = document.getElementById('certFileName').value.trim() || 'domain.crt';
+      var days     = document.getElementById('certDays').value || '365';
+      var sans     = getSans();
+      var hasSans  = sans.length > 0;
+      var subject  = buildSubject();
+
+      var cmd1, cmd2, cmd3, cmd4, cmd5, cmd6;
+
+      if (keyType === 'rsa') {
+        var bits = document.getElementById('keySize').value;
+        cmd1 = '# Generate RSA ' + bits + '-bit private key\nopenssl genrsa -out ' + keyFile + ' ' + bits;
+
+        if (hasSans) {
+          cmd2 = '# Generate CSR using existing key and SAN config\nopenssl req \\\n  -new \\\n  -key ' + keyFile + ' \\\n  -out ' + csrFile + ' \\\n  -subj "' + subject + '" \\\n  -config san.cnf \\\n  -extensions v3_req';
+          cmd3 = '# Generate new RSA ' + bits + '-bit key + CSR with SANs in one step\nopenssl req \\\n  -new \\\n  -newkey rsa:' + bits + ' \\\n  -nodes \\\n  -keyout ' + keyFile + ' \\\n  -out ' + csrFile + ' \\\n  -subj "' + subject + '" \\\n  -config san.cnf \\\n  -extensions v3_req';
+          cmd4 = '# Generate self-signed certificate with SANs\nopenssl req \\\n  -new \\\n  -x509 \\\n  -key ' + keyFile + ' \\\n  -out ' + certFile + ' \\\n  -days ' + days + ' \\\n  -subj "' + subject + '" \\\n  -config san.cnf \\\n  -extensions v3_req';
+        } else {
+          cmd2 = '# Generate CSR using existing key\nopenssl req \\\n  -new \\\n  -key ' + keyFile + ' \\\n  -out ' + csrFile + ' \\\n  -subj "' + subject + '"';
+          cmd3 = '# Generate new RSA ' + bits + '-bit key + CSR in one step\nopenssl req \\\n  -new \\\n  -newkey rsa:' + bits + ' \\\n  -nodes \\\n  -keyout ' + keyFile + ' \\\n  -out ' + csrFile + ' \\\n  -subj "' + subject + '"';
+          cmd4 = '# Generate self-signed certificate\nopenssl req \\\n  -new \\\n  -x509 \\\n  -key ' + keyFile + ' \\\n  -out ' + certFile + ' \\\n  -days ' + days + ' \\\n  -subj "' + subject + '"';
+        }
+      } else {
+        var curve = document.getElementById('ecCurve').value;
+        cmd1 = '# Generate ECDSA private key (' + curve + ')\nopenssl ecparam \\\n  -name ' + curve + ' \\\n  -genkey \\\n  -noout \\\n  -out ' + keyFile;
+
+        if (hasSans) {
+          cmd2 = '# Generate CSR using ECDSA key and SAN config\nopenssl req \\\n  -new \\\n  -key ' + keyFile + ' \\\n  -out ' + csrFile + ' \\\n  -subj "' + subject + '" \\\n  -config san.cnf \\\n  -extensions v3_req';
+          cmd3 = '# Generate new ECDSA key + CSR with SANs in one step\nopenssl req \\\n  -new \\\n  -newkey ec:<(openssl ecparam -name ' + curve + ') \\\n  -nodes \\\n  -keyout ' + keyFile + ' \\\n  -out ' + csrFile + ' \\\n  -subj "' + subject + '" \\\n  -config san.cnf \\\n  -extensions v3_req';
+          cmd4 = '# Generate self-signed certificate with SANs (ECDSA)\nopenssl req \\\n  -new \\\n  -x509 \\\n  -key ' + keyFile + ' \\\n  -out ' + certFile + ' \\\n  -days ' + days + ' \\\n  -subj "' + subject + '" \\\n  -config san.cnf \\\n  -extensions v3_req';
+        } else {
+          cmd2 = '# Generate CSR from ECDSA key\nopenssl req \\\n  -new \\\n  -key ' + keyFile + ' \\\n  -out ' + csrFile + ' \\\n  -subj "' + subject + '"';
+          cmd3 = '# Note: ECDSA one-step requires param file (see step 1 key first)\n# Generate CSR after creating the key with step 1\nopenssl req \\\n  -new \\\n  -key ' + keyFile + ' \\\n  -out ' + csrFile + ' \\\n  -subj "' + subject + '"';
+          cmd4 = '# Generate self-signed certificate (ECDSA)\nopenssl req \\\n  -new \\\n  -x509 \\\n  -key ' + keyFile + ' \\\n  -out ' + certFile + ' \\\n  -days ' + days + ' \\\n  -subj "' + subject + '"';
+        }
+      }
+
+      cmd5 = '# Verify CSR contents — inspect before submitting to CA\nopenssl req -text -noout -verify -in ' + csrFile;
+      cmd6 = buildSanConf();
+
+      document.getElementById('cmd1').textContent = cmd1;
+      document.getElementById('cmd2').textContent = cmd2;
+      document.getElementById('cmd3').textContent = cmd3;
+      document.getElementById('cmd4').textContent = cmd4;
+      document.getElementById('cmd5').textContent = cmd5;
+      document.getElementById('cmd6').textContent = cmd6;
+
+      document.getElementById('files1').innerHTML = 'Creates: <code>' + keyFile + '</code>';
+      document.getElementById('files2').innerHTML = 'Requires: <code>' + keyFile + '</code> &nbsp; Creates: <code>' + csrFile + '</code>';
+      document.getElementById('files3').innerHTML = 'Creates: <code>' + keyFile + '</code> and <code>' + csrFile + '</code>';
+      document.getElementById('files4').innerHTML = 'Requires: <code>' + keyFile + '</code> &nbsp; Creates: <code>' + certFile + '</code>';
+
+      document.getElementById('sanConfBlock').style.display = hasSans ? '' : 'none';
+      document.getElementById('outputSection').style.display = '';
+
+      var sanCount = sans.length;
+      var keyLabel = keyType === 'rsa'
+        ? 'RSA ' + document.getElementById('keySize').value
+        : 'ECDSA ' + document.getElementById('ecCurve').value;
+      document.getElementById('statusBar').className = 'status-bar valid';
+      document.getElementById('statusBar').textContent = 'CSR command generated \u2014 ' + keyLabel + (sanCount > 0 ? ' \u2014 ' + sanCount + ' SAN' + (sanCount > 1 ? 's' : '') : ' \u2014 no SANs');
+
+      DT.trackTool('csr-command-generator');
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', generate);
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('commonName').value = 'example.com';
+      document.getElementById('organization').value = 'Example Corp Ltd';
+      document.getElementById('orgUnit').value = 'Engineering';
+      document.getElementById('country').value = 'US';
+      document.getElementById('state').value = 'California';
+      document.getElementById('locality').value = 'San Francisco';
+      document.getElementById('email').value = 'admin@example.com';
+      document.getElementById('keySize').value = '2048';
+      document.getElementById('keyFileName').value = 'example.key';
+      document.getElementById('csrFileName').value = 'example.csr';
+      document.getElementById('certFileName').value = 'example.crt';
+      document.getElementById('certDays').value = '365';
+      // Set SANs
+      sanList.innerHTML = '';
+      addSanRow('www.example.com');
+      addSanRow('api.example.com');
+      // Wire remove btns
+      sanList.querySelectorAll('.san-remove-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var row = btn.parentElement;
+          if (sanList.children.length > 1) row.remove();
+          else btn.previousElementSibling.value = '';
+        });
+      });
+      generate();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      ['commonName','organization','orgUnit','country','state','locality','email'].forEach(function(id){ document.getElementById(id).value = ''; });
+      document.getElementById('keyFileName').value = 'private.key';
+      document.getElementById('csrFileName').value = 'domain.csr';
+      document.getElementById('certFileName').value = 'domain.crt';
+      document.getElementById('certDays').value = '365';
+      sanList.innerHTML = '';
+      addSanRow('');
+      sanList.querySelector('.san-remove-btn').addEventListener('click', function () {
+        sanList.querySelector('.san-input').value = '';
+      });
+      document.getElementById('outputSection').style.display = 'none';
+      document.getElementById('statusBar').className = 'status-bar info';
+      document.getElementById('statusBar').textContent = 'Fill in the form and click Generate Commands.';
+    });
+
+    // Copy all commands
+    document.getElementById('copyAllBtn').addEventListener('click', function () {
+      var parts = ['cmd1','cmd2','cmd3','cmd4','cmd5'];
+      var hasSans = getSans().length > 0;
+      if (hasSans) parts.push('cmd6');
+      var text = parts.map(function (id) { return document.getElementById(id).textContent; }).join('\n\n');
+      DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var parts = ['cmd1','cmd2','cmd3','cmd4','cmd5'];
+      var hasSans = getSans().length > 0;
+      if (hasSans) parts.push('cmd6');
+      var header = '#!/bin/bash\n# OpenSSL CSR Commands — generated by DevToolbox\n# https://thisdevtool.com/tools/csr-command-generator.html\n\n';
+      var text = header + parts.map(function (id) { return document.getElementById(id).textContent; }).join('\n\n');
+      if (hasSans) {
+        text += '\n\n# Save the SAN config above as san.cnf before running commands 2/3/4';
+      }
+      DT.downloadText(text, 'openssl-commands.sh', 'text/x-sh');
+    });
+
+    // Per-command copy buttons
+    document.querySelectorAll('.copy-cmd-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var targetId = btn.getAttribute('data-target');
+        var text = document.getElementById(targetId).textContent;
+        DT.copyToClipboard(text, btn);
+      });
+    });
+
+    // Allow tab in textareas
+    document.querySelectorAll('textarea').forEach(function (ta) {
+      ta.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var s = this.selectionStart, end = this.selectionEnd;
+          this.value = this.value.substring(0, s) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = s + 2;
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

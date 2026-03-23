@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Byte Calculator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert between bytes, KB, MB, GB, TB, PB in binary (1024) and SI (1000) modes. Calculate file transfer time. Free data size calculator, no signup required.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/byte-calculator.html">
+  <meta property="og:title" content="Byte Calculator — DevToolbox">
+  <meta property="og:description" content="Convert data sizes (B/KB/MB/GB/TB/PB) in binary and SI modes. Calculate transfer time. Free, instant, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/byte-calculator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Byte Calculator",
+    "url": "https://thisdevtool.com/tools/byte-calculator.html",
+    "description": "Data size calculator and converter. Convert between bytes, KB, MB, GB, TB in binary (IEC) and SI (decimal) modes. Calculate file transfer times.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between KB and KiB?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "KB (kilobyte) in SI mode equals 1,000 bytes. KiB (kibibyte) in binary mode equals 1,024 bytes. Hard drive manufacturers use SI (so a '1 TB' drive is 1,000,000,000,000 bytes), while operating systems traditionally use binary (so Windows shows it as ~931 GiB)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I calculate file transfer time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Enter your file size, then enter your connection speed in the transfer time section. Remember that network speeds are measured in bits per second (Mbps), not bytes per second. 1 Mbps = 0.125 MB/s. This tool handles the conversion automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my 1 TB hard drive show as 931 GB in Windows?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Hard drive manufacturers advertise capacity using SI units (1 TB = 1,000,000,000,000 bytes). Windows displays storage using binary units (1 GB = 1,073,741,824 bytes). So 1,000,000,000,000 bytes ÷ 1,073,741,824 = ~931 GiB, displayed as '931 GB' in Windows."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a petabyte?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A petabyte (PB) is 1,000 terabytes in SI mode or 1,125,899,906,842,624 bytes in binary mode. Large data centres, cloud storage providers, and internet backbone operators deal in petabytes. The entire printed collection of the US Library of Congress is estimated at about 10 TB."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many bytes are in a gigabyte?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In binary mode (used by operating systems): 1 GB = 1,073,741,824 bytes (2^30). In SI/decimal mode (used by storage manufacturers): 1 GB = 1,000,000,000 bytes (10^9). The difference is about 7.4%."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .byte-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .byte-row { display: flex; align-items: center; gap: 8px; background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 12px; }
+    .byte-row label { width: 120px; font-size: .8rem; color: var(--color-muted); flex-shrink: 0; }
+    .byte-row input { flex: 1; border: none; background: transparent; color: var(--color-text); font-size: .95rem; outline: none; min-width: 0; }
+    .byte-row .unit-tag { font-size: .75rem; color: var(--color-primary); font-weight: 700; width: 48px; text-align: right; flex-shrink: 0; }
+    .transfer-panel { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 10px; padding: 16px; margin-top: 16px; }
+    .transfer-panel h3 { margin: 0 0 12px; font-size: .9rem; }
+    .transfer-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .transfer-row label { width: 110px; font-size: .8rem; color: var(--color-muted); flex-shrink: 0; }
+    .transfer-row input, .transfer-row select { flex: 1; }
+    .transfer-result { margin-top: 10px; padding: 10px; background: var(--color-surface); border-radius: 6px; font-size: .9rem; }
+    .full-table { width: 100%; border-collapse: collapse; font-size: .83rem; margin-top: 14px; }
+    .full-table th { background: var(--color-surface-2); padding: 6px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--color-border); }
+    .full-table td { padding: 5px 10px; border-bottom: 1px solid var(--color-border); font-variant-numeric: tabular-nums; }
+    .full-table tr:hover td { background: var(--color-surface-2); }
+    @media (max-width: 560px) { .byte-grid { grid-template-columns: 1fr; } .byte-row label { width: 90px; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Byte Calculator</h1>
+          <p class="tool-subtitle">Convert data sizes in binary (1024) and SI (1000) modes. Calculate transfer time at any speed.</p>
+
+          <!-- Mode chips -->
+          <div class="option-chips" id="modeChips">
+            <button class="option-chip active" data-mode="binary">Binary (1024 — OS / dev)</button>
+            <button class="option-chip" data-mode="si">SI / Decimal (1000 — Storage mfr)</button>
+          </div>
+
+          <!-- Byte Fields -->
+          <div class="byte-grid" id="byteGrid">
+            <!-- generated by JS -->
+          </div>
+
+          <div class="btn-group">
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-sm btn-primary" id="copyBtn">Copy All</button>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter any data size to convert all units instantly.
+          </div>
+
+          <!-- Transfer Time -->
+          <div class="transfer-panel">
+            <h3>Transfer Time Calculator</h3>
+            <div class="transfer-row">
+              <label>Connection speed</label>
+              <input type="number" id="speedVal" placeholder="e.g. 100" step="any" min="0">
+              <select id="speedUnit">
+                <option value="kbps">Kbps (kilobits/s)</option>
+                <option value="mbps" selected>Mbps (megabits/s)</option>
+                <option value="gbps">Gbps (gigabits/s)</option>
+                <option value="kBps">KB/s</option>
+                <option value="mBps">MB/s</option>
+                <option value="gBps">GB/s</option>
+              </select>
+            </div>
+            <div class="transfer-result" id="transferResult">
+              Enter a file size above and a connection speed to calculate transfer time.
+            </div>
+          </div>
+
+          <!-- Reference Table -->
+          <div style="margin-top:20px;">
+            <h3 style="margin-bottom:8px;font-size:.95rem;" id="tableTitle">Binary Reference Table (powers of 1024)</h3>
+            <div style="overflow-x:auto;">
+              <table class="full-table">
+                <thead>
+                  <tr><th>Unit</th><th>Symbol</th><th>Bytes (exact)</th><th>Power of 2</th></tr>
+                </thead>
+                <tbody id="refBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Byte Calculator</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — Binary (1024) for OS/developer use, or SI (1000) for storage manufacturer specs.</li>
+            <li><strong>Enter a value</strong> in any field (Bytes, KB, MB, GB, TB, or PB) and all other fields update instantly.</li>
+            <li><strong>Calculate transfer time</strong> by entering your connection speed in the panel below the converter.</li>
+            <li><strong>Copy all</strong> using the button, or reference the table for the full powers-of-1024 breakdown.</li>
+          </ol>
+
+          <h2>Binary vs. SI (Decimal) Data Units</h2>
+          <p>The confusion between binary and decimal data units is one of the most common sources of frustration in computing. When you buy a "1 TB" hard drive, the manufacturer uses SI units: 1 TB = 1,000,000,000,000 bytes. But when Windows reports the drive capacity, it historically uses binary units: 1 GiB = 1,073,741,824 bytes. So a 1 TB drive appears as about 931 GiB in Windows Explorer. macOS switched to SI units in OS X 10.6 Snow Leopard (2009), so a 1 TB drive correctly shows as about 1 TB on a Mac.</p>
+
+          <h3>Binary Prefixes (IEC Standard)</h3>
+          <p>To eliminate confusion, the International Electrotechnical Commission (IEC) introduced binary prefixes in 1998: kibibyte (KiB, 1,024 bytes), mebibyte (MiB, 1,048,576 bytes), gibibyte (GiB), tebibyte (TiB), pebibyte (PiB), and exbibyte (EiB). Despite the standard being 25+ years old, most operating systems and tools still use "KB" and "GB" to mean binary units. In this tool, "Binary mode" uses these IEC values but labels them with the familiar KB/MB/GB abbreviations as they appear in Windows and Linux.</p>
+
+          <h3>File Transfer Speed vs. Data Size</h3>
+          <p>Network speeds are almost always quoted in bits per second (bps), not bytes per second (Bps). Capital B = bytes, lowercase b = bits. There are 8 bits in a byte. So a 100 Mbps connection can transfer approximately 12.5 MB per second (100 ÷ 8). This distinction is critical when calculating how long it takes to download or upload a file. Internet service providers advertise in Mbps (bits), while download managers show progress in MB/s (bytes). The transfer calculator in this tool handles this conversion automatically.</p>
+
+          <h3>Data Unit Quick Reference</h3>
+          <p>A typical MP3 song is 3–5 MB. A 4K movie is 50–100 GB. A full Blu-ray disc holds up to 100 GB. A typical hard drive backup is 1–4 TB. Cloud providers like AWS S3 measure in petabytes. The entire English Wikipedia (text only) is about 22 GB. The human genome is about 3 GB. Understanding these reference points helps developers and sysadmins make quick estimates about storage requirements, transfer costs, and database sizing.</p>
+
+          <h3>Developer Use Cases</h3>
+          <p>Developers commonly need data size conversions when: allocating database field sizes (a VARCHAR(255) holds 255 bytes), configuring upload limits (max_upload_size in PHP/nginx), planning object storage (AWS S3 pricing per GB), designing API payloads (keeping JSON responses under 1 MB), and estimating bandwidth costs (data transfer fees in cloud providers). The file size estimator in this tool is particularly useful when you have a known number of items and an average item size, helping you predict total storage needs before provisioning infrastructure.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between KB and KiB?</button>
+            <div class="faq-answer">KB (kilobyte) in SI mode = 1,000 bytes. KiB (kibibyte) in binary mode = 1,024 bytes. Hard drive manufacturers use SI (1 TB = 1,000,000,000,000 bytes), while operating systems traditionally use binary (Windows shows it as ~931 GiB).</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I calculate file transfer time?</button>
+            <div class="faq-answer">Enter your file size in any unit, then enter your connection speed in the Transfer Time panel. Network speeds are in bits per second (Mbps) — divide by 8 to get bytes per second. This tool handles that conversion automatically.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does my 1 TB drive show as 931 GB in Windows?</button>
+            <div class="faq-answer">Drive manufacturers use SI (1 TB = 10^12 bytes). Windows uses binary (1 GB = 2^30 = 1,073,741,824 bytes). So 10^12 ÷ 1,073,741,824 = ~931. macOS switched to SI in 2009 and shows the full 1 TB correctly.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a petabyte?</button>
+            <div class="faq-answer">In SI mode: 1 PB = 1,000 TB = 10^15 bytes. In binary mode: 1 PB = 1,125,899,906,842,624 bytes (2^50). Large data centres and cloud providers operate at petabyte scale. The entire US Library of Congress printed collection is ~10 TB — about 0.00001 PB.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How many bytes are in a gigabyte?</button>
+            <div class="faq-answer">Binary (OS): 1 GB = 2^30 = 1,073,741,824 bytes. SI (storage mfr): 1 GB = 10^9 = 1,000,000,000 bytes. The difference is 7.4%, which is why a "500 GB" drive shows as ~465 GB in Windows.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Calculators</h4>
+        <a href="/tools/byte-calculator.html">Byte Calculator</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+        <a href="/tools/date-calculator.html">Date Calculator</a>
+        <a href="/tools/roman-numeral.html">Roman Numerals</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var mode = 'binary'; // 'binary' | 'si'
+
+    var UNITS_BINARY = [
+      { label: 'Bytes',     symbol: 'B',  factor: 1 },
+      { label: 'Kilobytes', symbol: 'KB', factor: 1024 },
+      { label: 'Megabytes', symbol: 'MB', factor: 1048576 },
+      { label: 'Gigabytes', symbol: 'GB', factor: 1073741824 },
+      { label: 'Terabytes', symbol: 'TB', factor: 1099511627776 },
+      { label: 'Petabytes', symbol: 'PB', factor: 1125899906842624 }
+    ];
+    var UNITS_SI = [
+      { label: 'Bytes',     symbol: 'B',  factor: 1 },
+      { label: 'Kilobytes', symbol: 'KB', factor: 1000 },
+      { label: 'Megabytes', symbol: 'MB', factor: 1000000 },
+      { label: 'Gigabytes', symbol: 'GB', factor: 1000000000 },
+      { label: 'Terabytes', symbol: 'TB', factor: 1000000000000 },
+      { label: 'Petabytes', symbol: 'PB', factor: 1000000000000000 }
+    ];
+
+    function getUnits() { return mode === 'binary' ? UNITS_BINARY : UNITS_SI; }
+
+    function fmtNum(n) {
+      if (n === 0) return '0';
+      if (Math.abs(n) >= 1e-4 && Math.abs(n) < 1e15) return parseFloat(n.toPrecision(12)).toString();
+      return n.toExponential(6);
+    }
+
+    function buildGrid() {
+      var grid = document.getElementById('byteGrid');
+      grid.innerHTML = '';
+      getUnits().forEach(function(u, i) {
+        var row = document.createElement('div');
+        row.className = 'byte-row';
+        row.innerHTML = '<label>' + u.label + '</label><input type="number" id="field_' + i + '" placeholder="0" step="any" min="0" data-idx="' + i + '"><span class="unit-tag">' + u.symbol + '</span>';
+        grid.appendChild(row);
+      });
+      // Attach listeners
+      grid.querySelectorAll('input').forEach(function(inp) {
+        inp.addEventListener('input', DT.debounce(function() {
+          var idx = parseInt(this.getAttribute('data-idx'));
+          recalcFrom(idx, this.value);
+        }.bind(inp), 150));
+      });
+    }
+
+    function recalcFrom(srcIdx, val) {
+      var units = getUnits();
+      var bytes = parseFloat(val);
+      if (isNaN(bytes) || val === '') {
+        units.forEach(function(u, i) {
+          if (i !== srcIdx) {
+            var f = document.getElementById('field_' + i);
+            if (f) f.value = '';
+          }
+        });
+        setStatus('info', 'Enter any data size to convert all units instantly.');
+        document.getElementById('transferResult').textContent = 'Enter a file size above and a connection speed to calculate transfer time.';
+        return;
+      }
+      var totalBytes = bytes * units[srcIdx].factor;
+      units.forEach(function(u, i) {
+        if (i !== srcIdx) {
+          var f = document.getElementById('field_' + i);
+          if (f) f.value = fmtNum(totalBytes / u.factor);
+        }
+      });
+      setStatus('valid', fmtNum(totalBytes).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' bytes total');
+      calcTransfer(totalBytes);
+    }
+
+    function calcTransfer(bytes) {
+      var speedVal = parseFloat(document.getElementById('speedVal').value);
+      var speedUnit = document.getElementById('speedUnit').value;
+      if (!speedVal || isNaN(speedVal) || speedVal <= 0) {
+        document.getElementById('transferResult').textContent = 'Enter a connection speed above to calculate transfer time.';
+        return;
+      }
+      // Convert speed to bytes per second
+      var bytesPerSec;
+      switch (speedUnit) {
+        case 'kbps': bytesPerSec = speedVal * 1000 / 8; break;
+        case 'mbps': bytesPerSec = speedVal * 1000000 / 8; break;
+        case 'gbps': bytesPerSec = speedVal * 1000000000 / 8; break;
+        case 'kBps': bytesPerSec = speedVal * 1000; break;
+        case 'mBps': bytesPerSec = speedVal * 1000000; break;
+        case 'gBps': bytesPerSec = speedVal * 1000000000; break;
+        default: bytesPerSec = speedVal * 1000000 / 8;
+      }
+      var seconds = bytes / bytesPerSec;
+      document.getElementById('transferResult').innerHTML =
+        '<strong>Transfer time: ' + fmtTime(seconds) + '</strong><br>' +
+        '(' + fmtNum(bytesPerSec / 1048576).slice(0,6) + ' MB/s effective throughput)';
+    }
+
+    function fmtTime(s) {
+      if (s < 1) return (s * 1000).toFixed(0) + ' milliseconds';
+      if (s < 60) return s.toFixed(1) + ' seconds';
+      if (s < 3600) { var m = Math.floor(s/60); var sec = Math.round(s%60); return m + 'm ' + sec + 's'; }
+      if (s < 86400) { var h = Math.floor(s/3600); var min = Math.floor((s%3600)/60); return h + 'h ' + min + 'm'; }
+      var d = Math.floor(s/86400); var hr = Math.floor((s%86400)/3600); return d + 'd ' + hr + 'h';
+    }
+
+    function buildTable() {
+      var base = mode === 'binary' ? 1024 : 1000;
+      var names = ['Byte', 'Kilobyte', 'Megabyte', 'Gigabyte', 'Terabyte', 'Petabyte', 'Exabyte'];
+      var syms  = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'];
+      var pows  = mode === 'binary' ? ['2⁰','2¹⁰','2²⁰','2³⁰','2⁴⁰','2⁵⁰','2⁶⁰'] : ['10⁰','10³','10⁶','10⁹','10¹²','10¹⁵','10¹⁸'];
+      var tbody = document.getElementById('refBody');
+      tbody.innerHTML = '';
+      for (var i = 0; i < 7; i++) {
+        var bytes = Math.pow(base, i);
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + names[i] + '</td><td>' + syms[i] + '</td><td>' + bytes.toLocaleString() + '</td><td>' + pows[i] + '</td>';
+        tbody.appendChild(tr);
+      }
+      document.getElementById('tableTitle').textContent = mode === 'binary'
+        ? 'Binary Reference Table (powers of 1024)'
+        : 'SI Reference Table (powers of 1000)';
+    }
+
+    function setStatus(cls, msg) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + cls;
+      bar.textContent = msg;
+    }
+
+    function copyAll() {
+      var units = getUnits();
+      var lines = [];
+      units.forEach(function(u, i) {
+        var f = document.getElementById('field_' + i);
+        if (f && f.value) lines.push(f.value + ' ' + u.symbol);
+      });
+      if (lines.length) {
+        DT.copyToClipboard(lines.join('\n'), document.getElementById('copyBtn'));
+      } else {
+        DT.toast('No values to copy', 'info');
+      }
+    }
+
+    // Mode chips
+    document.getElementById('modeChips').addEventListener('click', function(e) {
+      var chip = e.target.closest('[data-mode]');
+      if (!chip) return;
+      document.querySelectorAll('#modeChips .option-chip').forEach(function(c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      mode = chip.getAttribute('data-mode');
+      buildGrid();
+      buildTable();
+      setStatus('info', 'Switched to ' + (mode === 'binary' ? 'binary (1024)' : 'SI (1000)') + ' mode.');
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      buildGrid();
+      var f = document.getElementById('field_3'); // GB
+      if (f) { f.value = '1.5'; recalcFrom(3, '1.5'); }
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      buildGrid();
+      setStatus('info', 'Enter any data size to convert all units instantly.');
+      document.getElementById('transferResult').textContent = 'Enter a file size above and a connection speed to calculate transfer time.';
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', copyAll);
+
+    document.getElementById('speedVal').addEventListener('input', DT.debounce(function() {
+      var bytes = parseFloat(document.getElementById('field_0') && document.getElementById('field_0').value) || 0;
+      if (bytes) calcTransfer(bytes);
+    }, 200));
+
+    document.getElementById('speedUnit').addEventListener('change', function() {
+      var bytes = parseFloat(document.getElementById('field_0') && document.getElementById('field_0').value) || 0;
+      if (bytes) calcTransfer(bytes);
+    });
+
+    DT.trackTool('byte-calculator');
+
+    // Init
+    buildGrid();
+    buildTable();
+  })();
+  </script>
+</body>
+</html>

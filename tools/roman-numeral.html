@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Roman Numeral Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert Arabic numbers to Roman numerals and back. Validate Roman numeral notation. Quiz mode. Reference table. Supports 1–3999. Free Roman numeral converter.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/roman-numeral.html">
+  <meta property="og:title" content="Roman Numeral Converter — DevToolbox">
+  <meta property="og:description" content="Convert Arabic to Roman numerals and back. Quiz mode. Full reference table. Handles subtractive notation. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/roman-numeral.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Roman Numeral Converter",
+    "url": "https://thisdevtool.com/tools/roman-numeral.html",
+    "description": "Convert Arabic numbers to Roman numerals and back. Handles 1-3999 with subtractive notation. Includes quiz mode and full reference table.",
+    "applicationCategory": "EducationApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is subtractive notation in Roman numerals?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Subtractive notation places a smaller numeral before a larger one to indicate subtraction. For example, IV = 4 (5-1), IX = 9 (10-1), XL = 40 (50-10), XC = 90, CD = 400, CM = 900. Only specific pairs are valid: I before V and X, X before L and C, C before D and M."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do Roman numerals only go to 3999?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Standard Roman numerals use M as the largest symbol (1000). To write 4000 you would need MMMM, but this breaks the rule of no more than 3 consecutive identical symbols. Numbers 4000+ were written with a vinculum (bar over the letter) in ancient texts, but this is not supported in standard use."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What year is MMXXVI in Roman numerals?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "MMXXVI = 2026. MM = 2000, XX = 20, VI = 6. So MM + XX + VI = 2026."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I read Roman numerals?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Read from left to right, adding values together. When a smaller numeral appears before a larger one, subtract it. Example: XIV = X(10) + IV(4) = 14. XLII = XL(40) + II(2) = 42. MCMXCIX = M(1000) + CM(900) + XC(90) + IX(9) = 1999."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are there rules for valid Roman numerals?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The main rules are: (1) The same symbol may not repeat more than 3 times in a row. (2) Only I, X, and C can be used subtractively, and only before specific symbols. (3) When a symbol is subtracted, the pair counts as a single value. This validator checks all these rules."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .roman-split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .roman-panel { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 10px; padding: 16px; }
+    .roman-panel h3 { margin: 0 0 10px; font-size: .9rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .05em; }
+    .roman-panel input { width: 100%; margin-bottom: 8px; font-size: 1.1rem; text-transform: uppercase; }
+    .roman-result { font-size: 2rem; font-weight: 700; color: var(--color-primary); min-height: 2.5rem; letter-spacing: .05em; }
+    .roman-breakdown { font-size: .78rem; color: var(--color-muted); margin-top: 6px; min-height: 1.2em; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    .ref-table th { background: var(--color-surface-2); padding: 6px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--color-border); }
+    .ref-table td { padding: 5px 10px; border-bottom: 1px solid var(--color-border); }
+    .ref-table tr:hover td { background: var(--color-surface-2); }
+    .quiz-panel { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 10px; padding: 20px; margin-top: 16px; text-align: center; }
+    .quiz-question { font-size: 2rem; font-weight: 700; margin: 12px 0; color: var(--color-text); letter-spacing: .1em; }
+    .quiz-input-row { display: flex; gap: 8px; justify-content: center; max-width: 260px; margin: 0 auto 10px; }
+    .quiz-input-row input { flex: 1; font-size: 1.1rem; text-align: center; text-transform: uppercase; }
+    .quiz-feedback { font-size: .95rem; min-height: 1.4em; font-weight: 600; }
+    .quiz-feedback.correct { color: var(--color-valid); }
+    .quiz-feedback.wrong { color: var(--color-invalid); }
+    .quiz-score { font-size: .8rem; color: var(--color-muted); margin-top: 8px; }
+    @media (max-width: 560px) { .roman-split { grid-template-columns: 1fr; } .roman-result { font-size: 1.5rem; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/date-calculator.html">Date Calc</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Roman Numeral Converter</h1>
+          <p class="tool-subtitle">Convert between Arabic numbers and Roman numerals (1–3999). Quiz mode, reference table, full validation.</p>
+
+          <!-- Mode chips -->
+          <div class="option-chips" id="modeChips">
+            <button class="option-chip active" data-mode="convert">Convert</button>
+            <button class="option-chip" data-mode="quiz">Quiz Mode</button>
+            <button class="option-chip" data-mode="ref">Reference Table</button>
+          </div>
+
+          <!-- ── CONVERT PANEL ── -->
+          <div id="panel-convert">
+            <div class="roman-split">
+              <div class="roman-panel">
+                <h3>Arabic → Roman</h3>
+                <input type="number" id="arabicInput" placeholder="Enter number (1–3999)" min="1" max="3999">
+                <div class="roman-result" id="arabicResult">—</div>
+                <div class="roman-breakdown" id="arabicBreakdown"></div>
+                <button class="btn btn-sm btn-primary" id="copyArabicBtn" style="margin-top:10px;">Copy Roman</button>
+              </div>
+              <div class="roman-panel">
+                <h3>Roman → Arabic</h3>
+                <input type="text" id="romanInput" placeholder="Enter Roman (e.g. MMXXVI)" spellcheck="false" style="text-transform:uppercase;">
+                <div class="roman-result" id="romanResult">—</div>
+                <div class="roman-breakdown" id="romanBreakdown"></div>
+                <button class="btn btn-sm btn-primary" id="copyRomanBtn" style="margin-top:10px;">Copy Arabic</button>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+          </div>
+
+          <!-- ── QUIZ PANEL ── -->
+          <div id="panel-quiz" style="display:none;">
+            <div class="quiz-panel">
+              <div id="quizPrompt" style="font-size:.9rem;color:var(--color-muted);">Convert this number to Roman numerals:</div>
+              <div class="quiz-question" id="quizQuestion">—</div>
+              <div class="quiz-input-row">
+                <input type="text" id="quizAnswer" placeholder="Your answer" spellcheck="false" style="text-transform:uppercase;" autocomplete="off">
+                <button class="btn btn-primary" id="quizSubmitBtn">Check</button>
+              </div>
+              <div class="quiz-feedback" id="quizFeedback"></div>
+              <div class="quiz-score" id="quizScore">Score: 0 / 0</div>
+              <div style="margin-top:12px;">
+                <button class="btn btn-sm btn-secondary" id="quizNextBtn">Next Question</button>
+                <button class="btn btn-sm btn-secondary" id="quizResetBtn">Reset Score</button>
+                <button class="btn btn-sm btn-secondary" id="quizModeToggle" data-dir="ar">Switch: Roman → Arabic</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── REFERENCE PANEL ── -->
+          <div id="panel-ref" style="display:none;">
+            <div style="overflow-x:auto;margin-top:8px;">
+              <table class="ref-table">
+                <thead><tr><th>Arabic</th><th>Roman</th><th>Breakdown</th></tr></thead>
+                <tbody id="refBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a number (1–3999) or a Roman numeral to convert.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Roman Numeral Converter</h2>
+          <ol>
+            <li><strong>Arabic to Roman:</strong> Enter any number from 1 to 3999 in the left panel. The Roman numeral equivalent appears instantly with a step-by-step breakdown.</li>
+            <li><strong>Roman to Arabic:</strong> Type a Roman numeral in the right panel (case-insensitive). The converter validates your input and shows the Arabic equivalent.</li>
+            <li><strong>Quiz Mode:</strong> Test your knowledge with randomly generated questions in both directions. Track your score.</li>
+            <li><strong>Reference Table:</strong> See a complete table of key Roman numeral values from I to MMMCMXCIX (3999).</li>
+          </ol>
+
+          <h2>Roman Numeral Rules</h2>
+          <p>Roman numerals use seven symbols: I (1), V (5), X (10), L (50), C (100), D (500), and M (1000). Numbers are formed by combining these symbols according to specific rules that developed over centuries of Roman use.</p>
+
+          <h3>Additive Notation</h3>
+          <p>When symbols are arranged from largest to smallest, their values are added together. For example, VIII = 5 + 1 + 1 + 1 = 8. LXVII = 50 + 10 + 5 + 1 + 1 = 67. MDCCCXLVIII = 1000 + 500 + 300 + 40 + 8 = 1848. The rule is that no symbol may be repeated more than three times consecutively — this is why 4 is IV, not IIII (though IIII appears on clock faces for aesthetic reasons).</p>
+
+          <h3>Subtractive Notation</h3>
+          <p>Subtractive notation places a smaller symbol before a larger one to represent the difference. Only six subtractive combinations are standard: IV (4), IX (9), XL (40), XC (90), CD (400), and CM (900). The rules are: I can only precede V and X; X can only precede L and C; C can only precede D and M. Placing I before M (IM = 999?) or V before X (VX = 5?) is not valid standard notation, though some historical texts used it.</p>
+
+          <h3>Validity Rules</h3>
+          <p>A valid Roman numeral must: (1) use only the seven standard symbols, (2) not repeat any symbol more than 3 times consecutively, (3) use subtractive pairs only in the six valid combinations, (4) be in canonical form (the largest possible symbols are used at each position). The number 1999 in correct notation is MCMXCIX — not MIM or MCMXCIX variants that some people invent. This validator checks all these rules and flags invalid input.</p>
+
+          <h3>Roman Numerals in Modern Use</h3>
+          <p>Roman numerals are still widely used today in several contexts: clock faces (I through XII), book chapters and appendices (Chapter I, II, III...), Super Bowl numbering (Super Bowl LVIII), movie sequels and series (Rocky II, Part III), copyright years in film credits and TV shows, building cornerstones, monarchs and popes (Henry VIII, Pope Francis I), and outlines in academic writing. Learning to read Roman numerals is useful for appreciating historical documents, architecture, and formal publications.</p>
+
+          <h3>Historical Context</h3>
+          <p>Roman numerals evolved from tally marks used in ancient Rome and other Mediterranean civilizations. The system was dominant in Europe throughout the Middle Ages. Arabic numerals (0–9), originating in India and transmitted through the Arab world, gradually replaced Roman numerals for calculation purposes from the 13th century onward — primarily because Arabic numerals support positional notation, making arithmetic far easier. The zero concept, absent in Roman numerals, was critical for enabling algebra, calculus, and modern mathematics.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is subtractive notation in Roman numerals?</button>
+            <div class="faq-answer">Subtractive notation places a smaller numeral before a larger one to indicate subtraction. Valid pairs: IV=4, IX=9, XL=40, XC=90, CD=400, CM=900. Only I, X, and C can be subtracted, and only before specific symbols (I before V/X, X before L/C, C before D/M).</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why do Roman numerals only go to 3999?</button>
+            <div class="faq-answer">M is the largest standard symbol (1000). To write 4000 you'd need MMMM, but no symbol can repeat more than 3 times. Numbers above 3999 historically used a vinculum (bar over the letter) multiplying by 1000, but this is not standard in modern use.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What year is MMXXVI in Roman numerals?</button>
+            <div class="faq-answer">MMXXVI = 2026. MM=2000, XX=20, VI=6. Sum: 2026. The current year. Similarly: MMXXV = 2025, MMXXVII = 2027, MMM = 3000, MCMXCIX = 1999.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I read Roman numerals?</button>
+            <div class="faq-answer">Read left to right, adding values. When a smaller numeral precedes a larger one, subtract it. Example: XIV = X(10) + IV(4) = 14. XLII = XL(40) + II(2) = 42. MCMXCIX = M(1000) + CM(900) + XC(90) + IX(9) = 1999.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Are there rules for valid Roman numerals?</button>
+            <div class="faq-answer">Yes: (1) No symbol repeats more than 3 times in a row. (2) Only I, X, C can be used subtractively, before specific symbols only. (3) Numbers must use the canonical (standard) form — 9 is IX, not VIIII. This tool validates all these rules.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Converters</h4>
+        <a href="/tools/roman-numeral.html">Roman Numerals</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+        <a href="/tools/byte-calculator.html">Byte Calculator</a>
+        <a href="/tools/date-calculator.html">Date Calculator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var currentMode = 'convert';
+
+    // ── Core conversion logic ──────────────────────────────────────────────
+    var VALS = [
+      [1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],
+      [100,'C'],[90,'XC'],[50,'L'],[40,'XL'],
+      [10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']
+    ];
+
+    function toRoman(n) {
+      if (!n || n < 1 || n > 3999 || n !== Math.floor(n)) return null;
+      var result = '';
+      for (var i = 0; i < VALS.length; i++) {
+        while (n >= VALS[i][0]) { result += VALS[i][1]; n -= VALS[i][0]; }
+      }
+      return result;
+    }
+
+    function fromRoman(str) {
+      str = str.toUpperCase().trim();
+      if (!str) return null;
+      // Validate characters
+      if (/[^IVXLCDM]/.test(str)) return null;
+      // Validate canonical form by converting and re-converting
+      var MAP = {I:1,V:5,X:10,L:50,C:100,D:500,M:1000};
+      var total = 0;
+      for (var i = 0; i < str.length; i++) {
+        var cur = MAP[str[i]];
+        var nxt = MAP[str[i+1]];
+        if (!cur) return null;
+        if (nxt && nxt > cur) { total += nxt - cur; i++; }
+        else { total += cur; }
+      }
+      if (total < 1 || total > 3999) return null;
+      // Canonical check: re-encoding must match input
+      if (toRoman(total) !== str) return null;
+      return total;
+    }
+
+    function breakdown(n) {
+      if (!n || n < 1) return '';
+      var parts = [];
+      var remaining = n;
+      for (var i = 0; i < VALS.length; i++) {
+        var count = Math.floor(remaining / VALS[i][0]);
+        if (count > 0) {
+          parts.push(VALS[i][1].repeat(count) + '=' + (VALS[i][0] * count));
+          remaining -= VALS[i][0] * count;
+        }
+      }
+      return parts.join(' + ');
+    }
+
+    // ── Convert panel ──────────────────────────────────────────────────────
+    var debouncedArabic = DT.debounce(function() {
+      var val = parseInt(document.getElementById('arabicInput').value);
+      var res = document.getElementById('arabicResult');
+      var bkd = document.getElementById('arabicBreakdown');
+      if (!val || val < 1 || val > 3999) {
+        res.textContent = '—';
+        bkd.textContent = val > 3999 ? 'Max is 3999 (MMMCMXCIX)' : '';
+        setStatus('info', 'Enter a number between 1 and 3999.');
+        return;
+      }
+      var roman = toRoman(val);
+      res.textContent = roman;
+      bkd.textContent = breakdown(val);
+      setStatus('valid', val + ' = ' + roman);
+      DT.trackTool('roman-numeral');
+    }, 150);
+
+    var debouncedRoman = DT.debounce(function() {
+      var val = document.getElementById('romanInput').value.toUpperCase().trim();
+      var res = document.getElementById('romanResult');
+      var bkd = document.getElementById('romanBreakdown');
+      if (!val) { res.textContent = '—'; bkd.textContent = ''; setStatus('info', 'Enter a Roman numeral.'); return; }
+      var arabic = fromRoman(val);
+      if (arabic === null) {
+        res.textContent = 'Invalid';
+        res.style.color = 'var(--color-invalid)';
+        bkd.textContent = 'Not valid Roman numeral notation';
+        setStatus('invalid', '"' + val + '" is not a valid Roman numeral.');
+      } else {
+        res.textContent = arabic;
+        res.style.color = 'var(--color-primary)';
+        bkd.textContent = breakdown(arabic);
+        setStatus('valid', val + ' = ' + arabic);
+        DT.trackTool('roman-numeral');
+      }
+    }, 150);
+
+    document.getElementById('arabicInput').addEventListener('input', debouncedArabic);
+    document.getElementById('romanInput').addEventListener('input', debouncedRoman);
+
+    document.getElementById('copyArabicBtn').addEventListener('click', function() {
+      var txt = document.getElementById('arabicResult').textContent;
+      if (txt && txt !== '—') DT.copyToClipboard(txt, this);
+    });
+    document.getElementById('copyRomanBtn').addEventListener('click', function() {
+      var txt = document.getElementById('romanResult').textContent;
+      if (txt && txt !== '—' && txt !== 'Invalid') DT.copyToClipboard(txt, this);
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      document.getElementById('arabicInput').value = '2024';
+      debouncedArabic();
+      document.getElementById('romanInput').value = 'MMXXVI';
+      debouncedRoman();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      document.getElementById('arabicInput').value = '';
+      document.getElementById('romanInput').value = '';
+      document.getElementById('arabicResult').textContent = '—';
+      document.getElementById('romanResult').textContent = '—';
+      document.getElementById('arabicResult').style.color = '';
+      document.getElementById('romanResult').style.color = '';
+      document.getElementById('arabicBreakdown').textContent = '';
+      document.getElementById('romanBreakdown').textContent = '';
+      setStatus('info', 'Enter a number (1–3999) or a Roman numeral to convert.');
+    });
+
+    // ── Quiz ───────────────────────────────────────────────────────────────
+    var quizDir = 'ar'; // 'ar' = arabic→roman, 'ra' = roman→arabic
+    var quizCurrent = 0;
+    var quizAnswer = '';
+    var quizScore = 0;
+    var quizTotal = 0;
+    var quizAnswered = false;
+
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function newQuizQuestion() {
+      quizAnswered = false;
+      quizCurrent = randInt(1, 3999);
+      quizAnswer = quizDir === 'ar' ? toRoman(quizCurrent) : '' + quizCurrent;
+      document.getElementById('quizPrompt').textContent = quizDir === 'ar'
+        ? 'Convert this number to Roman numerals:'
+        : 'Convert this Roman numeral to Arabic:';
+      document.getElementById('quizQuestion').textContent = quizDir === 'ar' ? quizCurrent : toRoman(quizCurrent);
+      document.getElementById('quizAnswer').value = '';
+      document.getElementById('quizFeedback').textContent = '';
+      document.getElementById('quizFeedback').className = 'quiz-feedback';
+      document.getElementById('quizAnswer').focus();
+    }
+
+    function checkQuiz() {
+      if (quizAnswered) { newQuizQuestion(); return; }
+      var ans = document.getElementById('quizAnswer').value.toUpperCase().trim();
+      quizAnswered = true;
+      quizTotal++;
+      var correct = quizDir === 'ar' ? (ans === quizAnswer) : (parseInt(ans) === quizCurrent);
+      if (correct) {
+        quizScore++;
+        document.getElementById('quizFeedback').textContent = 'Correct! ' + (quizDir === 'ar' ? quizCurrent + ' = ' + quizAnswer : toRoman(quizCurrent) + ' = ' + quizCurrent);
+        document.getElementById('quizFeedback').className = 'quiz-feedback correct';
+      } else {
+        document.getElementById('quizFeedback').textContent = 'Wrong. Correct answer: ' + quizAnswer;
+        document.getElementById('quizFeedback').className = 'quiz-feedback wrong';
+      }
+      document.getElementById('quizScore').textContent = 'Score: ' + quizScore + ' / ' + quizTotal + ' (' + Math.round(quizScore/quizTotal*100) + '%)';
+    }
+
+    document.getElementById('quizSubmitBtn').addEventListener('click', checkQuiz);
+    document.getElementById('quizAnswer').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') checkQuiz();
+    });
+    document.getElementById('quizNextBtn').addEventListener('click', newQuizQuestion);
+    document.getElementById('quizResetBtn').addEventListener('click', function() {
+      quizScore = 0; quizTotal = 0;
+      document.getElementById('quizScore').textContent = 'Score: 0 / 0';
+      newQuizQuestion();
+    });
+    document.getElementById('quizModeToggle').addEventListener('click', function() {
+      quizDir = quizDir === 'ar' ? 'ra' : 'ar';
+      this.textContent = quizDir === 'ar' ? 'Switch: Roman → Arabic' : 'Switch: Arabic → Roman';
+      newQuizQuestion();
+    });
+
+    // ── Reference Table ────────────────────────────────────────────────────
+    function buildRefTable() {
+      var highlights = [1,4,5,9,10,14,40,44,49,50,90,99,100,400,500,900,1000,1500,1999,2000,2024,2025,2026,3000,3999];
+      var tbody = document.getElementById('refBody');
+      tbody.innerHTML = '';
+      highlights.forEach(function(n) {
+        var roman = toRoman(n);
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + n + '</td><td style="font-weight:700;letter-spacing:.05em;">' + roman + '</td><td style="font-size:.8rem;color:var(--color-muted);">' + breakdown(n) + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ── Mode chips ─────────────────────────────────────────────────────────
+    document.getElementById('modeChips').addEventListener('click', function(e) {
+      var chip = e.target.closest('[data-mode]');
+      if (!chip) return;
+      document.querySelectorAll('#modeChips .option-chip').forEach(function(c){ c.classList.remove('active'); });
+      chip.classList.add('active');
+      currentMode = chip.getAttribute('data-mode');
+      document.getElementById('panel-convert').style.display = currentMode === 'convert' ? '' : 'none';
+      document.getElementById('panel-quiz').style.display = currentMode === 'quiz' ? '' : 'none';
+      document.getElementById('panel-ref').style.display = currentMode === 'ref' ? '' : 'none';
+      if (currentMode === 'quiz') newQuizQuestion();
+      if (currentMode === 'ref') buildRefTable();
+    });
+
+    function setStatus(cls, msg) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + cls;
+      bar.textContent = msg;
+    }
+
+    // Init
+    newQuizQuestion();
+    buildRefTable();
+  })();
+  </script>
+</body>
+</html>

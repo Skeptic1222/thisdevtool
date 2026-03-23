@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>DPI/PPI Calculator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Calculate screen DPI, print DPI, and resize images for a target DPI. Includes megapixel calculator and common print size reference. Free, instant, browser-based.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/dpi-calculator.html">
+  <meta property="og:title" content="DPI/PPI Calculator — DevToolbox">
+  <meta property="og:description" content="Calculate DPI/PPI from pixel dimensions and physical size. Screen DPI, print DPI, resize for target DPI, megapixel calculator.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/dpi-calculator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "DPI/PPI Calculator",
+    "url": "https://thisdevtool.com/tools/dpi-calculator.html",
+    "description": "Calculate screen DPI, print DPI, resize images for a target DPI, and compute megapixels. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is DPI vs PPI?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DPI (dots per inch) technically refers to printer dots — how many ink dots a printer places per inch of paper. PPI (pixels per inch) refers to screen pixels — how many display pixels fit in one inch. In everyday usage the terms are often used interchangeably, especially when talking about image resolution."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What DPI do I need for printing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "300 DPI is the standard for high-quality photo prints. 150–200 DPI is acceptable for large-format prints viewed from a distance (posters, banners). 72–96 DPI is typical for screen display. For newspaper printing, 150 DPI is common. For fine art giclée prints, 360–720 DPI may be used."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I calculate the DPI of my monitor?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "To calculate your monitor's DPI: divide the horizontal pixel count by the screen width in inches. For example, a 1920×1080 monitor that is 24 inches wide (diagonal) has a diagonal of √(1920²+1080²) ≈ 2203 pixels. Divide 2203 by the 24-inch diagonal to get approximately 92 DPI."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a megapixel?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A megapixel is one million pixels. A 12-megapixel camera captures images containing 12,000,000 pixels — typically arranged as a rectangle like 4000×3000. More megapixels means you can print larger at the same DPI or crop more aggressively without losing detail."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What pixel dimensions do I need for an A4 print at 300 DPI?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A4 paper is 8.27 × 11.69 inches. At 300 DPI you need 2480 × 3508 pixels. At 150 DPI you need 1240 × 1754 pixels. This calculator's resize mode will compute these dimensions automatically when you enter the target DPI and physical size."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .dpi-inputs {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: .75rem;
+      margin-bottom: .75rem;
+    }
+    .dpi-field { display: flex; flex-direction: column; gap: .3rem; }
+    .dpi-field label { font-size: .8rem; font-weight: 600; color: var(--text-muted, #6b7280); }
+    .dpi-field input, .dpi-field select {
+      padding: .5rem .65rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .dpi-field input:focus, .dpi-field select:focus { border-color: #10b981; }
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: .6rem;
+      margin: .75rem 0;
+    }
+    .result-card {
+      background: var(--bg-alt, #f9fafb);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .75rem 1rem;
+      text-align: center;
+    }
+    [data-theme="dark"] .result-card { background: #111827; }
+    .result-card .result-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #10b981;
+      line-height: 1.2;
+    }
+    .result-card .result-label {
+      font-size: .75rem;
+      color: var(--text-muted, #6b7280);
+      margin-top: .2rem;
+    }
+    .print-ref-table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: .5rem; }
+    .print-ref-table th, .print-ref-table td {
+      border: 1px solid var(--border);
+      padding: .45rem .6rem;
+      text-align: left;
+    }
+    .print-ref-table th { background: var(--bg-alt, #f3f4f6); font-weight: 600; }
+    [data-theme="dark"] .print-ref-table th { background: #1f2937; }
+    .print-ref-table tr:hover td { background: #10b98111; }
+    .unit-toggle { display: flex; gap: .5rem; align-items: center; margin-bottom: .75rem; }
+    .unit-toggle label { font-size: .85rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/aspect-ratio-simplifier.html">Aspect Ratio</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>DPI / PPI Calculator</h1>
+          <p class="tool-subtitle">Calculate screen DPI, print resolution, and resize pixels for a target DPI. 100% client-side.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="screen">Screen DPI</button>
+            <button class="option-chip" data-mode="print">Print DPI</button>
+            <button class="option-chip" data-mode="resize">Resize for Target DPI</button>
+            <button class="option-chip" data-mode="megapixel">Megapixel</button>
+          </div>
+
+          <!-- Screen DPI -->
+          <div id="paneScreen">
+            <div class="dpi-inputs">
+              <div class="dpi-field">
+                <label>Width (px)</label>
+                <input type="number" id="scrnW" value="1920" min="1" placeholder="1920">
+              </div>
+              <div class="dpi-field">
+                <label>Height (px)</label>
+                <input type="number" id="scrnH" value="1080" min="1" placeholder="1080">
+              </div>
+              <div class="dpi-field">
+                <label>Diagonal (inches)</label>
+                <input type="number" id="scrnDiag" value="24" min="1" step="0.1" placeholder="24">
+              </div>
+            </div>
+          </div>
+
+          <!-- Print DPI -->
+          <div id="panePrint" style="display:none;">
+            <div class="unit-toggle">
+              <label>Unit:</label>
+              <button class="option-chip active" data-unit="in">Inches</button>
+              <button class="option-chip" data-unit="cm">cm</button>
+              <button class="option-chip" data-unit="mm">mm</button>
+            </div>
+            <div class="dpi-inputs">
+              <div class="dpi-field">
+                <label>Width (px)</label>
+                <input type="number" id="prtW" value="3000" min="1" placeholder="3000">
+              </div>
+              <div class="dpi-field">
+                <label>Height (px)</label>
+                <input type="number" id="prtH" value="2000" min="1" placeholder="2000">
+              </div>
+              <div class="dpi-field">
+                <label id="prtWLabel">Physical Width (in)</label>
+                <input type="number" id="prtPhysW" value="10" min="0.01" step="0.01" placeholder="10">
+              </div>
+              <div class="dpi-field">
+                <label id="prtHLabel">Physical Height (in)</label>
+                <input type="number" id="prtPhysH" value="6.67" min="0.01" step="0.01" placeholder="6.67">
+              </div>
+            </div>
+          </div>
+
+          <!-- Resize for target DPI -->
+          <div id="paneResize" style="display:none;">
+            <div class="unit-toggle">
+              <label>Unit:</label>
+              <button class="option-chip active" data-unit="in">Inches</button>
+              <button class="option-chip" data-unit="cm">cm</button>
+              <button class="option-chip" data-unit="mm">mm</button>
+            </div>
+            <div class="dpi-inputs">
+              <div class="dpi-field">
+                <label id="resWLabel">Physical Width (in)</label>
+                <input type="number" id="resPhysW" value="8.27" min="0.01" step="0.01" placeholder="8.27">
+              </div>
+              <div class="dpi-field">
+                <label id="resHLabel">Physical Height (in)</label>
+                <input type="number" id="resPhysH" value="11.69" min="0.01" step="0.01" placeholder="11.69">
+              </div>
+              <div class="dpi-field">
+                <label>Target DPI</label>
+                <input type="number" id="resDPI" value="300" min="1" placeholder="300">
+              </div>
+            </div>
+          </div>
+
+          <!-- Megapixel -->
+          <div id="paneMegapixel" style="display:none;">
+            <div class="dpi-inputs">
+              <div class="dpi-field">
+                <label>Width (px)</label>
+                <input type="number" id="mpW" value="4000" min="1" placeholder="4000">
+              </div>
+              <div class="dpi-field">
+                <label>Height (px)</label>
+                <input type="number" id="mpH" value="3000" min="1" placeholder="3000">
+              </div>
+            </div>
+          </div>
+
+          <div class="result-grid" id="resultGrid"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter dimensions above to calculate DPI.
+          </div>
+
+          <!-- Print Reference -->
+          <details style="margin-top:1.2rem;">
+            <summary style="cursor:pointer;font-weight:600;font-size:.95rem;padding:.4rem 0;">Common Print Size Reference (click to expand)</summary>
+            <table class="print-ref-table" id="printRefTable">
+              <thead><tr><th>Format</th><th>Inches</th><th>px @ 72</th><th>px @ 150</th><th>px @ 300</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </details>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the DPI / PPI Calculator</h2>
+          <ol>
+            <li><strong>Screen DPI</strong> — enter your monitor's pixel resolution and diagonal screen size in inches to calculate exact PPI.</li>
+            <li><strong>Print DPI</strong> — enter pixel dimensions and physical print size to see the resulting print resolution.</li>
+            <li><strong>Resize for Target DPI</strong> — enter the desired physical size and target DPI to get the required pixel dimensions.</li>
+            <li><strong>Megapixel</strong> — enter width and height in pixels to calculate total megapixels and aspect ratio.</li>
+          </ol>
+
+          <h2>DPI vs PPI: What's the Difference?</h2>
+          <p>DPI (dots per inch) and PPI (pixels per inch) describe image resolution but in different contexts. PPI is used for digital displays — it tells you how densely pixels are packed in a screen. DPI is used for print — it tells you how many ink dots a printer places per linear inch. When you export an image for print, the DPI setting in the file metadata tells the printer or layout application how large to render it, though most modern software re-samples images to fit the specified size anyway.</p>
+
+          <h3>What DPI Should You Use?</h3>
+          <ul>
+            <li><strong>Screen / web</strong> — 72–96 PPI for standard displays; 144–192 PPI for Retina/HiDPI screens</li>
+            <li><strong>Standard photo prints</strong> — 300 DPI for prints up to 8×10 inches</li>
+            <li><strong>Large format posters</strong> — 100–150 DPI (viewed from further away)</li>
+            <li><strong>Billboards</strong> — 10–25 DPI (viewed from tens of feet)</li>
+            <li><strong>Fine art giclée prints</strong> — 360–720 DPI for maximum detail</li>
+            <li><strong>Newspaper</strong> — 150–200 DPI</li>
+          </ul>
+
+          <h3>How DPI Affects File Size</h3>
+          <p>Doubling the DPI quadruples the pixel count (and roughly quadruples the file size for uncompressed images). A 4×6 inch image at 300 DPI is 1200×1800 pixels = 2.16 megapixels. The same image at 600 DPI would be 2400×3600 pixels = 8.64 megapixels. For most print-on-demand services, 300 DPI is the sweet spot — higher resolutions rarely produce visible improvement and create unnecessarily large files.</p>
+
+          <h3>Retina and High-DPI Displays</h3>
+          <p>Apple's Retina displays pack approximately twice the pixels into the same physical space as standard displays, resulting in 220–600 PPI depending on the device. iOS uses a CSS pixel ratio of 2×–3×, meaning a CSS pixel maps to 4–9 physical pixels. When designing for web, use the CSS pixel (logical pixel) for layout; supply 2× and 3× image assets for sharp rendering on high-DPI screens. The viewport meta tag controls how the browser maps CSS pixels to physical pixels.</p>
+
+          <h3>Megapixels and Print Quality</h3>
+          <p>A higher megapixel count gives you more flexibility for large prints and heavy cropping. A 12 MP camera (4000×3000 px) can produce a 13.3×10 inch print at 300 DPI — comfortably photo-lab quality. A 24 MP camera (6000×4000 px) can print up to 20×13.3 inches at 300 DPI. For web-only use, anything above 2–3 MP is usually more than sufficient and just adds storage overhead. Use the megapixel mode in this calculator to see exactly what print sizes your current resolution supports at various DPI targets.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is DPI vs PPI?</button>
+            <div class="faq-answer">DPI (dots per inch) refers to printer resolution — how many ink dots per inch. PPI (pixels per inch) refers to screen pixel density. In common usage the terms are interchangeable when discussing image resolution, though technically precise usage distinguishes them.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What DPI do I need for printing?</button>
+            <div class="faq-answer">300 DPI is the gold standard for photo-quality prints. 150–200 DPI is fine for posters viewed from a distance. 72–96 DPI is standard for screen display. For newspaper print, 150 DPI is common; for fine art giclée prints, 360 DPI or higher may be used.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I calculate my monitor's DPI?</button>
+            <div class="faq-answer">Calculate the diagonal pixel count: √(width² + height²). Then divide by the diagonal screen size in inches. For a 1920×1080 screen at 24 inches diagonal: √(1920²+1080²) ÷ 24 ≈ 92 PPI.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is a megapixel?</button>
+            <div class="faq-answer">A megapixel is one million pixels. A 12 MP camera produces 12,000,000 pixels — typically a rectangle like 4000×3000. More megapixels enables larger prints at the same DPI and more aggressive cropping without visible quality loss.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What pixels do I need for A4 at 300 DPI?</button>
+            <div class="faq-answer">A4 is 8.27×11.69 inches. At 300 DPI that requires 2480×3508 pixels. At 150 DPI you need 1240×1754 pixels. Use the "Resize for Target DPI" mode in this calculator to get exact dimensions for any paper size and DPI.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Design Tools</h4>
+        <a href="/tools/dpi-calculator.html">DPI Calculator</a>
+        <a href="/tools/aspect-ratio-simplifier.html">Aspect Ratio</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var currentMode = 'screen';
+    var currentUnit = 'in';
+    var printUnit = 'in';
+    var resizeUnit = 'in';
+
+    // Print reference data
+    var printSizes = [
+      { name: 'A4',           w: 8.27,  h: 11.69 },
+      { name: 'A3',           w: 11.69, h: 16.54 },
+      { name: 'A5',           w: 5.83,  h: 8.27  },
+      { name: 'US Letter',    w: 8.5,   h: 11    },
+      { name: 'US Legal',     w: 8.5,   h: 14    },
+      { name: 'Tabloid',      w: 11,    h: 17    },
+      { name: '4×6 Photo',   w: 4,     h: 6     },
+      { name: '5×7 Photo',   w: 5,     h: 7     },
+      { name: '8×10 Photo',  w: 8,     h: 10    },
+      { name: '11×14 Photo', w: 11,    h: 14    },
+      { name: '16×20 Photo', w: 16,    h: 20    },
+      { name: '24×36 Poster',w: 24,    h: 36    },
+      { name: 'Business Card',w: 3.5,  h: 2     }
+    ];
+
+    (function buildRef() {
+      var tbody = document.querySelector('#printRefTable tbody');
+      printSizes.forEach(function (s) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + s.name + '</td>' +
+          '<td>' + s.w + '&times;' + s.h + '"</td>' +
+          '<td>' + Math.round(s.w*72) + '&times;' + Math.round(s.h*72) + '</td>' +
+          '<td>' + Math.round(s.w*150) + '&times;' + Math.round(s.h*150) + '</td>' +
+          '<td>' + Math.round(s.w*300) + '&times;' + Math.round(s.h*300) + '</td>';
+        tbody.appendChild(tr);
+      });
+    })();
+
+    function toInches(val, unit) {
+      if (unit === 'cm') return val / 2.54;
+      if (unit === 'mm') return val / 25.4;
+      return val;
+    }
+
+    function round2(n) { return Math.round(n * 100) / 100; }
+    function round0(n) { return Math.round(n); }
+
+    function renderResult(cards) {
+      var html = '';
+      cards.forEach(function (c) {
+        html += '<div class="result-card"><div class="result-value">' + c.value + '</div><div class="result-label">' + c.label + '</div></div>';
+      });
+      document.getElementById('resultGrid').innerHTML = html;
+    }
+
+    function processScreen() {
+      var w = parseFloat(document.getElementById('scrnW').value) || 0;
+      var h = parseFloat(document.getElementById('scrnH').value) || 0;
+      var diag = parseFloat(document.getElementById('scrnDiag').value) || 0;
+      var status = document.getElementById('statusBar');
+      if (!w || !h || !diag) {
+        status.className = 'status-bar info';
+        status.textContent = 'Enter pixel resolution and diagonal screen size.';
+        renderResult([]); return;
+      }
+      var diagPx = Math.sqrt(w * w + h * h);
+      var dpi = diagPx / diag;
+      var mp = (w * h) / 1e6;
+      renderResult([
+        { value: round0(dpi) + ' PPI', label: 'Screen Density' },
+        { value: round2(mp) + ' MP', label: 'Megapixels' },
+        { value: round2(diagPx) + ' px', label: 'Diagonal Pixels' },
+        { value: w + '×' + h, label: 'Resolution' }
+      ]);
+      status.className = 'status-bar valid';
+      status.textContent = w + '×' + h + ' @ ' + round0(diag) + '" diagonal = ' + round0(dpi) + ' PPI';
+    }
+
+    function processPrint() {
+      var w = parseFloat(document.getElementById('prtW').value) || 0;
+      var h = parseFloat(document.getElementById('prtH').value) || 0;
+      var pw = toInches(parseFloat(document.getElementById('prtPhysW').value) || 0, printUnit);
+      var ph = toInches(parseFloat(document.getElementById('prtPhysH').value) || 0, printUnit);
+      var status = document.getElementById('statusBar');
+      if (!w || !h || !pw || !ph) {
+        status.className = 'status-bar info';
+        status.textContent = 'Enter pixel dimensions and physical print size.';
+        renderResult([]); return;
+      }
+      var dpiW = w / pw;
+      var dpiH = h / ph;
+      var dpiAvg = (dpiW + dpiH) / 2;
+      var mp = (w * h) / 1e6;
+      renderResult([
+        { value: round0(dpiAvg) + ' DPI', label: 'Average DPI' },
+        { value: round0(dpiW) + ' DPI', label: 'Horizontal DPI' },
+        { value: round0(dpiH) + ' DPI', label: 'Vertical DPI' },
+        { value: round2(mp) + ' MP', label: 'Megapixels' },
+        { value: round2(pw) + '×' + round2(ph) + '"', label: 'Print Size (in)' }
+      ]);
+      status.className = 'status-bar valid';
+      status.textContent = round0(dpiAvg) + ' DPI — ' + w + '×' + h + ' px = ' + round2(pw) + '×' + round2(ph) + ' inches';
+    }
+
+    function processResize() {
+      var pw = toInches(parseFloat(document.getElementById('resPhysW').value) || 0, resizeUnit);
+      var ph = toInches(parseFloat(document.getElementById('resPhysH').value) || 0, resizeUnit);
+      var dpi = parseFloat(document.getElementById('resDPI').value) || 0;
+      var status = document.getElementById('statusBar');
+      if (!pw || !ph || !dpi) {
+        status.className = 'status-bar info';
+        status.textContent = 'Enter physical size and target DPI.';
+        renderResult([]); return;
+      }
+      var pxW = round0(pw * dpi);
+      var pxH = round0(ph * dpi);
+      var mp = (pxW * pxH) / 1e6;
+      renderResult([
+        { value: pxW + '×' + pxH, label: 'Required Pixels' },
+        { value: round2(mp) + ' MP', label: 'Megapixels' },
+        { value: dpi + ' DPI', label: 'Target DPI' },
+        { value: round2(pw) + '×' + round2(ph) + '"', label: 'Physical Size (in)' }
+      ]);
+      status.className = 'status-bar valid';
+      status.textContent = dpi + ' DPI — ' + round2(pw) + '×' + round2(ph) + '" requires ' + pxW + '×' + pxH + ' px';
+    }
+
+    function processMegapixel() {
+      var w = parseFloat(document.getElementById('mpW').value) || 0;
+      var h = parseFloat(document.getElementById('mpH').value) || 0;
+      var status = document.getElementById('statusBar');
+      if (!w || !h) {
+        status.className = 'status-bar info';
+        status.textContent = 'Enter width and height in pixels.';
+        renderResult([]); return;
+      }
+      var mp = (w * h) / 1e6;
+      var g = gcd(Math.round(w), Math.round(h));
+      var ratio = (w / g) + ':' + (h / g);
+      var print300 = round2(w / 300) + '×' + round2(h / 300) + '"';
+      renderResult([
+        { value: round2(mp) + ' MP', label: 'Megapixels' },
+        { value: ratio, label: 'Aspect Ratio' },
+        { value: w + '×' + h, label: 'Resolution' },
+        { value: print300, label: 'Max @ 300 DPI (in)' }
+      ]);
+      status.className = 'status-bar valid';
+      status.textContent = w + '×' + h + ' px = ' + round2(mp) + ' megapixels (' + ratio + ')';
+    }
+
+    function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+    function process() {
+      DT.trackTool('dpi-calculator');
+      if (currentMode === 'screen') processScreen();
+      else if (currentMode === 'print') processPrint();
+      else if (currentMode === 'resize') processResize();
+      else if (currentMode === 'megapixel') processMegapixel();
+    }
+
+    var dp = DT.debounce(process, 150);
+
+    // Mode chips
+    document.querySelectorAll('.option-chip:not([data-unit])').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip:not([data-unit])').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('paneScreen').style.display = currentMode === 'screen' ? '' : 'none';
+        document.getElementById('panePrint').style.display = currentMode === 'print' ? '' : 'none';
+        document.getElementById('paneResize').style.display = currentMode === 'resize' ? '' : 'none';
+        document.getElementById('paneMegapixel').style.display = currentMode === 'megapixel' ? '' : 'none';
+        process();
+      });
+    });
+
+    // Unit chips inside print/resize panes
+    document.querySelectorAll('#panePrint .option-chip[data-unit]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('#panePrint .option-chip[data-unit]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        printUnit = chip.getAttribute('data-unit');
+        var lbl = printUnit === 'in' ? 'in' : printUnit;
+        document.getElementById('prtWLabel').textContent = 'Physical Width (' + lbl + ')';
+        document.getElementById('prtHLabel').textContent = 'Physical Height (' + lbl + ')';
+        process();
+      });
+    });
+    document.querySelectorAll('#paneResize .option-chip[data-unit]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('#paneResize .option-chip[data-unit]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        resizeUnit = chip.getAttribute('data-unit');
+        var lbl = resizeUnit === 'in' ? 'in' : resizeUnit;
+        document.getElementById('resWLabel').textContent = 'Physical Width (' + lbl + ')';
+        document.getElementById('resHLabel').textContent = 'Physical Height (' + lbl + ')';
+        process();
+      });
+    });
+
+    // Input listeners
+    ['scrnW','scrnH','scrnDiag','prtW','prtH','prtPhysW','prtPhysH','resPhysW','resPhysH','resDPI','mpW','mpH'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', dp);
+    });
+
+    process();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>XSS Payload Encoder — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Encode and decode XSS payloads for authorized security testing. HTML entities, URL encoding, Base64, Unicode escapes, hex escapes, and double encoding. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/xss-payload-encoder.html">
+  <meta property="og:title" content="XSS Payload Encoder — DevToolbox">
+  <meta property="og:description" content="Encode XSS payloads for authorized security testing. HTML entities, URL, Base64, Unicode, hex, double encoding. Free and 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/xss-payload-encoder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "XSS Payload Encoder",
+    "url": "https://thisdevtool.com/tools/xss-payload-encoder.html",
+    "description": "Encode and decode XSS payloads for authorized security testing. HTML entities, URL encoding, Base64, Unicode, hex, and double encoding.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is XSS (Cross-Site Scripting)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cross-Site Scripting (XSS) is a type of security vulnerability where an attacker injects malicious scripts into web pages viewed by other users. There are three main types: Reflected XSS (the payload is in the request), Stored XSS (the payload is saved on the server), and DOM-based XSS (the payload is executed via client-side scripts)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why encode XSS payloads?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Encoding XSS payloads is a core penetration testing technique. Web applications often have input filters that block obvious payloads like <script>. Encoding the payload in HTML entities, URL encoding, Unicode escapes, or Base64 can sometimes bypass these filters, revealing incomplete or misconfigured sanitization."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is double encoding in XSS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Double encoding means encoding a payload twice. For example, '<' becomes '&lt;' with HTML entity encoding, then '&amp;lt;' with a second pass. Some vulnerable applications decode input twice before processing it, which can allow double-encoded payloads to bypass filters that only check once."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it legal to use this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool is intended strictly for authorized security testing, penetration testing on systems you own or have explicit written permission to test, and security education. Using XSS techniques against systems without authorization is illegal in most jurisdictions and violates computer fraud laws. Always obtain written authorization before testing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I prevent XSS in my application?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "XSS prevention involves: output encoding (HTML-encode all user data before rendering), Content Security Policy (CSP) headers, using modern frameworks that auto-escape output (React, Angular, Vue), avoiding innerHTML with user data, using HTTPOnly and Secure flags on cookies, and validating/sanitizing all user input on the server side."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .disclaimer-box {
+      background: #fef3c7;
+      border: 2px solid #f59e0b;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 0.875rem;
+      color: #92400e;
+    }
+    [data-theme="dark"] .disclaimer-box {
+      background: #451a03;
+      border-color: #d97706;
+      color: #fcd34d;
+    }
+    .disclaimer-box strong { display: block; margin-bottom: 4px; font-size: 0.9rem; }
+    .encoding-results { display: grid; gap: 10px; margin-top: 12px; }
+    .encoding-row { background: var(--bg-secondary, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: 6px; padding: 10px 12px; }
+    .encoding-row-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted, #64748b); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .encoding-row-value { font-family: monospace; font-size: 0.85rem; word-break: break-all; color: var(--text-primary, #0f172a); }
+    .payload-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .payload-chip { font-size: 0.75rem; padding: 4px 10px; background: var(--bg-secondary, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: 20px; cursor: pointer; font-family: monospace; transition: background 0.15s; }
+    .payload-chip:hover { background: #10b981; color: #fff; border-color: #10b981; }
+    .copy-small { font-size: 0.7rem; padding: 2px 8px; }
+    .xss-types-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+    .xss-type-card { background: var(--bg-secondary, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 14px; }
+    .xss-type-card h4 { margin: 0 0 6px; color: #10b981; font-size: 0.95rem; }
+    .xss-type-card p { margin: 0; font-size: 0.82rem; color: var(--text-muted, #64748b); line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <a href="/tools/base64.html">Base64</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>XSS Payload Encoder</h1>
+          <p class="tool-subtitle">Encode and decode XSS payloads for authorized security testing. HTML entities, URL, Base64, Unicode, hex, and double encoding.</p>
+
+          <div class="disclaimer-box">
+            <strong>For Authorized Security Testing Only</strong>
+            Use this tool only on systems you own or have explicit written permission to test. Unauthorized XSS testing is illegal under the Computer Fraud and Abuse Act (CFAA) and equivalent laws worldwide.
+          </div>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Encode</button>
+            <button class="option-chip" data-mode="decode">Decode</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input Payload</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+              </div>
+              <textarea id="payloadInput" rows="8" placeholder='Enter XSS payload or text to encode...&#10;&#10;Example: &lt;script&gt;alert(1)&lt;/script&gt;' spellcheck="false"></textarea>
+              <div style="margin-top:8px;">
+                <div style="font-size:0.75rem;color:var(--text-muted,#64748b);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Test Payloads (click to load):</div>
+                <div class="payload-chips" id="payloadChips"></div>
+              </div>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Encoded Results</span>
+              </div>
+              <div id="encodingResults" class="encoding-results" style="min-height:200px;">
+                <div style="color:var(--text-muted,#64748b);font-size:0.875rem;padding:16px 0;">Enter a payload on the left to see all encodings.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a payload to encode.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>Understanding XSS Attack Types</h2>
+          <div class="xss-types-grid">
+            <div class="xss-type-card">
+              <h4>Reflected XSS</h4>
+              <p>The malicious script is included in a request (URL, form) and reflected back in the immediate response. The victim must click a crafted link. Not stored on the server.</p>
+            </div>
+            <div class="xss-type-card">
+              <h4>Stored XSS</h4>
+              <p>The payload is saved on the server (database, comment, profile) and executed whenever any user loads the affected page. More dangerous — no crafted link needed.</p>
+            </div>
+            <div class="xss-type-card">
+              <h4>DOM-Based XSS</h4>
+              <p>The vulnerability is in client-side JavaScript. The payload modifies the DOM without ever hitting the server. Common in <code>innerHTML</code>, <code>document.write</code>, and <code>eval</code> sinks.</p>
+            </div>
+          </div>
+
+          <h2>How to Use the XSS Payload Encoder</h2>
+          <ol>
+            <li><strong>Select a test payload</strong> from the quick-load chips, or type your own payload in the input area.</li>
+            <li><strong>Choose Encode or Decode</strong> using the mode chips above the input.</li>
+            <li><strong>Review all encodings</strong> — the tool produces HTML entity, URL, Base64, Unicode escape, hex escape, and double-encoded variants simultaneously.</li>
+            <li><strong>Copy individual encodings</strong> using the Copy button on each row, then test them in your authorized target application.</li>
+          </ol>
+
+          <h2>Encoding Methods Explained</h2>
+          <ul>
+            <li><strong>HTML Entities</strong> — Converts characters like <code>&lt;</code> <code>&gt;</code> <code>&amp;</code> <code>"</code> to their HTML entity equivalents (<code>&amp;lt;</code> etc.). Useful for testing context-aware output encoding.</li>
+            <li><strong>URL Encoding (percent encoding)</strong> — Converts characters to their %XX hexadecimal representation. Essential for payloads injected into URL parameters, query strings, or path segments.</li>
+            <li><strong>Base64</strong> — Encodes the payload as Base64. Used with <code>eval(atob(...))</code> or <code>data:</code> URIs to bypass string-matching filters.</li>
+            <li><strong>Unicode Escapes</strong> — Converts characters to <code>\uXXXX</code> notation. JavaScript interprets these natively, allowing script injection through Unicode-unaware filters.</li>
+            <li><strong>Hex Escapes</strong> — Converts characters to <code>\xXX</code> hexadecimal notation, another form recognized by JavaScript engines.</li>
+            <li><strong>Double Encoding</strong> — Applies URL encoding twice. Some vulnerable applications decode input twice (e.g., in a WAF and then in the application), allowing double-encoded payloads to slip through.</li>
+          </ul>
+
+          <h2>Common XSS Filter Bypass Techniques</h2>
+          <p>Security researchers and penetration testers use encoding to test whether an application's input sanitization is complete. A well-implemented application should reject or neutralize all of these variants. If one encoding slips through, it indicates the application is only checking for specific patterns rather than performing proper context-aware output encoding. The gold standard for XSS prevention is to <strong>encode output at render time</strong>, not just validate input — because what constitutes "valid" depends entirely on the context where the data will be used.</p>
+
+          <p>When testing for XSS, always start with the simplest payload: <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>. If that fails, try event handlers like <code>&lt;img src=x onerror=alert(1)&gt;</code>. If those fail, try encoding variants. If all fail, the application is likely properly escaping output. Document every test and result for your penetration testing report.</p>
+
+          <h2>Responsible Disclosure</h2>
+          <p>If you discover a real XSS vulnerability during authorized testing, follow responsible disclosure practices: report the vulnerability privately to the organization's security team or via their bug bounty program (HackerOne, Bugcrowd, etc.), give them a reasonable remediation window (typically 90 days), and work collaboratively to verify the fix before public disclosure. Do not publish proof-of-concept exploits targeting real users without coordination. This protects both users and maintains the trust that makes bug bounty programs viable.</p>
+
+          <h2>XSS Prevention Checklist for Developers</h2>
+          <ul>
+            <li>Use a modern framework (React, Angular, Vue) that auto-escapes template output</li>
+            <li>Never use <code>innerHTML</code>, <code>document.write</code>, or <code>eval</code> with user-supplied data</li>
+            <li>Implement a strict Content Security Policy (CSP) — <code>Content-Security-Policy: default-src 'self'</code></li>
+            <li>Set <code>HttpOnly</code> and <code>Secure</code> flags on session cookies</li>
+            <li>Use the <code>SameSite</code> cookie attribute to mitigate CSRF alongside XSS</li>
+            <li>Validate input type/format on the server side — but rely on output encoding as the primary defense</li>
+            <li>Audit third-party scripts — any script on your page can steal user data</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is XSS (Cross-Site Scripting)?</button>
+            <div class="faq-answer">Cross-Site Scripting (XSS) is a security vulnerability where attackers inject malicious scripts into web pages seen by other users. Types include Reflected (payload in URL), Stored (payload saved on server), and DOM-based (payload manipulates client-side DOM). XSS can steal session cookies, redirect users, deface pages, or silently execute actions on behalf of the victim.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why encode XSS payloads?</button>
+            <div class="faq-answer">Many web application firewalls (WAFs) and input filters block obvious XSS payloads. Encoding variants test whether the sanitization is thorough or only checks for specific literal strings. A properly secured application should neutralize all encoding variants because it encodes output at render time, regardless of what the input looked like.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is double encoding in XSS?</button>
+            <div class="faq-answer">Double encoding applies URL encoding twice — <code>&lt;</code> becomes <code>%3C</code> then <code>%253C</code>. Some vulnerable systems (especially WAF + application combos) decode input twice: the WAF decodes once (sees %3C, still encoded), then the application decodes again (sees the raw &lt;). This allows the payload to bypass the WAF's check.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is it legal to use this tool?</button>
+            <div class="faq-answer">This tool is legal to use for educational purposes, on systems you own, or on systems where you have explicit written authorization to test. Using XSS techniques against systems without authorization is a criminal offense under the CFAA (US), Computer Misuse Act (UK), and equivalent laws worldwide. Always get written permission before testing.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I prevent XSS in my application?</button>
+            <div class="faq-answer">The primary defense is context-aware output encoding: HTML-encode data in HTML context, URL-encode in URL context, JavaScript-encode in script context. Use modern frameworks that auto-escape. Implement a Content Security Policy (CSP). Set HttpOnly and Secure cookie flags. Never use innerHTML with user data. Validate input on the server side as a secondary control.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Security Tools</h4>
+        <a href="/tools/xss-payload-encoder.html">XSS Payload Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var payloadInput = document.getElementById('payloadInput');
+    var encodingResults = document.getElementById('encodingResults');
+    var statusBar = document.getElementById('statusBar');
+    var currentMode = 'encode';
+
+    var TEST_PAYLOADS = [
+      '<script>alert(1)</script>',
+      '<img src=x onerror=alert(1)>',
+      '"><script>alert(document.cookie)</script>',
+      "javascript:alert('XSS')",
+      '<svg onload=alert(1)>',
+      '<body onload=alert(1)>',
+      '{{7*7}}',
+      '<iframe src="javascript:alert(1)">',
+      "';alert(1)//",
+      '<details open ontoggle=alert(1)>'
+    ];
+
+    function htmlEntities(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .replace(/\//g, '&#x2F;');
+    }
+
+    function urlEncode(str) {
+      return encodeURIComponent(str);
+    }
+
+    function doubleUrlEncode(str) {
+      return encodeURIComponent(encodeURIComponent(str));
+    }
+
+    function toBase64(str) {
+      try { return btoa(unescape(encodeURIComponent(str))); } catch(e) { return 'Error: ' + e.message; }
+    }
+
+    function toUnicode(str) {
+      var result = '';
+      for (var i = 0; i < str.length; i++) {
+        var code = str.charCodeAt(i);
+        result += '\\u' + ('0000' + code.toString(16)).slice(-4);
+      }
+      return result;
+    }
+
+    function toHexEscape(str) {
+      var result = '';
+      for (var i = 0; i < str.length; i++) {
+        var code = str.charCodeAt(i);
+        if (code <= 0xFF) {
+          result += '\\x' + ('00' + code.toString(16)).slice(-2);
+        } else {
+          result += '\\u' + ('0000' + code.toString(16)).slice(-4);
+        }
+      }
+      return result;
+    }
+
+    function decodeAllFormats(str) {
+      var results = [];
+      try {
+        var d = decodeURIComponent(str);
+        if (d !== str) results.push({ label: 'URL Decoded', value: d });
+      } catch(e) {}
+      try {
+        var b = atob(str.replace(/\s/g, ''));
+        results.push({ label: 'Base64 Decoded', value: b });
+      } catch(e) {}
+      var htmlDecoded = str
+        .replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&').replace(/&quot;/g, '"')
+        .replace(/&#x27;/g, "'").replace(/&#x2F;/g, '/')
+        .replace(/&#(\d+);/g, function(m, d) { return String.fromCharCode(parseInt(d, 10)); })
+        .replace(/&#x([0-9a-fA-F]+);/g, function(m, h) { return String.fromCharCode(parseInt(h, 16)); });
+      if (htmlDecoded !== str) results.push({ label: 'HTML Entity Decoded', value: htmlDecoded });
+      try {
+        var dd = decodeURIComponent(decodeURIComponent(str));
+        if (dd !== str) results.push({ label: 'Double URL Decoded', value: dd });
+      } catch(e) {}
+      if (results.length === 0) results.push({ label: 'No encoding detected', value: str });
+      return results;
+    }
+
+    function renderEncodings(raw) {
+      if (!raw) {
+        encodingResults.innerHTML = '<div style="color:var(--text-muted,#64748b);font-size:0.875rem;padding:16px 0;">Enter a payload on the left to see all encodings.</div>';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter a payload to encode.';
+        return;
+      }
+
+      var encodings;
+      if (currentMode === 'encode') {
+        encodings = [
+          { label: 'HTML Entities', value: htmlEntities(raw) },
+          { label: 'URL Encoding (%XX)', value: urlEncode(raw) },
+          { label: 'Double URL Encoding', value: doubleUrlEncode(raw) },
+          { label: 'Base64', value: toBase64(raw) },
+          { label: 'Unicode Escapes (\\uXXXX)', value: toUnicode(raw) },
+          { label: 'Hex Escapes (\\xXX)', value: toHexEscape(raw) }
+        ];
+      } else {
+        encodings = decodeAllFormats(raw);
+      }
+
+      var html = encodings.map(function(enc, idx) {
+        var id = 'enc-' + idx;
+        return '<div class="encoding-row">' +
+          '<div class="encoding-row-label">' +
+          '<span>' + escapeHtml(enc.label) + '</span>' +
+          '<button class="btn btn-sm btn-secondary copy-small" data-copy-id="' + id + '">Copy</button>' +
+          '</div>' +
+          '<div class="encoding-row-value" id="' + id + '">' + escapeHtml(enc.value) + '</div>' +
+          '</div>';
+      }).join('');
+
+      encodingResults.innerHTML = html;
+
+      encodingResults.querySelectorAll('[data-copy-id]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var el = document.getElementById(btn.getAttribute('data-copy-id'));
+          if (el) DT.copyToClipboard(el.textContent, btn);
+        });
+      });
+
+      var charCount = raw.length;
+      statusBar.className = 'status-bar valid';
+      if (currentMode === 'encode') {
+        statusBar.textContent = 'Encoded ' + charCount + ' character' + (charCount === 1 ? '' : 's') + ' — ' + encodings.length + ' encoding variants';
+      } else {
+        statusBar.textContent = 'Decoded — ' + encodings.length + ' format' + (encodings.length === 1 ? '' : 's') + ' detected';
+      }
+      DT.trackTool('xss-payload-encoder');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    var debouncedRender = DT.debounce(function() { renderEncodings(payloadInput.value); }, 150);
+    payloadInput.addEventListener('input', debouncedRender);
+
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        renderEncodings(payloadInput.value);
+      });
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      payloadInput.value = '';
+      renderEncodings('');
+      payloadInput.focus();
+    });
+
+    var chipsContainer = document.getElementById('payloadChips');
+    TEST_PAYLOADS.forEach(function(p) {
+      var chip = document.createElement('button');
+      chip.className = 'payload-chip';
+      chip.textContent = p.length > 30 ? p.substring(0, 28) + '...' : p;
+      chip.title = p;
+      chip.addEventListener('click', function() {
+        payloadInput.value = p;
+        renderEncodings(p);
+      });
+      chipsContainer.appendChild(chip);
+    });
+  })();
+  </script>
+</body>
+</html>

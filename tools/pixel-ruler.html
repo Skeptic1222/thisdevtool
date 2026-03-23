@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>On-Screen Pixel Ruler — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="On-screen pixel ruler for measuring distances on your screen. Horizontal and vertical rulers, DPI calibration, px/cm/inch units, guideline overlay. Free, runs in browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/pixel-ruler.html">
+  <meta property="og:title" content="On-Screen Pixel Ruler — DevToolbox">
+  <meta property="og:description" content="Free on-screen ruler for measuring pixel distances. Drag rulers, calibrate DPI, switch between px, cm, and inches. No install needed.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/pixel-ruler.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "On-Screen Pixel Ruler",
+    "url": "https://thisdevtool.com/tools/pixel-ruler.html",
+    "description": "On-screen pixel ruler for measuring distances. Supports px, cm, inches with DPI calibration.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a pixel ruler and what is it used for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A pixel ruler is an on-screen tool that lets you measure distances in pixels (and converted units like cm or inches) directly on your display. Designers and developers use pixel rulers to check spacing, measure UI elements, verify responsive breakpoints, and ensure layouts match design specs without leaving the browser."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I calibrate the ruler for accurate real-world measurements?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Click the Calibrate button and enter your screen's DPI (dots per inch). You can find your screen's DPI in your operating system display settings. For Windows: Settings > System > Display > Advanced display settings. For macOS: About This Mac > Displays. Standard 1080p monitors are typically 96 DPI; Retina/4K displays are often 144–220 DPI."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between CSS pixels and physical pixels?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A CSS pixel (also called a logical pixel) is a unit used in web design that corresponds to 1/96th of an inch at normal zoom. On high-DPI (Retina) displays, one CSS pixel maps to 2 or more physical pixels, which is the device pixel ratio (DPR). This tool measures in CSS pixels by default, which is what matters for web layout. Multiply by your DPR to get physical pixel counts."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I use the drag measurement feature?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Click and drag anywhere inside the ruler canvas to draw a measurement rectangle. The width and height of the rectangle are shown in real time in the status bar. Release the mouse to finalize the measurement. You can also click on the ruler tick marks to set a start point, then drag to the end point."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do guidelines work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Guidelines are horizontal or vertical reference lines you can add to the ruler canvas. Click the Add Guideline button (or double-click on the ruler), then click to place the guideline. Guidelines stay in place as you scroll or zoom, making it easy to check alignment across multiple elements. Click on an existing guideline to remove it."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .ruler-wrapper {
+      position: relative;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      user-select: none;
+      touch-action: none;
+    }
+    .ruler-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      padding: 0.75rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .ruler-controls label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .ruler-controls input[type="number"] { width: 70px; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 0.9rem; }
+    .ruler-controls select { padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 0.9rem; }
+    .ruler-canvas-container { position: relative; }
+    #rulerCanvas {
+      display: block;
+      cursor: crosshair;
+      width: 100%;
+      background: transparent;
+    }
+    .guideline-h, .guideline-v {
+      position: absolute;
+      background: rgba(239,68,68,0.7);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .guideline-h { left: 0; right: 0; height: 1px; cursor: ns-resize; }
+    .guideline-v { top: 0; bottom: 0; width: 1px; cursor: ew-resize; }
+    .measurement-overlay {
+      position: absolute;
+      border: 2px solid var(--accent);
+      background: rgba(16,185,129,0.08);
+      pointer-events: none;
+      z-index: 3;
+    }
+    .measurement-label {
+      position: absolute;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 4;
+    }
+    .corner-box {
+      position: absolute;
+      top: 0; left: 0;
+      width: 24px; height: 24px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
+    }
+    .ruler-h-canvas { display: block; width: 100%; cursor: ew-resize; }
+    .ruler-v-canvas { display: block; height: 100%; cursor: ns-resize; }
+    .ruler-layout {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      grid-template-rows: 24px 1fr;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg-secondary);
+      min-height: 420px;
+    }
+    .ruler-main-area {
+      position: relative;
+      background: var(--bg);
+      overflow: hidden;
+      cursor: crosshair;
+    }
+    #rulerHCanvas { background: var(--bg-card); }
+    #rulerVCanvas { background: var(--bg-card); }
+    .gl-remove-btn {
+      position: absolute;
+      width: 14px; height: 14px;
+      background: rgba(239,68,68,0.85);
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 5;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: #fff; font-weight: 700;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>On-Screen Pixel Ruler</h1>
+          <p class="tool-subtitle">Measure distances in pixels, centimeters, or inches. Drag to measure, add guidelines, and calibrate to your screen DPI.</p>
+
+          <!-- Controls -->
+          <div class="ruler-controls">
+            <div style="display:flex;align-items:center;gap:0.4rem;">
+              <label for="unitSelect">Unit:</label>
+              <select id="unitSelect">
+                <option value="px">px</option>
+                <option value="cm">cm</option>
+                <option value="in">in</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.4rem;">
+              <label for="dpiInput">DPI:</label>
+              <input type="number" id="dpiInput" value="96" min="72" max="400" step="1">
+            </div>
+            <div style="display:flex;align-items:center;gap:0.4rem;">
+              <label for="zoomSelect">Zoom:</label>
+              <select id="zoomSelect">
+                <option value="0.5">50%</option>
+                <option value="1" selected>100%</option>
+                <option value="1.5">150%</option>
+                <option value="2">200%</option>
+                <option value="4">400%</option>
+              </select>
+            </div>
+            <button class="btn btn-sm btn-secondary" id="addGuidelineHBtn">+ H Guideline</button>
+            <button class="btn btn-sm btn-secondary" id="addGuidelineVBtn">+ V Guideline</button>
+            <button class="btn btn-sm btn-secondary" id="clearGuidelinesBtn">Clear Guidelines</button>
+            <button class="btn btn-sm btn-secondary" id="clearMeasureBtn">Clear Measurement</button>
+          </div>
+
+          <!-- Ruler Layout -->
+          <div class="ruler-layout" id="rulerLayout">
+            <!-- Corner -->
+            <div class="corner-box"></div>
+            <!-- Horizontal ruler -->
+            <canvas id="rulerHCanvas" height="24"></canvas>
+            <!-- Vertical ruler -->
+            <canvas id="rulerVCanvas" width="24"></canvas>
+            <!-- Main measurement area -->
+            <div class="ruler-main-area" id="rulerMainArea">
+              <canvas id="rulerCanvas"></canvas>
+              <!-- Guidelines and measurement overlay rendered here -->
+              <div id="guidelinesLayer"></div>
+              <div class="measurement-overlay" id="measureOverlay" style="display:none;"></div>
+              <div class="measurement-label" id="measureLabel" style="display:none;"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-secondary);">
+            Drag inside the ruler area to measure a region. Click rulers to add guidelines at that position.
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Drag anywhere in the ruler area to measure a distance.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the On-Screen Pixel Ruler</h2>
+          <ol>
+            <li><strong>Select your unit</strong> — choose between px (CSS pixels), cm (centimeters), or in (inches) using the Unit dropdown. Centimeter and inch measurements require accurate DPI calibration.</li>
+            <li><strong>Set your DPI</strong> — for pixel measurements the DPI setting does not matter. For cm/inch measurements, enter your monitor's DPI. Standard monitors are 96 DPI; MacBook Retina displays are 144–220 DPI; 4K monitors are 160+ DPI depending on screen size.</li>
+            <li><strong>Drag to measure</strong> — click and drag anywhere in the ruler area to draw a measurement rectangle. The status bar shows the width and height in real time.</li>
+            <li><strong>Add guidelines</strong> — click "+ H Guideline" or "+ V Guideline" to add a reference line at a fixed position. Use the ruler tick marks to position them precisely. Remove guidelines by clicking the red dot on each one.</li>
+            <li><strong>Adjust zoom</strong> — use the Zoom dropdown to scale the ruler canvas, allowing you to measure very small or very large distances more easily.</li>
+          </ol>
+
+          <h2>What This Tool Measures</h2>
+          <p>The pixel ruler measures distances in CSS pixels — the same unit used in all web CSS measurements. A CSS pixel is defined as 1/96th of an inch at 100% zoom. On standard monitors at normal zoom, one CSS pixel equals one physical pixel on screen. On high-DPI (Retina) displays, one CSS pixel maps to 2 or 3 physical pixels, which makes text and graphics look sharper but does not change the CSS pixel count.</p>
+
+          <h3>Understanding DPI and Screen Resolution</h3>
+          <p>DPI (dots per inch) is the number of physical pixels per inch on your display. A standard 24-inch 1920×1080 monitor has about 92 DPI. A 15-inch MacBook Pro Retina has a native resolution of 2880×1800, giving it about 220 DPI. Windows and macOS apply scaling factors so that UI elements are the same physical size regardless of DPI — a 96 DPI logical setting on a 220 DPI Retina display means the OS renders at 2.3× scale. For accurate real-world measurements (centimeters or inches), enter your display's true DPI, not the logical DPI reported by the OS.</p>
+
+          <h3>Finding Your Screen's DPI</h3>
+          <ul>
+            <li><strong>Windows:</strong> Settings → System → Display → scroll to "More display settings" → check resolution and screen size, then calculate DPI = diagonal_pixels / diagonal_inches</li>
+            <li><strong>macOS:</strong> Apple menu → About This Mac → Displays — look for "Retina display" indication and check resolution in System Preferences → Displays</li>
+            <li><strong>Online tools:</strong> Search "what is my screen DPI" — several sites can auto-detect it based on your user agent and display info</li>
+            <li><strong>Common values:</strong> 1080p 24" ≈ 92 DPI, 1080p 27" ≈ 82 DPI, 4K 27" ≈ 163 DPI, MacBook 15" Retina ≈ 220 DPI</li>
+          </ul>
+
+          <h3>Using Guidelines for Layout Alignment</h3>
+          <p>Guidelines are fixed horizontal or vertical reference lines used to check alignment of multiple elements. In this ruler tool, you can add guidelines at specific pixel positions and use them as reference points while measuring other elements. This is especially useful when comparing the spacing between UI elements — place a guideline at a padding boundary, then measure from that guideline to the next element to verify your CSS is producing the correct spacing. For more advanced layout debugging, use browser DevTools alongside this ruler.</p>
+
+          <h3>Responsive Design and Breakpoints</h3>
+          <p>Web designers commonly need to verify that elements are correctly sized at specific breakpoints. Common CSS breakpoints are 320px (small mobile), 390px (iPhone 14), 768px (tablet), 1024px (small desktop), and 1280px/1440px (standard desktop). Zoom the ruler canvas to a specific breakpoint width to visualize the available layout space. Our responsive breakpoints are directly tied to the CSS pixel unit — not physical pixels — so measuring in px gives you the exact values you need for your CSS media queries.</p>
+
+          <h3>When to Use a Pixel Ruler</h3>
+          <p>Use a pixel ruler when you need to verify that a design implementation matches the specification. Common scenarios include: checking that padding and margin values match a Figma or Sketch design file; verifying button sizes meet minimum touch target requirements (44×44px per Apple HIG, 48×48dp per Google Material); confirming that a banner is exactly 728×90px (leaderboard) or 300×250px (medium rectangle) per IAB ad standards; and measuring screenshots to extract dimensions for bug reports. The pixel ruler complements browser DevTools — DevTools shows you the CSS box model, while a ruler lets you measure things that aren't easily inspectable.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a pixel ruler and what is it used for?</button>
+            <div class="faq-answer">A pixel ruler is an on-screen tool that lets you measure distances in pixels (and converted units like cm or inches) directly on your display. Designers and developers use pixel rulers to check spacing, measure UI elements, verify responsive breakpoints, and ensure layouts match design specs without leaving the browser.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I calibrate the ruler for accurate real-world measurements?</button>
+            <div class="faq-answer">Enter your screen's DPI in the DPI field. You can find your screen's DPI in your OS display settings. For Windows: Settings > System > Display > Advanced display settings. For macOS: About This Mac > Displays. Standard 1080p monitors are typically 92–96 DPI; Retina/4K displays are often 144–220 DPI.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between CSS pixels and physical pixels?</button>
+            <div class="faq-answer">A CSS pixel (logical pixel) is 1/96th of an inch at normal zoom. On high-DPI displays, one CSS pixel maps to 2 or more physical pixels — that is the device pixel ratio (DPR). This tool measures in CSS pixels by default, which is what matters for web layout. Multiply by your DPR to get physical pixel counts.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I use the drag measurement feature?</button>
+            <div class="faq-answer">Click and drag anywhere inside the ruler canvas to draw a measurement rectangle. The width and height are shown in real time in the status bar. Release the mouse to finalize the measurement. The overlay box remains visible until you click Clear Measurement.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do guidelines work?</button>
+            <div class="faq-answer">Click "+ H Guideline" to add a horizontal reference line at the vertical center of the canvas, or "+ V Guideline" for a vertical line. Each guideline shows a small red remove button. Click it to delete the guideline. Use guidelines to align measurements to a fixed reference point on the canvas.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/pixel-ruler.html">Pixel Ruler</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+        <a href="/tools/emoji-to-image.html">Emoji to PNG</a>
+        <a href="/tools/typography-scale.html">Typography Scale</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var unit = 'px';
+    var dpi = 96;
+    var zoom = 1;
+    var guidelines = []; // {type:'h'|'v', pos:px}
+    var measuring = false;
+    var measureStart = null;
+    var measureRect = { x: 0, y: 0, w: 0, h: 0 };
+
+    var statusBar = document.getElementById('statusBar');
+    var unitSelect = document.getElementById('unitSelect');
+    var dpiInput = document.getElementById('dpiInput');
+    var zoomSelect = document.getElementById('zoomSelect');
+    var rulerHCanvas = document.getElementById('rulerHCanvas');
+    var rulerVCanvas = document.getElementById('rulerVCanvas');
+    var rulerCanvas = document.getElementById('rulerCanvas');
+    var mainArea = document.getElementById('rulerMainArea');
+    var measureOverlay = document.getElementById('measureOverlay');
+    var measureLabel = document.getElementById('measureLabel');
+    var guidelinesLayer = document.getElementById('guidelinesLayer');
+
+    var RULER_THICK = 24;
+    var CANVAS_W = 800;
+    var CANVAS_H = 400;
+
+    function pxToUnit(px) {
+      if (unit === 'px') return px.toFixed(0) + ' px';
+      if (unit === 'cm') return (px / dpi * 2.54).toFixed(2) + ' cm';
+      if (unit === 'in') return (px / dpi).toFixed(3) + ' in';
+      return px + ' px';
+    }
+
+    function drawHRuler() {
+      var w = rulerHCanvas.offsetWidth || CANVAS_W;
+      rulerHCanvas.width = w;
+      var ctx = rulerHCanvas.getContext('2d');
+      var bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#ffffff';
+      var text = getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#1a1a2e';
+      var border = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#e2e8f0';
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, RULER_THICK);
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, RULER_THICK - 0.5); ctx.lineTo(w, RULER_THICK - 0.5); ctx.stroke();
+      ctx.fillStyle = text;
+      ctx.font = '9px monospace';
+      ctx.textAlign = 'center';
+      var step = zoom <= 0.5 ? 100 : zoom <= 1 ? 50 : zoom <= 2 ? 25 : 10;
+      var pixStep = step * zoom;
+      for (var x = 0; x <= w; x += pixStep) {
+        var realPx = Math.round(x / zoom);
+        var tickH = (realPx % (step * 5) === 0) ? 12 : (realPx % step === 0) ? 7 : 3;
+        ctx.strokeStyle = border;
+        ctx.beginPath(); ctx.moveTo(x + 0.5, RULER_THICK - tickH); ctx.lineTo(x + 0.5, RULER_THICK); ctx.stroke();
+        if (realPx % (step * 5) === 0 && x > 0) {
+          ctx.fillText(realPx, x, RULER_THICK - tickH - 1);
+        }
+      }
+    }
+
+    function drawVRuler() {
+      var h = mainArea.offsetHeight || CANVAS_H;
+      rulerVCanvas.height = h;
+      var ctx = rulerVCanvas.getContext('2d');
+      var bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#ffffff';
+      var text = getComputedStyle(document.documentElement).getPropertyValue('--text').trim() || '#1a1a2e';
+      var border = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#e2e8f0';
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, RULER_THICK, h);
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(RULER_THICK - 0.5, 0); ctx.lineTo(RULER_THICK - 0.5, h); ctx.stroke();
+      var step = zoom <= 0.5 ? 100 : zoom <= 1 ? 50 : zoom <= 2 ? 25 : 10;
+      var pixStep = step * zoom;
+      ctx.fillStyle = text;
+      ctx.font = '9px monospace';
+      for (var y = 0; y <= h; y += pixStep) {
+        var realPx = Math.round(y / zoom);
+        var tickW = (realPx % (step * 5) === 0) ? 12 : (realPx % step === 0) ? 7 : 3;
+        ctx.strokeStyle = border;
+        ctx.beginPath(); ctx.moveTo(RULER_THICK - tickW, y + 0.5); ctx.lineTo(RULER_THICK, y + 0.5); ctx.stroke();
+        if (realPx % (step * 5) === 0 && y > 0) {
+          ctx.save();
+          ctx.translate(RULER_THICK - tickW - 2, y);
+          ctx.rotate(-Math.PI / 2);
+          ctx.textAlign = 'center';
+          ctx.fillText(realPx, 0, 0);
+          ctx.restore();
+        }
+      }
+    }
+
+    function drawMainGrid() {
+      var w = rulerCanvas.width;
+      var h = rulerCanvas.height;
+      var ctx = rulerCanvas.getContext('2d');
+      ctx.clearRect(0, 0, w, h);
+      // Light grid
+      var border = getComputedStyle(document.documentElement).getPropertyValue('--border').trim() || '#e2e8f0';
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 0.5;
+      var step = zoom <= 0.5 ? 100 : zoom <= 1 ? 50 : zoom <= 2 ? 25 : 10;
+      var pixStep = step * zoom;
+      for (var x = 0; x <= w; x += pixStep) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+      for (var y = 0; y <= h; y += pixStep) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke(); }
+    }
+
+    function initCanvas() {
+      var areaW = mainArea.offsetWidth || CANVAS_W;
+      var areaH = mainArea.offsetHeight || CANVAS_H;
+      rulerCanvas.width = areaW;
+      rulerCanvas.height = areaH;
+      drawHRuler();
+      drawVRuler();
+      drawMainGrid();
+      renderGuidelines();
+    }
+
+    function renderGuidelines() {
+      guidelinesLayer.innerHTML = '';
+      guidelines.forEach(function (gl, idx) {
+        var line = document.createElement('div');
+        var rmBtn = document.createElement('div');
+        rmBtn.className = 'gl-remove-btn';
+        rmBtn.textContent = '\u00d7';
+        rmBtn.title = 'Remove guideline';
+        if (gl.type === 'h') {
+          line.className = 'guideline-h';
+          line.style.top = (gl.pos * zoom) + 'px';
+          rmBtn.style.left = '4px';
+          rmBtn.style.top = (gl.pos * zoom - 7) + 'px';
+        } else {
+          line.className = 'guideline-v';
+          line.style.left = (gl.pos * zoom) + 'px';
+          rmBtn.style.top = '4px';
+          rmBtn.style.left = (gl.pos * zoom - 7) + 'px';
+        }
+        (function (i) {
+          rmBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            guidelines.splice(i, 1);
+            renderGuidelines();
+          });
+        })(idx);
+        guidelinesLayer.appendChild(line);
+        guidelinesLayer.appendChild(rmBtn);
+      });
+    }
+
+    function getRelPos(e) {
+      var rect = mainArea.getBoundingClientRect();
+      var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function updateMeasure(x1, y1, x2, y2) {
+      var lx = Math.min(x1, x2), ly = Math.min(y1, y2);
+      var rw = Math.abs(x2 - x1), rh = Math.abs(y2 - y1);
+      measureOverlay.style.left = lx + 'px';
+      measureOverlay.style.top = ly + 'px';
+      measureOverlay.style.width = rw + 'px';
+      measureOverlay.style.height = rh + 'px';
+      measureOverlay.style.display = (rw > 2 || rh > 2) ? '' : 'none';
+      var wPx = Math.round(rw / zoom);
+      var hPx = Math.round(rh / zoom);
+      var labelText = 'W: ' + pxToUnit(wPx) + '  H: ' + pxToUnit(hPx);
+      measureLabel.textContent = labelText;
+      measureLabel.style.left = lx + 'px';
+      measureLabel.style.top = Math.max(0, ly - 22) + 'px';
+      measureLabel.style.display = (rw > 2 || rh > 2) ? '' : 'none';
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Measurement: ' + pxToUnit(wPx) + ' \u00d7 ' + pxToUnit(hPx);
+      measureRect = { x: lx, y: ly, w: rw, h: rh };
+    }
+
+    mainArea.addEventListener('mousedown', function (e) {
+      if (e.button !== 0) return;
+      var pos = getRelPos(e);
+      measuring = true;
+      measureStart = pos;
+    });
+    mainArea.addEventListener('mousemove', function (e) {
+      if (!measuring || !measureStart) return;
+      var pos = getRelPos(e);
+      updateMeasure(measureStart.x, measureStart.y, pos.x, pos.y);
+    });
+    mainArea.addEventListener('mouseup', function (e) {
+      measuring = false;
+      DT.trackTool('pixel-ruler');
+    });
+    mainArea.addEventListener('mouseleave', function () { measuring = false; });
+
+    // Touch support
+    mainArea.addEventListener('touchstart', function (e) {
+      var pos = getRelPos(e);
+      measuring = true;
+      measureStart = pos;
+      e.preventDefault();
+    }, { passive: false });
+    mainArea.addEventListener('touchmove', function (e) {
+      if (!measuring || !measureStart) return;
+      var pos = getRelPos(e);
+      updateMeasure(measureStart.x, measureStart.y, pos.x, pos.y);
+      e.preventDefault();
+    }, { passive: false });
+    mainArea.addEventListener('touchend', function () { measuring = false; });
+
+    // Add guidelines
+    document.getElementById('addGuidelineHBtn').addEventListener('click', function () {
+      var h = mainArea.offsetHeight || CANVAS_H;
+      guidelines.push({ type: 'h', pos: Math.round((h / 2) / zoom) });
+      renderGuidelines();
+    });
+    document.getElementById('addGuidelineVBtn').addEventListener('click', function () {
+      var w = mainArea.offsetWidth || CANVAS_W;
+      guidelines.push({ type: 'v', pos: Math.round((w / 2) / zoom) });
+      renderGuidelines();
+    });
+    document.getElementById('clearGuidelinesBtn').addEventListener('click', function () {
+      guidelines = [];
+      renderGuidelines();
+    });
+    document.getElementById('clearMeasureBtn').addEventListener('click', function () {
+      measureOverlay.style.display = 'none';
+      measureLabel.style.display = 'none';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Drag anywhere in the ruler area to measure a distance.';
+    });
+
+    unitSelect.addEventListener('change', function () {
+      unit = unitSelect.value;
+      drawHRuler();
+      drawVRuler();
+    });
+    dpiInput.addEventListener('input', function () {
+      var v = parseInt(dpiInput.value, 10);
+      if (v >= 72 && v <= 400) dpi = v;
+    });
+    zoomSelect.addEventListener('change', function () {
+      zoom = parseFloat(zoomSelect.value);
+      initCanvas();
+    });
+
+    // Click on H ruler to add horizontal guideline
+    rulerHCanvas.addEventListener('click', function (e) {
+      var rect = rulerHCanvas.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      guidelines.push({ type: 'v', pos: Math.round(x / zoom) });
+      renderGuidelines();
+    });
+    rulerVCanvas.addEventListener('click', function (e) {
+      var rect = rulerVCanvas.getBoundingClientRect();
+      var y = e.clientY - rect.top;
+      guidelines.push({ type: 'h', pos: Math.round(y / zoom) });
+      renderGuidelines();
+    });
+
+    // Init on load and resize
+    window.addEventListener('resize', DT.debounce(initCanvas, 200));
+    // Small delay to let CSS render
+    setTimeout(initCanvas, 100);
+  })();
+  </script>
+</body>
+</html>

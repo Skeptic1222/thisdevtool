@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Random Number Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate random numbers with configurable min/max, count, decimals, and unique mode. Includes dice roller, coin flipper, lottery picker, and histogram. Uses crypto.getRandomValues.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/random-number-generator.html">
+  <meta property="og:title" content="Random Number Generator — DevToolbox">
+  <meta property="og:description" content="True random numbers via crypto.getRandomValues. Dice roller, coin flipper, lottery picker, histogram. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/random-number-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Random Number Generator",
+    "url": "https://thisdevtool.com/tools/random-number-generator.html",
+    "description": "Generate cryptographically random numbers, roll dice, flip coins, and pick lottery numbers. Configurable range, count, decimals, and unique mode.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is this random number generator truly random?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. This tool uses the Web Crypto API (crypto.getRandomValues) which generates cryptographically secure random numbers. This is the same randomness source used for security keys and tokens, making it far more random than Math.random()."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between unique and non-unique random numbers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Non-unique mode allows the same number to appear multiple times (like rolling a die twice and getting 6 both times). Unique mode ensures each number in the list appears only once, like drawing lottery balls without replacement. Unique mode requires the range to be large enough to contain the requested count."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the dice roller work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The dice roller supports standard tabletop RPG dice: d4, d6, d8, d10, d12, and d20. Each roll uses crypto.getRandomValues for true randomness. You can roll multiple dice at once and see each individual result plus the total."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the lottery picker work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The lottery picker selects a set of unique numbers from a specified range, simulating a lottery draw. For example, picking 6 numbers from 1-49 mimics a standard lottery. Numbers are selected without replacement, ensuring no duplicates."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the histogram show?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The histogram groups your generated numbers into equal-width bins and shows the frequency of numbers falling into each range. A uniform distribution should produce bars of roughly equal height, confirming the randomness of the generator."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .rng-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+    .rng-field label { display: block; font-size: .85rem; color: var(--text-secondary); margin-bottom: .3rem; }
+    .rng-field input, .rng-field select { width: 100%; padding: .45rem .6rem; font-size: 1rem; border: 1.5px solid var(--border); border-radius: 6px; background: var(--input-bg); color: var(--text-primary); box-sizing: border-box; }
+    .rng-field input:focus, .rng-field select:focus { outline: none; border-color: #10b981; }
+    .rng-check { display: flex; align-items: center; gap: .5rem; font-size: .9rem; margin-bottom: .75rem; }
+    .rng-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: #10b981; }
+    .rng-output { background: var(--bg-secondary); border: 1.5px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; min-height: 80px; font-family: 'Fira Code', 'Consolas', monospace; font-size: .9rem; word-break: break-all; line-height: 1.7; }
+    .rng-output.empty { color: var(--text-secondary); font-family: inherit; font-size: 1rem; }
+    .rng-section { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+    .rng-section h3 { font-size: 1rem; font-weight: 600; margin-bottom: .75rem; color: var(--text-primary); }
+    .dice-btns { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .75rem; }
+    .dice-btn { padding: .4rem .9rem; border: 1.5px solid var(--border); border-radius: 20px; background: var(--bg-secondary); color: var(--text-primary); font-size: .9rem; cursor: pointer; transition: background .15s, border-color .15s; }
+    .dice-btn:hover, .dice-btn.active { background: #10b981; border-color: #10b981; color: #fff; }
+    .dice-result { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+    .die-face { width: 44px; height: 44px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg-primary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; color: #10b981; }
+    .histogram { margin-top: 1rem; }
+    .hist-bar-row { display: flex; align-items: center; gap: .5rem; margin-bottom: 3px; font-size: .78rem; }
+    .hist-label { width: 80px; text-align: right; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hist-track { flex: 1; height: 16px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+    .hist-fill { height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 4px; transition: width .3s; }
+    .hist-count { width: 28px; font-size: .78rem; color: var(--text-secondary); }
+    .lottery-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+    .lotto-ball { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #10b981, #059669); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9rem; }
+    .coin-result { font-size: 3rem; text-align: center; margin: .5rem 0; }
+    .rng-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .75rem; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/statistics-calculator.html">Statistics</a>
+        <a href="/tools/percentage-calculator.html">Percentages</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Random Number Generator</h1>
+          <p class="tool-subtitle">Cryptographically secure random numbers using <code>crypto.getRandomValues</code>. Dice roller, coin flipper, and lottery picker included.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="numbers">Numbers</button>
+            <button class="option-chip" data-mode="dice">Dice Roller</button>
+            <button class="option-chip" data-mode="coin">Coin Flipper</button>
+            <button class="option-chip" data-mode="lottery">Lottery Picker</button>
+          </div>
+
+          <!-- Numbers Mode -->
+          <div id="panelNumbers">
+            <div class="rng-grid">
+              <div class="rng-field">
+                <label for="rngMin">Minimum</label>
+                <input type="number" id="rngMin" value="1" step="any">
+              </div>
+              <div class="rng-field">
+                <label for="rngMax">Maximum</label>
+                <input type="number" id="rngMax" value="100" step="any">
+              </div>
+              <div class="rng-field">
+                <label for="rngCount">Count (1–1000)</label>
+                <input type="number" id="rngCount" value="10" min="1" max="1000">
+              </div>
+              <div class="rng-field">
+                <label for="rngDecimals">Decimal Places</label>
+                <input type="number" id="rngDecimals" value="0" min="0" max="10">
+              </div>
+            </div>
+            <div class="rng-check">
+              <input type="checkbox" id="rngUnique">
+              <label for="rngUnique">Unique numbers only (no duplicates)</label>
+            </div>
+            <div class="rng-check">
+              <input type="checkbox" id="rngSort">
+              <label for="rngSort">Sort results</label>
+            </div>
+
+            <div class="rng-output empty" id="rngOutput">Click Generate to create random numbers.</div>
+
+            <div class="histogram" id="histogram" style="display:none;">
+              <h3 style="font-size:.9rem;font-weight:600;margin:.75rem 0 .4rem;">Distribution Histogram</h3>
+              <div id="histBars"></div>
+            </div>
+
+            <div class="rng-actions">
+              <button class="btn btn-primary" id="generateBtn">Generate</button>
+              <button class="btn btn-secondary" id="clearBtnNum">Clear</button>
+              <button class="btn btn-secondary" id="copyBtnNum">Copy</button>
+              <button class="btn btn-secondary" id="downloadBtnNum">Download</button>
+            </div>
+          </div>
+
+          <!-- Dice Mode -->
+          <div id="panelDice" style="display:none;">
+            <div class="rng-section" style="border-top:none;padding-top:0;">
+              <h3>Select Dice Type</h3>
+              <div class="dice-btns">
+                <button class="dice-btn" data-sides="4">d4</button>
+                <button class="dice-btn active" data-sides="6">d6</button>
+                <button class="dice-btn" data-sides="8">d8</button>
+                <button class="dice-btn" data-sides="10">d10</button>
+                <button class="dice-btn" data-sides="12">d12</button>
+                <button class="dice-btn" data-sides="20">d20</button>
+              </div>
+              <div class="rng-grid" style="grid-template-columns:120px 120px;">
+                <div class="rng-field">
+                  <label for="diceCount">Number of Dice</label>
+                  <input type="number" id="diceCount" value="2" min="1" max="20">
+                </div>
+              </div>
+              <div class="dice-result" id="diceResult"></div>
+              <div id="diceTotalWrap" style="display:none;margin-top:.75rem;font-size:1.1rem;font-weight:600;">Total: <span id="diceTotal"></span></div>
+              <div class="rng-actions" style="margin-top:.75rem;">
+                <button class="btn btn-primary" id="rollBtn">Roll Dice</button>
+                <button class="btn btn-secondary" id="clearBtnDice">Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coin Mode -->
+          <div id="panelCoin" style="display:none;">
+            <div class="rng-section" style="border-top:none;padding-top:0;">
+              <h3>Flip a Coin</h3>
+              <div class="rng-grid" style="grid-template-columns:160px;">
+                <div class="rng-field">
+                  <label for="coinCount">Number of Flips</label>
+                  <input type="number" id="coinCount" value="1" min="1" max="100">
+                </div>
+              </div>
+              <div class="coin-result" id="coinResult"></div>
+              <div id="coinStats" style="font-size:.9rem;color:var(--text-secondary);margin-bottom:.5rem;"></div>
+              <div class="rng-actions">
+                <button class="btn btn-primary" id="flipBtn">Flip Coin</button>
+                <button class="btn btn-secondary" id="clearBtnCoin">Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lottery Mode -->
+          <div id="panelLottery" style="display:none;">
+            <div class="rng-section" style="border-top:none;padding-top:0;">
+              <h3>Lottery Picker</h3>
+              <div class="rng-grid" style="grid-template-columns:repeat(3,120px);">
+                <div class="rng-field">
+                  <label for="lottoMin">Min Number</label>
+                  <input type="number" id="lottoMin" value="1" min="1">
+                </div>
+                <div class="rng-field">
+                  <label for="lottoMax">Max Number</label>
+                  <input type="number" id="lottoMax" value="49" min="2">
+                </div>
+                <div class="rng-field">
+                  <label for="lottoPick">Pick Count</label>
+                  <input type="number" id="lottoPick" value="6" min="1" max="50">
+                </div>
+              </div>
+              <div class="lottery-row" id="lotteryResult"></div>
+              <div class="rng-actions" style="margin-top:.75rem;">
+                <button class="btn btn-primary" id="lottoBtn">Pick Numbers</button>
+                <button class="btn btn-secondary" id="clearBtnLotto">Clear</button>
+                <button class="btn btn-secondary" id="copyBtnLotto">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Configure options and click Generate.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Random Number Generator</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — Numbers, Dice Roller, Coin Flipper, or Lottery Picker using the tabs above.</li>
+            <li><strong>Configure the settings</strong> — set your range, count, decimals, and unique options.</li>
+            <li><strong>Click Generate</strong> (or Roll/Flip/Pick for the specialized modes).</li>
+            <li><strong>View, copy, or download</strong> the results. A histogram shows the distribution when generating many numbers.</li>
+          </ol>
+
+          <h2>Why Use crypto.getRandomValues Instead of Math.random()?</h2>
+          <p>JavaScript's built-in <code>Math.random()</code> is a pseudo-random number generator (PRNG) — it uses a deterministic algorithm that only approximates randomness. While fine for games, it's not suitable for security-sensitive tasks. This tool uses the <strong>Web Crypto API's <code>crypto.getRandomValues()</code></strong>, which draws entropy from your operating system's cryptographically secure random source. This is the same source used to generate SSL certificates, encryption keys, and secure tokens. The numbers produced are statistically indistinguishable from true randomness.</p>
+
+          <h3>Random Numbers Mode</h3>
+          <p>Generate between 1 and 1,000 random numbers in any range, with any number of decimal places. Enable <strong>Unique mode</strong> to ensure no number appears twice — useful for drawing lots, sampling without replacement, or creating randomized test datasets. The distribution histogram makes it easy to verify uniformity across your range.</p>
+
+          <h3>Dice Roller</h3>
+          <p>Supports all standard tabletop RPG dice: d4, d6, d8, d10, d12, and d20. Roll up to 20 dice simultaneously. Each roll is independent and uses cryptographic randomness, so results are far more unpredictable than physical dice in practice. Useful for tabletop RPGs, board games, and classroom probability demonstrations.</p>
+
+          <h3>Coin Flipper</h3>
+          <p>Flip a fair coin one to 100 times. Results show heads and tails counts with percentages. Over a large number of flips, you'll see the distribution converge toward 50/50, demonstrating the law of large numbers in action.</p>
+
+          <h3>Lottery Number Picker</h3>
+          <p>Pick a set of unique numbers from any range — mimic popular lotteries like Powerball (5 from 1–69), EuroMillions (5 from 1–50), or create a custom draw. Numbers are always unique (no repeats) and drawn without replacement, exactly like a real lottery machine. For more mathematical analysis of your results, try the <a href="/tools/statistics-calculator.html">Statistics Calculator</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">Is this random number generator truly random?</button>
+            <div class="faq-answer">Yes. This tool uses the Web Crypto API (crypto.getRandomValues) which generates cryptographically secure random numbers. This is the same randomness source used for security keys and tokens, making it far more random than Math.random().</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between unique and non-unique random numbers?</button>
+            <div class="faq-answer">Non-unique mode allows the same number to appear multiple times. Unique mode ensures each number in the list appears only once, like drawing lottery balls without replacement. Unique mode requires the range to be large enough to contain the requested count.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the dice roller work?</button>
+            <div class="faq-answer">The dice roller supports standard tabletop RPG dice: d4, d6, d8, d10, d12, and d20. Each roll uses crypto.getRandomValues for true randomness. You can roll multiple dice at once and see each individual result plus the total.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the lottery picker work?</button>
+            <div class="faq-answer">The lottery picker selects a set of unique numbers from a specified range, simulating a lottery draw. For example, picking 6 numbers from 1–49 mimics a standard lottery. Numbers are selected without replacement, ensuring no duplicates.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does the histogram show?</button>
+            <div class="faq-answer">The histogram groups your generated numbers into equal-width bins and shows the frequency of numbers falling into each range. A uniform distribution should produce bars of roughly equal height, confirming the randomness of the generator.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Math Tools</h4>
+        <a href="/tools/random-number-generator.html">Random Numbers</a>
+        <a href="/tools/percentage-calculator.html">Percentage Calculator</a>
+        <a href="/tools/statistics-calculator.html">Statistics Calculator</a>
+        <a href="/tools/matrix-calculator.html">Matrix Calculator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/boolean-evaluator.html">Boolean Evaluator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'numbers';
+    var lastNumbers = [];
+    var selectedDiceSides = 6;
+
+    // --- Cryptographic random ---
+    function cryptoRandInt(min, max) {
+      // returns integer in [min, max] inclusive
+      var range = max - min + 1;
+      var buf = new Uint32Array(1);
+      var limit = Math.floor(0xFFFFFFFF / range) * range;
+      do { crypto.getRandomValues(buf); } while (buf[0] > limit);
+      return min + (buf[0] % range);
+    }
+
+    function cryptoRandFloat(min, max, decimals) {
+      var buf = new Uint32Array(1);
+      crypto.getRandomValues(buf);
+      var t = buf[0] / 0xFFFFFFFF;
+      return parseFloat((min + t * (max - min)).toFixed(decimals));
+    }
+
+    // --- Mode switching ---
+    var panels = { numbers: 'panelNumbers', dice: 'panelDice', coin: 'panelCoin', lottery: 'panelLottery' };
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        Object.keys(panels).forEach(function (k) {
+          document.getElementById(panels[k]).style.display = k === currentMode ? '' : 'none';
+        });
+        setStatus('info', 'Configure and click the action button.');
+      });
+    });
+
+    function setStatus(cls, msg) {
+      var el = document.getElementById('statusBar');
+      el.className = 'status-bar ' + cls;
+      el.textContent = msg;
+    }
+
+    // --- Numbers mode ---
+    document.getElementById('generateBtn').addEventListener('click', function () {
+      var min = parseFloat(document.getElementById('rngMin').value);
+      var max = parseFloat(document.getElementById('rngMax').value);
+      var count = parseInt(document.getElementById('rngCount').value, 10);
+      var dec = parseInt(document.getElementById('rngDecimals').value, 10);
+      var unique = document.getElementById('rngUnique').checked;
+      var sort = document.getElementById('rngSort').checked;
+
+      if (isNaN(min) || isNaN(max) || min >= max) { setStatus('invalid', 'Min must be less than Max.'); return; }
+      if (isNaN(count) || count < 1 || count > 1000) { setStatus('invalid', 'Count must be 1–1000.'); return; }
+      if (dec < 0) dec = 0;
+      if (unique && dec === 0 && (max - min + 1) < count) {
+        setStatus('invalid', 'Range too small for ' + count + ' unique integers.'); return;
+      }
+
+      var nums = [];
+      if (unique && dec === 0) {
+        // Fisher-Yates shuffle of range
+        var pool = [];
+        for (var i = min; i <= max; i++) pool.push(i);
+        for (var j = pool.length - 1; j > 0; j--) {
+          var k = cryptoRandInt(0, j);
+          var tmp = pool[j]; pool[j] = pool[k]; pool[k] = tmp;
+        }
+        nums = pool.slice(0, count);
+      } else {
+        var seen = {};
+        var attempts = 0;
+        while (nums.length < count && attempts < count * 100) {
+          var n = dec === 0 ? cryptoRandInt(min, max) : cryptoRandFloat(min, max, dec);
+          if (unique) {
+            if (!seen[n]) { seen[n] = true; nums.push(n); }
+          } else {
+            nums.push(n);
+          }
+          attempts++;
+        }
+      }
+
+      if (sort) nums.sort(function (a, b) { return a - b; });
+      lastNumbers = nums;
+
+      var out = document.getElementById('rngOutput');
+      out.className = 'rng-output';
+      out.textContent = nums.join(', ');
+      renderHistogram(nums, min, max);
+      setStatus('valid', 'Generated ' + nums.length + ' number' + (nums.length !== 1 ? 's' : '') + ' (' + min + '–' + max + ')');
+      DT.trackTool('random-number-generator');
+    });
+
+    function renderHistogram(nums, min, max) {
+      var wrap = document.getElementById('histogram');
+      if (nums.length < 5) { wrap.style.display = 'none'; return; }
+      var binCount = Math.min(10, Math.ceil(max - min));
+      if (binCount < 2) { wrap.style.display = 'none'; return; }
+      var binSize = (max - min) / binCount;
+      var bins = [];
+      for (var b = 0; b < binCount; b++) bins.push(0);
+      nums.forEach(function (n) {
+        var idx = Math.min(binCount - 1, Math.floor((n - min) / binSize));
+        bins[idx]++;
+      });
+      var maxBin = Math.max.apply(null, bins);
+      var html = '';
+      bins.forEach(function (cnt, b) {
+        var lo = (min + b * binSize).toFixed(1);
+        var hi = (min + (b + 1) * binSize).toFixed(1);
+        var pct = maxBin ? (cnt / maxBin * 100) : 0;
+        html += '<div class="hist-bar-row"><div class="hist-label">' + lo + '–' + hi + '</div>' +
+          '<div class="hist-track"><div class="hist-fill" style="width:' + pct + '%"></div></div>' +
+          '<div class="hist-count">' + cnt + '</div></div>';
+      });
+      document.getElementById('histBars').innerHTML = html;
+      wrap.style.display = '';
+    }
+
+    document.getElementById('clearBtnNum').addEventListener('click', function () {
+      var out = document.getElementById('rngOutput');
+      out.className = 'rng-output empty';
+      out.textContent = 'Click Generate to create random numbers.';
+      document.getElementById('histogram').style.display = 'none';
+      lastNumbers = [];
+      setStatus('info', 'Configure options and click Generate.');
+    });
+
+    document.getElementById('copyBtnNum').addEventListener('click', function () {
+      if (lastNumbers.length) DT.copyToClipboard(lastNumbers.join(', '), this);
+    });
+
+    document.getElementById('downloadBtnNum').addEventListener('click', function () {
+      if (lastNumbers.length) DT.downloadText(lastNumbers.join('\n'), 'random-numbers.txt', 'text/plain');
+    });
+
+    // --- Dice mode ---
+    document.querySelectorAll('.dice-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.dice-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        selectedDiceSides = parseInt(btn.getAttribute('data-sides'), 10);
+      });
+    });
+
+    document.getElementById('rollBtn').addEventListener('click', function () {
+      var count = Math.min(20, Math.max(1, parseInt(document.getElementById('diceCount').value, 10) || 1));
+      var rolls = [];
+      for (var i = 0; i < count; i++) rolls.push(cryptoRandInt(1, selectedDiceSides));
+      var total = rolls.reduce(function (a, b) { return a + b; }, 0);
+      var html = rolls.map(function (r) { return '<div class="die-face">' + r + '</div>'; }).join('');
+      document.getElementById('diceResult').innerHTML = html;
+      var totalWrap = document.getElementById('diceTotalWrap');
+      if (count > 1) { document.getElementById('diceTotal').textContent = total; totalWrap.style.display = ''; }
+      else { totalWrap.style.display = 'none'; }
+      setStatus('valid', 'Rolled ' + count + 'd' + selectedDiceSides + ' — Total: ' + total);
+      DT.trackTool('random-number-generator');
+    });
+
+    document.getElementById('clearBtnDice').addEventListener('click', function () {
+      document.getElementById('diceResult').innerHTML = '';
+      document.getElementById('diceTotalWrap').style.display = 'none';
+      setStatus('info', 'Select dice type and click Roll.');
+    });
+
+    // --- Coin mode ---
+    document.getElementById('flipBtn').addEventListener('click', function () {
+      var count = Math.min(100, Math.max(1, parseInt(document.getElementById('coinCount').value, 10) || 1));
+      var flips = [];
+      for (var i = 0; i < count; i++) flips.push(cryptoRandInt(0, 1) === 0 ? 'H' : 'T');
+      var heads = flips.filter(function (f) { return f === 'H'; }).length;
+      var tails = count - heads;
+      var emoji = flips.map(function (f) { return f === 'H' ? '🪙' : '🔵'; }).join(' ');
+      document.getElementById('coinResult').textContent = count === 1 ? (flips[0] === 'H' ? 'Heads 🪙' : 'Tails 🔵') : emoji;
+      document.getElementById('coinStats').textContent = count > 1 ? 'Heads: ' + heads + ' (' + (heads / count * 100).toFixed(1) + '%) | Tails: ' + tails + ' (' + (tails / count * 100).toFixed(1) + '%)' : '';
+      setStatus('valid', count === 1 ? (flips[0] === 'H' ? 'Heads' : 'Tails') : 'Flipped ' + count + ' coins — Heads: ' + heads + ', Tails: ' + tails);
+      DT.trackTool('random-number-generator');
+    });
+
+    document.getElementById('clearBtnCoin').addEventListener('click', function () {
+      document.getElementById('coinResult').textContent = '';
+      document.getElementById('coinStats').textContent = '';
+      setStatus('info', 'Click Flip Coin to start.');
+    });
+
+    // --- Lottery mode ---
+    document.getElementById('lottoBtn').addEventListener('click', function () {
+      var min = parseInt(document.getElementById('lottoMin').value, 10);
+      var max = parseInt(document.getElementById('lottoMax').value, 10);
+      var pick = parseInt(document.getElementById('lottoPick').value, 10);
+      if (isNaN(min) || isNaN(max) || min >= max) { setStatus('invalid', 'Invalid lottery range.'); return; }
+      if (isNaN(pick) || pick < 1) { setStatus('invalid', 'Pick count must be at least 1.'); return; }
+      if (max - min + 1 < pick) { setStatus('invalid', 'Range too small for ' + pick + ' unique numbers.'); return; }
+      var pool = [];
+      for (var i = min; i <= max; i++) pool.push(i);
+      for (var j = pool.length - 1; j > 0; j--) {
+        var k = cryptoRandInt(0, j);
+        var tmp = pool[j]; pool[j] = pool[k]; pool[k] = tmp;
+      }
+      var chosen = pool.slice(0, pick).sort(function (a, b) { return a - b; });
+      var html = chosen.map(function (n) { return '<div class="lotto-ball">' + n + '</div>'; }).join('');
+      document.getElementById('lotteryResult').innerHTML = html;
+      setStatus('valid', 'Picked ' + pick + ' numbers from ' + min + '–' + max + ': ' + chosen.join(', '));
+      DT.trackTool('random-number-generator');
+    });
+
+    document.getElementById('clearBtnLotto').addEventListener('click', function () {
+      document.getElementById('lotteryResult').innerHTML = '';
+      setStatus('info', 'Configure and click Pick Numbers.');
+    });
+
+    document.getElementById('copyBtnLotto').addEventListener('click', function () {
+      var balls = document.querySelectorAll('.lotto-ball');
+      if (balls.length) {
+        var nums = Array.from(balls).map(function (b) { return b.textContent; }).join(', ');
+        DT.copyToClipboard(nums, this);
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

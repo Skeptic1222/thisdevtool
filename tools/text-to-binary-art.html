@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Binary Art Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert text to binary art — visual patterns of 0s and 1s in a grid. Each character becomes an 8-bit row. Custom characters (█ and ░). Download as text or export as PNG image. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/text-to-binary-art.html">
+  <meta property="og:title" content="Binary Art Generator — DevToolbox">
+  <meta property="og:description" content="Convert text to visual binary art (0s and 1s grid). Each character = 8-bit row. Custom characters, download as text or PNG. Free and instant.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/text-to-binary-art.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Binary Art Generator",
+    "url": "https://thisdevtool.com/tools/text-to-binary-art.html",
+    "description": "Convert text to binary art grids. Each character becomes an 8-bit row. Custom characters, text download, and PNG export.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is binary representation of text?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In binary representation, each character is stored as a sequence of 8 bits (a byte). Each bit is either 0 or 1. For example, the letter 'A' is ASCII code 65, which in binary is 01000001. Computers store all text, images, and data as binary sequences at the hardware level."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does each character use 8 bits?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A byte is the standard unit of storage in computing, containing 8 bits. With 8 bits you can represent 256 different values (0-255). ASCII uses 7 bits for standard English characters (128 values), but the 8-bit byte became standard to allow extended character sets. Unicode uses multiple bytes for non-ASCII characters."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the block characters (█ and ░)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "█ (U+2588, Full Block) and ░ (U+2591, Light Shade) are Unicode block elements. Using these as substitutes for 1 and 0 creates a more visually striking pattern with solid and faint blocks, which is popular in terminal art, ASCII art, and retro-computing aesthetics."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I decode binary art back to text?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Use the Decode mode. Paste binary art that uses 0s and 1s (or block characters), and the tool will convert each 8-bit row back to its ASCII character. The decode works for standard 8-bit ASCII binary patterns."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the PNG image export work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The PNG export uses the HTML5 Canvas API to render the binary grid as an image directly in your browser. No server upload is needed. The canvas draws each character cell as a colored rectangle and exports the result as a downloadable PNG file. The image size depends on the number of rows and columns in the output."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .binary-output {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      white-space: pre;
+      overflow-x: auto;
+      background: #0f172a;
+      color: #10b981;
+      padding: 16px;
+      border-radius: 8px;
+      min-height: 120px;
+      max-height: 420px;
+      overflow-y: auto;
+      border: 1px solid #334155;
+    }
+    [data-theme="light"] .binary-output { background: #0f172a; }
+    .char-options { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; align-items: center; }
+    .char-option-group { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+    .char-option-group label { color: var(--text-muted, #64748b); }
+    .char-option-group input[type=text] {
+      width: 44px; padding: 4px 8px; font-size: 1rem; text-align: center;
+      border: 1px solid var(--border, #e2e8f0); border-radius: 6px;
+      background: var(--bg-secondary, #f8fafc); color: var(--text-primary, #0f172a);
+    }
+    .decode-input {
+      width: 100%; font-family: 'Courier New', monospace; font-size: 0.85rem;
+      padding: 12px; border: 1px solid var(--border, #e2e8f0); border-radius: 8px;
+      background: var(--bg-secondary, #f8fafc); color: var(--text-primary, #0f172a);
+      min-height: 120px; resize: vertical;
+    }
+    .binary-table { border-collapse: collapse; font-family: monospace; font-size: 0.82rem; margin: 16px 0; }
+    .binary-table td, .binary-table th { border: 1px solid var(--border, #e2e8f0); padding: 4px 8px; }
+    .binary-table th { background: var(--bg-secondary, #f8fafc); font-weight: 600; }
+    .binary-table .bit1 { color: #10b981; font-weight: 700; }
+    .binary-table .bit0 { color: var(--text-muted, #64748b); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <a href="/tools/hash-generator.html">Hash</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Binary Art Generator</h1>
+          <p class="tool-subtitle">Convert text to visual binary patterns. Each character becomes an 8-bit row of 0s and 1s. Custom characters, text download, and PNG export.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Text → Binary</button>
+            <button class="option-chip" data-mode="decode">Binary → Text</button>
+          </div>
+
+          <div id="encodeSection">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Input Text</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                    <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                  </div>
+                </div>
+                <textarea id="textInput" rows="6" placeholder="Enter text to convert to binary art...&#10;&#10;Example: HELLO" spellcheck="false"></textarea>
+
+                <div class="char-options">
+                  <div class="char-option-group">
+                    <label>1-char:</label>
+                    <input type="text" id="char1" value="█" maxlength="2">
+                  </div>
+                  <div class="char-option-group">
+                    <label>0-char:</label>
+                    <input type="text" id="char0" value="░" maxlength="2">
+                  </div>
+                  <div class="char-option-group">
+                    <label>or use:</label>
+                    <button class="btn btn-sm btn-secondary" id="preset01">0 / 1</button>
+                    <button class="btn btn-sm btn-secondary" id="presetBlock">█ / ░</button>
+                    <button class="btn btn-sm btn-secondary" id="presetHash">■ / □</button>
+                    <button class="btn btn-sm btn-secondary" id="presetDot">• / ·</button>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Binary Art Output</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="downloadTxtBtn">↓ TXT</button>
+                    <button class="btn btn-sm btn-secondary" id="downloadPngBtn">↓ PNG</button>
+                  </div>
+                </div>
+                <div class="binary-output" id="binaryOutput">Enter text to see binary art here.</div>
+                <canvas id="exportCanvas" style="display:none;"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div id="decodeSection" style="display:none;">
+            <div class="pane-label" style="margin-top:14px;">
+              <span>Paste Binary Art (0s and 1s, one char per row)</span>
+              <button class="btn btn-sm btn-secondary" id="clearDecodeBtn">Clear</button>
+            </div>
+            <textarea class="decode-input" id="binaryInput" placeholder="Paste binary art here...&#10;Each row should be 8 bits (e.g., 01001000)" spellcheck="false"></textarea>
+            <div class="pane-label" style="margin-top:12px;">
+              <span>Decoded Text</span>
+              <button class="btn btn-sm btn-primary" id="copyDecodeBtn">Copy</button>
+            </div>
+            <div class="binary-output" id="decodeOutput" style="min-height:60px;">Paste binary above to decode.</div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter text above to generate binary art.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How Text Becomes Binary Art</h2>
+          <p>Every character in your text has a numeric code defined by the ASCII (American Standard Code for Information Interchange) or Unicode standard. For example, the letter 'H' has ASCII code 72. When we convert 72 to binary (base 2), we get 01001000. This 8-digit sequence is one row in the binary art grid. The complete word "HELLO" becomes 5 rows of 8 binary digits each — a 5×8 grid.</p>
+
+          <p>Here's how the word "HELLO" looks in binary:</p>
+          <table class="binary-table">
+            <thead><tr><th>Char</th><th>ASCII</th><th>Binary</th></tr></thead>
+            <tbody>
+              <tr><td>H</td><td>72</td><td><span class="bit0">0</span><span class="bit1">1</span><span class="bit0">0</span><span class="bit0">0</span><span class="bit1">1</span><span class="bit0">0</span><span class="bit0">0</span><span class="bit0">0</span></td></tr>
+              <tr><td>E</td><td>69</td><td><span class="bit0">0</span><span class="bit1">1</span><span class="bit0">0</span><span class="bit0">0</span><span class="bit0">0</span><span class="bit1">1</span><span class="bit0">0</span><span class="bit1">1</span></td></tr>
+              <tr><td>L</td><td>76</td><td><span class="bit0">0</span><span class="bit1">1</span><span class="bit0">0</span><span class="bit0">0</span><span class="bit1">1</span><span class="bit1">1</span><span class="bit0">0</span><span class="bit0">0</span></td></tr>
+              <tr><td>L</td><td>76</td><td><span class="bit0">0</span><span class="bit1">1</span><span class="bit0">0</span><span class="bit0">0</span><span class="bit1">1</span><span class="bit1">1</span><span class="bit0">0</span><span class="bit0">0</span></td></tr>
+              <tr><td>O</td><td>79</td><td><span class="bit0">0</span><span class="bit1">1</span><span class="bit0">0</span><span class="bit0">0</span><span class="bit1">1</span><span class="bit1">1</span><span class="bit1">1</span><span class="bit1">1</span></td></tr>
+            </tbody>
+          </table>
+
+          <h2>Custom Character Substitution</h2>
+          <p>Pure 0s and 1s are readable, but substituting characters like <strong>█</strong> (full block) for 1 and <strong>░</strong> (light shade) for 0 creates a striking terminal art effect. This technique is a form of ASCII art — using characters' visual weight to create the appearance of a graphic. The block elements █ and ░ come from the Unicode block "Block Elements" (U+2580–U+259F), which was originally designed for text-mode graphics on early PC displays like the IBM PC's Code Page 437.</p>
+
+          <h2>Use Cases for Binary Art</h2>
+          <ul>
+            <li><strong>Educational demonstrations</strong> — Show students how computers store text as binary data</li>
+            <li><strong>Developer humor &amp; profile art</strong> — Encode your name or a message in binary for a GitHub README or terminal welcome screen</li>
+            <li><strong>Cyberpunk / hacker aesthetic</strong> — Binary patterns are a classic visual shorthand for "computer stuff" in design and media</li>
+            <li><strong>Security training</strong> — Understanding binary is foundational for learning about bit manipulation, cryptography, and low-level programming</li>
+            <li><strong>Art projects</strong> — Convert a short phrase to binary art and print it as a poster, t-shirt design, or digital NFT</li>
+          </ul>
+
+          <h2>Understanding Bits, Bytes, and ASCII</h2>
+          <p>A <strong>bit</strong> is the smallest unit of digital information — it can be 0 or 1. A <strong>byte</strong> is a group of 8 bits. With 8 bits, you can represent 2⁸ = 256 different values (0–255). ASCII assigns a number to each character: lowercase letters start at 97 (a=97, b=98, ..., z=122), uppercase letters start at 65 (A=65, B=66, ..., Z=90), and digits 0–9 have codes 48–57. This is why you'll notice patterns in binary art — characters in the same category (all uppercase letters, all digits) share high bits in common, creating repeating structures in the output.</p>
+
+          <p>Extended ASCII and Unicode add characters beyond 127. For characters outside the basic ASCII range (code points 128–255 and beyond), the binary representation uses the character's Unicode code point, which may exceed 8 bits. This tool uses 8 bits for characters 0–255 and pads/truncates for display consistency.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is binary representation of text?</button>
+            <div class="faq-answer">Each character is stored as 8 bits (a byte). For example, 'A' is ASCII 65 = 01000001 in binary. Computers store all text and data as binary sequences. This tool visualizes that binary representation as a grid where each row is one character's 8-bit value.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does each character use 8 bits?</button>
+            <div class="faq-answer">A byte (8 bits) is the standard addressable unit of computer memory. With 8 bits you get 256 possible values (0-255), enough for ASCII (128 characters) plus extended sets. Modern Unicode characters use 2-4 bytes for non-ASCII characters, but this tool displays each character's code point in 8 bits for visual simplicity.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What are the block characters (█ and ░)?</button>
+            <div class="faq-answer">█ (U+2588, Full Block) and ░ (U+2591, Light Shade) are Unicode block elements originally designed for IBM PC text-mode graphics. Using them as 1/0 substitutes creates terminal art — solid vs faint blocks that look like a graphical pattern. This style was popular in BBS (Bulletin Board System) art in the 1980s-90s.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I decode binary art back to text?</button>
+            <div class="faq-answer">Yes. Switch to Decode mode, paste binary art using 0s and 1s (one row of 8 bits per character), and the tool converts each byte back to its ASCII character. Works for any binary input that uses standard 0s and 1s — including the output from this tool.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the PNG image export work?</button>
+            <div class="faq-answer">The PNG export uses the browser's built-in HTML5 Canvas API. No server upload is needed. The canvas renders each bit as a colored cell: 1-bits get the emerald accent color, 0-bits get a dark background. The result is exported as a downloadable PNG file. The image dimensions depend on text length (8 columns × text length rows, scaled for readability).</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/text-to-binary-art.html">Binary Art Generator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var textInput = document.getElementById('textInput');
+    var binaryOutput = document.getElementById('binaryOutput');
+    var statusBar = document.getElementById('statusBar');
+    var char1Input = document.getElementById('char1');
+    var char0Input = document.getElementById('char0');
+    var currentMode = 'encode';
+
+    function getChar1() { return char1Input.value.charAt(0) || '1'; }
+    function getChar0() { return char0Input.value.charAt(0) || '0'; }
+
+    function textToBinary(text) {
+      var c1 = getChar1();
+      var c0 = getChar0();
+      var rows = [];
+      for (var i = 0; i < text.length; i++) {
+        var code = text.charCodeAt(i);
+        var bits = (code & 0xFF).toString(2).padStart(8, '0');
+        var row = '';
+        for (var b = 0; b < bits.length; b++) {
+          row += bits[b] === '1' ? c1 : c0;
+        }
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    function renderBinary() {
+      var text = textInput.value;
+      if (!text) {
+        binaryOutput.textContent = 'Enter text to see binary art here.';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter text above to generate binary art.';
+        return;
+      }
+      if (text.length > 200) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Text too long — max 200 characters for binary art.';
+        binaryOutput.textContent = 'Please limit input to 200 characters.';
+        return;
+      }
+      var rows = textToBinary(text);
+      binaryOutput.textContent = rows.join('\n');
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = text.toUpperCase().replace(/[^A-Z]/g, '') || text.substring(0,10) + ' → ' + rows.length + ' row' + (rows.length===1?'':'s') + ' × 8 columns';
+      // Better status
+      var label = text.length <= 10 ? text.toUpperCase() : text.substring(0,10) + '…';
+      statusBar.textContent = '"' + label + '" → ' + rows.length + ' row' + (rows.length===1?'':'s') + ' × 8 columns';
+      DT.trackTool('text-to-binary-art');
+    }
+
+    function binaryToText(binaryStr) {
+      var lines = binaryStr.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l.length > 0; });
+      var result = '';
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].replace(/[^01]/g, function(c) { return c === '█' || c === '■' || c === '•' ? '1' : '0'; });
+        if (line.length < 8) continue;
+        var byte = line.substring(0, 8);
+        var code = parseInt(byte, 2);
+        result += String.fromCharCode(code);
+      }
+      return result;
+    }
+
+    document.getElementById('binaryInput').addEventListener('input', DT.debounce(function() {
+      var val = document.getElementById('binaryInput').value;
+      if (!val.trim()) {
+        document.getElementById('decodeOutput').textContent = 'Paste binary above to decode.';
+        return;
+      }
+      var text = binaryToText(val);
+      document.getElementById('decodeOutput').textContent = text || '(no decodable binary found)';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Decoded: ' + text.length + ' character' + (text.length===1?'':'s');
+    }, 150));
+
+    var debouncedRender = DT.debounce(renderBinary, 150);
+    textInput.addEventListener('input', debouncedRender);
+    char1Input.addEventListener('input', debouncedRender);
+    char0Input.addEventListener('input', debouncedRender);
+
+    // Presets
+    document.getElementById('preset01').addEventListener('click', function() { char1Input.value='1'; char0Input.value='0'; renderBinary(); });
+    document.getElementById('presetBlock').addEventListener('click', function() { char1Input.value='█'; char0Input.value='░'; renderBinary(); });
+    document.getElementById('presetHash').addEventListener('click', function() { char1Input.value='■'; char0Input.value='□'; renderBinary(); });
+    document.getElementById('presetDot').addEventListener('click', function() { char1Input.value='•'; char0Input.value='·'; renderBinary(); });
+
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      textInput.value = 'HELLO';
+      char1Input.value = '█';
+      char0Input.value = '░';
+      renderBinary();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      textInput.value = '';
+      renderBinary();
+      textInput.focus();
+    });
+
+    document.getElementById('clearDecodeBtn').addEventListener('click', function() {
+      document.getElementById('binaryInput').value = '';
+      document.getElementById('decodeOutput').textContent = 'Paste binary above to decode.';
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var text = binaryOutput.textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('copyDecodeBtn').addEventListener('click', function() {
+      var text = document.getElementById('decodeOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadTxtBtn').addEventListener('click', function() {
+      var text = binaryOutput.textContent;
+      if (text && textInput.value) DT.downloadText(text, 'binary-art.txt', 'text/plain');
+    });
+
+    document.getElementById('downloadPngBtn').addEventListener('click', function() {
+      var inputText = textInput.value;
+      if (!inputText) return;
+      var rows = textToBinary(inputText);
+      var cols = 8;
+      var cellW = 16, cellH = 20;
+      var padX = 20, padY = 20;
+      var canvas = document.getElementById('exportCanvas');
+      canvas.width = cols * cellW + padX * 2;
+      canvas.height = rows.length * cellH + padY * 2;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for (var r = 0; r < rows.length; r++) {
+        var code = inputText.charCodeAt(r) & 0xFF;
+        var bits = code.toString(2).padStart(8,'0');
+        for (var c = 0; c < 8; c++) {
+          ctx.fillStyle = bits[c] === '1' ? '#10b981' : '#1e293b';
+          ctx.fillRect(padX + c * cellW, padY + r * cellH, cellW - 2, cellH - 2);
+        }
+      }
+      canvas.toBlob(function(blob) {
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'binary-art.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    });
+
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('encodeSection').style.display = currentMode === 'encode' ? '' : 'none';
+        document.getElementById('decodeSection').style.display = currentMode === 'decode' ? '' : 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = currentMode === 'encode' ? 'Enter text above to generate binary art.' : 'Paste binary art to decode.';
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

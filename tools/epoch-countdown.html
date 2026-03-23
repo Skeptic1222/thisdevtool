@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Unix Epoch Countdown — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Countdown or count-up to any Unix timestamp. Enter a timestamp or date, see days/hours/minutes/seconds live. Features Unix 2B, Y2K38, and other milestone countdowns. Share via URL.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/epoch-countdown.html">
+  <meta property="og:title" content="Unix Epoch Countdown — DevToolbox">
+  <meta property="og:description" content="Live countdown to any Unix timestamp. Y2K38, Unix 2 billion, and custom timestamps. Share via URL. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/epoch-countdown.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Unix Epoch Countdown",
+    "url": "https://thisdevtool.com/tools/epoch-countdown.html",
+    "description": "Count down or up to any Unix timestamp. Shareable URLs, milestone timestamps, Y2K38 countdown.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a Unix timestamp?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Unix timestamp (also called epoch time) is the number of seconds that have elapsed since January 1, 1970, 00:00:00 UTC. It is the universal standard for representing dates and times in programming and is used in databases, APIs, log files, and virtually every operating system."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the Y2K38 problem?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Y2K38 problem (also called the 2038 problem) occurs because many legacy systems store Unix timestamps in a 32-bit signed integer, which can hold a maximum value of 2,147,483,647 — representing January 19, 2038 at 03:14:07 UTC. After this moment, these systems will overflow and roll back to 1901 or crash, similar to the Y2K bug."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens at Unix timestamp 2,000,000,000?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Unix timestamp 2,000,000,000 (2 billion) occurs on May 18, 2033 at 03:33:20 UTC. It has no technical significance but is a memorable milestone in the sequence. Similarly, Unix timestamp 1,234,567,890 was celebrated by developers worldwide when it occurred on February 13, 2009."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I share my countdown URL?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Click the 'Share URL' button to copy a URL containing your target timestamp as a query parameter. Anyone opening that URL will see the same countdown automatically loaded. The timestamp is encoded in the URL as ?ts=TIMESTAMP."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I convert a date to a Unix timestamp?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use the date/time input in this tool — pick a date and time and the Unix timestamp is calculated automatically. Alternatively, in JavaScript: Math.floor(new Date('2038-01-19').getTime() / 1000). In Python: import time; int(time.mktime(time.strptime('2038-01-19', '%Y-%m-%d'))). Note that timestamps are in UTC unless otherwise specified."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .countdown-display {
+      display: flex;
+      gap: var(--space-3);
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: var(--space-4) 0;
+    }
+    .cd-unit {
+      text-align: center;
+      min-width: 80px;
+    }
+    .cd-value {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      font-family: var(--font-mono);
+      color: #10b981;
+      display: block;
+      line-height: 1;
+    }
+    .cd-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .cd-sep {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      color: var(--text-muted);
+      align-self: flex-start;
+      padding-top: 2px;
+    }
+    .cd-past .cd-value { color: #6366f1; }
+    .target-info {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-3);
+      margin-bottom: var(--space-3);
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .target-info-item { flex: 1; min-width: 160px; }
+    .target-info-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .target-info-value { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600; }
+    .milestones-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+    .milestone-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-2) var(--space-3);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      color: var(--text);
+    }
+    .milestone-btn:hover { border-color: #10b981; }
+    .milestone-btn.active { border-color: #10b981; background: rgba(16,185,129,0.08); }
+    .milestone-btn .ms-name { font-weight: 600; font-size: 0.85rem; }
+    .milestone-btn .ms-ts { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); }
+    .milestone-btn .ms-date { font-size: 0.75rem; color: var(--text-muted); }
+    .input-row {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: var(--space-3);
+    }
+    .input-row > div { flex: 1; min-width: 160px; }
+    .progress-bar-wrap {
+      height: 8px;
+      background: var(--surface-alt);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: var(--space-3);
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #10b981;
+      border-radius: 4px;
+      transition: width 1s linear;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/timestamp-converter.html">Timestamps</a>
+        <a href="/tools/jwt-timeline.html">JWT Timeline</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Unix Epoch Countdown</h1>
+          <p class="tool-subtitle">Count down (or up) to any Unix timestamp. Enter a timestamp or date, share via URL, or explore famous epoch milestones.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="custom">Custom Target</button>
+            <button class="option-chip" data-mode="milestones">Milestones</button>
+          </div>
+
+          <!-- Custom input panel -->
+          <div id="customPanel">
+            <div class="input-row">
+              <div>
+                <label class="form-label" for="tsInput">Unix Timestamp</label>
+                <input type="number" id="tsInput" placeholder="e.g. 2000000000" step="1">
+              </div>
+              <div>
+                <label class="form-label" for="dateInput">Or pick a date/time</label>
+                <input type="datetime-local" id="dateInput">
+              </div>
+              <button class="btn btn-primary" id="goBtn">Set Target</button>
+            </div>
+          </div>
+
+          <!-- Milestones panel -->
+          <div id="milestonesPanel" style="display:none;">
+            <div class="milestones-grid" id="milestonesGrid"></div>
+          </div>
+
+          <!-- Target info -->
+          <div class="target-info" id="targetInfo" style="display:none;">
+            <div class="target-info-item">
+              <div class="target-info-label">Target Timestamp</div>
+              <div class="target-info-value" id="infoTs">—</div>
+            </div>
+            <div class="target-info-item">
+              <div class="target-info-label">Target Date (UTC)</div>
+              <div class="target-info-value" id="infoDate">—</div>
+            </div>
+            <div class="target-info-item">
+              <div class="target-info-label">Direction</div>
+              <div class="target-info-value" id="infoDir">—</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="shareBtn" style="margin-left:auto;">Share URL</button>
+          </div>
+
+          <!-- Progress bar (for future events) -->
+          <div class="progress-bar-wrap" id="progressWrap" style="display:none;">
+            <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+          </div>
+
+          <!-- Countdown display -->
+          <div class="countdown-display" id="countdownDisplay" style="display:none;"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a Unix timestamp or pick a date to start the countdown.
+          </div>
+
+          <!-- Current time strip -->
+          <div style="text-align:center;color:var(--text-muted);font-size:0.85rem;font-family:var(--font-mono);margin-top:var(--space-2);">
+            Now: <span id="nowTs">—</span> &nbsp;&nbsp; <span id="nowDate">—</span>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>What Is a Unix Timestamp?</h2>
+          <p>A Unix timestamp (also called POSIX time or epoch time) is a single integer representing the number of seconds elapsed since the Unix epoch: January 1, 1970, 00:00:00 UTC. It is the most widely used method for storing date and time in programming, used in databases, log files, HTTP headers, JWT tokens, file metadata, and virtually every operating system.</p>
+
+          <h3>Why January 1, 1970?</h3>
+          <p>The Unix epoch was chosen somewhat arbitrarily during the development of the Unix operating system at Bell Labs in the late 1960s and early 1970s. The date was a round number that predated any existing Unix systems, ensuring all real dates would produce positive timestamps. Alternative epoch dates include January 1, 1904 (Apple's legacy epoch), January 1, 1601 (Windows FILETIME), and January 1, 2001 (Apple's Cocoa epoch).</p>
+
+          <h3>The Y2K38 Problem</h3>
+          <p>Many legacy systems — particularly those running 32-bit operating systems or using 32-bit C <code>time_t</code> variables — store Unix timestamps as a 32-bit signed integer. The maximum value of a 32-bit signed integer is 2,147,483,647, which corresponds to January 19, 2038 at 03:14:07 UTC. After this moment, these systems will overflow and may interpret the time as December 13, 1901 or simply crash. This is analogous to the Y2K bug of 2000. Most modern 64-bit systems are not affected, as a 64-bit signed integer can represent dates up to approximately 292 billion years from now.</p>
+
+          <h3>Famous Unix Timestamp Milestones</h3>
+          <p>Several Unix timestamp values have become cultural moments for developers:</p>
+          <ul>
+            <li><strong>1,000,000,000</strong> (September 9, 2001) — celebrated in programmer communities worldwide</li>
+            <li><strong>1,111,111,111</strong> (March 18, 2005) — a visually satisfying sequence</li>
+            <li><strong>1,234,567,890</strong> (February 13, 2009) — arguably the most celebrated milestone, with parties hosted in tech offices globally</li>
+            <li><strong>1,500,000,000</strong> (July 14, 2017) — 1.5 billion seconds</li>
+            <li><strong>2,000,000,000</strong> (May 18, 2033) — the next major round number milestone</li>
+            <li><strong>2,147,483,647</strong> (January 19, 2038) — the Y2K38 overflow point</li>
+          </ul>
+
+          <h3>Converting Between Timestamps and Dates</h3>
+          <p>The countdown and count-up feature of this tool automatically handles conversion between Unix timestamps and human-readable dates. For programmatic use:</p>
+          <ul>
+            <li><strong>JavaScript:</strong> <code>Math.floor(Date.now() / 1000)</code> for current timestamp; <code>new Date(ts * 1000)</code> to convert back</li>
+            <li><strong>Python:</strong> <code>import time; int(time.time())</code> or <code>datetime.datetime.utcnow().timestamp()</code></li>
+            <li><strong>SQL:</strong> <code>UNIX_TIMESTAMP()</code> in MySQL; <code>EXTRACT(EPOCH FROM NOW())</code> in PostgreSQL</li>
+            <li><strong>Shell:</strong> <code>date +%s</code> on Linux/macOS</li>
+          </ul>
+
+          <h3>Millisecond vs. Second Timestamps</h3>
+          <p>JavaScript's <code>Date.now()</code> returns milliseconds, not seconds. If you receive a very large Unix timestamp (13 digits), it is likely in milliseconds. Divide by 1000 to get seconds. The typical second-based Unix timestamp in 2026 is about 1,774,000,000 (10 digits). This tool accepts both formats — if you enter a 13-digit number, it will automatically convert from milliseconds.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a Unix timestamp?</button>
+            <div class="faq-answer">A Unix timestamp (also called epoch time) is the number of seconds that have elapsed since January 1, 1970, 00:00:00 UTC. It is the universal standard for representing dates and times in programming and is used in databases, APIs, log files, and virtually every operating system.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the Y2K38 problem?</button>
+            <div class="faq-answer">The Y2K38 problem occurs because many legacy systems store Unix timestamps in a 32-bit signed integer, which can hold a maximum value of 2,147,483,647 — representing January 19, 2038 at 03:14:07 UTC. After this moment, these systems will overflow and roll back to 1901 or crash.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What happens at Unix timestamp 2,000,000,000?</button>
+            <div class="faq-answer">Unix timestamp 2,000,000,000 (2 billion) occurs on May 18, 2033 at 03:33:20 UTC. It has no technical significance but is a memorable milestone. Similarly, Unix timestamp 1,234,567,890 was celebrated by developers worldwide when it occurred on February 13, 2009.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I share my countdown URL?</button>
+            <div class="faq-answer">Yes. Click the 'Share URL' button to copy a URL containing your target timestamp as a query parameter. Anyone opening that URL will see the same countdown automatically loaded. The timestamp is encoded in the URL as ?ts=TIMESTAMP.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I convert a date to a Unix timestamp?</button>
+            <div class="faq-answer">Use the date/time input in this tool — pick a date and time and the Unix timestamp is calculated automatically. In JavaScript: Math.floor(new Date('2038-01-19').getTime() / 1000). In Python: import time; int(time.mktime(time.strptime('2038-01-19', '%Y-%m-%d'))).</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/epoch-countdown.html">Epoch Countdown</a>
+        <a href="/tools/jwt-timeline.html">JWT Timeline</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Tools</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var MILESTONES = [
+      { name: 'Unix 2 Billion', ts: 2000000000, desc: 'May 18, 2033 \u2014 Next round-number party' },
+      { name: 'Y2K38 Overflow', ts: 2147483647, desc: 'Jan 19, 2038 \u2014 32-bit signed integer max' },
+      { name: '1,234,567,890', ts: 1234567890, desc: 'Feb 13, 2009 \u2014 Developer party day (past)' },
+      { name: '1,500,000,000', ts: 1500000000, desc: 'Jul 14, 2017 \u2014 1.5 billion seconds (past)' },
+      { name: 'Unix 3 Billion', ts: 3000000000, desc: 'Jan 24, 2065 \u2014 Future milestone' },
+      { name: 'New Year 2030', ts: 1893456000, desc: 'Jan 1, 2030 00:00:00 UTC' },
+      { name: 'Unix 1,111,111,111', ts: 1111111111, desc: 'Mar 18, 2005 \u2014 Repeating digits (past)' },
+      { name: 'Unix 1,000,000,000', ts: 1000000000, desc: 'Sep 9, 2001 \u2014 First billion (past)' }
+    ];
+
+    var targetTs = null;
+    var intervalId = null;
+    var refTs = null; // for progress bar: start reference
+
+    function buildMilestones() {
+      var grid = document.getElementById('milestonesGrid');
+      grid.innerHTML = '';
+      MILESTONES.forEach(function (m) {
+        var btn = document.createElement('button');
+        btn.className = 'milestone-btn';
+        btn.innerHTML = '<div class="ms-name">' + escHtml(m.name) + '</div>' +
+          '<div class="ms-ts">' + m.ts.toLocaleString() + '</div>' +
+          '<div class="ms-date">' + escHtml(m.desc) + '</div>';
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.milestone-btn').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          setTarget(m.ts);
+        });
+        grid.appendChild(btn);
+      });
+    }
+
+    function setTarget(ts) {
+      // Auto-detect milliseconds
+      if (ts > 9999999999) ts = Math.floor(ts / 1000);
+      targetTs = ts;
+      refTs = Math.floor(Date.now() / 1000);
+
+      var d = new Date(ts * 1000);
+      document.getElementById('infoTs').textContent = ts.toLocaleString();
+      document.getElementById('infoDate').textContent = d.toUTCString();
+      document.getElementById('infoDir').textContent = ts > refTs ? 'Counting down' : 'Counting up (past)';
+      document.getElementById('targetInfo').style.display = '';
+
+      var isFuture = ts > refTs;
+      document.getElementById('progressWrap').style.display = isFuture ? '' : 'none';
+
+      document.getElementById('countdownDisplay').style.display = '';
+
+      // Update URL
+      DT.setParam('ts', ts);
+
+      DT.trackTool('epoch-countdown');
+      tick();
+    }
+
+    function pad(n) {
+      return n < 10 ? '0' + n : String(n);
+    }
+
+    function tick() {
+      var now = Math.floor(Date.now() / 1000);
+      var diff = targetTs - now;
+      var isPast = diff <= 0;
+      var abs = Math.abs(diff);
+
+      var days = Math.floor(abs / 86400);
+      var hours = Math.floor((abs % 86400) / 3600);
+      var mins = Math.floor((abs % 3600) / 60);
+      var secs = abs % 60;
+
+      var cls = isPast ? 'cd-past' : '';
+      var html = '';
+      if (days > 0) {
+        html += unit(days, 'days', cls) + sep();
+      }
+      html += unit(pad(hours), 'hours', cls) + sep() +
+              unit(pad(mins), 'minutes', cls) + sep() +
+              unit(pad(secs), 'seconds', cls);
+
+      document.getElementById('countdownDisplay').innerHTML = html;
+
+      if (isPast) {
+        var sb = document.getElementById('statusBar');
+        sb.className = 'status-bar info';
+        sb.textContent = targetTs.toLocaleString() + ' \u2014 ' + (Math.floor(abs / 86400)).toLocaleString() + ' days, ' + pad(hours) + ' hours ago.';
+        document.getElementById('progressWrap').style.display = 'none';
+      } else {
+        var total = targetTs - refTs;
+        var elapsed2 = now - refTs;
+        var pct = total > 0 ? Math.min(100, (elapsed2 / total) * 100).toFixed(2) : 0;
+        document.getElementById('progressFill').style.width = pct + '%';
+
+        var sb2 = document.getElementById('statusBar');
+        sb2.className = 'status-bar valid';
+        sb2.textContent = targetTs.toLocaleString() + ' \u2014 in ' + days.toLocaleString() + ' days, ' + pad(hours) + ' hours, ' + pad(mins) + ' minutes, ' + pad(secs) + ' seconds.';
+      }
+
+      // Current now strip
+      document.getElementById('nowTs').textContent = now.toLocaleString();
+      document.getElementById('nowDate').textContent = new Date(now * 1000).toUTCString();
+    }
+
+    function unit(value, label, cls) {
+      return '<div class="cd-unit ' + cls + '"><span class="cd-value">' + value + '</span><span class="cd-label">' + label + '</span></div>';
+    }
+
+    function sep() {
+      return '<div class="cd-sep">:</div>';
+    }
+
+    function startTick() {
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(tick, 1000);
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var mode = chip.getAttribute('data-mode');
+        document.getElementById('customPanel').style.display = mode === 'custom' ? '' : 'none';
+        document.getElementById('milestonesPanel').style.display = mode === 'milestones' ? '' : 'none';
+      });
+    });
+
+    document.getElementById('goBtn').addEventListener('click', function () {
+      var tsVal = document.getElementById('tsInput').value.trim();
+      var dateVal = document.getElementById('dateInput').value;
+      if (tsVal) {
+        var ts = parseInt(tsVal, 10);
+        if (isNaN(ts)) { setStatus('invalid', 'Please enter a valid integer timestamp.'); return; }
+        setTarget(ts);
+      } else if (dateVal) {
+        var ts2 = Math.floor(new Date(dateVal).getTime() / 1000);
+        if (isNaN(ts2)) { setStatus('invalid', 'Invalid date.'); return; }
+        setTarget(ts2);
+      } else {
+        setStatus('invalid', 'Enter a timestamp or pick a date.');
+      }
+    });
+
+    // Sync date <-> ts inputs
+    document.getElementById('tsInput').addEventListener('input', function () {
+      var v = parseInt(this.value, 10);
+      if (!isNaN(v) && v > 0) {
+        var ts = v > 9999999999 ? Math.floor(v / 1000) : v;
+        var d = new Date(ts * 1000);
+        var iso = d.toISOString().slice(0, 16);
+        document.getElementById('dateInput').value = iso;
+      }
+    });
+
+    document.getElementById('dateInput').addEventListener('input', function () {
+      if (this.value) {
+        var ts = Math.floor(new Date(this.value).getTime() / 1000);
+        if (!isNaN(ts)) document.getElementById('tsInput').value = ts;
+      }
+    });
+
+    document.getElementById('shareBtn').addEventListener('click', function () {
+      DT.copyToClipboard(window.location.href, this);
+    });
+
+    function setStatus(type, msg) {
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar ' + type;
+      sb.textContent = msg;
+    }
+
+    // Live now-strip update even without a target
+    setInterval(function () {
+      var now = Math.floor(Date.now() / 1000);
+      document.getElementById('nowTs').textContent = now.toLocaleString();
+      document.getElementById('nowDate').textContent = new Date(now * 1000).toUTCString();
+    }, 1000);
+
+    // Check URL param
+    var paramTs = DT.getParam('ts');
+    if (paramTs) {
+      var parsed = parseInt(paramTs, 10);
+      if (!isNaN(parsed)) {
+        document.getElementById('tsInput').value = parsed;
+        setTarget(parsed);
+      }
+    }
+
+    buildMilestones();
+    startTick();
+
+  })();
+  </script>
+</body>
+</html>

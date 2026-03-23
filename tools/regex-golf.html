@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Regex Golf Challenge — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Write the shortest regex that matches all strings in the 'match' list but none in the 'don't match' list. 10 built-in challenges, timer, and local leaderboard.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/regex-golf.html">
+  <meta property="og:title" content="Regex Golf Challenge — DevToolbox">
+  <meta property="og:description" content="Sharpen your regex skills: write the shortest pattern to match exactly the right strings. 10 challenges, timer, leaderboard.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/regex-golf.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Regex Golf Challenge",
+    "url": "https://thisdevtool.com/tools/regex-golf.html",
+    "description": "Write the shortest regex that matches all strings in the match list but none in the don't-match list. 10 built-in challenges, timer, leaderboard.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is regex golf?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Regex golf is a programming puzzle where you write the shortest possible regular expression that matches every string in a 'match' list and fails to match every string in a 'don't match' list. It's a fun way to sharpen regex skills, similar to code golf where the goal is the shortest code."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What regex engine does this tool use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool uses JavaScript's built-in RegExp engine (ECMAScript regex). It supports all standard regex features including lookaheads, backreferences, character classes, quantifiers, and alternation. It does not support PCRE-specific features like possessive quantifiers or atomic groups."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is the score calculated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Your score for each challenge is the character length of the regex pattern (excluding the surrounding slashes and flags). Lower is better. The total score across all completed challenges is shown in the leaderboard. Completing all 10 challenges with a combined score of under 100 characters is considered expert level."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are flags like 'i' counted in the score?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No, flags (i, g, m, etc.) are not counted in the score. Only the pattern itself is measured. However, be careful: if you use the 'i' (case-insensitive) flag, make sure it does not cause the regex to accidentally match strings in the 'don't match' list."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use lookaheads and backreferences?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. JavaScript's regex engine supports lookaheads (?=...) and (?!...), lookbehinds (?<=...) and (?<!...) in modern browsers, capturing groups, and backreferences. These are all valid regex golf tools and can sometimes dramatically shorten your pattern."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .golf-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+    @media (max-width: 640px) {
+      .golf-layout { grid-template-columns: 1fr; }
+    }
+    .golf-list {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-3);
+    }
+    .golf-list h3 {
+      margin: 0 0 var(--space-2);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .golf-list h3.must-match { color: #10b981; }
+    .golf-list h3.must-avoid { color: #ef4444; }
+    .golf-string-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+    .golf-string-row:last-child { border-bottom: none; }
+    .golf-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .golf-check.pass { background: #10b981; color: #fff; }
+    .golf-check.fail { background: #ef4444; color: #fff; }
+    .golf-check.neutral { background: var(--surface-alt); color: var(--text-muted); }
+    .golf-input-row {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .golf-regex-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      font-family: var(--font-mono);
+      min-width: 200px;
+    }
+    .golf-regex-wrap span {
+      padding: 0 8px;
+      color: var(--text-muted);
+      font-size: 1rem;
+      user-select: none;
+    }
+    .golf-regex-wrap input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 10px 4px;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      outline: none;
+      color: var(--text);
+    }
+    .golf-score-badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+    .golf-score-badge.solved { background: rgba(16,185,129,0.15); border-color: #10b981; color: #10b981; }
+    .challenge-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: var(--space-3);
+    }
+    .challenge-btn {
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .challenge-btn:hover { border-color: #10b981; color: #10b981; }
+    .challenge-btn.active { background: #10b981; color: #fff; border-color: #10b981; }
+    .challenge-btn.solved { background: rgba(16,185,129,0.12); color: #10b981; border-color: #10b981; }
+    .challenge-btn.solved::after { content: ' \2713'; }
+    .golf-timer {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .golf-meta {
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: var(--space-3);
+      padding: var(--space-3);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .golf-meta-item { text-align: center; }
+    .golf-meta-value { font-size: 1.25rem; font-weight: 700; color: #10b981; display: block; }
+    .golf-meta-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .leaderboard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-3);
+      margin-top: var(--space-3);
+    }
+    .leaderboard table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .leaderboard th, .leaderboard td {
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .leaderboard th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+    .leaderboard td:first-child { color: #10b981; font-weight: 700; }
+    .hint-box {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-2) var(--space-3);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: var(--space-2);
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Regex Golf Challenge</h1>
+          <p class="tool-subtitle">Write the <strong>shortest</strong> regex that matches every string in the green list and none in the red list. Scored by character count.</p>
+
+          <!-- Stats bar -->
+          <div class="golf-meta">
+            <div class="golf-meta-item">
+              <span class="golf-meta-value" id="metaChallenge">1 / 10</span>
+              <span class="golf-meta-label">Challenge</span>
+            </div>
+            <div class="golf-meta-item">
+              <span class="golf-meta-value" id="metaSolved">0</span>
+              <span class="golf-meta-label">Solved</span>
+            </div>
+            <div class="golf-meta-item">
+              <span class="golf-meta-value" id="metaScore">0</span>
+              <span class="golf-meta-label">Total Score</span>
+            </div>
+            <div class="golf-meta-item">
+              <span class="golf-meta-value golf-timer" id="metaTimer">00:00</span>
+              <span class="golf-meta-label">Time</span>
+            </div>
+            <button class="btn btn-sm btn-secondary" id="resetBtn" style="margin-left:auto;">Reset All</button>
+          </div>
+
+          <!-- Challenge selector -->
+          <div class="challenge-selector" id="challengeSelector"></div>
+
+          <!-- Challenge info -->
+          <div style="margin-bottom:var(--space-2);">
+            <strong id="challengeTitle"></strong>
+            <span style="color:var(--text-muted);font-size:0.85rem;" id="challengeDesc"></span>
+          </div>
+
+          <!-- Match / Don't Match lists -->
+          <div class="golf-layout">
+            <div class="golf-list">
+              <h3 class="must-match">Must Match</h3>
+              <div id="matchList"></div>
+            </div>
+            <div class="golf-list">
+              <h3 class="must-avoid">Must NOT Match</h3>
+              <div id="noMatchList"></div>
+            </div>
+          </div>
+
+          <!-- Regex input -->
+          <div class="golf-input-row">
+            <div class="golf-regex-wrap">
+              <span>/</span>
+              <input type="text" id="regexInput" placeholder="your regex here" spellcheck="false" autocomplete="off">
+              <span>/</span>
+              <input type="text" id="flagsInput" placeholder="flags" style="width:60px;" value="">
+            </div>
+            <div class="golf-score-badge" id="scoreBadge">0 chars</div>
+            <button class="btn btn-secondary btn-sm" id="hintBtn">Hint</button>
+            <button class="btn btn-secondary btn-sm" id="solutionBtn">Solution</button>
+          </div>
+
+          <div class="hint-box" id="hintBox" style="display:none;"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Challenge 1 &mdash; Write a regex to match the green strings and avoid the red ones.
+          </div>
+
+          <!-- Leaderboard -->
+          <div class="leaderboard" id="leaderboard">
+            <h3 style="margin:0 0 var(--space-2);font-size:0.9rem;">Your Best Scores (Local)</h3>
+            <table id="lbTable">
+              <thead><tr><th>#</th><th>Challenge</th><th>Score (chars)</th><th>Time</th></tr></thead>
+              <tbody id="lbBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>What is Regex Golf?</h2>
+          <p>Regex golf is a delightful programming puzzle: given two lists of strings — one that should match and one that should not — write the shortest possible regular expression that perfectly discriminates between them. The name comes from "code golf", where the goal is to write the shortest code that solves a problem. Unlike standard regex practice, regex golf forces you to think creatively about compact pattern representations.</p>
+
+          <h2>How to Play</h2>
+          <ol>
+            <li>Select a challenge from the numbered buttons above.</li>
+            <li>Study the "Must Match" (green) and "Must NOT Match" (red) lists.</li>
+            <li>Type your regex pattern in the input field. The <code>/</code> delimiters are added automatically.</li>
+            <li>The tool tests your pattern in real time as you type. Green checkmarks mean a string matches, red X means it does not.</li>
+            <li>When your regex is correct (all green checkmarks in the match list, all correct X marks in the don't-match list), the challenge is solved and your character count is recorded.</li>
+          </ol>
+
+          <h2>Tips and Strategies</h2>
+
+          <h3>Start with the simplest distinction</h3>
+          <p>Look for a character, word, or pattern that appears in ALL strings in the match list but in NONE of the don't-match strings. That single differentiator might be your entire regex.</p>
+
+          <h3>Use alternation for multiple patterns</h3>
+          <p>The pipe character <code>|</code> lets you match either of two patterns. <code>cat|dog</code> matches both "cat" and "dog". For many challenges, a well-crafted alternation is shorter than a character class.</p>
+
+          <h3>Anchors are your friends</h3>
+          <p><code>^</code> anchors to the start and <code>$</code> to the end. Using <code>^foo</code> is much more specific than just <code>foo</code> and helps avoid false matches in the don't-match list.</p>
+
+          <h3>Character classes over alternation for single characters</h3>
+          <p><code>[aeiou]</code> is shorter than <code>a|e|i|o|u</code> when matching individual characters. Negated classes like <code>[^aeiou]</code> can be even more powerful.</p>
+
+          <h3>Quantifiers</h3>
+          <p><code>+</code> (one or more), <code>*</code> (zero or more), <code>?</code> (zero or one), and <code>{n,m}</code> (specific counts) can replace repeated characters. <code>a{3}</code> is shorter than <code>aaa</code>.</p>
+
+          <h3>Lookaheads for complex constraints</h3>
+          <p>Lookaheads <code>(?=...)</code> and negative lookaheads <code>(?!...)</code> let you assert a condition without consuming characters. This is powerful when you need to match a position based on what follows.</p>
+
+          <h2>Famous Regex Golf Puzzles</h2>
+          <p>The regex golf concept was popularized by a 2013 xkcd comic and a subsequent blog post by Peter Norvig who wrote an algorithm to automatically solve regex golf puzzles using greedy set cover. Norvig's solutions are often unreadable but highly optimal. The challenges in this tool are designed to be solvable by humans with reasonable effort, ranging from beginner (single character class) to advanced (lookaheads required).</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is regex golf?</button>
+            <div class="faq-answer">Regex golf is a programming puzzle where you write the shortest possible regular expression that matches every string in a 'match' list and fails to match every string in a 'don't match' list. It's a fun way to sharpen regex skills, similar to code golf where the goal is the shortest code.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What regex engine does this tool use?</button>
+            <div class="faq-answer">This tool uses JavaScript's built-in RegExp engine (ECMAScript regex). It supports all standard regex features including lookaheads, backreferences, character classes, quantifiers, and alternation. It does not support PCRE-specific features like possessive quantifiers or atomic groups.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How is the score calculated?</button>
+            <div class="faq-answer">Your score for each challenge is the character length of the regex pattern (excluding the surrounding slashes and flags). Lower is better. The total score across all completed challenges is shown in the leaderboard. Completing all 10 challenges with a combined score of under 100 characters is considered expert level.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Are flags like 'i' counted in the score?</button>
+            <div class="faq-answer">No, flags (i, g, m, etc.) are not counted in the score. Only the pattern itself is measured. However, be careful: if you use the 'i' (case-insensitive) flag, make sure it does not cause the regex to accidentally match strings in the 'don't match' list.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use lookaheads and backreferences?</button>
+            <div class="faq-answer">Yes. JavaScript's regex engine supports lookaheads (?=...) and (?!...), lookbehinds (?<=...) and (?<!...) in modern browsers, capturing groups, and backreferences. These are all valid regex golf tools and can sometimes dramatically shorten your pattern.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/regex-golf.html">Regex Golf</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Tools</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var CHALLENGES = [
+      {
+        title: 'Challenge 1: Vowels',
+        desc: 'Match strings containing at least one vowel.',
+        match:    ['apple', 'orange', 'umbrella', 'ice', 'echo'],
+        noMatch:  ['gym', 'crypt', 'nth', 'rhythm', 'fly'],
+        hint: 'Try a character class for vowels.',
+        solution: '[aeiou]'
+      },
+      {
+        title: 'Challenge 2: Starts with a Capital',
+        desc: 'Match strings that start with an uppercase letter.',
+        match:    ['Hello', 'World', 'Python', 'JavaScript', 'Regex'],
+        noMatch:  ['hello', 'world', 'python', 'javaScript', '123abc'],
+        hint: 'Use ^ to anchor to the start and [A-Z] for uppercase.',
+        solution: '^[A-Z]'
+      },
+      {
+        title: 'Challenge 3: Numbers Only',
+        desc: 'Match strings that contain ONLY digits.',
+        match:    ['123', '0', '9999', '42', '1000000'],
+        noMatch:  ['abc', '12a', '3.14', ' 5', '1 2'],
+        hint: 'Use ^ and $ anchors with \\d.',
+        solution: '^\\d+$'
+      },
+      {
+        title: 'Challenge 4: .com Emails',
+        desc: 'Match strings that look like .com email addresses.',
+        match:    ['user@example.com', 'a@b.com', 'test.user@foo.com'],
+        noMatch:  ['user@example.org', 'notanemail', '@.com', 'user@.com'],
+        hint: 'Look for the @...com pattern. You can be loose about local part.',
+        solution: '@.+\\.com$'
+      },
+      {
+        title: 'Challenge 5: Hex Colors',
+        desc: 'Match valid 6-digit hex color codes (with #).',
+        match:    ['#ff0000', '#00ff00', '#0000ff', '#aabbcc', '#123456'],
+        noMatch:  ['#gggggg', '#12345', 'ff0000', '#1234567', '#xyz'],
+        hint: 'Start with # then exactly 6 hex characters [0-9a-f].',
+        solution: '^#[0-9a-f]{6}$'
+      },
+      {
+        title: 'Challenge 6: Repeated Characters',
+        desc: 'Match strings that have any character repeated at least 3 times in a row.',
+        match:    ['aaab', 'bbbbb', 'cccde', '111abc', 'xxxyy'],
+        noMatch:  ['aab', 'ab', 'abcde', '112', 'xyxy'],
+        hint: 'Use a backreference with a capturing group.',
+        solution: '(.)\\1\\1'
+      },
+      {
+        title: 'Challenge 7: IPv4 Octets',
+        desc: 'Match strings that look like IPv4 addresses (four groups of digits separated by dots).',
+        match:    ['192.168.1.1', '10.0.0.0', '255.255.255.0', '1.2.3.4'],
+        noMatch:  ['192.168.1', '999.1.1.1.1', 'abc.def.ghi.jkl', '192.168..1'],
+        hint: 'Match \\d+\\.\\d+\\.\\d+\\.\\d+ with anchors.',
+        solution: '^\\d+\\.\\d+\\.\\d+\\.\\d+$'
+      },
+      {
+        title: 'Challenge 8: No Spaces',
+        desc: 'Match strings that contain NO whitespace characters.',
+        match:    ['hello', 'CamelCase', 'snake_case', '123', 'foo-bar'],
+        noMatch:  ['hello world', 'two words', 'tab\there', 'a b', ' leading'],
+        hint: 'Use a negative lookahead or \\S+.',
+        solution: '^\\S+$'
+      },
+      {
+        title: 'Challenge 9: Palindromes (3-char)',
+        desc: 'Match exactly 3-character palindromes (first and last chars are the same).',
+        match:    ['aba', 'aaa', 'xyx', 'rur', '121'],
+        noMatch:  ['abc', 'aab', 'xy', 'abba', 'hello'],
+        hint: 'Use a capturing group and backreference with a wildcard in the middle.',
+        solution: '^(.).(\\1)$'
+      },
+      {
+        title: 'Challenge 10: URLs',
+        desc: 'Match strings that start with http:// or https://',
+        match:    ['http://example.com', 'https://foo.org', 'https://a.b.c/path?q=1'],
+        noMatch:  ['ftp://files.com', 'example.com', '//cdn.net', 'httpss://x.com'],
+        hint: 'Use ^ with https? to make the s optional.',
+        solution: '^https?://'
+      }
+    ];
+
+    var STORAGE_KEY = 'devtoolbox-regex-golf';
+    var state = loadState();
+    var currentIdx = 0;
+    var timerInterval = null;
+    var timerStart = null;
+    var timerElapsed = 0;
+    var timerRunning = false;
+
+    function loadState() {
+      try {
+        var s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        if (!s.scores) s.scores = {};
+        if (!s.times) s.times = {};
+        return s;
+      } catch (e) {
+        return { scores: {}, times: {} };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    // Timer
+    function startTimer() {
+      if (timerRunning) return;
+      timerRunning = true;
+      timerStart = Date.now() - timerElapsed;
+      timerInterval = setInterval(function () {
+        timerElapsed = Date.now() - timerStart;
+        updateTimerDisplay();
+      }, 1000);
+    }
+
+    function stopTimer() {
+      timerRunning = false;
+      clearInterval(timerInterval);
+    }
+
+    function updateTimerDisplay() {
+      var secs = Math.floor(timerElapsed / 1000);
+      var m = Math.floor(secs / 60);
+      var s = secs % 60;
+      document.getElementById('metaTimer').textContent =
+        (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    // Build challenge selector
+    function buildSelector() {
+      var sel = document.getElementById('challengeSelector');
+      sel.innerHTML = '';
+      CHALLENGES.forEach(function (c, i) {
+        var btn = document.createElement('button');
+        btn.className = 'challenge-btn' + (i === currentIdx ? ' active' : '') + (state.scores[i] != null ? ' solved' : '');
+        btn.textContent = i + 1;
+        btn.title = c.title;
+        btn.addEventListener('click', function () { loadChallenge(i); });
+        sel.appendChild(btn);
+      });
+    }
+
+    function loadChallenge(idx) {
+      currentIdx = idx;
+      document.getElementById('regexInput').value = '';
+      document.getElementById('flagsInput').value = '';
+      document.getElementById('hintBox').style.display = 'none';
+      buildSelector();
+      renderLists('', '');
+      var c = CHALLENGES[idx];
+      document.getElementById('challengeTitle').textContent = c.title + ' — ';
+      document.getElementById('challengeDesc').textContent = c.desc;
+      document.getElementById('metaChallenge').textContent = (idx + 1) + ' / ' + CHALLENGES.length;
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar info';
+      sb.textContent = 'Challenge ' + (idx + 1) + ' — ' + c.desc;
+      document.getElementById('scoreBadge').textContent = '0 chars';
+      document.getElementById('scoreBadge').className = 'golf-score-badge';
+      startTimer();
+      document.getElementById('regexInput').focus();
+    }
+
+    function renderLists(pattern, flags) {
+      var c = CHALLENGES[currentIdx];
+      var re = null;
+      var valid = false;
+      if (pattern) {
+        try { re = new RegExp(pattern, flags); valid = true; } catch (e) {}
+      }
+
+      function buildRow(str, shouldMatch) {
+        var row = document.createElement('div');
+        row.className = 'golf-string-row';
+        var check = document.createElement('div');
+        check.className = 'golf-check';
+        var matched = valid && re.test(str);
+        if (!valid || !pattern) {
+          check.className = 'golf-check neutral';
+          check.textContent = '?';
+        } else if (shouldMatch && matched) {
+          check.className = 'golf-check pass';
+          check.textContent = '\u2713';
+        } else if (!shouldMatch && !matched) {
+          check.className = 'golf-check pass';
+          check.textContent = '\u2713';
+        } else {
+          check.className = 'golf-check fail';
+          check.textContent = '\u2717';
+        }
+        row.appendChild(check);
+        var code = document.createElement('code');
+        code.textContent = str;
+        row.appendChild(code);
+        return row;
+      }
+
+      var matchContainer = document.getElementById('matchList');
+      matchContainer.innerHTML = '';
+      c.match.forEach(function (s) { matchContainer.appendChild(buildRow(s, true)); });
+
+      var noMatchContainer = document.getElementById('noMatchList');
+      noMatchContainer.innerHTML = '';
+      c.noMatch.forEach(function (s) { noMatchContainer.appendChild(buildRow(s, false)); });
+    }
+
+    function evaluate(pattern, flags) {
+      if (!pattern) {
+        document.getElementById('scoreBadge').textContent = '0 chars';
+        document.getElementById('scoreBadge').className = 'golf-score-badge';
+        setStatus('info', 'Challenge ' + (currentIdx + 1) + ' \u2014 Write a regex to match the green strings and avoid the red ones.');
+        renderLists('', '');
+        return;
+      }
+
+      var re;
+      try { re = new RegExp(pattern, flags); } catch (e) {
+        setStatus('invalid', 'Invalid regex: ' + e.message);
+        renderLists('', '');
+        return;
+      }
+
+      renderLists(pattern, flags);
+
+      var c = CHALLENGES[currentIdx];
+      var allMatchPass = c.match.every(function (s) { return re.test(s); });
+      var allNoMatchPass = c.noMatch.every(function (s) { return !re.test(s); });
+      var score = pattern.length;
+
+      document.getElementById('scoreBadge').textContent = score + ' char' + (score !== 1 ? 's' : '');
+
+      if (allMatchPass && allNoMatchPass) {
+        document.getElementById('scoreBadge').className = 'golf-score-badge solved';
+        var prev = state.scores[currentIdx];
+        var improved = prev == null || score < prev;
+        if (improved) {
+          state.scores[currentIdx] = score;
+          state.times[currentIdx] = Math.floor(timerElapsed / 1000);
+          saveState();
+          updateMetaScores();
+          buildSelector();
+          updateLeaderboard();
+          DT.trackTool('regex-golf');
+        }
+        setStatus('valid', 'Solved! Challenge ' + (currentIdx + 1) + ' \u2014 Score: ' + score + ' chars' + (improved ? ' (new best!)' : ''));
+        if (currentIdx < CHALLENGES.length - 1) {
+          setTimeout(function () { loadChallenge(currentIdx + 1); }, 1200);
+        } else {
+          stopTimer();
+          setStatus('valid', 'All challenges complete! Total score: ' + getTotalScore() + ' chars.');
+        }
+      } else {
+        var matchCount = c.match.filter(function (s) { return re.test(s); }).length;
+        var avoidCount = c.noMatch.filter(function (s) { return !re.test(s); }).length;
+        setStatus('info', 'Challenge ' + (currentIdx + 1) + ' \u2014 ' + score + ' chars \u2014 Matches: ' + matchCount + '/' + c.match.length + ' \u2014 Avoids: ' + avoidCount + '/' + c.noMatch.length);
+      }
+    }
+
+    function getTotalScore() {
+      return Object.values(state.scores).reduce(function (a, b) { return a + b; }, 0);
+    }
+
+    function updateMetaScores() {
+      var solved = Object.keys(state.scores).length;
+      document.getElementById('metaSolved').textContent = solved;
+      document.getElementById('metaScore').textContent = getTotalScore();
+    }
+
+    function updateLeaderboard() {
+      var tbody = document.getElementById('lbBody');
+      tbody.innerHTML = '';
+      Object.keys(state.scores).sort(function (a, b) { return Number(a) - Number(b); }).forEach(function (k) {
+        var tr = document.createElement('tr');
+        var secs = state.times[k] || 0;
+        var m = Math.floor(secs / 60), s = secs % 60;
+        tr.innerHTML = '<td>' + (Number(k) + 1) + '</td><td>' + CHALLENGES[k].title.replace(/Challenge \d+: /, '') + '</td><td>' + state.scores[k] + '</td><td>' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s + '</td>';
+        tbody.appendChild(tr);
+      });
+      if (!tbody.children.length) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td colspan="4" style="color:var(--text-muted);text-align:center;">No scores yet. Start playing!</td>';
+        tbody.appendChild(tr);
+      }
+    }
+
+    function setStatus(type, msg) {
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar ' + type;
+      sb.textContent = msg;
+    }
+
+    var debouncedEval = DT.debounce(function () {
+      evaluate(document.getElementById('regexInput').value, document.getElementById('flagsInput').value);
+    }, 120);
+
+    document.getElementById('regexInput').addEventListener('input', debouncedEval);
+    document.getElementById('flagsInput').addEventListener('input', debouncedEval);
+
+    document.getElementById('hintBtn').addEventListener('click', function () {
+      var hb = document.getElementById('hintBox');
+      hb.textContent = 'Hint: ' + CHALLENGES[currentIdx].hint;
+      hb.style.display = hb.style.display === 'none' ? '' : 'none';
+    });
+
+    document.getElementById('solutionBtn').addEventListener('click', function () {
+      var sol = CHALLENGES[currentIdx].solution;
+      document.getElementById('regexInput').value = sol;
+      document.getElementById('hintBox').textContent = 'Solution: /' + sol + '/';
+      document.getElementById('hintBox').style.display = '';
+      evaluate(sol, document.getElementById('flagsInput').value);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', function () {
+      if (!confirm('Reset all scores and progress?')) return;
+      state = { scores: {}, times: {} };
+      saveState();
+      timerElapsed = 0;
+      stopTimer();
+      updateTimerDisplay();
+      updateMetaScores();
+      updateLeaderboard();
+      loadChallenge(0);
+    });
+
+    // Init
+    updateMetaScores();
+    updateLeaderboard();
+    buildSelector();
+    loadChallenge(0);
+    startTimer();
+
+  })();
+  </script>
+</body>
+</html>

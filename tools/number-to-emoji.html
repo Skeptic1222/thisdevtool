@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Number to Emoji Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert numbers to emoji representations: digit emoji (1️⃣2️⃣3️⃣), dice (⚀⚁⚂), Roman numerals, tally marks. Reverse emoji to digits. Fun number formatting tool. 100% free and client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/number-to-emoji.html">
+  <meta property="og:title" content="Number to Emoji Converter — DevToolbox">
+  <meta property="og:description" content="Convert numbers to emoji digit, dice, Roman numeral, or tally mark representations. Reverse: emoji back to digits. Free and instant.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/number-to-emoji.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Number to Emoji Converter",
+    "url": "https://thisdevtool.com/tools/number-to-emoji.html",
+    "description": "Convert numbers to emoji digit, dice, Roman numeral, and tally mark representations. Reverse emoji numbers back to digits.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are digit emoji (keycap numbers)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Digit emoji (also called keycap emoji) are Unicode characters that represent digits 0-9 enclosed in a box or circle. They are created by combining a digit with the variation selector \\uFE0F and combining enclosing keycap \\u20E3. They appear as 0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣ and are widely supported in messaging apps, social media, and modern operating systems."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the maximum number for dice emoji?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Standard dice emoji (⚀⚁⚂⚃⚄⚅) represent only 1-6, as they correspond to the faces of a standard six-sided die. For numbers outside this range, this tool falls back to showing the number in digit emoji form or breaks the number into individual dice digits."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are Roman numerals?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Roman numerals use letters from the Latin alphabet: I (1), V (5), X (10), L (50), C (100), D (500), M (1000). Subtractive notation is used for 4 (IV), 9 (IX), 40 (XL), 90 (XC), 400 (CD), and 900 (CM). The standard system supports numbers from 1 to 3999. Numbers 4000 and above require special notation not supported in standard Roman numerals."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do tally marks work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Tally marks are a counting system where each unit is represented by a vertical stroke (|). After four strokes, a diagonal stroke crosses through them to represent 5 (𝍸 or IIIII). This tool uses Unicode tally mark characters where available: 𝍠 (1), 𝍡 (2), 𝍢 (3), 𝍣 (4), 𝍤 (5). For larger numbers, groups of 5 are combined."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I reverse emoji numbers back to digits?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Use the Decode mode by clicking the Decode chip. Paste emoji numbers (like 4️⃣2️⃣), Roman numerals (like XLII), or tally marks, and the tool will attempt to convert them back to the original integer. Digit emoji and Roman numerals decode reliably; tally marks support the standard Unicode tally characters."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .emoji-output-big {
+      font-size: 2rem;
+      line-height: 1.4;
+      word-break: break-all;
+      min-height: 80px;
+      padding: 16px;
+      background: var(--bg-secondary, #f8fafc);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      margin: 10px 0 6px;
+      text-align: center;
+    }
+    .all-formats { display: grid; gap: 10px; margin-top: 12px; }
+    .format-row {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg-secondary, #f8fafc); border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px; padding: 10px 14px;
+    }
+    .format-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted, #64748b); min-width: 120px; text-transform: uppercase; letter-spacing: .05em; }
+    .format-value { font-size: 1.3rem; flex: 1; word-break: break-all; }
+    .format-copy { flex-shrink: 0; font-size: 0.7rem; padding: 3px 10px; }
+    .example-nums { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .example-num { font-size: 0.8rem; padding: 4px 12px; background: var(--bg-secondary, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: 20px; cursor: pointer; transition: background 0.15s; }
+    .example-num:hover { background: #10b981; color: #fff; border-color: #10b981; }
+    .decode-output { font-family: monospace; font-size: 1.5rem; text-align: center; padding: 16px; background: var(--bg-secondary, #f8fafc); border: 1px solid var(--border, #e2e8f0); border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/word-counter.html">Word Count</a>
+        <a href="/tools/case-converter.html">Case</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Number to Emoji Converter</h1>
+          <p class="tool-subtitle">Convert numbers to digit emoji (1️⃣2️⃣3️⃣), dice (⚀⚁), Roman numerals, and tally marks. Decode emoji back to numbers.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Number → Emoji</button>
+            <button class="option-chip" data-mode="decode">Emoji → Number</button>
+          </div>
+
+          <div id="encodeSection">
+            <div class="pane-label" style="margin-top:14px;">
+              <span>Enter a Number</span>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+            <input type="number" id="numberInput" placeholder="Enter a number (e.g. 42)" style="width:100%;padding:10px 14px;font-size:1.1rem;border:1px solid var(--border,#e2e8f0);border-radius:8px;background:var(--bg-secondary,#f8fafc);color:var(--text-primary,#0f172a);" min="0" max="9999">
+            <div class="example-nums" id="exampleNums"></div>
+
+            <div class="all-formats" id="allFormats" style="margin-top:16px;">
+              <div style="color:var(--text-muted,#64748b);font-size:0.875rem;padding:8px 0;">Enter a number above to see all emoji representations.</div>
+            </div>
+          </div>
+
+          <div id="decodeSection" style="display:none;">
+            <div class="pane-label" style="margin-top:14px;">
+              <span>Paste Emoji or Roman Numerals</span>
+              <button class="btn btn-sm btn-secondary" id="clearDecodeBtn">Clear</button>
+            </div>
+            <input type="text" id="emojiInput" placeholder="Paste emoji like 4️⃣2️⃣ or Roman like XLII" style="width:100%;padding:10px 14px;font-size:1.3rem;border:1px solid var(--border,#e2e8f0);border-radius:8px;background:var(--bg-secondary,#f8fafc);color:var(--text-primary,#0f172a);">
+            <div id="decodeOutput" class="decode-output" style="margin-top:12px;min-height:60px;">Enter emoji above to decode.</div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a number to convert.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Number to Emoji Converter</h2>
+          <ol>
+            <li><strong>Select mode</strong> — "Number → Emoji" to convert a number, or "Emoji → Number" to decode.</li>
+            <li><strong>Enter a number</strong> (0–9999) in the input field, or click one of the example buttons.</li>
+            <li><strong>See all formats</strong> — the tool instantly generates digit emoji, dice, Roman numerals, and tally marks simultaneously.</li>
+            <li><strong>Copy any format</strong> using the Copy button next to each row, then paste wherever you need it.</li>
+          </ol>
+
+          <h2>Emoji Number Representations</h2>
+
+          <h3>Keycap Digit Emoji (0️⃣ – 9️⃣)</h3>
+          <p>Unicode keycap emoji encode each digit as a three-character sequence: the digit character (U+0030–U+0039), a variation selector (U+FE0F, which requests emoji presentation), and the combining enclosing keycap character (U+20E3). The result looks like a digit inside a square button. All modern smartphones, tablets, and web browsers render these consistently, making them popular in messaging apps, social media posts, and emoji-heavy content. Numbers with multiple digits are represented as a sequence of individual digit emoji: 42 becomes 4️⃣2️⃣.</p>
+
+          <h3>Dice Emoji (⚀ – ⚅)</h3>
+          <p>The Unicode block "Miscellaneous Symbols" includes six die face characters (U+2680–U+2685) representing the faces of a standard six-sided die. They are available for numbers 1–6 only, corresponding to the physical number of pips on each face. For numbers outside this range, the tool displays the digit emoji representation instead. Dice emoji are widely used in board game discussions, probability content, tabletop RPG communities, and any context where a game element is appropriate.</p>
+
+          <h3>Roman Numerals</h3>
+          <p>Roman numerals use a subtractive notation system with seven symbols: I (1), V (5), X (10), L (50), C (100), D (500), M (1000). Standard Roman numeral notation supports integers from 1 to 3999. Numbers like 4 (IV), 9 (IX), 40 (XL), 90 (XC), 400 (CD), and 900 (CM) use the subtractive form. This tool converts any integer in the range 1–3999 to its standard Roman numeral form. Numbers outside this range are displayed as a dash. Unicode also includes dedicated Roman numeral characters (Ⅰ, Ⅱ, Ⅲ, Ⅳ...) but ASCII letter notation is more universally recognized.</p>
+
+          <h3>Tally Marks</h3>
+          <p>Tally marks are one of the oldest counting systems, used to track counts by making marks. The Western system groups marks in fives: four vertical strokes followed by one diagonal crossing stroke. Unicode 7.0 added dedicated tally mark characters in the block "Counting Rod Numerals" (U+1D360–U+1D371) and "Tally Marks" (U+1F9EE isn't the full set). This tool uses the Unicode counting rod tally characters (𝍠 through 𝍤 for 1–5) for maximum compatibility. For large numbers, five-groups are concatenated.</p>
+
+          <h2>Use Cases</h2>
+          <ul>
+            <li><strong>Social media</strong> — Use digit emoji to make numbered lists visually distinct in tweets, Instagram captions, and Discord messages</li>
+            <li><strong>Chat &amp; messaging</strong> — Replace plain numbers with emoji for a more visual, engaging appearance</li>
+            <li><strong>Board game &amp; RPG content</strong> — Use dice emoji (⚀–⚅) for dice rolls, probability guides, and game mechanics explanations</li>
+            <li><strong>Historical &amp; academic content</strong> — Convert dates and quantities to Roman numerals for formal or traditional contexts</li>
+            <li><strong>Educational content</strong> — Teach Roman numerals or tally systems by generating examples in bulk</li>
+            <li><strong>Creative writing &amp; design</strong> — Use tally marks to visually represent counts or passage of time</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What are digit emoji (keycap numbers)?</button>
+            <div class="faq-answer">Digit emoji (keycap emoji) are Unicode sequences that display as a digit inside a button/square: 0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣. Each is a three-character sequence: the ASCII digit, a variation selector (U+FE0F), and the combining enclosing keycap (U+20E3). They are widely supported in all modern messaging apps and social media platforms.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the maximum number for dice emoji?</button>
+            <div class="faq-answer">Dice emoji ⚀⚁⚂⚃⚄⚅ represent only 1-6, corresponding to the six faces of a standard die. For numbers outside 1-6, this tool falls back to digit emoji or other formats. For dice-related content, only single-digit numbers 1-6 can use dice emoji directly.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What are Roman numerals?</button>
+            <div class="faq-answer">Roman numerals use Latin letters: I (1), V (5), X (10), L (50), C (100), D (500), M (1000). The subtractive rule means 4=IV, 9=IX, 40=XL, 90=XC, 400=CD, 900=CM. The standard system supports 1-3999. Numbers like XLII = 42, MMXXVI = 2026.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do tally marks work?</button>
+            <div class="faq-answer">Tally marks count in groups of five: four vertical strokes then a crossing diagonal for five. Unicode includes tally characters 𝍠(1) 𝍡(2) 𝍢(3) 𝍣(4) 𝍤(5). For numbers larger than 5, groups are concatenated: 7 = 𝍤𝍡 (5+2). Tally marks are used in counting, voting, and prison escape countdown clichés.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I reverse emoji numbers back to digits?</button>
+            <div class="faq-answer">Yes, use Decode mode. Paste digit emoji (4️⃣2️⃣), Roman numerals (XLII), or tally marks and the tool will convert them back to a standard integer. Digit emoji and Roman numerals decode reliably. Tally mark decoding supports the Unicode tally characters 𝍠-𝍤.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Generator Tools</h4>
+        <a href="/tools/number-to-emoji.html">Number to Emoji</a>
+        <a href="/tools/lorem-ipsum.html">Lorem Ipsum</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/slug-generator.html">Slug Generator</a>
+        <a href="/tools/list-deduper.html">List Deduper</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var DIGIT_EMOJI = ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣'];
+    var DICE_EMOJI = ['','⚀','⚁','⚂','⚃','⚄','⚅'];
+    // Unicode tally mark chars U+1D360-U+1D364
+    var TALLY = ['\uD834\uDF60', '\uD834\uDF61', '\uD834\uDF62', '\uD834\uDF63', '\uD834\uDF64'];
+
+    var EXAMPLES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 21, 42, 100, 365, 2026, 1999, 3000];
+
+    function toDigitEmoji(n) {
+      return String(n).split('').map(function(d) { return DIGIT_EMOJI[parseInt(d, 10)] || d; }).join('');
+    }
+
+    function toDice(n) {
+      var num = parseInt(n, 10);
+      if (num >= 1 && num <= 6) return DICE_EMOJI[num];
+      if (num === 0) return '0️⃣';
+      return String(num).split('').map(function(d) {
+        var dn = parseInt(d, 10);
+        return dn >= 1 && dn <= 6 ? DICE_EMOJI[dn] : DIGIT_EMOJI[dn];
+      }).join('');
+    }
+
+    function toRoman(n) {
+      var num = parseInt(n, 10);
+      if (isNaN(num) || num < 1 || num > 3999) return '—';
+      var vals = [1000,900,500,400,100,90,50,40,10,9,5,4,1];
+      var syms = ['M','CM','D','CD','C','XC','L','XL','X','IX','V','IV','I'];
+      var result = '';
+      for (var i = 0; i < vals.length; i++) {
+        while (num >= vals[i]) { result += syms[i]; num -= vals[i]; }
+      }
+      return result;
+    }
+
+    function toTally(n) {
+      var num = parseInt(n, 10);
+      if (isNaN(num) || num < 0 || num > 500) return '— (out of range)';
+      if (num === 0) return '∅';
+      var result = '';
+      var fives = Math.floor(num / 5);
+      var rem = num % 5;
+      for (var i = 0; i < fives; i++) result += TALLY[4];
+      if (rem > 0) result += TALLY[rem - 1];
+      return result;
+    }
+
+    function toWords(n) {
+      var num = parseInt(n, 10);
+      if (isNaN(num)) return '';
+      if (num === 0) return 'zero';
+      var ones = ['','one','two','three','four','five','six','seven','eight','nine',
+                  'ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+      var tens = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+      function below1000(n) {
+        if (n < 20) return ones[n];
+        if (n < 100) return tens[Math.floor(n/10)] + (n % 10 ? '-' + ones[n%10] : '');
+        return ones[Math.floor(n/100)] + ' hundred' + (n % 100 ? ' ' + below1000(n%100) : '');
+      }
+      if (num < 1000) return below1000(num);
+      if (num < 1000000) return below1000(Math.floor(num/1000)) + ' thousand' + (num % 1000 ? ' ' + below1000(num%1000) : '');
+      return num.toString();
+    }
+
+    function renderFormats(n) {
+      var formats = [
+        { label: 'Digit Emoji', value: toDigitEmoji(n) },
+        { label: 'Dice', value: toDice(n) },
+        { label: 'Roman Numeral', value: toRoman(n) },
+        { label: 'Tally Marks', value: toTally(n) },
+        { label: 'Words', value: toWords(n) }
+      ];
+
+      var html = formats.map(function(f, idx) {
+        var id = 'fmt-' + idx;
+        return '<div class="format-row">' +
+          '<span class="format-label">' + f.label + '</span>' +
+          '<span class="format-value" id="' + id + '">' + f.value + '</span>' +
+          '<button class="btn btn-sm btn-secondary format-copy" data-copy-id="' + id + '">Copy</button>' +
+          '</div>';
+      }).join('');
+
+      document.getElementById('allFormats').innerHTML = html;
+      document.querySelectorAll('[data-copy-id]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var el = document.getElementById(btn.getAttribute('data-copy-id'));
+          if (el) DT.copyToClipboard(el.textContent, btn);
+        });
+      });
+
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = n + ' → ' + toDigitEmoji(n) + ' (' + toRoman(n) + ')';
+      DT.trackTool('number-to-emoji');
+    }
+
+    // Decode logic
+    function decodeEmoji(str) {
+      if (!str.trim()) return '—';
+      var s = str.trim();
+
+      // Try digit emoji
+      var digitDecoded = '';
+      var i = 0;
+      var matched = true;
+      while (i < s.length) {
+        var found = false;
+        for (var d = 0; d <= 9; d++) {
+          var em = DIGIT_EMOJI[d];
+          if (s.substring(i, i + em.length) === em) {
+            digitDecoded += d;
+            i += em.length;
+            found = true;
+            break;
+          }
+        }
+        // skip spaces/separators
+        if (!found) {
+          if (s[i] === ' ' || s[i] === '\n') { i++; continue; }
+          matched = false;
+          break;
+        }
+      }
+      if (matched && digitDecoded.length > 0) return digitDecoded + ' (digit emoji)';
+
+      // Try Roman numerals
+      if (/^[IVXLCDM]+$/i.test(s.toUpperCase())) {
+        var rn = s.toUpperCase();
+        var romanVals = {I:1,V:5,X:10,L:50,C:100,D:500,M:1000};
+        var total = 0;
+        for (var j = 0; j < rn.length; j++) {
+          var cur = romanVals[rn[j]] || 0;
+          var nxt = romanVals[rn[j+1]] || 0;
+          if (cur < nxt) total -= cur; else total += cur;
+        }
+        if (total > 0) return total + ' (from Roman ' + rn + ')';
+      }
+
+      // Try tally marks
+      var tallyTotal = 0;
+      var ti = 0;
+      var tallyOk = true;
+      while (ti < s.length) {
+        var foundTally = false;
+        for (var t = 4; t >= 0; t--) {
+          if (s.substring(ti, ti + TALLY[t].length) === TALLY[t]) {
+            tallyTotal += (t + 1);
+            ti += TALLY[t].length;
+            foundTally = true;
+            break;
+          }
+        }
+        if (!foundTally) { tallyOk = false; break; }
+      }
+      if (tallyOk && tallyTotal > 0) return tallyTotal + ' (from tally marks)';
+
+      return 'Could not decode "' + s.substring(0, 20) + '"';
+    }
+
+    var statusBar = document.getElementById('statusBar');
+    var numberInput = document.getElementById('numberInput');
+    var currentMode = 'encode';
+
+    numberInput.addEventListener('input', DT.debounce(function() {
+      var val = parseInt(numberInput.value, 10);
+      if (!numberInput.value.trim()) {
+        document.getElementById('allFormats').innerHTML = '<div style="color:var(--text-muted,#64748b);font-size:0.875rem;padding:8px 0;">Enter a number above to see all emoji representations.</div>';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter a number to convert.';
+        return;
+      }
+      if (isNaN(val) || val < 0) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Please enter a valid non-negative integer.';
+        return;
+      }
+      renderFormats(val);
+    }, 150));
+
+    document.getElementById('emojiInput').addEventListener('input', DT.debounce(function() {
+      var val = document.getElementById('emojiInput').value;
+      var result = decodeEmoji(val);
+      document.getElementById('decodeOutput').textContent = result || '—';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Decoded: ' + result;
+    }, 150));
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      numberInput.value = '';
+      document.getElementById('allFormats').innerHTML = '<div style="color:var(--text-muted,#64748b);font-size:0.875rem;padding:8px 0;">Enter a number above to see all emoji representations.</div>';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Enter a number to convert.';
+    });
+
+    document.getElementById('clearDecodeBtn').addEventListener('click', function() {
+      document.getElementById('emojiInput').value = '';
+      document.getElementById('decodeOutput').textContent = 'Enter emoji above to decode.';
+    });
+
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('encodeSection').style.display = currentMode === 'encode' ? '' : 'none';
+        document.getElementById('decodeSection').style.display = currentMode === 'decode' ? '' : 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = currentMode === 'encode' ? 'Enter a number to convert.' : 'Paste emoji or Roman numerals to decode.';
+      });
+    });
+
+    // Example buttons
+    var exContainer = document.getElementById('exampleNums');
+    EXAMPLES.forEach(function(n) {
+      var btn = document.createElement('button');
+      btn.className = 'example-num';
+      btn.textContent = n;
+      btn.addEventListener('click', function() {
+        numberInput.value = n;
+        renderFormats(n);
+      });
+      exContainer.appendChild(btn);
+    });
+  })();
+  </script>
+</body>
+</html>

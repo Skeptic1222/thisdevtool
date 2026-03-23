@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Hash Type Identifier — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Identify hash types from a string. Detect MD5, SHA-1, SHA-256, SHA-512, bcrypt, UUID, Base64, CRC32 and more. Paste one or multiple hashes. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/hash-identifier.html">
+  <meta property="og:title" content="Hash Type Identifier — DevToolbox">
+  <meta property="og:description" content="Paste any hash string to identify its type — MD5, SHA-1, SHA-256, SHA-512, bcrypt, UUID, Base64, CRC32 and more. Multi-hash support. Free &amp; 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/hash-identifier.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Hash Type Identifier",
+    "url": "https://thisdevtool.com/tools/hash-identifier.html",
+    "description": "Identify hash types from a string — MD5, SHA-1, SHA-256, SHA-512, bcrypt, UUID, Base64, CRC32 and more.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does this tool identify hash types?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool uses pattern matching based on hash length, character set, and prefix. Each hash algorithm produces output of a specific fixed length and character set — for example, MD5 is always 32 hexadecimal characters, SHA-256 is always 64 hex characters, and bcrypt always starts with '$2b$', '$2a$', or '$2y$'. When a hash matches a unique pattern, the tool returns a high-confidence result. When multiple algorithms share the same length (like MD4, MD5, and NTLM all at 32 hex chars), it returns all possibilities with medium confidence."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between MD5 and SHA-256?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "MD5 produces a 128-bit (32 hex character) digest and was designed in 1991. It is now considered cryptographically broken — collision attacks are feasible, meaning two different inputs can produce the same hash. SHA-256 is part of the SHA-2 family, produces a 256-bit (64 hex character) digest, and remains secure for most purposes. For password hashing, neither MD5 nor SHA-256 is recommended — use bcrypt, scrypt, or Argon2 instead, as they are specifically designed to be slow and resist brute-force attacks."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can this tool crack or decode a hash?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Cryptographic hash functions are one-way — there is no mathematical way to reverse a hash back to the original input. This tool only identifies the likely algorithm used to produce a hash. To find the original value behind a hash, you would need to try known inputs (a dictionary attack) or use rainbow tables — both of which are outside the scope of this tool and would be illegal without authorization."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my hash show multiple possible types?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Several hash algorithms produce output of the same length and character set. For example, a 32-character hex string could be MD5, NTLM, MD4, or LM depending on context. A 40-character hex string could be SHA-1, RIPEMD-160, or Tiger-160. When the pattern is ambiguous, the tool lists all candidate algorithms with a 'medium confidence' rating. Additional context — such as where the hash was found or what system generated it — is needed to determine the exact algorithm."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is bcrypt and why does it look different from other hashes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "bcrypt is a password hashing function designed to be slow, making brute-force attacks computationally expensive. Unlike MD5 or SHA-256 which are general-purpose hash functions, bcrypt was designed specifically for storing passwords. bcrypt hashes start with a prefix like '$2b$10$' — the '2b' is the algorithm version and '10' is the cost factor (work factor). The output is 60 characters long and uses a modified Base64 alphabet. The same password hashed twice with bcrypt produces different hashes because bcrypt embeds a random salt."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .hash-result-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem 1rem;
+      margin-top: 0.6rem;
+    }
+    .hash-result-card .hash-input-display {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      word-break: break-all;
+      margin-bottom: 0.5rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+    }
+    .hash-matches { display: flex; flex-direction: column; gap: 0.4rem; }
+    .hash-match-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .hash-type-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+    .confidence-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .conf-high { background: var(--accent-light); color: var(--success); }
+    .conf-medium { background: #fef3c7; color: #92400e; }
+    .conf-low { background: #fee2e2; color: #991b1b; }
+    [data-theme="dark"] .conf-medium { background: #422006; color: #fcd34d; }
+    [data-theme="dark"] .conf-low { background: #450a0a; color: #fca5a5; }
+    .hash-detail { font-size: 0.8rem; color: var(--text-secondary); }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
+    .ref-table th, .ref-table td { padding: 0.45rem 0.75rem; border: 1px solid var(--border); text-align: left; }
+    .ref-table th { background: var(--bg-secondary); font-weight: 700; }
+    .ref-table tr:nth-child(even) td { background: var(--bg-secondary); }
+    .ref-table code { font-family: var(--font-mono); font-size: 0.8rem; }
+    .no-match { color: var(--text-secondary); font-style: italic; padding: 0.5rem 0; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Hash Type Identifier</h1>
+          <p class="tool-subtitle">Paste one or more hash strings to detect the likely algorithm — MD5, SHA-1, SHA-256, SHA-512, bcrypt, UUID, Base64, CRC32, and more.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="single">Single Hash</button>
+            <button class="option-chip" data-mode="multi">Multiple Hashes</button>
+            <button class="option-chip" data-mode="table">Reference Table</button>
+          </div>
+
+          <!-- Single mode -->
+          <div id="singleMode">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Hash Input</span>
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+                <textarea id="hashInput" rows="6" placeholder="Paste a hash string here...&#10;&#10;Examples:&#10;5d41402abc4b2a76b9719d911017c592&#10;$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy" spellcheck="false" style="font-family:var(--font-mono);font-size:0.85rem;resize:vertical;"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Identification Result</span>
+                  <button class="btn btn-sm btn-primary" id="copyResultBtn">Copy Result</button>
+                </div>
+                <div class="code-output" id="resultOutput" style="min-height:150px;padding:0.75rem;overflow:auto;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multi mode -->
+          <div id="multiMode" style="display:none;">
+            <div class="pane-label" style="margin-bottom:0.5rem;">
+              <span>Multiple Hashes (one per line)</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="multiExampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="multiClearBtn">Clear</button>
+                <button class="btn btn-sm btn-primary" id="identifyAllBtn">Identify All</button>
+              </div>
+            </div>
+            <textarea id="multiInput" rows="10" placeholder="Paste multiple hashes, one per line:&#10;5d41402abc4b2a76b9719d911017c592&#10;da39a3ee5e6b4b0d3255bfef95601890afd80709&#10;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" spellcheck="false" style="font-family:var(--font-mono);font-size:0.83rem;resize:vertical;width:100%;"></textarea>
+            <div id="multiResults" style="margin-top:0.75rem;"></div>
+          </div>
+
+          <!-- Reference Table mode -->
+          <div id="tableMode" style="display:none;">
+            <div class="content-section" style="margin:0;">
+              <h3>Hash Algorithm Reference Table</h3>
+              <table class="ref-table">
+                <thead>
+                  <tr><th>Algorithm</th><th>Length (hex chars)</th><th>Character Set</th><th>Status</th><th>Use Case</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>MD5</td><td>32</td><td>Hex (0–9, a–f)</td><td style="color:var(--error)">Broken</td><td>Legacy checksums</td></tr>
+                  <tr><td>MD4</td><td>32</td><td>Hex</td><td style="color:var(--error)">Broken</td><td>NTLM base</td></tr>
+                  <tr><td>NTLM</td><td>32</td><td>Hex</td><td style="color:var(--error)">Weak</td><td>Windows auth</td></tr>
+                  <tr><td>LM Hash</td><td>32</td><td>Hex (uppercase)</td><td style="color:var(--error)">Broken</td><td>Legacy Windows</td></tr>
+                  <tr><td>SHA-1</td><td>40</td><td>Hex</td><td style="color:var(--warning)">Deprecated</td><td>Legacy TLS, Git</td></tr>
+                  <tr><td>RIPEMD-160</td><td>40</td><td>Hex</td><td style="color:var(--warning)">Deprecated</td><td>Bitcoin addresses</td></tr>
+                  <tr><td>SHA-224</td><td>56</td><td>Hex</td><td style="color:var(--success)">OK</td><td>Subset of SHA-2</td></tr>
+                  <tr><td>SHA-256</td><td>64</td><td>Hex</td><td style="color:var(--success)">Secure</td><td>TLS, JWT, checksums</td></tr>
+                  <tr><td>SHA-384</td><td>96</td><td>Hex</td><td style="color:var(--success)">Secure</td><td>TLS, high security</td></tr>
+                  <tr><td>SHA-512</td><td>128</td><td>Hex</td><td style="color:var(--success)">Secure</td><td>Passwords (fast), checksums</td></tr>
+                  <tr><td>SHA3-256</td><td>64</td><td>Hex</td><td style="color:var(--success)">Secure</td><td>Modern standard</td></tr>
+                  <tr><td>SHA3-512</td><td>128</td><td>Hex</td><td style="color:var(--success)">Secure</td><td>Modern standard</td></tr>
+                  <tr><td>CRC32</td><td>8</td><td>Hex</td><td style="color:var(--warning)">Not crypto</td><td>Error detection</td></tr>
+                  <tr><td>bcrypt</td><td>60 chars (mixed)</td><td>$2b$/$2a$ prefix</td><td style="color:var(--success)">Recommended</td><td>Password storage</td></tr>
+                  <tr><td>scrypt</td><td>Variable</td><td>$scrypt$ prefix</td><td style="color:var(--success)">Recommended</td><td>Password storage</td></tr>
+                  <tr><td>Argon2</td><td>Variable</td><td>$argon2 prefix</td><td style="color:var(--success)">Recommended</td><td>Password storage</td></tr>
+                  <tr><td>UUID v4</td><td>36 chars</td><td>Hex + hyphens</td><td style="color:var(--success)">Standard</td><td>Unique identifiers</td></tr>
+                  <tr><td>Base64</td><td>Multiple of 4</td><td>A–Z, a–z, 0–9, +, /, =</td><td>Encoding only</td><td>Data encoding</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a hash string above to identify its type.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Hash Type Identifier</h2>
+          <ol>
+            <li><strong>Paste your hash</strong> — enter any hash string in the input field. The tool accepts hashes in any case (upper or lower).</li>
+            <li><strong>Instant identification</strong> — as you type, the tool analyzes the hash length, character set, and prefix patterns to determine the likely algorithm.</li>
+            <li><strong>Read the result</strong> — each match shows the algorithm name, confidence level (high/medium/low), and key details like bit length, hex character count, and security status.</li>
+            <li><strong>Batch mode</strong> — switch to Multiple Hashes mode to identify many hashes at once. Each hash is analyzed independently and results are shown in a list.</li>
+            <li><strong>Reference table</strong> — switch to the Reference Table mode for a quick lookup of all supported hash types, their lengths, character sets, and security status.</li>
+          </ol>
+
+          <h2>How Hash Identification Works</h2>
+          <p>Cryptographic hash functions produce output of a fixed length that depends entirely on the algorithm used — not on the input. MD5 always produces 128 bits (32 hex characters), SHA-256 always produces 256 bits (64 hex characters), and SHA-512 always produces 512 bits (128 hex characters). This tool uses this characteristic to identify hashes: it measures the length, checks the character set (hexadecimal vs Base64 vs mixed), and looks for distinctive prefixes like <code>$2b$</code> for bcrypt or <code>$argon2i</code> for Argon2.</p>
+
+          <h3>Confidence Levels Explained</h3>
+          <ul>
+            <li><strong>High confidence</strong> — the hash has a unique length and character set, or a distinctive prefix that only one algorithm uses. Example: bcrypt always starts with <code>$2b$</code>, so any hash with that prefix is identified with high confidence.</li>
+            <li><strong>Medium confidence</strong> — multiple algorithms share the same length and character set. Example: a 32-character hex string could be MD5, NTLM, MD4, or LM. Additional context is needed to determine the exact algorithm.</li>
+            <li><strong>Low confidence</strong> — the hash partially matches a pattern but has unusual properties. For example, a Base64-encoded string that happens to be the right length for a SHA-1 hash could be either.</li>
+          </ul>
+
+          <h3>Choosing the Right Hash Algorithm</h3>
+          <p>For checksums and data integrity verification (file downloads, API signatures), SHA-256 is the standard choice. It produces a 64-character hex string, is widely supported, and has no known practical vulnerabilities. For password storage, use bcrypt, scrypt, or Argon2 — these are specifically designed to be slow, which dramatically increases the cost of brute-force attacks. Never use MD5 or SHA-1 for new systems: MD5 is completely broken (collision attacks are trivial), and SHA-1 is deprecated by major browser vendors and certificate authorities. For unique identifiers, UUID v4 provides 122 bits of randomness and is universally supported across programming languages and databases.</p>
+
+          <h3>Hash Lengths Quick Reference</h3>
+          <p>The fastest way to narrow down a hash type is to count its characters: 8 hex chars = CRC32, 32 hex chars = MD5/MD4/NTLM, 40 hex chars = SHA-1/RIPEMD-160, 56 hex chars = SHA-224, 64 hex chars = SHA-256/SHA3-256, 96 hex chars = SHA-384, 128 hex chars = SHA-512/SHA3-512. Hashes that start with <code>$</code> are almost always password hashes in PHC string format, which includes the algorithm identifier in the prefix. UUIDs have a distinctive 8-4-4-4-12 character pattern with hyphens.</p>
+
+          <h3>Security Implications of Hash Algorithm Choice</h3>
+          <p>Finding a hash type in a database dump or log file can have security implications. MD5 and SHA-1 password hashes are easily cracked with modern GPU hardware using dictionary and rainbow table attacks — billions of guesses per second are achievable. If you encounter MD5 or SHA-1 hashed passwords, they should be considered compromised and migrated to bcrypt immediately. SHA-256 and SHA-512, while cryptographically secure as hash functions, are too fast for password storage — attackers can still try billions of guesses per second against them. Only purpose-built slow hash functions (bcrypt, scrypt, Argon2) provide adequate protection for passwords at rest.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">How does this tool identify hash types?</button>
+            <div class="faq-answer">The tool uses pattern matching based on hash length, character set, and prefix. Each hash algorithm produces output of a specific fixed length — MD5 is always 32 hex chars, SHA-256 is always 64 hex chars, and bcrypt always starts with '$2b$'. When the pattern is unique, the tool returns high confidence. When multiple algorithms share the same length, it returns all possibilities with medium confidence.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between MD5 and SHA-256?</button>
+            <div class="faq-answer">MD5 produces a 128-bit (32 hex character) digest and is now considered cryptographically broken — collision attacks are feasible. SHA-256 is part of the SHA-2 family, produces a 256-bit (64 hex character) digest, and remains secure. For passwords, neither is recommended — use bcrypt, scrypt, or Argon2 instead, as they are specifically designed to be slow and resist brute-force attacks.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can this tool crack or decode a hash?</button>
+            <div class="faq-answer">No. Cryptographic hash functions are one-way — there is no mathematical way to reverse a hash back to the original input. This tool only identifies the likely algorithm. To find the original value, you would need dictionary attacks or rainbow tables, which are outside the scope of this tool.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why does my hash show multiple possible types?</button>
+            <div class="faq-answer">Several hash algorithms produce output of the same length and character set. A 32-character hex string could be MD5, NTLM, MD4, or LM. A 40-character hex string could be SHA-1 or RIPEMD-160. When the pattern is ambiguous, the tool lists all candidate algorithms with medium confidence. Context about where the hash came from is needed to determine the exact algorithm.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is bcrypt and why does it look different from other hashes?</button>
+            <div class="faq-answer">bcrypt is a password hashing function designed to be slow. Unlike MD5 or SHA-256, bcrypt includes a random salt and work factor in its output. Hashes start with '$2b$10$' (version + cost factor). The output is 60 characters using a modified Base64 alphabet. The same password hashed twice with bcrypt produces different hashes because of the embedded salt.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Security Tools</h4>
+        <a href="/tools/hash-identifier.html">Hash Identifier</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    // --- Hash detection rules ---
+    var HASH_TYPES = [
+      // Unique prefix patterns (highest confidence)
+      { name: 'bcrypt', confidence: 'high', test: function(h) { return /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(h); }, detail: 'bcrypt password hash — 60 chars, includes salt and cost factor. Recommended for passwords.' },
+      { name: 'scrypt', confidence: 'high', test: function(h) { return /^\$scrypt\$/.test(h); }, detail: 'scrypt password hash. Memory-hard, recommended for passwords.' },
+      { name: 'Argon2i', confidence: 'high', test: function(h) { return /^\$argon2i\$/.test(h); }, detail: 'Argon2i password hash. Winner of PHC 2015, recommended for passwords.' },
+      { name: 'Argon2id', confidence: 'high', test: function(h) { return /^\$argon2id\$/.test(h); }, detail: 'Argon2id password hash. Hybrid mode, recommended for most password use cases.' },
+      { name: 'UUID v4', confidence: 'high', test: function(h) { return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(h); }, detail: '128-bit UUID version 4 (random). 36 chars with hyphens. Not a hash — a unique identifier.' },
+      { name: 'UUID (generic)', confidence: 'medium', test: function(h) { return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(h); }, detail: 'UUID / GUID — 36 chars with hyphens. Could be v1 (time-based), v3, v4 (random), or v5.' },
+      // Exact hex length
+      { name: 'CRC32', confidence: 'high', test: function(h) { return /^[0-9a-fA-F]{8}$/.test(h); }, detail: '32-bit CRC checksum — 8 hex chars. Not cryptographic, used for error detection.' },
+      { name: 'MD5 / NTLM / MD4 / LM', confidence: 'medium', test: function(h) { return /^[0-9a-fA-F]{32}$/.test(h); }, detail: '32 hex chars — could be MD5 (most common), NTLM (Windows auth), MD4, or LM hash. MD5 is cryptographically broken.' },
+      { name: 'MD5', confidence: 'high', test: function(h) { return /^[0-9a-f]{32}$/.test(h); }, detail: '128-bit hash — 32 lowercase hex chars. Cryptographically broken, do not use for security purposes.' },
+      { name: 'NTLM', confidence: 'medium', test: function(h) { return /^[0-9A-F]{32}$/.test(h); }, detail: '32 uppercase hex chars — likely NTLM (Windows authentication hash). Equivalent strength to MD5.' },
+      { name: 'SHA-1 / RIPEMD-160', confidence: 'medium', test: function(h) { return /^[0-9a-fA-F]{40}$/.test(h); }, detail: '40 hex chars — SHA-1 (deprecated by browsers/CAs) or RIPEMD-160 (used in Bitcoin). Both are 160-bit hashes.' },
+      { name: 'SHA-224', confidence: 'high', test: function(h) { return /^[0-9a-fA-F]{56}$/.test(h); }, detail: '224-bit hash — 56 hex chars. Part of SHA-2 family. Secure but rarely used.' },
+      { name: 'SHA-256 / SHA3-256', confidence: 'medium', test: function(h) { return /^[0-9a-fA-F]{64}$/.test(h); }, detail: '64 hex chars — SHA-256 (most common) or SHA3-256. Both are 256-bit and considered secure. SHA-256 is used in TLS, JWT, Bitcoin, and most modern systems.' },
+      { name: 'SHA-384', confidence: 'high', test: function(h) { return /^[0-9a-fA-F]{96}$/.test(h); }, detail: '384-bit hash — 96 hex chars. Part of SHA-2 family. Used in high-security TLS certificates.' },
+      { name: 'SHA-512 / SHA3-512', confidence: 'medium', test: function(h) { return /^[0-9a-fA-F]{128}$/.test(h); }, detail: '512-bit hash — 128 hex chars. SHA-512 or SHA3-512. Secure, used in high-security applications.' },
+      // Base64
+      { name: 'Base64 Encoded', confidence: 'medium', test: function(h) { return /^[A-Za-z0-9+/]+={0,2}$/.test(h) && h.length % 4 === 0 && h.length >= 4; }, detail: 'Base64 encoding — not a hash, just a data encoding format. Could contain a hash encoded as Base64.' },
+      { name: 'Base64url Encoded', confidence: 'medium', test: function(h) { return /^[A-Za-z0-9_-]+=*$/.test(h) && h.length >= 4; }, detail: 'Base64url encoding (URL-safe) — used in JWT tokens, OAuth, and API keys.' },
+    ];
+
+    function identifyHash(hash) {
+      var h = hash.trim();
+      if (!h) return [];
+      var matches = [];
+      // Run all tests, collect unique algorithm names
+      var seen = {};
+      HASH_TYPES.forEach(function (type) {
+        if (type.test(h)) {
+          var key = type.name;
+          if (!seen[key]) {
+            seen[key] = true;
+            matches.push(type);
+          }
+        }
+      });
+      // Deduplicate overlapping: if high conf variant matched, remove medium catch-all
+      var highNames = matches.filter(function(m){ return m.confidence === 'high'; }).map(function(m){ return m.name; });
+      if (highNames.length > 0) {
+        // Remove medium/low that are subsumed: e.g. if MD5 high matches, remove "MD5 / NTLM / MD4 / LM" medium
+        matches = matches.filter(function (m) {
+          if (m.confidence !== 'high') {
+            // keep medium/low only if none of its candidate names overlap with a high match
+            return !highNames.some(function(hn) { return m.name.indexOf(hn) !== -1 || hn.indexOf(m.name) !== -1; });
+          }
+          return true;
+        });
+      }
+      return matches;
+    }
+
+    function confidenceBadgeClass(c) {
+      return c === 'high' ? 'conf-high' : c === 'medium' ? 'conf-medium' : 'conf-low';
+    }
+
+    function buildResultHTML(hash, matches) {
+      if (matches.length === 0) {
+        return '<div class="hash-result-card"><div class="hash-input-display">' + escHtml(hash.slice(0, 120)) + (hash.length > 120 ? '&hellip;' : '') + '</div><div class="no-match">No hash type recognized. The string does not match any known hash pattern. Length: ' + hash.trim().length + ' chars.</div></div>';
+      }
+      var html = '<div class="hash-result-card"><div class="hash-input-display">' + escHtml(hash.slice(0, 120)) + (hash.length > 120 ? '&hellip;' : '') + '</div><div class="hash-matches">';
+      matches.forEach(function (m) {
+        html += '<div class="hash-match-row">';
+        html += '<span class="hash-type-name">' + escHtml(m.name) + '</span>';
+        html += '<span class="confidence-badge ' + confidenceBadgeClass(m.confidence) + '">' + m.confidence + ' confidence</span>';
+        html += '</div>';
+        html += '<div class="hash-detail">' + escHtml(m.detail) + '</div>';
+      });
+      html += '</div></div>';
+      return html;
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    var hashInput = document.getElementById('hashInput');
+    var resultOutput = document.getElementById('resultOutput');
+    var statusBar = document.getElementById('statusBar');
+
+    function processInput() {
+      var h = hashInput.value.trim();
+      if (!h) {
+        resultOutput.innerHTML = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste a hash string above to identify its type.';
+        return;
+      }
+      var matches = identifyHash(h);
+      resultOutput.innerHTML = buildResultHTML(h, matches);
+      if (matches.length > 0) {
+        var top = matches[0];
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = top.name + ' detected (' + h.trim().length + ' chars, ' + top.confidence + ' confidence)';
+      } else {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Unknown hash type — ' + h.trim().length + ' chars, does not match any known pattern.';
+      }
+      DT.trackTool('hash-identifier');
+    }
+
+    var debouncedProcess = DT.debounce(processInput, 200);
+    hashInput.addEventListener('input', debouncedProcess);
+
+    document.getElementById('copyResultBtn').addEventListener('click', function () {
+      var text = resultOutput.innerText || resultOutput.textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      hashInput.value = '';
+      resultOutput.innerHTML = '';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Paste a hash string above to identify its type.';
+      hashInput.focus();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      hashInput.value = '5d41402abc4b2a76b9719d911017c592';
+      processInput();
+    });
+
+    // Mode chips
+    var modes = { single: document.getElementById('singleMode'), multi: document.getElementById('multiMode'), table: document.getElementById('tableMode') };
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var m = chip.getAttribute('data-mode');
+        Object.keys(modes).forEach(function (k) { modes[k].style.display = (k === m) ? '' : 'none'; });
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = m === 'table' ? 'Reference table of supported hash types.' : 'Paste hash(es) above to identify.';
+      });
+    });
+
+    // Multi mode
+    var multiInput = document.getElementById('multiInput');
+    var multiResults = document.getElementById('multiResults');
+
+    document.getElementById('identifyAllBtn').addEventListener('click', function () {
+      var lines = multiInput.value.split('\n').map(function (l) { return l.trim(); }).filter(function (l) { return l.length > 0; });
+      if (lines.length === 0) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Please enter at least one hash, one per line.';
+        return;
+      }
+      var html = '';
+      lines.forEach(function (line) {
+        var matches = identifyHash(line);
+        html += buildResultHTML(line, matches);
+      });
+      multiResults.innerHTML = html;
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = lines.length + ' hash' + (lines.length > 1 ? 'es' : '') + ' analyzed.';
+      DT.trackTool('hash-identifier');
+    });
+
+    document.getElementById('multiExampleBtn').addEventListener('click', function () {
+      multiInput.value = '5d41402abc4b2a76b9719d911017c592\nda39a3ee5e6b4b0d3255bfef95601890afd80709\ne3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy\n550e8400-e29b-41d4-a716-446655440000';
+    });
+
+    document.getElementById('multiClearBtn').addEventListener('click', function () {
+      multiInput.value = '';
+      multiResults.innerHTML = '';
+    });
+  })();
+  </script>
+</body>
+</html>

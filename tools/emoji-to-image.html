@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Emoji to PNG Renderer — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert any emoji to a PNG image online. Choose size (16–512px), background color, or transparent. Batch render multiple emojis. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/emoji-to-image.html">
+  <meta property="og:title" content="Emoji to PNG Renderer — DevToolbox">
+  <meta property="og:description" content="Render any emoji as a PNG image at custom sizes with transparent, white, black, or custom backgrounds. Batch mode included. Free &amp; 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/emoji-to-image.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Emoji to PNG Renderer",
+    "url": "https://thisdevtool.com/tools/emoji-to-image.html",
+    "description": "Convert any emoji to a PNG image at custom sizes with transparent, white, black, or custom backgrounds.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does the emoji to PNG converter work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool uses the HTML5 Canvas API to draw emoji characters at your chosen size using the system font stack. It renders the emoji as a rasterized image, which you can then download as a PNG file. Everything runs entirely in your browser — no server upload required."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my emoji look different on different devices?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Emoji rendering is handled by your operating system's emoji font. On Windows it uses Segoe UI Emoji, on macOS it uses Apple Color Emoji, and on Android it uses Noto Color Emoji. This means the same emoji character can look very different depending on which device or OS renders it. This tool renders using whatever emoji font your browser has installed."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I make the emoji background transparent?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Select the 'Transparent' background option before rendering. The PNG format supports an alpha channel (transparency), so the downloaded file will have no background and can be placed on any color surface. JPEG does not support transparency, which is why this tool outputs PNG only."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What sizes can I export emojis at?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You can render emojis from 16px to 512px. Common sizes include 16px (favicon-size), 32px, 64px (icon), 128px (thumbnail), 256px (web graphic), and 512px (high-resolution). For retina displays, render at 2x your target size (e.g., 128px for a 64px display target)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does batch mode work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In batch mode, enter multiple emoji characters separated by spaces or on separate lines. The tool renders each emoji at your chosen size and background, displays them in a grid preview, and lets you download each one individually. This is useful for generating a set of emoji icons for an app or website."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .emoji-controls { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-bottom: 1rem; }
+    .control-group { display: flex; flex-direction: column; gap: 0.25rem; }
+    .control-group label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .control-group input[type="text"], .control-group input[type="number"], .control-group select { padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-secondary); color: var(--text); font-size: 0.95rem; }
+    .control-group input[type="color"] { width: 44px; height: 38px; padding: 2px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; background: var(--bg-secondary); }
+    .emoji-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
+    .emoji-grid-item { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; }
+    .emoji-grid-item canvas { image-rendering: pixelated; max-width: 128px; max-height: 128px; width: auto; height: auto; }
+    .emoji-grid-item .emoji-label { font-size: 0.75rem; color: var(--text-secondary); }
+    .emoji-grid-item .btn { font-size: 0.75rem; padding: 0.25rem 0.6rem; }
+    .single-preview { display: flex; justify-content: center; align-items: center; min-height: 200px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; margin: 1rem 0; }
+    .single-preview canvas { image-rendering: pixelated; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+        <a href="/tools/qr-code.html">QR Code</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Emoji to PNG Renderer</h1>
+          <p class="tool-subtitle">Render any emoji as a PNG image at custom sizes with transparent, white, black, or custom backgrounds.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="single">Single Emoji</button>
+            <button class="option-chip" data-mode="batch">Batch Mode</button>
+          </div>
+
+          <!-- Single Mode -->
+          <div id="singleMode">
+            <div class="emoji-controls">
+              <div class="control-group">
+                <label>Emoji</label>
+                <input type="text" id="emojiInput" value="🚀" maxlength="8" style="font-size:1.8rem;width:80px;text-align:center;" placeholder="🚀">
+              </div>
+              <div class="control-group">
+                <label>Size (px)</label>
+                <input type="number" id="sizeInput" value="256" min="16" max="512" step="16" style="width:90px;">
+              </div>
+              <div class="control-group">
+                <label>Background</label>
+                <select id="bgSelect">
+                  <option value="transparent">Transparent</option>
+                  <option value="white">White</option>
+                  <option value="black">Black</option>
+                  <option value="custom">Custom Color</option>
+                </select>
+              </div>
+              <div class="control-group" id="customColorGroup" style="display:none;">
+                <label>Color</label>
+                <input type="color" id="customColor" value="#f0f0f0">
+              </div>
+              <div class="control-group">
+                <button class="btn btn-primary" id="renderBtn" style="margin-top:auto;">Render</button>
+              </div>
+            </div>
+
+            <div class="single-preview" id="singlePreview">
+              <canvas id="mainCanvas"></canvas>
+            </div>
+
+            <div class="pane-label" style="margin-bottom:0.5rem;">
+              <span>Preview</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-primary" id="downloadBtn" disabled>Download PNG</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Batch Mode -->
+          <div id="batchMode" style="display:none;">
+            <div class="emoji-controls">
+              <div class="control-group" style="flex:1;">
+                <label>Emojis (one per line or space-separated)</label>
+                <textarea id="batchInput" rows="4" placeholder="🚀 🎉 🔥 ✅&#10;or one per line" style="width:100%;resize:vertical;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-secondary);color:var(--text);font-size:1.2rem;font-family:var(--font);"></textarea>
+              </div>
+            </div>
+            <div class="emoji-controls">
+              <div class="control-group">
+                <label>Size (px)</label>
+                <input type="number" id="batchSize" value="128" min="16" max="512" step="16" style="width:90px;">
+              </div>
+              <div class="control-group">
+                <label>Background</label>
+                <select id="batchBg">
+                  <option value="transparent">Transparent</option>
+                  <option value="white">White</option>
+                  <option value="black">Black</option>
+                  <option value="custom">Custom Color</option>
+                </select>
+              </div>
+              <div class="control-group" id="batchColorGroup" style="display:none;">
+                <label>Color</label>
+                <input type="color" id="batchColor" value="#f0f0f0">
+              </div>
+              <div class="control-group">
+                <button class="btn btn-primary" id="batchRenderBtn" style="margin-top:auto;">Render All</button>
+              </div>
+              <div class="control-group">
+                <button class="btn btn-sm btn-secondary" id="batchExampleBtn" style="margin-top:auto;">Try Example</button>
+              </div>
+            </div>
+            <div class="emoji-grid" id="batchGrid"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter an emoji and click Render, or paste multiple emojis for batch mode.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Emoji to PNG Renderer</h2>
+          <ol>
+            <li><strong>Enter an emoji</strong> — type or paste any emoji into the input field. You can use any Unicode emoji: faces, objects, flags, symbols, or even multi-codepoint sequences like skin tone modifiers.</li>
+            <li><strong>Choose a size</strong> — pick from 16px to 512px. For web icons, 64px or 128px are typical. For high-resolution graphics, use 256px or 512px.</li>
+            <li><strong>Select a background</strong> — transparent for overlays, white or black for opaque backgrounds, or pick any custom color with the color picker.</li>
+            <li><strong>Click Render</strong> — the emoji is drawn onto an HTML5 Canvas at your chosen size and displayed for preview.</li>
+            <li><strong>Download</strong> — click the Download PNG button to save the image to your device.</li>
+            <li><strong>Batch mode</strong> — switch to the Batch Mode chip to render multiple emojis at once. Enter them space-separated or one per line, then click Render All to generate a grid of images.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>The Emoji to PNG Renderer uses the HTML5 Canvas API to draw emoji characters as rasterized PNG images. It sets the canvas to your chosen dimensions, fills the background (or leaves it transparent for PNG alpha channel support), then uses the browser's native emoji font to render the character centered on the canvas. The result is a clean, downloadable PNG that can be used in apps, websites, or design projects.</p>
+
+          <h3>Common Use Cases</h3>
+          <ul>
+            <li><strong>App icons</strong> — use emoji as quick placeholder icons during prototyping (render at 1024px for app store submission)</li>
+            <li><strong>Favicons</strong> — render at 32px or 64px, then use our Favicon Generator to create the full favicon package</li>
+            <li><strong>Social media</strong> — emoji rendered at 512px work well as stickers or reaction images</li>
+            <li><strong>Presentations</strong> — large emoji at 256–512px can be used as section dividers or visual emphasis in slide decks</li>
+            <li><strong>Web design mockups</strong> — quickly generate placeholder images with emoji for wireframes and prototypes</li>
+            <li><strong>Notification icons</strong> — mobile apps often use 96px or 192px icon assets; this tool exports exactly what you need</li>
+          </ul>
+
+          <h3>Understanding Emoji Rendering Across Platforms</h3>
+          <p>Emoji rendering varies significantly between operating systems and browsers. On Windows, emojis use Microsoft's Segoe UI Emoji font, which has a distinct flat-design aesthetic. macOS and iOS use Apple Color Emoji, known for its photorealistic, highly detailed style. Android devices use Google's Noto Color Emoji, which is also available on Chrome OS and many Linux distributions. This tool renders the emoji exactly as your current browser and OS would display it, so the exported PNG reflects the platform-native appearance. If you need cross-platform consistency, consider using a dedicated emoji graphics library or SVG emoji source like Twemoji (Twitter's open-source emoji set).</p>
+
+          <h3>PNG vs. SVG for Emoji Graphics</h3>
+          <p>PNG is a rasterized format — it captures a specific pixel grid at a fixed size. SVG is vector-based and scales to any size without loss of quality. For emoji specifically, most platform fonts use embedded bitmap data rather than true vector outlines, so SVG emoji are usually provided by dedicated emoji projects like Twemoji or OpenMoji. For general use cases — favicons, icons, thumbnails — PNG at the correct target size (plus 2x for retina) is perfectly sufficient. When you need scalable emoji graphics, look for open-source SVG emoji sets or use a font renderer that supports outline-based emoji.</p>
+
+          <h3>Transparent Backgrounds and Alpha Channels</h3>
+          <p>The PNG format has full support for transparency via the alpha channel. When you select the "Transparent" background option, the canvas background is left unfilled, and the exported PNG includes alpha data — pixels with 0% opacity wherever there is no emoji. This lets you place the emoji on any colored surface without a bounding box. Note that JPEG does not support transparency (it fills transparent areas with white or black), which is why this tool exports PNG only. For web use, prefer PNG for UI icons that need transparency; use WebP for larger images where file size matters.</p>
+
+          <h3>Batch Mode for Icon Sets</h3>
+          <p>The batch rendering mode lets you process multiple emojis in a single operation. This is especially useful when building icon sets for a web application or generating a consistent set of category markers. Simply enter your emojis separated by spaces or line breaks, choose a uniform size and background, and click Render All. Each emoji is rendered on a separate canvas and displayed in a grid for review. Individual download buttons let you save each image separately. The naming convention uses the emoji character itself as the filename (e.g., "rocket.png" for 🚀) so the files are easy to identify in your project.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">How does the emoji to PNG converter work?</button>
+            <div class="faq-answer">The tool uses the HTML5 Canvas API to draw emoji characters at your chosen size using the system font stack. It renders the emoji as a rasterized image, which you can then download as a PNG file. Everything runs entirely in your browser — no server upload required.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why does my emoji look different on different devices?</button>
+            <div class="faq-answer">Emoji rendering is handled by your operating system's emoji font. On Windows it uses Segoe UI Emoji, on macOS it uses Apple Color Emoji, and on Android it uses Noto Color Emoji. The same emoji character can look very different depending on which device or OS renders it. This tool renders using whatever emoji font your browser has installed.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I make the emoji background transparent?</button>
+            <div class="faq-answer">Yes. Select the "Transparent" background option before rendering. The PNG format supports an alpha channel (transparency), so the downloaded file will have no background and can be placed on any color surface. JPEG does not support transparency, which is why this tool outputs PNG only.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What sizes can I export emojis at?</button>
+            <div class="faq-answer">You can render emojis from 16px to 512px. Common sizes include 16px (favicon-size), 32px, 64px (icon), 128px (thumbnail), 256px (web graphic), and 512px (high-resolution). For retina displays, render at 2x your target size — for example, 128px for a 64px display target.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does batch mode work?</button>
+            <div class="faq-answer">In batch mode, enter multiple emoji characters separated by spaces or on separate lines. The tool renders each emoji at your chosen size and background, displays them in a grid preview, and lets you download each one individually. This is useful for generating a set of emoji icons for an app or website.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Generators</h4>
+        <a href="/tools/emoji-to-image.html">Emoji to PNG</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+        <a href="/tools/qr-code.html">QR Code Generator</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-identifier.html">Hash Identifier</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var mode = 'single';
+    var rendered = false;
+
+    var emojiInput = document.getElementById('emojiInput');
+    var sizeInput = document.getElementById('sizeInput');
+    var bgSelect = document.getElementById('bgSelect');
+    var customColorGroup = document.getElementById('customColorGroup');
+    var customColor = document.getElementById('customColor');
+    var mainCanvas = document.getElementById('mainCanvas');
+    var singlePreview = document.getElementById('singlePreview');
+    var downloadBtn = document.getElementById('downloadBtn');
+    var statusBar = document.getElementById('statusBar');
+
+    var batchInput = document.getElementById('batchInput');
+    var batchSize = document.getElementById('batchSize');
+    var batchBg = document.getElementById('batchBg');
+    var batchColorGroup = document.getElementById('batchColorGroup');
+    var batchColor = document.getElementById('batchColor');
+    var batchGrid = document.getElementById('batchGrid');
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        mode = chip.getAttribute('data-mode');
+        document.getElementById('singleMode').style.display = mode === 'single' ? '' : 'none';
+        document.getElementById('batchMode').style.display = mode === 'batch' ? '' : 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = mode === 'single'
+          ? 'Enter an emoji and click Render.'
+          : 'Enter emojis and click Render All.';
+      });
+    });
+
+    bgSelect.addEventListener('change', function () {
+      customColorGroup.style.display = bgSelect.value === 'custom' ? '' : 'none';
+    });
+    batchBg.addEventListener('change', function () {
+      batchColorGroup.style.display = batchBg.value === 'custom' ? '' : 'none';
+    });
+
+    function getBgValue(selectEl, colorEl) {
+      var v = selectEl.value;
+      if (v === 'transparent') return null;
+      if (v === 'white') return '#ffffff';
+      if (v === 'black') return '#000000';
+      return colorEl.value;
+    }
+
+    function renderEmojiToCanvas(canvas, emoji, size, bgColor) {
+      canvas.width = size;
+      canvas.height = size;
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, size, size);
+      if (bgColor) {
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, size, size);
+      }
+      // Use a large font and center
+      var fontSize = Math.round(size * 0.75);
+      ctx.font = fontSize + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(emoji, size / 2, size / 2 + size * 0.05);
+      return canvas;
+    }
+
+    function renderSingle() {
+      var emoji = emojiInput.value.trim();
+      if (!emoji) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Please enter an emoji character.';
+        return;
+      }
+      var size = parseInt(sizeInput.value, 10);
+      if (isNaN(size) || size < 16 || size > 512) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Size must be between 16 and 512 pixels.';
+        return;
+      }
+      var bg = getBgValue(bgSelect, customColor);
+
+      try {
+        renderEmojiToCanvas(mainCanvas, emoji, size, bg);
+        mainCanvas.style.maxWidth = '256px';
+        mainCanvas.style.maxHeight = '256px';
+        downloadBtn.disabled = false;
+        rendered = true;
+        var bgLabel = bgSelect.options[bgSelect.selectedIndex].text;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = emoji + ' rendered at ' + size + '\u00d7' + size + ' \u2014 PNG \u2014 Background: ' + bgLabel;
+        DT.trackTool('emoji-to-image');
+      } catch (e) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Render failed: ' + e.message;
+      }
+    }
+
+    document.getElementById('renderBtn').addEventListener('click', renderSingle);
+
+    downloadBtn.addEventListener('click', function () {
+      if (!rendered) return;
+      var emoji = emojiInput.value.trim() || 'emoji';
+      var size = sizeInput.value;
+      var link = document.createElement('a');
+      link.download = 'emoji-' + size + 'px.png';
+      link.href = mainCanvas.toDataURL('image/png');
+      link.click();
+      statusBar.textContent = 'Downloaded emoji-' + size + 'px.png';
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      emojiInput.value = '🚀';
+      sizeInput.value = '256';
+      bgSelect.value = 'transparent';
+      customColorGroup.style.display = 'none';
+      renderSingle();
+    });
+
+    // Batch mode
+    document.getElementById('batchRenderBtn').addEventListener('click', function () {
+      var raw = batchInput.value;
+      if (!raw.trim()) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Please enter at least one emoji.';
+        return;
+      }
+      // Parse emojis: split by whitespace, newlines, commas
+      var parts = raw.split(/[\s,]+/).filter(function (s) { return s.length > 0; });
+      // Filter to only emoji-like chars (non-ASCII or variation selectors)
+      var emojis = parts.filter(function (s) { return s.trim().length > 0; });
+      if (emojis.length === 0) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'No valid emojis found. Separate emojis with spaces or line breaks.';
+        return;
+      }
+      var size = parseInt(batchSize.value, 10) || 128;
+      size = Math.min(Math.max(size, 16), 512);
+      var bg = getBgValue(batchBg, batchColor);
+
+      batchGrid.innerHTML = '';
+      emojis.forEach(function (emoji) {
+        var item = document.createElement('div');
+        item.className = 'emoji-grid-item';
+        var c = document.createElement('canvas');
+        renderEmojiToCanvas(c, emoji, size, bg);
+        c.style.maxWidth = '128px';
+        c.style.maxHeight = '128px';
+        var label = document.createElement('div');
+        label.className = 'emoji-label';
+        label.textContent = size + '\u00d7' + size + ' px';
+        var dlBtn = document.createElement('button');
+        dlBtn.className = 'btn btn-sm btn-secondary';
+        dlBtn.textContent = 'Download';
+        dlBtn.setAttribute('data-emoji', emoji);
+        dlBtn.addEventListener('click', function () {
+          var link = document.createElement('a');
+          link.download = 'emoji-' + size + 'px.png';
+          link.href = c.toDataURL('image/png');
+          link.click();
+        });
+        item.appendChild(c);
+        item.appendChild(label);
+        item.appendChild(dlBtn);
+        batchGrid.appendChild(item);
+      });
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = emojis.length + ' emoji' + (emojis.length > 1 ? 's' : '') + ' rendered at ' + size + '\u00d7' + size + ' \u2014 PNG';
+      DT.trackTool('emoji-to-image');
+    });
+
+    document.getElementById('batchExampleBtn').addEventListener('click', function () {
+      batchInput.value = '🚀 🎉 🔥 ✅ ❌ 🎯 💡 ⚠️';
+      batchSize.value = '128';
+      batchBg.value = 'transparent';
+      batchColorGroup.style.display = 'none';
+    });
+
+    // Auto-render on example load
+    renderSingle();
+  })();
+  </script>
+</body>
+</html>

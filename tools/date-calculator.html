@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Date Calculator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Add or subtract days, weeks, months, years from a date. Find the difference between two dates. Business days calculator, weekday finder. Free date calculator.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/date-calculator.html">
+  <meta property="og:title" content="Date Calculator — DevToolbox">
+  <meta property="og:description" content="Add/subtract durations from dates, find date differences, calculate business days. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/date-calculator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Date Calculator",
+    "url": "https://thisdevtool.com/tools/date-calculator.html",
+    "description": "Add or subtract days, weeks, months, years from any date. Find difference between two dates. Business days calculator and weekday finder.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I add days to a date?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Enter your start date in the 'Add/Subtract Duration' tab, set the number of days (or weeks, months, years), choose Add or Subtract, and click Calculate. The result date is shown instantly with the day of the week."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How are business days calculated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Business days exclude Saturdays and Sundays. The calculator counts only weekdays (Monday through Friday) between the two dates. It does not account for public holidays, as these vary by country and region."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many days are in a year?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A regular year has 365 days. A leap year has 366 days. Leap years occur every 4 years, except for years divisible by 100, which are not leap years unless also divisible by 400. So 2000 was a leap year, but 1900 was not."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between calendar months and calendar days?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Calendar days count every day including weekends. Calendar months vary in length (28–31 days). When adding months to a date, if the resulting day doesn't exist in that month (e.g., March 31 + 1 month), it's clamped to the last day of that month (April 30)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I find what day of the week a date falls on?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Enter the date in any input field and the day of the week is shown automatically. You can also use the Weekday Finder tab to look up any historical or future date."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .mode-panel { display: none; }
+    .mode-panel.active { display: block; }
+    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .date-row .field label { display: block; font-size: .8rem; color: var(--color-muted); margin-bottom: 4px; }
+    .date-row .field input, .date-row .field select { width: 100%; }
+    .duration-grid { display: grid; grid-template-columns: repeat(4, 1fr) auto; gap: 8px; align-items: end; margin-bottom: 12px; }
+    .duration-grid .field label { display: block; font-size: .75rem; color: var(--color-muted); margin-bottom: 3px; }
+    .duration-grid .field input, .duration-grid .field select { width: 100%; }
+    .result-box { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 10px; padding: 16px; margin: 12px 0; }
+    .result-box .result-main { font-size: 1.5rem; font-weight: 700; color: var(--color-primary); margin-bottom: 6px; }
+    .result-box .result-sub { font-size: .88rem; color: var(--color-muted); }
+    .result-box .result-breakdown { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-top: 12px; }
+    .result-box .breakdown-item { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 8px 10px; }
+    .result-box .breakdown-item .val { font-size: 1.1rem; font-weight: 700; }
+    .result-box .breakdown-item .lbl { font-size: .7rem; color: var(--color-muted); }
+    @media (max-width: 560px) {
+      .date-row { grid-template-columns: 1fr; }
+      .duration-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/time-zone-converter.html">Time Zones</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Date Calculator</h1>
+          <p class="tool-subtitle">Add/subtract durations from a date, find differences, calculate business days, and find weekdays.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips" id="modeChips">
+            <button class="option-chip active" data-mode="add">Add / Subtract</button>
+            <button class="option-chip" data-mode="diff">Date Difference</button>
+            <button class="option-chip" data-mode="biz">Business Days</button>
+            <button class="option-chip" data-mode="weekday">Weekday Finder</button>
+          </div>
+
+          <!-- ── ADD/SUBTRACT ── -->
+          <div class="mode-panel active" id="panel-add">
+            <div class="date-row">
+              <div class="field">
+                <label for="addStartDate">Start Date</label>
+                <input type="date" id="addStartDate">
+              </div>
+              <div class="field">
+                <label for="addOp">Operation</label>
+                <select id="addOp">
+                  <option value="add">Add (+)</option>
+                  <option value="sub">Subtract (−)</option>
+                </select>
+              </div>
+            </div>
+            <div class="duration-grid">
+              <div class="field"><label>Years</label><input type="number" id="addYears" min="0" value="0" placeholder="0"></div>
+              <div class="field"><label>Months</label><input type="number" id="addMonths" min="0" value="0" placeholder="0"></div>
+              <div class="field"><label>Weeks</label><input type="number" id="addWeeks" min="0" value="0" placeholder="0"></div>
+              <div class="field"><label>Days</label><input type="number" id="addDays" min="0" value="0" placeholder="0"></div>
+              <div class="field"><label>&nbsp;</label><button class="btn btn-primary" id="calcAddBtn" style="width:100%;">Calculate</button></div>
+            </div>
+            <div class="result-box" id="addResult" style="display:none;">
+              <div class="result-main" id="addResultDate"></div>
+              <div class="result-sub" id="addResultSub"></div>
+            </div>
+          </div>
+
+          <!-- ── DIFF ── -->
+          <div class="mode-panel" id="panel-diff">
+            <div class="date-row">
+              <div class="field">
+                <label for="diffStart">Start Date</label>
+                <input type="date" id="diffStart">
+              </div>
+              <div class="field">
+                <label for="diffEnd">End Date</label>
+                <input type="date" id="diffEnd">
+              </div>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" id="calcDiffBtn">Calculate Difference</button>
+              <button class="btn btn-sm btn-secondary" id="exampleDiffBtn">Try Example</button>
+            </div>
+            <div class="result-box" id="diffResult" style="display:none;">
+              <div class="result-main" id="diffResultMain"></div>
+              <div class="result-sub" id="diffResultSub"></div>
+              <div class="result-breakdown" id="diffBreakdown"></div>
+            </div>
+          </div>
+
+          <!-- ── BUSINESS DAYS ── -->
+          <div class="mode-panel" id="panel-biz">
+            <div class="date-row">
+              <div class="field">
+                <label for="bizStart">Start Date</label>
+                <input type="date" id="bizStart">
+              </div>
+              <div class="field">
+                <label for="bizEnd">End Date</label>
+                <input type="date" id="bizEnd">
+              </div>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" id="calcBizBtn">Calculate Business Days</button>
+              <button class="btn btn-sm btn-secondary" id="exampleBizBtn">Try Example</button>
+            </div>
+            <div class="result-box" id="bizResult" style="display:none;">
+              <div class="result-main" id="bizResultMain"></div>
+              <div class="result-sub" id="bizResultSub"></div>
+            </div>
+          </div>
+
+          <!-- ── WEEKDAY ── -->
+          <div class="mode-panel" id="panel-weekday">
+            <div class="date-row">
+              <div class="field">
+                <label for="wdDate">Date</label>
+                <input type="date" id="wdDate">
+              </div>
+              <div class="field" style="display:flex;align-items:flex-end;">
+                <button class="btn btn-primary" id="calcWdBtn" style="width:100%;">Find Weekday</button>
+              </div>
+            </div>
+            <div class="result-box" id="wdResult" style="display:none;">
+              <div class="result-main" id="wdResultMain"></div>
+              <div class="result-sub" id="wdResultSub"></div>
+            </div>
+          </div>
+
+          <!-- Common buttons -->
+          <div class="btn-group" style="margin-top:8px;">
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-sm btn-primary" id="copyBtn">Copy Result</button>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Choose a mode and enter dates to calculate.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Date Calculator</h2>
+          <ol>
+            <li><strong>Add / Subtract:</strong> Enter a start date, choose to add or subtract, fill in years/months/weeks/days, then click Calculate. Perfect for "what date is 90 days from today?"</li>
+            <li><strong>Date Difference:</strong> Enter two dates to see how many days, weeks, months, and years are between them. Great for age calculations and project timelines.</li>
+            <li><strong>Business Days:</strong> Enter two dates to count only working days (Monday–Friday), excluding weekends. Useful for SLA calculations and project planning.</li>
+            <li><strong>Weekday Finder:</strong> Enter any date to instantly see what day of the week it falls on — past or future.</li>
+          </ol>
+
+          <h2>Date Arithmetic Explained</h2>
+          <p>Date arithmetic is more complex than simple number addition because months have different lengths, leap years add an extra day, and time zones can shift dates. This calculator works entirely in local dates (no time component) to keep results intuitive. When adding months, the result is clamped to the last valid day of the month — for example, January 31 + 1 month = February 28 (or 29 in a leap year), since February 31 does not exist.</p>
+
+          <h3>Leap Years</h3>
+          <p>A leap year has 366 days, occurring when a year is divisible by 4, except for century years (divisible by 100) which must also be divisible by 400. So 2000 was a leap year (divisible by 400), 1900 was not (divisible by 100 but not 400), and 2024 is a leap year (divisible by 4). This means adding "1 year" to February 29 in a leap year results in February 28 in the following non-leap year.</p>
+
+          <h3>Business Days vs. Calendar Days</h3>
+          <p>Business days (also called working days) count only Monday through Friday, excluding weekends. This calculator does not deduct public holidays, as these vary significantly by country, region, industry, and company policy. For contract deadlines, SLA (Service Level Agreement) calculations, and legal notices, always confirm whether "business days" in your jurisdiction includes or excludes specific public holidays. Many US contracts use "business days" to mean weekdays excluding federal holidays.</p>
+
+          <h3>Common Use Cases</h3>
+          <p>The date calculator is useful for: calculating project deadlines (add 90 calendar days to contract signing date), determining age in days or years, finding the number of working days in a quarter, checking whether a 30-day notice period has passed, planning subscription renewals and billing cycles, scheduling recurring events, and verifying ISO week numbers for payroll processing. Developers use it to test edge cases around month boundaries, DST transitions, and year rollovers.</p>
+
+          <h3>ISO Week Numbers</h3>
+          <p>The ISO 8601 week numbering system defines week 1 as the week containing the first Thursday of the year. ISO weeks always run Monday through Sunday. A year has either 52 or 53 ISO weeks. This means January 1 can be in week 52 or 53 of the previous year. ISO week numbers are widely used in European manufacturing and payroll systems, and in programming (Python's datetime.isocalendar(), JavaScript's getISOWeek polyfills).</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I add days to a date?</button>
+            <div class="faq-answer">Use the "Add / Subtract" tab. Enter your start date, set the number of days (and optionally weeks, months, or years), choose "Add", then click Calculate. The result date and day of the week appear instantly.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How are business days calculated?</button>
+            <div class="faq-answer">Business days count only weekdays (Monday–Friday), skipping Saturdays and Sundays. Public holidays are not excluded because they vary by country. For SLA and contract work, verify your jurisdiction's definition of "business day."</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How many days are in a year?</button>
+            <div class="faq-answer">A regular year has 365 days. A leap year has 366 days. Leap years occur every 4 years, except century years not divisible by 400. The next leap years are 2028, 2032, 2036, 2040.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between calendar months and calendar days?</button>
+            <div class="faq-answer">Calendar days count every day (including weekends). Calendar months vary in length (28–31 days). Adding 1 month to January 31 gives February 28/29 (clamped to the last valid day). Adding 30 days always adds exactly 30 calendar days.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I find what day of the week a date falls on?</button>
+            <div class="faq-answer">Use the "Weekday Finder" tab. Enter any date — past or future — and the day of the week is shown instantly. You can also see the day in the Add/Subtract and Difference results.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Time &amp; Date</h4>
+        <a href="/tools/date-calculator.html">Date Calculator</a>
+        <a href="/tools/time-zone-converter.html">Time Zone Converter</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var currentMode = 'add';
+    var lastResultText = '';
+
+    var WEEKDAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+    function todayStr() {
+      var d = new Date();
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
+
+    function parseLocalDate(str) {
+      // Parse yyyy-mm-dd as local date (avoid UTC midnight offset issue)
+      var parts = str.split('-');
+      return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    }
+
+    function fmtDate(d) {
+      return WEEKDAYS[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+    }
+
+    function fmtDateShort(d) {
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
+
+    function setStatus(cls, msg) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + cls;
+      bar.textContent = msg;
+    }
+
+    // ── ADD/SUBTRACT ──
+    function calcAdd() {
+      var startStr = document.getElementById('addStartDate').value;
+      if (!startStr) { setStatus('invalid', 'Please enter a start date.'); return; }
+      var d = parseLocalDate(startStr);
+      var op = document.getElementById('addOp').value;
+      var y = parseInt(document.getElementById('addYears').value) || 0;
+      var mo = parseInt(document.getElementById('addMonths').value) || 0;
+      var wk = parseInt(document.getElementById('addWeeks').value) || 0;
+      var dy = parseInt(document.getElementById('addDays').value) || 0;
+      var sign = op === 'add' ? 1 : -1;
+
+      // Apply years and months (calendar-aware)
+      var newY = d.getFullYear() + sign * y;
+      var newM = d.getMonth() + sign * mo;
+      // Normalize months
+      while (newM < 0) { newM += 12; newY--; }
+      while (newM > 11) { newM -= 12; newY++; }
+      // Clamp day to last valid day of month
+      var daysInMonth = new Date(newY, newM + 1, 0).getDate();
+      var newD = Math.min(d.getDate(), daysInMonth);
+      var result = new Date(newY, newM, newD);
+      // Apply weeks and days
+      result.setDate(result.getDate() + sign * (wk * 7 + dy));
+
+      var totalDaysAdded = sign * (y * 365 + mo * 30 + wk * 7 + dy);
+      lastResultText = fmtDate(result) + ' (' + fmtDateShort(result) + ')';
+      document.getElementById('addResultDate').textContent = fmtDate(result);
+      document.getElementById('addResultSub').textContent = fmtDateShort(result) + '  |  Day ' + getDayOfYear(result) + ' of ' + result.getFullYear();
+      document.getElementById('addResult').style.display = 'block';
+      setStatus('valid', (op === 'add' ? 'Added' : 'Subtracted') + ' ' + [y&&y+'y', mo&&mo+'mo', wk&&wk+'wk', dy&&dy+'d'].filter(Boolean).join(' ') + ' → ' + fmtDate(result));
+      DT.trackTool('date-calculator');
+    }
+
+    function getDayOfYear(d) {
+      var start = new Date(d.getFullYear(), 0, 0);
+      var diff = d - start;
+      return Math.floor(diff / 86400000);
+    }
+
+    // ── DIFF ──
+    function calcDiff() {
+      var s = document.getElementById('diffStart').value;
+      var e = document.getElementById('diffEnd').value;
+      if (!s || !e) { setStatus('invalid', 'Please enter both dates.'); return; }
+      var d1 = parseLocalDate(s);
+      var d2 = parseLocalDate(e);
+      if (d1 > d2) { var tmp = d1; d1 = d2; d2 = tmp; }
+      var ms = d2 - d1;
+      var totalDays = Math.round(ms / 86400000);
+      var totalWeeks = Math.floor(totalDays / 7);
+      var remDays = totalDays % 7;
+
+      // Months and years breakdown
+      var y = d2.getFullYear() - d1.getFullYear();
+      var mo = d2.getMonth() - d1.getMonth();
+      var dy2 = d2.getDate() - d1.getDate();
+      if (dy2 < 0) { mo--; }
+      if (mo < 0) { y--; mo += 12; }
+
+      var breakdown = [
+        { val: totalDays.toLocaleString(), lbl: 'Total Days' },
+        { val: totalWeeks.toLocaleString() + ' wk + ' + remDays + 'd', lbl: 'Weeks & Days' },
+        { val: (y * 12 + mo + (dy2 < 0 ? -1 : 0)).toLocaleString() + ' mo', lbl: 'Calendar Months' },
+        { val: y + 'y ' + (mo < 0 ? mo + 12 : mo) + 'mo', lbl: 'Years & Months' }
+      ];
+
+      var mainText = totalDays.toLocaleString() + ' days';
+      lastResultText = mainText + '\n' + totalWeeks + ' weeks, ' + remDays + ' days\n' + y + ' years, ' + (mo < 0 ? mo + 12 : mo) + ' months';
+      document.getElementById('diffResultMain').textContent = mainText;
+      document.getElementById('diffResultSub').textContent = fmtDate(d1) + ' → ' + fmtDate(d2);
+      var bkEl = document.getElementById('diffBreakdown');
+      bkEl.innerHTML = '';
+      breakdown.forEach(function(b) {
+        var el = document.createElement('div');
+        el.className = 'breakdown-item';
+        el.innerHTML = '<div class="val">' + b.val + '</div><div class="lbl">' + b.lbl + '</div>';
+        bkEl.appendChild(el);
+      });
+      document.getElementById('diffResult').style.display = 'block';
+      setStatus('valid', totalDays.toLocaleString() + ' days = ' + totalWeeks + ' weeks, ' + remDays + ' days');
+      DT.trackTool('date-calculator');
+    }
+
+    // ── BUSINESS DAYS ──
+    function calcBiz() {
+      var s = document.getElementById('bizStart').value;
+      var e = document.getElementById('bizEnd').value;
+      if (!s || !e) { setStatus('invalid', 'Please enter both dates.'); return; }
+      var d1 = parseLocalDate(s);
+      var d2 = parseLocalDate(e);
+      if (d1 > d2) { var tmp = d1; d1 = d2; d2 = tmp; }
+      var biz = 0;
+      var cur = new Date(d1);
+      while (cur <= d2) {
+        var dow = cur.getDay();
+        if (dow !== 0 && dow !== 6) biz++;
+        cur.setDate(cur.getDate() + 1);
+      }
+      var totalDays = Math.round((d2 - d1) / 86400000) + 1;
+      var weekendDays = totalDays - biz;
+      lastResultText = biz + ' business days\n' + weekendDays + ' weekend days\n' + totalDays + ' total calendar days';
+      document.getElementById('bizResultMain').textContent = biz.toLocaleString() + ' business days';
+      document.getElementById('bizResultSub').textContent =
+        weekendDays + ' weekend days excluded  |  ' + totalDays + ' total calendar days  |  ' +
+        fmtDate(d1) + ' → ' + fmtDate(d2);
+      document.getElementById('bizResult').style.display = 'block';
+      setStatus('valid', biz + ' business days between ' + fmtDate(d1) + ' and ' + fmtDate(d2));
+      DT.trackTool('date-calculator');
+    }
+
+    // ── WEEKDAY ──
+    function calcWeekday() {
+      var s = document.getElementById('wdDate').value;
+      if (!s) { setStatus('invalid', 'Please enter a date.'); return; }
+      var d = parseLocalDate(s);
+      var wd = WEEKDAYS[d.getDay()];
+      var isLeap = (d.getFullYear() % 4 === 0 && d.getFullYear() % 100 !== 0) || d.getFullYear() % 400 === 0;
+      var dayOfYear = getDayOfYear(d);
+      lastResultText = wd + ', ' + fmtDate(d);
+      document.getElementById('wdResultMain').textContent = wd;
+      document.getElementById('wdResultSub').textContent =
+        fmtDate(d) + '  |  Day ' + dayOfYear + ' of ' + d.getFullYear() +
+        (isLeap ? ' (leap year)' : '') +
+        '  |  Week ' + getISOWeek(d) + ' (ISO)';
+      document.getElementById('wdResult').style.display = 'block';
+      setStatus('valid', fmtDate(d) + ' is a ' + wd);
+      DT.trackTool('date-calculator');
+    }
+
+    function getISOWeek(d) {
+      var dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      var dayNum = dt.getUTCDay() || 7;
+      dt.setUTCDate(dt.getUTCDate() + 4 - dayNum);
+      var yearStart = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
+      return Math.ceil((((dt - yearStart) / 86400000) + 1) / 7);
+    }
+
+    // Mode chips
+    document.getElementById('modeChips').addEventListener('click', function(e) {
+      var chip = e.target.closest('[data-mode]');
+      if (!chip) return;
+      document.querySelectorAll('#modeChips .option-chip').forEach(function(c){ c.classList.remove('active'); });
+      chip.classList.add('active');
+      currentMode = chip.getAttribute('data-mode');
+      document.querySelectorAll('.mode-panel').forEach(function(p){ p.classList.remove('active'); });
+      document.getElementById('panel-' + currentMode).classList.add('active');
+      setStatus('info', 'Choose a mode and enter dates to calculate.');
+    });
+
+    // Calculate buttons
+    document.getElementById('calcAddBtn').addEventListener('click', calcAdd);
+    document.getElementById('calcDiffBtn').addEventListener('click', calcDiff);
+    document.getElementById('calcBizBtn').addEventListener('click', calcBiz);
+    document.getElementById('calcWdBtn').addEventListener('click', calcWeekday);
+
+    // Examples
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      switch (currentMode) {
+        case 'add':
+          document.getElementById('addStartDate').value = todayStr();
+          document.getElementById('addDays').value = '90';
+          document.getElementById('addOp').value = 'add';
+          calcAdd(); break;
+        case 'diff':
+          document.getElementById('diffStart').value = '2024-01-01';
+          document.getElementById('diffEnd').value = '2024-12-31';
+          calcDiff(); break;
+        case 'biz':
+          document.getElementById('bizStart').value = '2024-01-01';
+          document.getElementById('bizEnd').value = '2024-03-31';
+          calcBiz(); break;
+        case 'weekday':
+          document.getElementById('wdDate').value = '2024-07-04';
+          calcWeekday(); break;
+      }
+    });
+    document.getElementById('exampleDiffBtn').addEventListener('click', function() {
+      document.getElementById('diffStart').value = '2024-01-01';
+      document.getElementById('diffEnd').value = '2024-12-31';
+      calcDiff();
+    });
+    document.getElementById('exampleBizBtn').addEventListener('click', function() {
+      document.getElementById('bizStart').value = '2024-01-01';
+      document.getElementById('bizEnd').value = '2024-03-31';
+      calcBiz();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      document.querySelectorAll('#panel-' + currentMode + ' input[type="date"]').forEach(function(i){ i.value = ''; });
+      document.querySelectorAll('#panel-' + currentMode + ' input[type="number"]').forEach(function(i){ i.value = '0'; });
+      document.querySelectorAll('.result-box').forEach(function(r){ r.style.display = 'none'; });
+      setStatus('info', 'Choose a mode and enter dates to calculate.');
+      lastResultText = '';
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      if (lastResultText) DT.copyToClipboard(lastResultText, this);
+      else DT.toast('No result to copy', 'info');
+    });
+
+    // Init
+    document.getElementById('addStartDate').value = todayStr();
+    document.getElementById('diffStart').value = todayStr();
+    document.getElementById('bizStart').value = todayStr();
+    document.getElementById('wdDate').value = todayStr();
+  })();
+  </script>
+</body>
+</html>

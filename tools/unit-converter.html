@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Unit Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Free universal unit converter. Convert length, weight, temperature, volume, area, speed, time, data, pressure, and energy. Instant bidirectional conversion with full reference table.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/unit-converter.html">
+  <meta property="og:title" content="Unit Converter — DevToolbox">
+  <meta property="og:description" content="Convert between 100+ units across 10 categories. Free, instant, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/unit-converter.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Unit Converter",
+    "url": "https://thisdevtool.com/tools/unit-converter.html",
+    "description": "Universal unit converter for length, weight, temperature, volume, area, speed, time, data, pressure, and energy.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I convert between units?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Select a category (e.g., Length), enter a value in the 'From' field, choose your source unit, then choose your target unit. The result appears instantly. You can also flip the direction using the swap button."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does temperature conversion work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Temperature uses offset formulas rather than simple multiplication. Celsius to Fahrenheit: multiply by 9/5 then add 32. Celsius to Kelvin: add 273.15. Fahrenheit to Celsius: subtract 32 then multiply by 5/9."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between binary and SI data units?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Binary units (KiB, MiB, GiB) use powers of 1024, while SI units (KB, MB, GB) use powers of 1000. For data storage this tool uses binary (1 KB = 1024 bytes). See the Byte Calculator tool for full SI vs binary mode."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many units does this converter support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This converter supports 10 categories with 10+ units each: Length (14), Weight/Mass (12), Temperature (5), Volume (12), Area (11), Speed (8), Time (9), Data (8), Pressure (8), and Energy (9)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the unit converter accurate for scientific use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. All conversion factors use the exact SI-defined values where available. Results are displayed to up to 10 significant figures. For extreme precision in scientific work, always verify with the NIST reference."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .converter-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: end; margin-bottom: 12px; }
+    .converter-grid .field label { display: block; font-size: .8rem; color: var(--color-muted); margin-bottom: 4px; }
+    .converter-grid .field input, .converter-grid .field select { width: 100%; }
+    .swap-btn { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 1.1rem; color: var(--color-text); display: flex; align-items: center; justify-content: center; height: 38px; margin-bottom: 0; align-self: end; }
+    .swap-btn:hover { background: var(--color-primary); color: #fff; }
+    .conversion-table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: 16px; }
+    .conversion-table th { background: var(--color-surface-2); padding: 6px 10px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--color-border); }
+    .conversion-table td { padding: 5px 10px; border-bottom: 1px solid var(--color-border); }
+    .conversion-table tr:hover td { background: var(--color-surface-2); }
+    .conversion-table .highlight td { background: color-mix(in srgb, var(--color-primary) 12%, transparent); font-weight: 600; }
+    @media (max-width: 560px) { .converter-grid { grid-template-columns: 1fr; } .swap-btn { width: 100%; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/byte-calculator.html">Byte Calc</a>
+        <a href="/tools/date-calculator.html">Date Calc</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Unit Converter</h1>
+          <p class="tool-subtitle">Convert between 100+ units across 10 categories. Instant bidirectional conversion with a full reference table.</p>
+
+          <!-- Category Chips -->
+          <div class="option-chips" id="categoryChips">
+            <button class="option-chip active" data-cat="length">Length</button>
+            <button class="option-chip" data-cat="weight">Weight</button>
+            <button class="option-chip" data-cat="temperature">Temp</button>
+            <button class="option-chip" data-cat="volume">Volume</button>
+            <button class="option-chip" data-cat="area">Area</button>
+            <button class="option-chip" data-cat="speed">Speed</button>
+            <button class="option-chip" data-cat="time">Time</button>
+            <button class="option-chip" data-cat="data">Data</button>
+            <button class="option-chip" data-cat="pressure">Pressure</button>
+            <button class="option-chip" data-cat="energy">Energy</button>
+          </div>
+
+          <!-- Converter -->
+          <div class="converter-grid">
+            <div class="field">
+              <label for="fromVal">Value</label>
+              <input type="number" id="fromVal" placeholder="Enter value" step="any">
+            </div>
+            <button class="swap-btn" id="swapBtn" title="Swap units">&#8646;</button>
+            <div class="field">
+              <label for="toVal">Result</label>
+              <input type="number" id="toVal" placeholder="Result" step="any">
+            </div>
+          </div>
+          <div class="converter-grid" style="align-items:start;">
+            <div class="field">
+              <label for="fromUnit">From Unit</label>
+              <select id="fromUnit"></select>
+            </div>
+            <div></div>
+            <div class="field">
+              <label for="toUnit">To Unit</label>
+              <select id="toUnit"></select>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-sm btn-primary" id="copyBtn">Copy Result</button>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Select a category and enter a value to convert.
+          </div>
+
+          <!-- Reference Table -->
+          <div style="margin-top:20px;">
+            <h3 style="margin-bottom:8px;font-size:.95rem;">All Units Reference Table</h3>
+            <div style="overflow-x:auto;">
+              <table class="conversion-table" id="refTable">
+                <thead><tr><th>Unit</th><th>Value in Base Unit</th><th>Equivalent</th></tr></thead>
+                <tbody id="refBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Unit Converter</h2>
+          <ol>
+            <li><strong>Pick a category</strong> using the chips above — Length, Weight, Temperature, Volume, Area, Speed, Time, Data, Pressure, or Energy.</li>
+            <li><strong>Enter a value</strong> in the left input field.</li>
+            <li><strong>Choose source and target units</strong> from the two dropdowns.</li>
+            <li><strong>Read the result</strong> instantly in the right field. You can also type in the right field for reverse conversion.</li>
+            <li><strong>Use the reference table</strong> below the converter to see all units relative to each other at once.</li>
+          </ol>
+
+          <h2>About Unit Conversion</h2>
+          <p>Unit conversion is the process of expressing a measured quantity in a different unit of measurement without changing the underlying physical quantity. All conversions in this tool are based on exact or accepted SI (International System of Units) definitions. For example, one inch is defined as exactly 25.4 millimetres — this is not an approximation but a legal definition adopted by the US, UK, Canada, and Australia in 1959.</p>
+
+          <h3>Length Conversions</h3>
+          <p>Length is one of the seven SI base quantities. The metre (m) is the SI base unit. Common conversions include millimetres, centimetres, kilometres, inches, feet, yards, and miles. The metric system is used by most countries, while the imperial system (inches, feet, miles) remains common in the United States, UK for some purposes, and a few other countries. The nautical mile (1,852 m) is used in aviation and maritime navigation worldwide.</p>
+
+          <h3>Weight and Mass</h3>
+          <p>Mass and weight are technically different — mass is measured in kilograms, while weight is a force measured in newtons. However, in everyday usage, "weight" refers to mass. The kilogram (kg) is the SI base unit for mass. One pound is exactly 0.45359237 kilograms by definition. The metric tonne (1,000 kg) and the US short ton (2,000 lb ≈ 907.18 kg) are both commonly used in commerce and industry.</p>
+
+          <h3>Temperature</h3>
+          <p>Temperature conversion is special because it uses offset formulas, not simple multiplication. The three most common scales are Celsius (°C), Fahrenheit (°F), and Kelvin (K). Kelvin is the SI base unit and starts at absolute zero (−273.15 °C). Fahrenheit is used primarily in the United States for everyday temperatures. Celsius is the standard in most other countries. The Rankine and Delisle scales are less common but included for completeness.</p>
+
+          <h3>Volume Conversions</h3>
+          <p>The litre (L) is the most common volume unit in everyday use, though the SI-derived unit is the cubic metre (m³). One litre equals exactly 1,000 cubic centimetres. US and imperial volumes differ: a US gallon is 3.785 L while an imperial gallon is 4.546 L. This distinction matters for cooking, fuel consumption, and chemical mixing. US fluid ounces and UK fluid ounces are also slightly different values.</p>
+
+          <h3>Speed, Time, and Data</h3>
+          <p>Speed conversions are useful for travel planning (mph vs km/h), aviation (knots), and physics (m/s). Data size conversions are essential for developers and IT professionals comparing file sizes, storage capacities, and network transfer rates. This tool uses binary prefixes for data (1 KB = 1,024 bytes) which is standard in operating systems, though storage manufacturers often use SI prefixes (1 KB = 1,000 bytes).</p>
+
+          <h3>Pressure and Energy</h3>
+          <p>Pressure conversions between pascals, atmospheres, bar, psi, and mmHg are vital in engineering, meteorology, and medicine. Tyre pressure is often in psi or bar; blood pressure in mmHg; atmospheric pressure in hPa or mbar. Energy conversions between joules, calories, BTU, kilowatt-hours, and electron-volts span everyday cooking (calories), home electricity (kWh), and particle physics (eV). One kilowatt-hour equals exactly 3,600,000 joules.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I convert between units?</button>
+            <div class="faq-answer">Select a category (e.g., Length), enter a value in the From field, choose your source unit, then choose your target unit. The result appears instantly. Click the swap button (&#8646;) to reverse the direction.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does temperature conversion work?</button>
+            <div class="faq-answer">Temperature uses offset formulas rather than simple multiplication. Celsius to Fahrenheit: multiply by 9/5 then add 32. Celsius to Kelvin: add 273.15. Fahrenheit to Celsius: subtract 32 then multiply by 5/9. All conversions go through Kelvin internally.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between binary and SI data units?</button>
+            <div class="faq-answer">Binary units (KiB, MiB, GiB) use powers of 1024, while SI units (KB, MB, GB) use powers of 1000. This tool uses binary (1 KB = 1024 bytes) as shown in Windows Explorer and most developer tools. For full SI vs binary mode, see the Byte Calculator.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How many units does this converter support?</button>
+            <div class="faq-answer">This converter supports 10 categories with 10+ units each: Length (14), Weight (12), Temperature (5), Volume (12), Area (11), Speed (8), Time (9), Data (8), Pressure (8), and Energy (9) — over 96 units total.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is the unit converter accurate for scientific use?</button>
+            <div class="faq-answer">Yes. All conversion factors use the exact SI-defined values where available (e.g., 1 inch = 25.4 mm exactly). Results are displayed to up to 10 significant figures. For critical scientific work, always verify with the NIST reference values.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Converters</h4>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+        <a href="/tools/byte-calculator.html">Byte Calculator</a>
+        <a href="/tools/time-zone-converter.html">Time Zone Converter</a>
+        <a href="/tools/date-calculator.html">Date Calculator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    // ── Unit definitions ─────────────────────────────────────────────────────
+    // Each unit: { label, symbol, toBase, fromBase }
+    // toBase / fromBase are functions converting to/from the category's base unit
+    var CATEGORIES = {
+      length: {
+        label: 'Length', base: 'Metre',
+        units: [
+          { label: 'Millimetre (mm)',   symbol: 'mm',  toBase: function(v){ return v * 0.001; },          fromBase: function(v){ return v / 0.001; } },
+          { label: 'Centimetre (cm)',   symbol: 'cm',  toBase: function(v){ return v * 0.01; },           fromBase: function(v){ return v / 0.01; } },
+          { label: 'Metre (m)',         symbol: 'm',   toBase: function(v){ return v; },                  fromBase: function(v){ return v; } },
+          { label: 'Kilometre (km)',    symbol: 'km',  toBase: function(v){ return v * 1000; },           fromBase: function(v){ return v / 1000; } },
+          { label: 'Inch (in)',         symbol: 'in',  toBase: function(v){ return v * 0.0254; },         fromBase: function(v){ return v / 0.0254; } },
+          { label: 'Foot (ft)',         symbol: 'ft',  toBase: function(v){ return v * 0.3048; },         fromBase: function(v){ return v / 0.3048; } },
+          { label: 'Yard (yd)',         symbol: 'yd',  toBase: function(v){ return v * 0.9144; },         fromBase: function(v){ return v / 0.9144; } },
+          { label: 'Mile (mi)',         symbol: 'mi',  toBase: function(v){ return v * 1609.344; },       fromBase: function(v){ return v / 1609.344; } },
+          { label: 'Nautical Mile',     symbol: 'nmi', toBase: function(v){ return v * 1852; },           fromBase: function(v){ return v / 1852; } },
+          { label: 'Micrometre (μm)',   symbol: 'μm',  toBase: function(v){ return v * 1e-6; },           fromBase: function(v){ return v / 1e-6; } },
+          { label: 'Nanometre (nm)',    symbol: 'nm',  toBase: function(v){ return v * 1e-9; },           fromBase: function(v){ return v / 1e-9; } },
+          { label: 'Light Year (ly)',   symbol: 'ly',  toBase: function(v){ return v * 9.4607e15; },      fromBase: function(v){ return v / 9.4607e15; } },
+          { label: 'Astronomical Unit', symbol: 'AU',  toBase: function(v){ return v * 1.495978707e11; }, fromBase: function(v){ return v / 1.495978707e11; } },
+          { label: 'Furlong',           symbol: 'fur', toBase: function(v){ return v * 201.168; },        fromBase: function(v){ return v / 201.168; } }
+        ]
+      },
+      weight: {
+        label: 'Weight / Mass', base: 'Kilogram',
+        units: [
+          { label: 'Milligram (mg)',    symbol: 'mg',  toBase: function(v){ return v * 1e-6; },          fromBase: function(v){ return v / 1e-6; } },
+          { label: 'Gram (g)',          symbol: 'g',   toBase: function(v){ return v * 0.001; },         fromBase: function(v){ return v / 0.001; } },
+          { label: 'Kilogram (kg)',     symbol: 'kg',  toBase: function(v){ return v; },                 fromBase: function(v){ return v; } },
+          { label: 'Metric Tonne (t)',  symbol: 't',   toBase: function(v){ return v * 1000; },          fromBase: function(v){ return v / 1000; } },
+          { label: 'Ounce (oz)',        symbol: 'oz',  toBase: function(v){ return v * 0.028349523125; },fromBase: function(v){ return v / 0.028349523125; } },
+          { label: 'Pound (lb)',        symbol: 'lb',  toBase: function(v){ return v * 0.45359237; },    fromBase: function(v){ return v / 0.45359237; } },
+          { label: 'Stone (st)',        symbol: 'st',  toBase: function(v){ return v * 6.35029318; },    fromBase: function(v){ return v / 6.35029318; } },
+          { label: 'Short Ton (US)',    symbol: 'tn',  toBase: function(v){ return v * 907.18474; },     fromBase: function(v){ return v / 907.18474; } },
+          { label: 'Long Ton (UK)',     symbol: 'lt',  toBase: function(v){ return v * 1016.0469088; },  fromBase: function(v){ return v / 1016.0469088; } },
+          { label: 'Carat (ct)',        symbol: 'ct',  toBase: function(v){ return v * 0.0002; },        fromBase: function(v){ return v / 0.0002; } },
+          { label: 'Troy Ounce (tr oz)',symbol: 'ozt', toBase: function(v){ return v * 0.0311034768; },  fromBase: function(v){ return v / 0.0311034768; } },
+          { label: 'Microgram (μg)',    symbol: 'μg',  toBase: function(v){ return v * 1e-9; },          fromBase: function(v){ return v / 1e-9; } }
+        ]
+      },
+      temperature: {
+        label: 'Temperature', base: 'Kelvin',
+        units: [
+          { label: 'Celsius (°C)',    symbol: '°C', toBase: function(v){ return v + 273.15; },               fromBase: function(v){ return v - 273.15; } },
+          { label: 'Fahrenheit (°F)',symbol: '°F', toBase: function(v){ return (v - 32) * 5/9 + 273.15; },   fromBase: function(v){ return (v - 273.15) * 9/5 + 32; } },
+          { label: 'Kelvin (K)',     symbol: 'K',  toBase: function(v){ return v; },                         fromBase: function(v){ return v; } },
+          { label: 'Rankine (°R)',   symbol: '°R', toBase: function(v){ return v * 5/9; },                   fromBase: function(v){ return v * 9/5; } },
+          { label: 'Delisle (°De)', symbol: '°De',toBase: function(v){ return 373.15 - v * 2/3; },           fromBase: function(v){ return (373.15 - v) * 3/2; } }
+        ]
+      },
+      volume: {
+        label: 'Volume', base: 'Litre',
+        units: [
+          { label: 'Millilitre (mL)',      symbol: 'mL',   toBase: function(v){ return v * 0.001; },       fromBase: function(v){ return v / 0.001; } },
+          { label: 'Litre (L)',            symbol: 'L',    toBase: function(v){ return v; },               fromBase: function(v){ return v; } },
+          { label: 'Cubic Metre (m³)',     symbol: 'm³',   toBase: function(v){ return v * 1000; },        fromBase: function(v){ return v / 1000; } },
+          { label: 'Cubic Centimetre (cc)',symbol: 'cc',   toBase: function(v){ return v * 0.001; },       fromBase: function(v){ return v / 0.001; } },
+          { label: 'US Gallon',            symbol: 'gal',  toBase: function(v){ return v * 3.785411784; }, fromBase: function(v){ return v / 3.785411784; } },
+          { label: 'US Quart',             symbol: 'qt',   toBase: function(v){ return v * 0.946352946; }, fromBase: function(v){ return v / 0.946352946; } },
+          { label: 'US Pint',              symbol: 'pt',   toBase: function(v){ return v * 0.473176473; }, fromBase: function(v){ return v / 0.473176473; } },
+          { label: 'US Cup',               symbol: 'cup',  toBase: function(v){ return v * 0.2365882365; },fromBase: function(v){ return v / 0.2365882365; } },
+          { label: 'US Fluid Ounce',       symbol: 'fl oz',toBase: function(v){ return v * 0.0295735296; },fromBase: function(v){ return v / 0.0295735296; } },
+          { label: 'Imperial Gallon',      symbol: 'imp gal',toBase:function(v){ return v * 4.54609; },   fromBase: function(v){ return v / 4.54609; } },
+          { label: 'Imperial Pint',        symbol: 'imp pt',toBase:function(v){ return v * 0.56826125; }, fromBase: function(v){ return v / 0.56826125; } },
+          { label: 'Tablespoon (US)',       symbol: 'tbsp', toBase: function(v){ return v * 0.014786765; },fromBase: function(v){ return v / 0.014786765; } }
+        ]
+      },
+      area: {
+        label: 'Area', base: 'Sq Metre',
+        units: [
+          { label: 'Sq Millimetre (mm²)',  symbol: 'mm²',  toBase: function(v){ return v * 1e-6; },        fromBase: function(v){ return v / 1e-6; } },
+          { label: 'Sq Centimetre (cm²)',  symbol: 'cm²',  toBase: function(v){ return v * 1e-4; },        fromBase: function(v){ return v / 1e-4; } },
+          { label: 'Sq Metre (m²)',        symbol: 'm²',   toBase: function(v){ return v; },               fromBase: function(v){ return v; } },
+          { label: 'Sq Kilometre (km²)',   symbol: 'km²',  toBase: function(v){ return v * 1e6; },         fromBase: function(v){ return v / 1e6; } },
+          { label: 'Hectare (ha)',         symbol: 'ha',   toBase: function(v){ return v * 10000; },       fromBase: function(v){ return v / 10000; } },
+          { label: 'Sq Inch (in²)',        symbol: 'in²',  toBase: function(v){ return v * 6.4516e-4; },   fromBase: function(v){ return v / 6.4516e-4; } },
+          { label: 'Sq Foot (ft²)',        symbol: 'ft²',  toBase: function(v){ return v * 0.09290304; },  fromBase: function(v){ return v / 0.09290304; } },
+          { label: 'Sq Yard (yd²)',        symbol: 'yd²',  toBase: function(v){ return v * 0.83612736; },  fromBase: function(v){ return v / 0.83612736; } },
+          { label: 'Acre',                 symbol: 'ac',   toBase: function(v){ return v * 4046.8564224; },fromBase: function(v){ return v / 4046.8564224; } },
+          { label: 'Sq Mile (mi²)',        symbol: 'mi²',  toBase: function(v){ return v * 2589988.11; },  fromBase: function(v){ return v / 2589988.11; } },
+          { label: 'Sq Foot (survey)',     symbol: 'ft² s',toBase: function(v){ return v * 0.0929034116; },fromBase: function(v){ return v / 0.0929034116; } }
+        ]
+      },
+      speed: {
+        label: 'Speed', base: 'm/s',
+        units: [
+          { label: 'Metre/second (m/s)',   symbol: 'm/s',  toBase: function(v){ return v; },              fromBase: function(v){ return v; } },
+          { label: 'Kilometre/hour (km/h)',symbol: 'km/h', toBase: function(v){ return v / 3.6; },        fromBase: function(v){ return v * 3.6; } },
+          { label: 'Mile/hour (mph)',      symbol: 'mph',  toBase: function(v){ return v * 0.44704; },    fromBase: function(v){ return v / 0.44704; } },
+          { label: 'Knot (kn)',            symbol: 'kn',   toBase: function(v){ return v * 0.514444; },   fromBase: function(v){ return v / 0.514444; } },
+          { label: 'Foot/second (ft/s)',   symbol: 'ft/s', toBase: function(v){ return v * 0.3048; },     fromBase: function(v){ return v / 0.3048; } },
+          { label: 'Mach (at sea level)',  symbol: 'M',    toBase: function(v){ return v * 340.29; },     fromBase: function(v){ return v / 340.29; } },
+          { label: 'Speed of Light (c)',   symbol: 'c',    toBase: function(v){ return v * 299792458; },  fromBase: function(v){ return v / 299792458; } },
+          { label: 'Centimetre/second',    symbol: 'cm/s', toBase: function(v){ return v * 0.01; },       fromBase: function(v){ return v / 0.01; } }
+        ]
+      },
+      time: {
+        label: 'Time', base: 'Second',
+        units: [
+          { label: 'Nanosecond (ns)',  symbol: 'ns',  toBase: function(v){ return v * 1e-9; },       fromBase: function(v){ return v / 1e-9; } },
+          { label: 'Microsecond (μs)',symbol: 'μs',  toBase: function(v){ return v * 1e-6; },       fromBase: function(v){ return v / 1e-6; } },
+          { label: 'Millisecond (ms)',symbol: 'ms',  toBase: function(v){ return v * 0.001; },      fromBase: function(v){ return v / 0.001; } },
+          { label: 'Second (s)',       symbol: 's',   toBase: function(v){ return v; },              fromBase: function(v){ return v; } },
+          { label: 'Minute (min)',     symbol: 'min', toBase: function(v){ return v * 60; },         fromBase: function(v){ return v / 60; } },
+          { label: 'Hour (h)',         symbol: 'h',   toBase: function(v){ return v * 3600; },       fromBase: function(v){ return v / 3600; } },
+          { label: 'Day (d)',          symbol: 'd',   toBase: function(v){ return v * 86400; },      fromBase: function(v){ return v / 86400; } },
+          { label: 'Week (wk)',        symbol: 'wk',  toBase: function(v){ return v * 604800; },     fromBase: function(v){ return v / 604800; } },
+          { label: 'Year (Julian)',    symbol: 'yr',  toBase: function(v){ return v * 31557600; },   fromBase: function(v){ return v / 31557600; } }
+        ]
+      },
+      data: {
+        label: 'Data Size', base: 'Byte',
+        units: [
+          { label: 'Bit (b)',          symbol: 'b',   toBase: function(v){ return v / 8; },          fromBase: function(v){ return v * 8; } },
+          { label: 'Byte (B)',         symbol: 'B',   toBase: function(v){ return v; },              fromBase: function(v){ return v; } },
+          { label: 'Kilobyte (KB)',    symbol: 'KB',  toBase: function(v){ return v * 1024; },       fromBase: function(v){ return v / 1024; } },
+          { label: 'Megabyte (MB)',    symbol: 'MB',  toBase: function(v){ return v * 1048576; },    fromBase: function(v){ return v / 1048576; } },
+          { label: 'Gigabyte (GB)',    symbol: 'GB',  toBase: function(v){ return v * 1073741824; }, fromBase: function(v){ return v / 1073741824; } },
+          { label: 'Terabyte (TB)',    symbol: 'TB',  toBase: function(v){ return v * 1099511627776; },fromBase: function(v){ return v / 1099511627776; } },
+          { label: 'Petabyte (PB)',    symbol: 'PB',  toBase: function(v){ return v * 1.12589990684e15; },fromBase: function(v){ return v / 1.12589990684e15; } },
+          { label: 'Exabyte (EB)',     symbol: 'EB',  toBase: function(v){ return v * 1.15292150461e18; },fromBase: function(v){ return v / 1.15292150461e18; } }
+        ]
+      },
+      pressure: {
+        label: 'Pressure', base: 'Pascal',
+        units: [
+          { label: 'Pascal (Pa)',          symbol: 'Pa',   toBase: function(v){ return v; },             fromBase: function(v){ return v; } },
+          { label: 'Kilopascal (kPa)',     symbol: 'kPa',  toBase: function(v){ return v * 1000; },      fromBase: function(v){ return v / 1000; } },
+          { label: 'Megapascal (MPa)',     symbol: 'MPa',  toBase: function(v){ return v * 1e6; },       fromBase: function(v){ return v / 1e6; } },
+          { label: 'Bar',                  symbol: 'bar',  toBase: function(v){ return v * 100000; },    fromBase: function(v){ return v / 100000; } },
+          { label: 'Millibar (mbar)',      symbol: 'mbar', toBase: function(v){ return v * 100; },       fromBase: function(v){ return v / 100; } },
+          { label: 'Atmosphere (atm)',     symbol: 'atm',  toBase: function(v){ return v * 101325; },    fromBase: function(v){ return v / 101325; } },
+          { label: 'PSI (lb/in²)',         symbol: 'psi',  toBase: function(v){ return v * 6894.757; },  fromBase: function(v){ return v / 6894.757; } },
+          { label: 'mmHg (Torr)',          symbol: 'mmHg', toBase: function(v){ return v * 133.322; },   fromBase: function(v){ return v / 133.322; } }
+        ]
+      },
+      energy: {
+        label: 'Energy', base: 'Joule',
+        units: [
+          { label: 'Joule (J)',            symbol: 'J',    toBase: function(v){ return v; },             fromBase: function(v){ return v; } },
+          { label: 'Kilojoule (kJ)',       symbol: 'kJ',   toBase: function(v){ return v * 1000; },      fromBase: function(v){ return v / 1000; } },
+          { label: 'Calorie (cal)',        symbol: 'cal',  toBase: function(v){ return v * 4.184; },     fromBase: function(v){ return v / 4.184; } },
+          { label: 'Kilocalorie (kcal)',   symbol: 'kcal', toBase: function(v){ return v * 4184; },      fromBase: function(v){ return v / 4184; } },
+          { label: 'Watt-hour (Wh)',       symbol: 'Wh',   toBase: function(v){ return v * 3600; },      fromBase: function(v){ return v / 3600; } },
+          { label: 'Kilowatt-hour (kWh)',  symbol: 'kWh',  toBase: function(v){ return v * 3600000; },   fromBase: function(v){ return v / 3600000; } },
+          { label: 'BTU',                  symbol: 'BTU',  toBase: function(v){ return v * 1055.06; },   fromBase: function(v){ return v / 1055.06; } },
+          { label: 'Electronvolt (eV)',    symbol: 'eV',   toBase: function(v){ return v * 1.60218e-19; },fromBase: function(v){ return v / 1.60218e-19; } },
+          { label: 'Foot-pound (ft·lb)',   symbol: 'ft·lb',toBase: function(v){ return v * 1.35582; },   fromBase: function(v){ return v / 1.35582; } }
+        ]
+      }
+    };
+
+    var currentCat = 'length';
+    var activeInput = 'from'; // which field was last edited
+
+    function fmtNum(n) {
+      if (n === null || isNaN(n)) return '';
+      var abs = Math.abs(n);
+      if (abs === 0) return '0';
+      if (abs >= 1e-4 && abs < 1e10) {
+        // Use toPrecision for nice display
+        var s = parseFloat(n.toPrecision(10)).toString();
+        return s;
+      }
+      return n.toExponential(6);
+    }
+
+    function buildUnitSelects() {
+      var units = CATEGORIES[currentCat].units;
+      var fromSel = document.getElementById('fromUnit');
+      var toSel = document.getElementById('toUnit');
+      fromSel.innerHTML = '';
+      toSel.innerHTML = '';
+      units.forEach(function(u, i) {
+        var o1 = document.createElement('option');
+        o1.value = i;
+        o1.textContent = u.label;
+        fromSel.appendChild(o1);
+        var o2 = document.createElement('option');
+        o2.value = i;
+        o2.textContent = u.label;
+        toSel.appendChild(o2);
+      });
+      // Default: first and second unit
+      toSel.value = Math.min(1, units.length - 1);
+    }
+
+    function convert(dir) {
+      var units = CATEGORIES[currentCat].units;
+      var fromIdx = parseInt(document.getElementById('fromUnit').value);
+      var toIdx = parseInt(document.getElementById('toUnit').value);
+      var fromUnit = units[fromIdx];
+      var toUnit = units[toIdx];
+
+      if (dir === 'from') {
+        var fromVal = parseFloat(document.getElementById('fromVal').value);
+        if (isNaN(fromVal)) {
+          document.getElementById('toVal').value = '';
+          setStatus('info', 'Enter a value to convert.');
+          updateTable(NaN, fromIdx);
+          return;
+        }
+        var base = fromUnit.toBase(fromVal);
+        var result = toUnit.fromBase(base);
+        document.getElementById('toVal').value = fmtNum(result);
+        setStatus('valid', fmtNum(fromVal) + ' ' + fromUnit.symbol + ' = ' + fmtNum(result) + ' ' + toUnit.symbol);
+        updateTable(fromVal, fromIdx);
+      } else {
+        var toVal = parseFloat(document.getElementById('toVal').value);
+        if (isNaN(toVal)) {
+          document.getElementById('fromVal').value = '';
+          setStatus('info', 'Enter a value to convert.');
+          updateTable(NaN, fromIdx);
+          return;
+        }
+        var base2 = toUnit.toBase(toVal);
+        var result2 = fromUnit.fromBase(base2);
+        document.getElementById('fromVal').value = fmtNum(result2);
+        setStatus('valid', fmtNum(result2) + ' ' + fromUnit.symbol + ' = ' + fmtNum(toVal) + ' ' + toUnit.symbol);
+        updateTable(result2, fromIdx);
+      }
+    }
+
+    function updateTable(fromVal, fromIdx) {
+      var units = CATEGORIES[currentCat].units;
+      var tbody = document.getElementById('refBody');
+      tbody.innerHTML = '';
+      units.forEach(function(u, i) {
+        var tr = document.createElement('tr');
+        if (i === fromIdx) tr.className = 'highlight';
+        var baseVal = isNaN(fromVal) ? null : units[fromIdx].toBase(fromVal);
+        var equiv = (baseVal !== null) ? fmtNum(u.fromBase(baseVal)) : '—';
+        tr.innerHTML = '<td>' + u.label + '</td><td>' + u.symbol + '</td><td>' + equiv + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    function setStatus(cls, msg) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + cls;
+      bar.textContent = msg;
+    }
+
+    function loadCategory(cat) {
+      currentCat = cat;
+      buildUnitSelects();
+      var fromVal = document.getElementById('fromVal').value;
+      if (fromVal) { convert('from'); } else { updateTable(NaN, 0); }
+    }
+
+    // Category chips
+    document.getElementById('categoryChips').addEventListener('click', function(e) {
+      var chip = e.target.closest('[data-cat]');
+      if (!chip) return;
+      document.querySelectorAll('#categoryChips .option-chip').forEach(function(c) { c.classList.remove('active'); });
+      chip.classList.add('active');
+      loadCategory(chip.getAttribute('data-cat'));
+    });
+
+    // From input
+    var debouncedFrom = DT.debounce(function() { activeInput = 'from'; convert('from'); }, 200);
+    document.getElementById('fromVal').addEventListener('input', debouncedFrom);
+    document.getElementById('fromUnit').addEventListener('change', function() { convert('from'); });
+
+    // To input
+    var debouncedTo = DT.debounce(function() { activeInput = 'to'; convert('to'); }, 200);
+    document.getElementById('toVal').addEventListener('input', debouncedTo);
+    document.getElementById('toUnit').addEventListener('change', function() { convert('from'); });
+
+    // Swap
+    document.getElementById('swapBtn').addEventListener('click', function() {
+      var fSel = document.getElementById('fromUnit');
+      var tSel = document.getElementById('toUnit');
+      var tmp = fSel.value;
+      fSel.value = tSel.value;
+      tSel.value = tmp;
+      var fVal = document.getElementById('fromVal').value;
+      var tVal = document.getElementById('toVal').value;
+      document.getElementById('fromVal').value = tVal;
+      document.getElementById('toVal').value = fVal;
+      convert('from');
+    });
+
+    // Copy
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var res = document.getElementById('toVal').value;
+      var bar = document.getElementById('statusBar');
+      if (res) DT.copyToClipboard(res + ' ' + CATEGORIES[currentCat].units[document.getElementById('toUnit').value].symbol, this);
+      else DT.toast('Nothing to copy yet', 'info');
+    });
+
+    // Clear
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      document.getElementById('fromVal').value = '';
+      document.getElementById('toVal').value = '';
+      setStatus('info', 'Select a category and enter a value to convert.');
+      updateTable(NaN, 0);
+    });
+
+    // Example
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      document.getElementById('fromVal').value = '1';
+      document.getElementById('fromUnit').value = 4; // inch
+      document.getElementById('toUnit').value = 0;   // mm
+      convert('from');
+    });
+
+    DT.trackTool('unit-converter');
+
+    // Init
+    loadCategory('length');
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JWT Timeline Visualizer — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Paste a JWT and see a visual timeline of iat, nbf, and exp. Instantly check if your token is valid, expired, or not-yet-active. Free, 100% client-side, never sends your token to a server.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/jwt-timeline.html">
+  <meta property="og:title" content="JWT Timeline Visualizer — DevToolbox">
+  <meta property="og:description" content="Visual JWT timeline: see issued-at, not-before, and expiry on a single bar. Check token validity instantly. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/jwt-timeline.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JWT Timeline Visualizer",
+    "url": "https://thisdevtool.com/tools/jwt-timeline.html",
+    "description": "Paste a JWT to see a visual timeline of iat, nbf, and exp claims. Check validity, expiry duration, and more.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is my JWT token sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool decodes and visualizes JWTs entirely in your browser using JavaScript. Your token never leaves your device. There is no server, no logging, and no network request made with your token."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is iat, nbf, and exp in a JWT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "These are registered JWT claims defined in RFC 7519. 'iat' (Issued At) is the Unix timestamp when the token was created. 'nbf' (Not Before) is the time before which the token must not be accepted. 'exp' (Expiration Time) is when the token expires and becomes invalid. All three are optional but widely used."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool validate the JWT signature?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. JWT signature validation requires the secret key or public key used to sign the token, which only your server should have. This tool decodes the payload (base64url) and reads the timestamp claims to build the timeline. It cannot confirm whether the token was legitimately issued. Always validate signatures on your server."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my JWT not have an exp claim?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The exp claim is optional per the JWT specification. Some tokens are designed to never expire (for machine-to-machine authentication or long-lived API keys). Others rely on a separate revocation mechanism. If your token lacks exp, this tool will show the timeline without an expiry marker."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between JWT and JWS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JWT (JSON Web Token) is the general term for the token format. A signed JWT is technically a JWS (JSON Web Signature). An encrypted JWT is a JWE (JSON Web Encryption). In everyday usage, 'JWT' typically refers to a signed token in the format header.payload.signature, which is what this tool decodes."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .jwt-input-area textarea {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      word-break: break-all;
+    }
+    .jwt-timeline-wrap {
+      margin: var(--space-4) 0 var(--space-2);
+    }
+    .jwt-timeline-bar {
+      position: relative;
+      height: 48px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: visible;
+      margin-bottom: 28px;
+    }
+    .jwt-tl-segment {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      border-radius: var(--radius);
+    }
+    .jwt-tl-segment.valid-range {
+      background: rgba(16, 185, 129, 0.25);
+    }
+    .jwt-tl-segment.invalid-range {
+      background: rgba(239, 68, 68, 0.15);
+    }
+    .jwt-tl-marker {
+      position: absolute;
+      top: -6px;
+      width: 3px;
+      height: calc(100% + 12px);
+      border-radius: 2px;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+    .jwt-tl-marker.iat { background: #3b82f6; }
+    .jwt-tl-marker.nbf { background: #f59e0b; }
+    .jwt-tl-marker.exp { background: #ef4444; }
+    .jwt-tl-marker.now { background: #10b981; width: 3px; }
+    .jwt-tl-label {
+      position: absolute;
+      top: calc(100% + 6px);
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      font-weight: 600;
+      white-space: nowrap;
+      color: var(--text-muted);
+    }
+    .jwt-tl-label.iat { color: #3b82f6; }
+    .jwt-tl-label.nbf { color: #f59e0b; }
+    .jwt-tl-label.exp { color: #ef4444; }
+    .jwt-tl-label.now { color: #10b981; }
+    .jwt-claims-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: var(--space-3);
+      margin-top: var(--space-3);
+    }
+    .jwt-claim-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-3);
+    }
+    .jwt-claim-card h4 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin: 0 0 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .jwt-claim-card .claim-value {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      word-break: break-all;
+      margin: 0;
+    }
+    .jwt-claim-card .claim-human {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .jwt-validity-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: var(--space-3);
+    }
+    .jwt-validity-banner.valid { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+    .jwt-validity-banner.expired { background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .jwt-validity-banner.notyet { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .jwt-validity-banner.noexp { background: rgba(99, 102, 241, 0.12); color: #6366f1; border: 1px solid rgba(99,102,241,0.3); }
+    .jwt-parts {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+    @media (max-width: 600px) {
+      .jwt-parts { grid-template-columns: 1fr; }
+    }
+    .jwt-part {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--space-2);
+      font-size: 0.75rem;
+    }
+    .jwt-part-label {
+      font-weight: 700;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .jwt-part-label.header { color: #ef4444; }
+    .jwt-part-label.payload { color: #10b981; }
+    .jwt-part-label.sig { color: #3b82f6; }
+    .jwt-part pre {
+      margin: 0;
+      font-size: 0.75rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow: hidden;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/base64.html">Base64</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>JWT Timeline Visualizer</h1>
+          <p class="tool-subtitle">Paste a JWT to visualize its <code>iat</code>, <code>nbf</code>, and <code>exp</code> timestamps on a live timeline. Check validity at a glance.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="timeline">Timeline View</button>
+            <button class="option-chip" data-mode="claims">All Claims</button>
+            <button class="option-chip" data-mode="raw">Raw Parts</button>
+          </div>
+
+          <div class="jwt-input-area" style="margin-bottom:var(--space-3);">
+            <div class="pane-label">
+              <span>Paste JWT Token</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                <button class="btn btn-sm btn-primary" id="copyPayloadBtn">Copy Payload</button>
+              </div>
+            </div>
+            <textarea id="jwtInput" rows="5" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" spellcheck="false"></textarea>
+          </div>
+
+          <!-- Output panels -->
+          <div id="outputArea" style="display:none;">
+            <!-- Validity Banner -->
+            <div class="jwt-validity-banner" id="validityBanner"></div>
+
+            <!-- Timeline Panel -->
+            <div id="timelinePanel">
+              <div class="jwt-timeline-wrap">
+                <div class="jwt-timeline-bar" id="timelineBar">
+                  <!-- markers injected by JS -->
+                </div>
+              </div>
+              <div class="jwt-claims-grid" id="timelineClaimsGrid"></div>
+            </div>
+
+            <!-- All Claims Panel -->
+            <div id="claimsPanel" style="display:none;">
+              <div class="code-output" id="claimsOutput" style="min-height:200px;"></div>
+            </div>
+
+            <!-- Raw Parts Panel -->
+            <div id="rawPanel" style="display:none;">
+              <div class="jwt-parts" id="rawParts"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a JWT above to visualize its timeline.
+          </div>
+
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-top:var(--space-2);">
+            This tool decodes the JWT payload locally. It does <strong>not</strong> validate the signature.
+            For full JWT decoding, see <a href="/tools/jwt-decoder.html">JWT Decoder</a>.
+          </p>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the JWT Timeline Visualizer</h2>
+          <ol>
+            <li><strong>Paste your JWT</strong> into the text area. It should be in the standard <code>header.payload.signature</code> format.</li>
+            <li><strong>The timeline appears instantly</strong> — a bar shows issued-at (blue), not-before (amber), expiry (red), and the current time (green).</li>
+            <li><strong>Check the validity banner</strong> — it shows whether the token is currently valid, expired, or not yet active.</li>
+            <li><strong>Switch to "All Claims"</strong> to see the full decoded JSON payload with all registered and custom claims.</li>
+            <li><strong>Switch to "Raw Parts"</strong> to see the decoded header, payload, and the raw signature string.</li>
+          </ol>
+
+          <h2>Understanding JWT Timestamps</h2>
+          <p>JWTs use Unix timestamps (seconds since January 1, 1970 UTC) for all time-related claims. The three standard time claims defined in <a href="https://datatracker.ietf.org/doc/html/rfc7519" target="_blank" rel="noopener">RFC 7519</a> are:</p>
+
+          <h3>iat — Issued At</h3>
+          <p>The <code>iat</code> claim records the exact moment the token was minted. It is useful for implementing token age checks on the server — for example, rejecting any token older than 30 days regardless of whether it has expired. The <code>iat</code> is set by the issuer (authorization server) at token creation time and cannot be changed without invalidating the signature.</p>
+
+          <h3>nbf — Not Before</h3>
+          <p>The <code>nbf</code> claim specifies a future time before which the token must not be accepted. This is rarely used in typical web authentication but is valuable in scenarios where you create a token in advance and want it to become active at a specific future time. For example, a token for a scheduled job that runs in 10 minutes could have an <code>nbf</code> set to now + 10 minutes. Servers implementing <code>nbf</code> checks must reject tokens presented before this time.</p>
+
+          <h3>exp — Expiration Time</h3>
+          <p>The <code>exp</code> claim is by far the most commonly used time claim. It defines when the token ceases to be valid. Once the current time exceeds <code>exp</code>, the token is expired and any compliant server must reject it. Short-lived access tokens (15 minutes to 1 hour) are best practice for security — if a token is stolen, its usefulness to an attacker is time-limited. Refresh tokens typically have a much longer expiry (days to weeks).</p>
+
+          <h3>Clock Skew</h3>
+          <p>Because different servers may have slightly different clocks, RFC 7519 recommends allowing a few minutes of clock skew when evaluating <code>nbf</code> and <code>exp</code>. Most JWT libraries implement a configurable <code>clockTolerance</code> or <code>leeway</code> parameter (typically 30–300 seconds) to account for this. This tool uses your local browser clock, which may differ slightly from the server that issued the token.</p>
+
+          <h3>Token Validity Windows</h3>
+          <p>A token is fully valid when: (1) the current time is at or after <code>nbf</code> (if present), AND (2) the current time is before <code>exp</code> (if present). If neither claim is present, the token has no time-based constraints and must be validated by other means (such as a revocation list or session database). This tool visualizes all three timestamps on a single timeline bar, making it easy to see at a glance how long a token has been alive, how long it was valid for, and whether it is currently active.</p>
+
+          <h3>Security Best Practices for JWT Expiry</h3>
+          <ul>
+            <li><strong>Keep access tokens short-lived</strong> — 15 minutes is common for OAuth 2.0 access tokens</li>
+            <li><strong>Use refresh tokens for longer sessions</strong> — and rotate them on each use (refresh token rotation)</li>
+            <li><strong>Never store tokens in localStorage for sensitive apps</strong> — use httpOnly cookies to prevent XSS theft</li>
+            <li><strong>Implement token revocation</strong> — a short expiry alone is not sufficient; maintain a blocklist for compromised tokens</li>
+            <li><strong>Always validate the signature</strong> — never trust claims from a decoded payload without signature verification on your server</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my JWT token sent to a server?</button>
+            <div class="faq-answer">No. This tool decodes and visualizes JWTs entirely in your browser using JavaScript. Your token never leaves your device. There is no server, no logging, and no network request made with your token.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is iat, nbf, and exp in a JWT?</button>
+            <div class="faq-answer">These are registered JWT claims defined in RFC 7519. 'iat' (Issued At) is the Unix timestamp when the token was created. 'nbf' (Not Before) is the time before which the token must not be accepted. 'exp' (Expiration Time) is when the token expires and becomes invalid. All three are optional but widely used.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does this tool validate the JWT signature?</button>
+            <div class="faq-answer">No. JWT signature validation requires the secret key or public key used to sign the token, which only your server should have. This tool decodes the payload (base64url) and reads the timestamp claims to build the timeline. It cannot confirm whether the token was legitimately issued. Always validate signatures on your server.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does my JWT not have an exp claim?</button>
+            <div class="faq-answer">The exp claim is optional per the JWT specification. Some tokens are designed to never expire (for machine-to-machine authentication or long-lived API keys). Others rely on a separate revocation mechanism. If your token lacks exp, this tool will show the timeline without an expiry marker.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between JWT and JWS?</button>
+            <div class="faq-answer">JWT (JSON Web Token) is the general term for the token format. A signed JWT is technically a JWS (JSON Web Signature). An encrypted JWT is a JWE (JSON Web Encryption). In everyday usage, 'JWT' typically refers to a signed token in the format header.payload.signature, which is what this tool decodes.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/jwt-timeline.html">JWT Timeline</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/epoch-countdown.html">Epoch Countdown</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var currentMode = 'timeline';
+    var lastPayload = null;
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        if (lastPayload) showMode(currentMode, lastPayload);
+      });
+    });
+
+    function base64UrlDecode(str) {
+      str = str.replace(/-/g, '+').replace(/_/g, '/');
+      while (str.length % 4) str += '=';
+      try {
+        return JSON.parse(atob(str));
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function parseJWT(token) {
+      var parts = token.trim().split('.');
+      if (parts.length !== 3) return null;
+      var header = base64UrlDecode(parts[0]);
+      var payload = base64UrlDecode(parts[1]);
+      if (!header || !payload) return null;
+      return { header: header, payload: payload, sig: parts[2], raw: parts };
+    }
+
+    function formatTs(ts) {
+      if (ts == null) return 'N/A';
+      return new Date(ts * 1000).toLocaleString() + ' (' + ts + ')';
+    }
+
+    function relativeTime(ts) {
+      var now = Date.now() / 1000;
+      var diff = ts - now;
+      var abs = Math.abs(diff);
+      var sign = diff < 0 ? 'ago' : 'from now';
+      if (abs < 60) return Math.round(abs) + 's ' + sign;
+      if (abs < 3600) return Math.round(abs / 60) + 'm ' + sign;
+      if (abs < 86400) return (abs / 3600).toFixed(1) + 'h ' + sign;
+      return (abs / 86400).toFixed(1) + 'd ' + sign;
+    }
+
+    function process(raw) {
+      raw = raw.trim();
+      if (!raw) {
+        reset();
+        return;
+      }
+      var decoded = parseJWT(raw);
+      if (!decoded) {
+        setStatus('invalid', 'Invalid JWT — expected three base64url parts separated by dots.');
+        document.getElementById('outputArea').style.display = 'none';
+        return;
+      }
+      lastPayload = decoded;
+      document.getElementById('outputArea').style.display = '';
+      showMode(currentMode, decoded);
+      DT.trackTool('jwt-timeline');
+    }
+
+    function showMode(mode, decoded) {
+      document.getElementById('timelinePanel').style.display = mode === 'timeline' ? '' : 'none';
+      document.getElementById('claimsPanel').style.display = mode === 'claims' ? '' : 'none';
+      document.getElementById('rawPanel').style.display = mode === 'raw' ? '' : 'none';
+
+      renderValidityBanner(decoded.payload);
+
+      if (mode === 'timeline') renderTimeline(decoded.payload);
+      if (mode === 'claims') renderClaims(decoded.payload);
+      if (mode === 'raw') renderRaw(decoded);
+    }
+
+    function renderValidityBanner(payload) {
+      var banner = document.getElementById('validityBanner');
+      var now = Date.now() / 1000;
+      var iat = payload.iat || null;
+      var nbf = payload.nbf || null;
+      var exp = payload.exp || null;
+
+      if (exp && now > exp) {
+        banner.className = 'jwt-validity-banner expired';
+        banner.textContent = 'Expired — expired ' + relativeTime(exp);
+        setStatus('invalid', 'Token expired — exp was ' + formatTs(exp));
+      } else if (nbf && now < nbf) {
+        banner.className = 'jwt-validity-banner notyet';
+        banner.textContent = 'Not Yet Valid — becomes active ' + relativeTime(nbf);
+        setStatus('invalid', 'Token not yet valid — nbf is ' + formatTs(nbf));
+      } else if (!exp) {
+        banner.className = 'jwt-validity-banner noexp';
+        var msg = 'No expiry claim — token has no exp';
+        if (iat) msg += ', issued ' + relativeTime(iat);
+        banner.textContent = msg;
+        setStatus('info', 'Token has no exp claim. ' + (iat ? 'Issued ' + relativeTime(iat) + '.' : ''));
+      } else {
+        banner.className = 'jwt-validity-banner valid';
+        banner.textContent = 'Valid \u2014 Expires ' + relativeTime(exp);
+        setStatus('valid', 'Valid \u2014 Expires in ' + relativeTime(exp) + ' (' + formatTs(exp) + ')');
+      }
+    }
+
+    function renderTimeline(payload) {
+      var now = Date.now() / 1000;
+      var iat = payload.iat;
+      var nbf = payload.nbf;
+      var exp = payload.exp;
+
+      // Determine range for bar
+      var allTs = [iat, nbf, exp, now].filter(function (v) { return v != null; });
+      if (allTs.length < 2) {
+        document.getElementById('timelineBar').innerHTML = '<div style="padding:12px;color:var(--text-muted);font-size:0.85rem;">Not enough timestamp claims to render timeline.</div>';
+        buildClaimsGrid(payload, iat, nbf, exp, now);
+        return;
+      }
+      var minTs = Math.min.apply(null, allTs);
+      var maxTs = Math.max.apply(null, allTs);
+      var span = maxTs - minTs;
+      // Pad 10% on each side
+      var padded = span * 0.1;
+      var lo = minTs - padded;
+      var hi = maxTs + padded;
+      var total = hi - lo;
+
+      function pct(ts) {
+        return ((ts - lo) / total * 100).toFixed(2) + '%';
+      }
+
+      var bar = document.getElementById('timelineBar');
+      bar.innerHTML = '';
+
+      // Valid range segment
+      if (iat != null && exp != null) {
+        var seg = document.createElement('div');
+        seg.className = 'jwt-tl-segment valid-range';
+        var segStart = ((iat - lo) / total * 100);
+        var segEnd = ((exp - lo) / total * 100);
+        seg.style.left = segStart.toFixed(2) + '%';
+        seg.style.width = (segEnd - segStart).toFixed(2) + '%';
+        bar.appendChild(seg);
+      }
+
+      // Markers
+      var markers = [];
+      if (iat != null) markers.push({ ts: iat, cls: 'iat', label: 'iat' });
+      if (nbf != null) markers.push({ ts: nbf, cls: 'nbf', label: 'nbf' });
+      if (exp != null) markers.push({ ts: exp, cls: 'exp', label: 'exp' });
+      markers.push({ ts: now, cls: 'now', label: 'now' });
+
+      markers.forEach(function (m) {
+        var mk = document.createElement('div');
+        mk.className = 'jwt-tl-marker ' + m.cls;
+        mk.style.left = pct(m.ts);
+        var lbl = document.createElement('div');
+        lbl.className = 'jwt-tl-label ' + m.cls;
+        lbl.style.left = pct(m.ts);
+        lbl.textContent = m.label;
+        bar.appendChild(mk);
+        bar.appendChild(lbl);
+      });
+
+      buildClaimsGrid(payload, iat, nbf, exp, now);
+    }
+
+    function buildClaimsGrid(payload, iat, nbf, exp, now) {
+      var grid = document.getElementById('timelineClaimsGrid');
+      grid.innerHTML = '';
+      function card(title, value, human) {
+        var c = document.createElement('div');
+        c.className = 'jwt-claim-card';
+        c.innerHTML = '<h4>' + title + '</h4><p class="claim-value">' + escHtml(String(value)) + '</p>' +
+          (human ? '<p class="claim-human">' + escHtml(human) + '</p>' : '');
+        grid.appendChild(c);
+      }
+      if (iat != null) card('iat — Issued At', iat, new Date(iat * 1000).toLocaleString() + ' (' + relativeTime(iat) + ')');
+      if (nbf != null) card('nbf — Not Before', nbf, new Date(nbf * 1000).toLocaleString() + ' (' + relativeTime(nbf) + ')');
+      if (exp != null) card('exp — Expires At', exp, new Date(exp * 1000).toLocaleString() + ' (' + relativeTime(exp) + ')');
+      if (iat != null && exp != null) {
+        var dur = exp - iat;
+        card('Duration', formatDuration(dur), 'Total token lifetime');
+      }
+      if (exp != null && now < exp) {
+        card('Remaining', formatDuration(exp - now), 'Until expiry');
+      }
+      if (payload.sub) card('sub — Subject', payload.sub, '');
+      if (payload.iss) card('iss — Issuer', payload.iss, '');
+      if (payload.aud) card('aud — Audience', Array.isArray(payload.aud) ? payload.aud.join(', ') : payload.aud, '');
+    }
+
+    function formatDuration(secs) {
+      if (secs < 60) return secs + 's';
+      if (secs < 3600) return Math.floor(secs / 60) + 'm ' + (secs % 60) + 's';
+      var h = Math.floor(secs / 3600);
+      var m = Math.floor((secs % 3600) / 60);
+      return h + 'h ' + m + 'm';
+    }
+
+    function renderClaims(payload) {
+      document.getElementById('claimsOutput').textContent = JSON.stringify(payload, null, 2);
+    }
+
+    function renderRaw(decoded) {
+      var container = document.getElementById('rawParts');
+      container.innerHTML = '';
+      var labels = [
+        { label: 'Header', cls: 'header', data: decoded.header },
+        { label: 'Payload', cls: 'payload', data: decoded.payload },
+        { label: 'Signature', cls: 'sig', data: null, raw: decoded.sig }
+      ];
+      labels.forEach(function (part) {
+        var div = document.createElement('div');
+        div.className = 'jwt-part';
+        var lbl = document.createElement('div');
+        lbl.className = 'jwt-part-label ' + part.cls;
+        lbl.textContent = part.label;
+        div.appendChild(lbl);
+        var pre = document.createElement('pre');
+        pre.textContent = part.data ? JSON.stringify(part.data, null, 2) : (part.raw || '');
+        div.appendChild(pre);
+        container.appendChild(div);
+      });
+    }
+
+    function reset() {
+      lastPayload = null;
+      document.getElementById('outputArea').style.display = 'none';
+      setStatus('info', 'Paste a JWT above to visualize its timeline.');
+    }
+
+    function setStatus(type, msg) {
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar ' + type;
+      sb.textContent = msg;
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    var debouncedProcess = DT.debounce(function () {
+      process(document.getElementById('jwtInput').value);
+    }, 200);
+
+    document.getElementById('jwtInput').addEventListener('input', debouncedProcess);
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      // Build an example JWT with current timestamps
+      var now = Math.floor(Date.now() / 1000);
+      var header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      var payload = btoa(JSON.stringify({
+        sub: 'user_42',
+        name: 'Jane Developer',
+        email: 'jane@example.com',
+        iss: 'https://auth.example.com',
+        aud: 'devtoolbox',
+        iat: now - 1800,
+        nbf: now - 1800,
+        exp: now + 5400,
+        jti: 'abc123xyz'
+      })).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+      var fakeToken = header + '.' + payload + '.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+      document.getElementById('jwtInput').value = fakeToken;
+      process(fakeToken);
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('jwtInput').value = '';
+      reset();
+    });
+
+    document.getElementById('copyPayloadBtn').addEventListener('click', function () {
+      if (lastPayload) {
+        DT.copyToClipboard(JSON.stringify(lastPayload.payload, null, 2), this);
+      }
+    });
+
+  })();
+  </script>
+</body>
+</html>

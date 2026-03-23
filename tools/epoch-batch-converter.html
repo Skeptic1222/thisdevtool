@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Batch Timestamp Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Paste multiple timestamps and convert them all at once. Auto-detect Unix seconds, milliseconds, and ISO 8601. Export as CSV. Sort by date. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/epoch-batch-converter.html">
+  <meta property="og:title" content="Batch Timestamp Converter — DevToolbox">
+  <meta property="og:description" content="Convert multiple timestamps at once. Auto-detect Unix, milliseconds, ISO 8601. Export CSV, sort by date. Free, runs in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/epoch-batch-converter.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Batch Timestamp Converter",
+    "url": "https://thisdevtool.com/tools/epoch-batch-converter.html",
+    "description": "Convert multiple timestamps at once. Auto-detect Unix seconds, milliseconds, and ISO 8601. Export as CSV.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a Unix timestamp (epoch)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Unix timestamp (also called an epoch timestamp) is the number of seconds (or milliseconds) that have elapsed since 00:00:00 UTC on 1 January 1970, known as the Unix epoch. It is a standard way to represent moments in time as a single integer, independent of time zones. Unix timestamps in seconds are typically 10 digits; in milliseconds they are 13 digits."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the tool auto-detect the timestamp format?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool inspects each input line. If the value is a 13-digit number, it is treated as Unix milliseconds. If it is a 10-digit number, it is treated as Unix seconds. If the value contains T or Z or hyphens in an ISO 8601 pattern, it is parsed as ISO 8601. Values that do not match any pattern are marked as invalid."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is ISO 8601 format?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ISO 8601 is an international standard for representing dates and times. Examples include 2024-03-22T14:30:00Z (UTC), 2024-03-22T14:30:00+05:30 (with timezone offset), and 2024-03-22 (date only). It is the format used by most databases, APIs, and programming languages for unambiguous date-time representation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is relative time and how is it calculated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Relative time shows how long ago or in the future a timestamp is compared to right now — for example, '3 days ago' or 'in 2 hours'. It is calculated by subtracting the current time from the timestamp and formatting the difference in human-readable units (seconds, minutes, hours, days, months, years)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I export the results as a CSV?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Click the 'Export CSV' button after converting your timestamps. The CSV will include columns for the original input, detected format, Unix seconds, Unix milliseconds, ISO 8601, human-readable date, and relative time. The file downloads directly to your computer."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .ts-results { margin-top: 1rem; overflow-x: auto; }
+    .ts-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .ts-table th { background: var(--bg-secondary); color: var(--text-muted); font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.5rem 0.6rem; border-bottom: 2px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
+    .ts-table th:hover { color: var(--accent); }
+    .ts-table th .sort-arrow { font-size: 0.65rem; margin-left: 0.2rem; }
+    .ts-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); font-family: var(--font-mono); vertical-align: middle; }
+    .ts-table tr:hover td { background: var(--bg-secondary); }
+    .ts-table tr.invalid-row td { color: var(--text-muted); }
+    .tag-unix { background: rgba(16,185,129,0.15); color: #10b981; border-radius: 4px; padding: 1px 6px; font-size: 0.7rem; font-weight: 700; }
+    .tag-ms { background: rgba(59,130,246,0.15); color: #3b82f6; border-radius: 4px; padding: 1px 6px; font-size: 0.7rem; font-weight: 700; }
+    .tag-iso { background: rgba(139,92,246,0.15); color: #8b5cf6; border-radius: 4px; padding: 1px 6px; font-size: 0.7rem; font-weight: 700; }
+    .tag-invalid { background: rgba(239,68,68,0.15); color: #ef4444; border-radius: 4px; padding: 1px 6px; font-size: 0.7rem; font-weight: 700; }
+    .relative-future { color: #3b82f6; }
+    .relative-past { color: var(--text-muted); }
+    .actions-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; align-items: center; }
+    .actions-row .count-badge { font-size: 0.8rem; color: var(--text-muted); margin-left: auto; }
+    .tz-select { padding: 0.35rem 0.7rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text); font-size: 0.82rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/timestamp-converter.html">Single Timestamp</a>
+        <a href="/tools/cron-parser.html">Cron Parser</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Batch Timestamp Converter</h1>
+          <p class="tool-subtitle">Paste multiple timestamps (one per line). Auto-detect format. Convert all to Unix, ISO 8601, human-readable, and relative time.</p>
+
+          <!-- Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-opt="utc" id="chipUTC">UTC output</button>
+            <button class="option-chip" data-opt="local" id="chipLocal">Local time</button>
+            <button class="option-chip active" id="chipShowInvalid">Show invalid</button>
+            <button class="option-chip" id="chipSortDate">Sort by date</button>
+          </div>
+
+          <!-- Input -->
+          <div class="pane-label" style="margin-bottom:0.4rem;">
+            <span>Timestamps (one per line)</span>
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+          </div>
+          <textarea id="tsInput" rows="8" placeholder="1711094400&#10;1711094400000&#10;2024-03-22T14:30:00Z&#10;2026-01-15 09:00:00&#10;1700000000" spellcheck="false"></textarea>
+
+          <!-- Actions and timezone -->
+          <div class="actions-row" style="margin-top:0.75rem;">
+            <button class="btn btn-sm btn-primary" id="convertBtn">Convert All</button>
+            <button class="btn btn-sm btn-secondary" id="exportCsvBtn">Export CSV</button>
+            <label style="font-size:0.82rem;color:var(--text-muted);display:flex;align-items:center;gap:0.4rem;">
+              TZ:
+              <select class="tz-select" id="tzSelect"></select>
+            </label>
+            <span class="count-badge" id="countBadge"></span>
+          </div>
+
+          <!-- Results table -->
+          <div class="ts-results" id="tsResults" style="display:none;">
+            <table class="ts-table" id="tsTable">
+              <thead>
+                <tr>
+                  <th data-col="orig">Original <span class="sort-arrow"></span></th>
+                  <th data-col="type">Type <span class="sort-arrow"></span></th>
+                  <th data-col="unix">Unix (s) <span class="sort-arrow"></span></th>
+                  <th data-col="ms">Unix (ms) <span class="sort-arrow"></span></th>
+                  <th data-col="iso">ISO 8601 <span class="sort-arrow"></span></th>
+                  <th data-col="human">Human-readable <span class="sort-arrow"></span></th>
+                  <th data-col="rel">Relative <span class="sort-arrow"></span></th>
+                </tr>
+              </thead>
+              <tbody id="tsBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Status bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste timestamps above, one per line.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Batch Timestamp Converter</h2>
+          <ol>
+            <li><strong>Paste timestamps</strong> — one per line. Mix Unix seconds, milliseconds, and ISO 8601 freely.</li>
+            <li><strong>Click Convert All</strong> — or it converts automatically as you type.</li>
+            <li><strong>Sort the table</strong> — click any column header to sort.</li>
+            <li><strong>Export</strong> — click Export CSV to download all rows as a spreadsheet-ready file.</li>
+          </ol>
+
+          <h2>Timestamp Formats Explained</h2>
+          <p>Applications and databases store dates and times in a variety of formats. When debugging logs, analyzing data exports, or integrating systems that use different timestamp conventions, you often need to convert between them quickly. This batch converter handles the most common formats automatically.</p>
+
+          <h3>Unix Timestamps (Epoch Seconds)</h3>
+          <p>A Unix timestamp counts the number of seconds elapsed since midnight UTC on January 1, 1970 — the "Unix epoch". This is the most universal timestamp format, used natively by POSIX operating systems, C/C++, Python's <code>time.time()</code>, Go's <code>time.Unix()</code>, and many databases. Unix timestamps in seconds are typically 10 digits. For example, 1711094400 is 2024-03-22 12:00:00 UTC.</p>
+
+          <h3>Unix Milliseconds</h3>
+          <p>Many modern systems use millisecond precision. JavaScript's <code>Date.now()</code> returns milliseconds. Java's <code>System.currentTimeMillis()</code> returns milliseconds. MongoDB's ObjectIDs encode milliseconds. Millisecond timestamps are 13 digits. For example, 1711094400000 is the same moment as 1711094400 seconds, just with three extra zeros.</p>
+
+          <h3>ISO 8601</h3>
+          <p>ISO 8601 is the international standard for date-time strings. It looks like <code>2024-03-22T14:30:00Z</code> (UTC), <code>2024-03-22T14:30:00+05:30</code> (with offset), or simply <code>2024-03-22</code> (date only). This format is unambiguous, sortable as a string, and supported natively by every major programming language and database. REST APIs, JSON payloads, and log files commonly use ISO 8601.</p>
+
+          <h3>Human-Readable Format</h3>
+          <p>The human-readable column shows the date and time in a clear format like "Friday, March 22, 2024 at 12:00:00 UTC". This is useful for quickly verifying whether a timestamp is correct without mentally converting from epoch numbers.</p>
+
+          <h3>Relative Time</h3>
+          <p>Relative time shows how long ago or in the future a timestamp is — "3 days ago", "in 2 hours", "just now". This is calculated by comparing the timestamp to the current moment. It is especially useful for log analysis: seeing that a database error occurred "47 minutes ago" is more actionable than seeing a raw epoch number.</p>
+
+          <h3>Common Use Cases</h3>
+          <p>Batch timestamp conversion is used for: analyzing server logs that contain Unix timestamps, debugging API responses with mixed timestamp formats, processing database exports, comparing event timelines across distributed systems, converting timestamps from one timezone for display to users in another timezone, and verifying that scheduled jobs fired at the correct times.</p>
+
+          <h3>Timezone Considerations</h3>
+          <p>Unix timestamps are always in UTC by nature — they represent an absolute moment in time. ISO 8601 strings can include a timezone offset. The "Human-readable" and "Relative time" columns in this tool can be shown in either UTC or your local browser timezone — use the timezone selector to switch. For server-side work, UTC is almost always preferred. For user-facing interfaces, local time is more intuitive.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a Unix timestamp (epoch)?</button>
+            <div class="faq-answer">A Unix timestamp is the number of seconds (or milliseconds) elapsed since 00:00:00 UTC on January 1, 1970. It is a universal way to represent moments in time as a single integer. Unix seconds are 10 digits; milliseconds are 13 digits.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the tool auto-detect the timestamp format?</button>
+            <div class="faq-answer">13-digit numbers are treated as Unix milliseconds. 10-digit numbers as Unix seconds. Strings matching ISO 8601 patterns (containing T, Z, or date separators) are parsed as ISO 8601. Everything else is marked invalid.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is ISO 8601 format?</button>
+            <div class="faq-answer">ISO 8601 is the international standard for date-time strings. Examples: 2024-03-22T14:30:00Z (UTC), 2024-03-22T14:30:00+05:30 (with offset), 2024-03-22 (date only). Used by most databases, APIs, and languages.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is relative time and how is it calculated?</button>
+            <div class="faq-answer">Relative time shows how far in the past or future a timestamp is compared to now — e.g., "3 days ago" or "in 2 hours". It is calculated by subtracting the current time from the timestamp and formatting the difference in human-readable units.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I export the results as a CSV?</button>
+            <div class="faq-answer">Click the "Export CSV" button. The CSV includes columns for original input, detected format, Unix seconds, Unix milliseconds, ISO 8601, human-readable date, and relative time. It downloads directly to your computer.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/epoch-batch-converter.html">Batch Timestamps</a>
+        <a href="/tools/cron-parser.html">Cron Parser</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/csv-json.html">CSV ↔ JSON</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var useUTC = true;
+      var showInvalid = true;
+      var sortByDate = false;
+      var sortCol = null;
+      var sortDir = 1;
+      var rows = [];
+
+      // Populate timezone select
+      var tzSelect = document.getElementById('tzSelect');
+      var tzNames = ['UTC', Intl.DateTimeFormat().resolvedOptions().timeZone];
+      // Add a few common ones
+      ['America/New_York','America/Los_Angeles','America/Chicago','Europe/London','Europe/Paris','Europe/Berlin','Asia/Tokyo','Asia/Shanghai','Asia/Kolkata','Australia/Sydney'].forEach(function(tz) {
+        if (tzNames.indexOf(tz) < 0) tzNames.push(tz);
+      });
+      tzNames.forEach(function (tz) {
+        var opt = document.createElement('option');
+        opt.value = tz;
+        opt.textContent = tz;
+        if (tz === 'UTC') opt.selected = true;
+        tzSelect.appendChild(opt);
+      });
+
+      function detectFormat(val) {
+        val = val.trim();
+        // ISO 8601 — contains letters/hyphens typical of a date string
+        if (/^\d{4}-\d{2}-\d{2}/.test(val)) return 'iso';
+        if (/^\d{4}\/\d{2}\/\d{2}/.test(val)) return 'iso';
+        if (/T\d{2}:\d{2}/.test(val)) return 'iso';
+        if (/^\d{13}$/.test(val)) return 'ms';
+        if (/^\d{10}$/.test(val)) return 'unix';
+        if (/^\d{9}$/.test(val)) return 'unix'; // old timestamps
+        if (/^\d{12}$/.test(val)) return 'ms';
+        // Try parsing as date string
+        var d = new Date(val);
+        if (!isNaN(d.getTime()) && val.length > 4) return 'iso';
+        return 'invalid';
+      }
+
+      function parseToMs(val, fmt) {
+        val = val.trim();
+        switch (fmt) {
+          case 'unix': return parseInt(val, 10) * 1000;
+          case 'ms': return parseInt(val, 10);
+          case 'iso': return new Date(val).getTime();
+          default: return NaN;
+        }
+      }
+
+      function formatHuman(ms, tz) {
+        try {
+          return new Intl.DateTimeFormat('en-US', {
+            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            timeZone: tz, timeZoneName: 'short'
+          }).format(new Date(ms));
+        } catch (e) {
+          return new Date(ms).toUTCString();
+        }
+      }
+
+      function formatISO(ms, tz) {
+        try {
+          if (tz === 'UTC') return new Date(ms).toISOString();
+          // Format with offset
+          var d = new Date(ms);
+          var parts = new Intl.DateTimeFormat('en-CA', {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false, timeZone: tz
+          }).formatToParts(d);
+          var p = {};
+          parts.forEach(function (x) { p[x.type] = x.value; });
+          // Get offset
+          var utcDate = new Date(d.toLocaleString('en-US', { timeZone: 'UTC' }));
+          var tzDate = new Date(d.toLocaleString('en-US', { timeZone: tz }));
+          var diff = (tzDate - utcDate) / 60000;
+          var sign = diff >= 0 ? '+' : '-';
+          var oh = Math.floor(Math.abs(diff) / 60);
+          var om = Math.abs(diff) % 60;
+          var offset = sign + String(oh).padStart(2,'0') + ':' + String(om).padStart(2,'0');
+          return p.year + '-' + p.month + '-' + p.day + 'T' + p.hour + ':' + p.minute + ':' + p.second + offset;
+        } catch (e) {
+          return new Date(ms).toISOString();
+        }
+      }
+
+      function relativeTime(ms) {
+        var diff = ms - Date.now();
+        var abs = Math.abs(diff);
+        var suffix = diff < 0 ? ' ago' : ' from now';
+        var prefix = diff < 0 ? '' : 'in ';
+        if (abs < 5000) return 'just now';
+        if (abs < 60000) return prefix + Math.round(abs / 1000) + 's' + suffix;
+        if (abs < 3600000) return prefix + Math.round(abs / 60000) + ' min' + suffix;
+        if (abs < 86400000) return prefix + Math.round(abs / 3600000) + ' hr' + suffix;
+        if (abs < 2592000000) return prefix + Math.round(abs / 86400000) + ' days' + suffix;
+        if (abs < 31536000000) return prefix + Math.round(abs / 2592000000) + ' months' + suffix;
+        return prefix + Math.round(abs / 31536000000) + ' years' + suffix;
+      }
+
+      function processAll() {
+        var lines = document.getElementById('tsInput').value.split('\n');
+        var tz = tzSelect.value;
+        rows = [];
+
+        lines.forEach(function (line) {
+          var orig = line.trim();
+          if (!orig) return;
+          var fmt = detectFormat(orig);
+          var ms = parseToMs(orig, fmt);
+          var valid = fmt !== 'invalid' && !isNaN(ms);
+
+          if (!valid) {
+            rows.push({ orig: orig, fmt: 'invalid', unix: '', ms: '', iso: '', human: '', rel: '', _ms: NaN, valid: false });
+            return;
+          }
+
+          rows.push({
+            orig: orig,
+            fmt: fmt,
+            unix: Math.floor(ms / 1000),
+            ms: ms,
+            iso: formatISO(ms, tz),
+            human: formatHuman(ms, tz),
+            rel: relativeTime(ms),
+            _ms: ms,
+            valid: true
+          });
+        });
+
+        if (sortByDate) {
+          rows.sort(function (a, b) {
+            if (isNaN(a._ms) && isNaN(b._ms)) return 0;
+            if (isNaN(a._ms)) return 1;
+            if (isNaN(b._ms)) return -1;
+            return a._ms - b._ms;
+          });
+        } else if (sortCol) {
+          rows.sort(function (a, b) {
+            var av = a[sortCol], bv = b[sortCol];
+            if (av === bv) return 0;
+            if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir;
+            return String(av).localeCompare(String(bv)) * sortDir;
+          });
+        }
+
+        renderTable();
+
+        var valid = rows.filter(function (r) { return r.valid; }).length;
+        var invalid = rows.length - valid;
+        document.getElementById('countBadge').textContent = valid + ' converted' + (invalid ? ', ' + invalid + ' invalid' : '');
+
+        if (rows.length > 0) {
+          document.getElementById('tsResults').style.display = '';
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Converted ' + valid + ' timestamp' + (valid !== 1 ? 's' : '') + (invalid ? ' (' + invalid + ' invalid)' : '');
+        } else {
+          document.getElementById('tsResults').style.display = 'none';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste timestamps above, one per line.';
+        }
+
+        DT.trackTool('epoch-batch-converter');
+      }
+
+      var statusBar = document.getElementById('statusBar');
+
+      function renderTable() {
+        var tbody = document.getElementById('tsBody');
+        tbody.innerHTML = '';
+        rows.forEach(function (row) {
+          if (!row.valid && !showInvalid) return;
+          var tr = document.createElement('tr');
+          if (!row.valid) tr.className = 'invalid-row';
+
+          function td(content, isCode) {
+            var cell = document.createElement('td');
+            cell.innerHTML = isCode ? '<code>' + escHtml(String(content)) + '</code>' : escHtml(String(content));
+            return cell;
+          }
+          function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+          tr.appendChild(td(row.orig));
+
+          var typeTd = document.createElement('td');
+          var tagClass = { 'unix': 'tag-unix', 'ms': 'tag-ms', 'iso': 'tag-iso', 'invalid': 'tag-invalid' }[row.fmt] || 'tag-invalid';
+          var tagLabel = { 'unix': 'Unix s', 'ms': 'Unix ms', 'iso': 'ISO 8601', 'invalid': 'Invalid' }[row.fmt] || 'Unknown';
+          typeTd.innerHTML = '<span class="' + tagClass + '">' + tagLabel + '</span>';
+          tr.appendChild(typeTd);
+
+          tr.appendChild(td(row.valid ? row.unix : '—', row.valid));
+          tr.appendChild(td(row.valid ? row.ms : '—', row.valid));
+          tr.appendChild(td(row.valid ? row.iso : '—', row.valid));
+          tr.appendChild(td(row.valid ? row.human : '—'));
+
+          var relTd = document.createElement('td');
+          if (row.valid) {
+            var cls = row._ms > Date.now() ? 'relative-future' : 'relative-past';
+            relTd.innerHTML = '<span class="' + cls + '">' + escHtml(row.rel) + '</span>';
+          } else {
+            relTd.textContent = '—';
+          }
+          tr.appendChild(relTd);
+
+          tbody.appendChild(tr);
+        });
+      }
+
+      function exportCSV() {
+        var tz = tzSelect.value;
+        var header = ['Original', 'Detected Format', 'Unix (seconds)', 'Unix (milliseconds)', 'ISO 8601 (' + tz + ')', 'Human-readable', 'Relative time'];
+        var lines = [header.map(function (h) { return '"' + h + '"'; }).join(',')];
+        rows.forEach(function (row) {
+          if (!row.valid && !showInvalid) return;
+          var cols = [
+            row.orig,
+            row.fmt,
+            row.valid ? row.unix : '',
+            row.valid ? row.ms : '',
+            row.valid ? row.iso : '',
+            row.valid ? row.human : '',
+            row.valid ? row.rel : 'invalid'
+          ];
+          lines.push(cols.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','));
+        });
+        DT.downloadText(lines.join('\n'), 'timestamps.csv', 'text/csv');
+      }
+
+      var debouncedProcess = DT.debounce(processAll, 200);
+      document.getElementById('tsInput').addEventListener('input', debouncedProcess);
+      document.getElementById('convertBtn').addEventListener('click', processAll);
+      document.getElementById('exportCsvBtn').addEventListener('click', exportCSV);
+      tzSelect.addEventListener('change', processAll);
+
+      // Chips
+      document.getElementById('chipUTC').addEventListener('click', function () {
+        useUTC = true;
+        document.getElementById('chipUTC').classList.add('active');
+        document.getElementById('chipLocal').classList.remove('active');
+        tzSelect.value = 'UTC';
+        processAll();
+      });
+      document.getElementById('chipLocal').addEventListener('click', function () {
+        useUTC = false;
+        document.getElementById('chipLocal').classList.add('active');
+        document.getElementById('chipUTC').classList.remove('active');
+        tzSelect.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        processAll();
+      });
+      document.getElementById('chipShowInvalid').addEventListener('click', function () {
+        showInvalid = !showInvalid;
+        this.classList.toggle('active', showInvalid);
+        renderTable();
+      });
+      document.getElementById('chipSortDate').addEventListener('click', function () {
+        sortByDate = !sortByDate;
+        this.classList.toggle('active', sortByDate);
+        processAll();
+      });
+
+      // Column sort
+      document.querySelectorAll('.ts-table th').forEach(function (th) {
+        th.addEventListener('click', function () {
+          var col = th.getAttribute('data-col');
+          if (sortCol === col) { sortDir *= -1; }
+          else { sortCol = col; sortDir = 1; }
+          sortByDate = false;
+          document.getElementById('chipSortDate').classList.remove('active');
+          document.querySelectorAll('.ts-table th .sort-arrow').forEach(function (s) { s.textContent = ''; });
+          th.querySelector('.sort-arrow').textContent = sortDir === 1 ? '▲' : '▼';
+          renderTable();
+        });
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        document.getElementById('tsInput').value = '';
+        rows = [];
+        document.getElementById('tsResults').style.display = 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste timestamps above, one per line.';
+        document.getElementById('countBadge').textContent = '';
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        document.getElementById('tsInput').value = [
+          '1711094400',
+          '1711094400000',
+          '2024-03-22T14:30:00Z',
+          '2026-01-15 09:00:00',
+          '1700000000',
+          '1609459200',
+          '2023-11-05T08:15:30+00:00',
+          '1483228800',
+          'not-a-timestamp',
+          '1735689600'
+        ].join('\n');
+        processAll();
+      });
+    })();
+  </script>
+</body>
+</html>

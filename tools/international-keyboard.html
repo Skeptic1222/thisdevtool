@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Keyboard Layout Tester — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Test and compare keyboard layouts: QWERTY, AZERTY, QWERTZ, Dvorak, Colemak. Type on your physical keyboard and see which key maps where. Visual layout comparison. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/international-keyboard.html">
+  <meta property="og:title" content="Keyboard Layout Tester — DevToolbox">
+  <meta property="og:description" content="Visualize and compare QWERTY, AZERTY, QWERTZ, Dvorak, Colemak keyboard layouts. See pressed keys highlighted in real time.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/international-keyboard.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Keyboard Layout Tester",
+    "url": "https://thisdevtool.com/tools/international-keyboard.html",
+    "description": "Test and compare keyboard layouts: QWERTY, AZERTY, QWERTZ, Dvorak, Colemak. Type on your physical keyboard and see visual key highlights.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between QWERTY and AZERTY?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "QWERTY is the standard English keyboard layout where the top-left letter keys spell Q-W-E-R-T-Y. AZERTY is the standard French keyboard layout where the same keys spell A-Z-E-R-T-Y. AZERTY also moves M to the right of L, and adds accented characters. It is primarily used in France, Belgium, and some African countries."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Dvorak actually faster than QWERTY?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The evidence is mixed. The Dvorak Simplified Keyboard was designed to place the most common English letters on the home row to minimize finger movement. Some studies show modest speed improvements for trained typists, while others show no significant difference. Most people stick with QWERTY because retraining costs outweigh the potential benefits unless you are starting from scratch."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Colemak?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Colemak is a modern keyboard layout designed in 2006 as an ergonomic alternative to both QWERTY and Dvorak. It moves 17 keys compared to QWERTY (versus 33 for Dvorak), keeping familiar shortcuts like Ctrl+Z, Ctrl+X, Ctrl+C, Ctrl+V in the same position. It places the most common letters on the home row and is popular among programmers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is QWERTZ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "QWERTZ is the standard keyboard layout for German-speaking countries (Germany, Austria, Switzerland). The main difference from QWERTY is that Y and Z are swapped (since Z is more common in German than Y), and it includes keys for umlauts (Ä, Ö, Ü) and the sharp S (ß)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I switch keyboard layouts in my operating system?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On Windows: Settings > Time & Language > Language > Add a language, then set the keyboard layout. On macOS: System Preferences > Keyboard > Input Sources. On Linux: varies by desktop environment, but typically System Settings > Region & Language > Input Sources. You can also use a keyboard shortcut (Win+Space on Windows, Ctrl+Space on some Linux systems) to switch between installed layouts."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .keyboard-wrap { overflow-x: auto; padding-bottom: 8px; }
+    .keyboard { display: inline-flex; flex-direction: column; gap: 5px; user-select: none; min-width: 600px; }
+    .key-row { display: flex; gap: 5px; align-items: flex-end; }
+    .key {
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      min-width: 44px; height: 44px; border-radius: 6px; border: 1px solid var(--border, #e2e8f0);
+      background: var(--bg-secondary, #f8fafc); font-size: 0.8rem; font-weight: 600;
+      cursor: default; position: relative; transition: background 0.1s, transform 0.08s;
+      padding: 2px 4px; box-sizing: border-box; text-align: center; line-height: 1.2;
+    }
+    .key .shifted { font-size: 0.65rem; color: var(--text-muted, #64748b); }
+    .key-space { min-width: 280px; }
+    .key-tab { min-width: 70px; }
+    .key-caps { min-width: 80px; }
+    .key-enter { min-width: 90px; }
+    .key-lshift { min-width: 100px; }
+    .key-rshift { min-width: 130px; }
+    .key-backspace { min-width: 90px; font-size: 0.7rem; }
+    .key-fn { min-width: 55px; font-size: 0.7rem; background: var(--bg-tertiary, #f1f5f9); color: var(--text-muted, #64748b); }
+    .key.pressed { background: #10b981; color: #fff; border-color: #059669; transform: scale(0.95); }
+    .key.pressed .shifted { color: #d1fae5; }
+    .key.highlight { background: #d1fae5; border-color: #6ee7b7; }
+    [data-theme="dark"] .key { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+    [data-theme="dark"] .key-fn { background: #0f172a; }
+    [data-theme="dark"] .key.highlight { background: #064e3b; border-color: #059669; }
+
+    .typing-area { width: 100%; margin-top: 12px; }
+    .typed-output {
+      min-height: 60px; background: var(--bg-secondary, #f8fafc); border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px; padding: 10px 14px; font-family: monospace; font-size: 1rem;
+      word-break: break-all; color: var(--text-primary, #0f172a);
+    }
+    .stats-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 0.82rem; color: var(--text-muted, #64748b); }
+    .stats-row span strong { color: var(--text-primary, #0f172a); }
+    .compare-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-top: 12px; }
+    .compare-card { border: 1px solid var(--border, #e2e8f0); border-radius: 8px; padding: 12px; }
+    .compare-card h4 { margin: 0 0 8px; font-size: 0.9rem; color: #10b981; }
+    .compare-card .mini-keyboard { font-family: monospace; font-size: 0.72rem; color: var(--text-muted, #64748b); line-height: 1.8; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <a href="/tools/case-converter.html">Case</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Keyboard Layout Tester</h1>
+          <p class="tool-subtitle">Visualize QWERTY, AZERTY, QWERTZ, Dvorak, and Colemak layouts. Type on your keyboard to see keys highlighted in real time.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-layout="qwerty">QWERTY</button>
+            <button class="option-chip" data-layout="azerty">AZERTY</button>
+            <button class="option-chip" data-layout="qwertz">QWERTZ</button>
+            <button class="option-chip" data-layout="dvorak">Dvorak</button>
+            <button class="option-chip" data-layout="colemak">Colemak</button>
+          </div>
+
+          <div class="pane-label" style="margin-top:14px;margin-bottom:8px;">
+            <span id="layoutLabel">Layout: QWERTY</span>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-sm btn-secondary" id="clearTypedBtn">Clear</button>
+              <button class="btn btn-sm btn-primary" id="copyTypedBtn">Copy Text</button>
+            </div>
+          </div>
+
+          <div class="keyboard-wrap">
+            <div class="keyboard" id="keyboard"></div>
+          </div>
+
+          <div class="typing-area">
+            <input type="text" id="hiddenInput" style="position:absolute;opacity:0;pointer-events:none;width:1px;" aria-label="Type here" autofocus>
+            <div class="typed-output" id="typedOutput" tabindex="0" title="Click here then type on your keyboard">Click here (or anywhere) then type on your keyboard...</div>
+          </div>
+
+          <div class="stats-row" id="statsRow">
+            <span>Keys pressed: <strong id="statKeys">0</strong></span>
+            <span>Characters: <strong id="statChars">0</strong></span>
+            <span>Layout: <strong id="statLayout">QWERTY</strong></span>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Layout: QWERTY — 0 keys pressed
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>Layout Comparison</h2>
+          <div class="compare-grid" id="compareGrid"></div>
+
+          <h2>About Keyboard Layouts</h2>
+          <p>Keyboard layouts define how physical keys map to characters. While most people use QWERTY, there are several alternative layouts designed for different languages, ergonomics, or typing efficiency. Understanding these layouts is useful for developers working with international applications, system administrators configuring multi-region setups, and anyone learning touch typing on an alternative layout.</p>
+
+          <h3>QWERTY — The Universal Standard</h3>
+          <p>QWERTY was designed in the 1870s by Christopher Latham Sholes for the Remington typewriter. The layout was partly designed to prevent mechanical jamming by placing frequently combined letters apart. Despite this mechanical origin, QWERTY has dominated for 150 years because of its universal adoption. Nearly every operating system, keyboard hardware, and typing training program defaults to QWERTY. For software developers working in English, QWERTY places important symbols (<code>{ } [ ] / \ ; :</code>) in convenient positions.</p>
+
+          <h3>AZERTY — French Standard</h3>
+          <p>AZERTY is the default layout for French-language keyboards. It swaps Q↔A, W↔Z, and M moves to the right of L. It adds dedicated keys for accented characters (é, è, ê, à, ù) and the cedilla (ç). AZERTY is used primarily in France, Belgium, and some North African countries. Belgian AZERTY differs slightly from French AZERTY in symbol placement.</p>
+
+          <h3>QWERTZ — German Standard</h3>
+          <p>QWERTZ is standard for German, Austrian, Swiss, Czech, Slovak, and South Slavic language keyboards. The critical change is swapping Y and Z — since Z is far more common in German than Y, this reduces pinky-finger travel. QWERTZ also adds Ä, Ö, Ü, and ß keys. Swiss German QWERTZ supports both German and French characters simultaneously.</p>
+
+          <h3>Dvorak — Ergonomic Alternative</h3>
+          <p>The Dvorak Simplified Keyboard was patented in 1936 by August Dvorak and William Dealey. The design philosophy places the five most common vowels (A, O, E, U, I) on the left home row and the most common consonants (D, H, T, N, S) on the right home row. This means roughly 70% of common English words can be typed entirely from the home row. Dvorak is natively supported on Windows, macOS, and Linux and has a dedicated following among programmers with repetitive strain injuries.</p>
+
+          <h3>Colemak — Modern Ergonomic</h3>
+          <p>Colemak was designed in 2006 by Shai Coleman as a more practical alternative to Dvorak. It changes only 17 keys from QWERTY (Dvorak changes 33), keeping Ctrl+Z/X/C/V in the same physical position for copy-paste shortcuts. The home row design places the 10 most common English letters on the home row. Colemak-DH (a popular variant) further optimizes for reducing lateral finger movement.</p>
+
+          <h2>How to Use This Tool</h2>
+          <ol>
+            <li>Select a layout using the chips above the keyboard visualization.</li>
+            <li>Click anywhere on the page to focus the input, then type on your physical keyboard.</li>
+            <li>Watch the virtual keyboard highlight each pressed key according to the selected layout mapping.</li>
+            <li>Use the Compare section below to see all layout rows side by side.</li>
+          </ol>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between QWERTY and AZERTY?</button>
+            <div class="faq-answer">QWERTY is the English standard with Q-W-E-R-T-Y on the top row. AZERTY is the French standard where those keys are A-Z-E-R-T-Y. AZERTY also moves M next to L, and includes dedicated keys for French accented characters (é, è, ê, à, ù, ç). AZERTY is used in France, Belgium, and some African countries.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is Dvorak actually faster than QWERTY?</button>
+            <div class="faq-answer">Evidence is mixed. Dvorak places the most common English letters on the home row to minimize finger travel. Some studies show modest speed improvements for trained typists, others show no difference. Most people don't switch because retraining costs outweigh benefits unless starting from scratch. World speed records have been set on both layouts.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is Colemak?</button>
+            <div class="faq-answer">Colemak is a 2006 keyboard layout designed to be ergonomic while being easier to learn than Dvorak. It changes only 17 keys from QWERTY (Dvorak changes 33), keeps Ctrl+Z/X/C/V in familiar positions, and places the 10 most common English letters on the home row. It's popular among developers who type for long hours.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is QWERTZ?</button>
+            <div class="faq-answer">QWERTZ is the standard layout for German-speaking countries. The main difference from QWERTY is that Y and Z are swapped (Z is more common in German), and it adds Ä, Ö, Ü, and ß keys. QWERTZ is used in Germany, Austria, Switzerland, and several Eastern European countries.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I switch keyboard layouts in my operating system?</button>
+            <div class="faq-answer">Windows: Settings > Time & Language > Language > Add a language. macOS: System Preferences > Keyboard > Input Sources. Linux: System Settings > Region & Language > Input Sources. After adding a layout, use Win+Space (Windows), Ctrl+Space (some Linux), or Command+Space (macOS) to switch between installed layouts.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/international-keyboard.html">Keyboard Layout Tester</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/slug-generator.html">Slug Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    // Layout definitions: each is an array of rows, each row is array of [unshifted, shifted] pairs
+    var LAYOUTS = {
+      qwerty: {
+        name: 'QWERTY',
+        rows: [
+          [['`','~'],['1','!'],['2','@'],['3','#'],['4','$'],['5','%'],['6','^'],['7','&'],['8','*'],['9','('],['0',')'],['−','_'],['=','+']],
+          [['q','Q'],['w','W'],['e','E'],['r','R'],['t','T'],['y','Y'],['u','U'],['i','I'],['o','O'],['p','P'],['[','{'],[']','}'],['\\','|']],
+          [['a','A'],['s','S'],['d','D'],['f','F'],['g','G'],['h','H'],['j','J'],['k','K'],['l','L'],[';',':'],['\''','"']],
+          [['z','Z'],['x','X'],['c','C'],['v','V'],['b','B'],['n','N'],['m','M'],[',','<'],['.','>'],['/',']']]
+        ]
+      },
+      azerty: {
+        name: 'AZERTY',
+        rows: [
+          [['²',''],['&','1'],['é','2'],['\"','3'],['\'','4'],['(','5'],['-','6'],['è','7'],['_','8'],['ç','9'],['à','0'],[')',']'],['=','+']],
+          [['a','A'],['z','Z'],['e','E'],['r','R'],['t','T'],['y','Y'],['u','U'],['i','I'],['o','O'],['p','P'],['^','¨'],['$','£'],['*','µ']],
+          [['q','Q'],['s','S'],['d','D'],['f','F'],['g','G'],['h','H'],['j','J'],['k','K'],['l','L'],['m','M'],['ù','%'],['!','§']],
+          [['<','>'],['w','W'],['x','X'],['c','C'],['v','V'],['b','B'],['n','N'],[',','?'],[';','.'],[':', '/'],['!','§']]
+        ]
+      },
+      qwertz: {
+        name: 'QWERTZ',
+        rows: [
+          [['`','^'],['1','!'],['2','"'],['3','§'],['4','$'],['5','%'],['6','&'],['7','/'],['8','('],['9',')'],['0','='],['ß','?'],['´','`']],
+          [['q','Q'],['w','W'],['e','E'],['r','R'],['t','T'],['z','Z'],['u','U'],['i','I'],['o','O'],['p','P'],['ü','Ü'],['+','*'],['#','\'']],
+          [['a','A'],['s','S'],['d','D'],['f','F'],['g','G'],['h','H'],['j','J'],['k','K'],['l','L'],['ö','Ö'],['ä','Ä']],
+          [['y','Y'],['x','X'],['c','C'],['v','V'],['b','B'],['n','N'],['m','M'],[',',';'],['.',':'],['−','_']]
+        ]
+      },
+      dvorak: {
+        name: 'Dvorak',
+        rows: [
+          [['`','~'],['1','!'],['2','@'],['3','#'],['4','$'],['5','%'],['6','^'],['7','&'],['8','*'],['9','('],['0',')'],['[','{'],[']','}']],
+          [['\'','"'],[',','<'],['.','>''],['p','P'],['y','Y'],['f','F'],['g','G'],['c','C'],['r','R'],['l','L'],['/', '?'],['=','+'],['\\','|']],
+          [['a','A'],['o','O'],['e','E'],['u','U'],['i','I'],['d','D'],['h','H'],['t','T'],['n','N'],['s','S'],['-','_']],
+          [[';',':'],['q','Q'],['j','J'],['k','K'],['x','X'],['b','B'],['m','M'],['w','W'],['v','V'],['z','Z']]
+        ]
+      },
+      colemak: {
+        name: 'Colemak',
+        rows: [
+          [['`','~'],['1','!'],['2','@'],['3','#'],['4','$'],['5','%'],['6','^'],['7','&'],['8','*'],['9','('],['0',')'],['−','_'],['=','+']],
+          [['q','Q'],['w','W'],['f','F'],['p','P'],['g','G'],['j','J'],['l','L'],['u','U'],['y','Y'],[';',':'],['[','{'],[']','}'],['\\','|']],
+          [['a','A'],['r','R'],['s','S'],['t','T'],['d','D'],['h','H'],['n','N'],['e','E'],['i','I'],['o','O'],['\'','"']],
+          [['z','Z'],['x','X'],['c','C'],['v','V'],['b','B'],['k','K'],['m','M'],[',','<'],['.','>'],['/',']']]
+        ]
+      }
+    };
+
+    var currentLayout = 'qwerty';
+    var keysPressed = 0;
+    var typedText = '';
+    var activeKeys = new Set();
+
+    function buildKeyboard(layoutKey) {
+      var layout = LAYOUTS[layoutKey];
+      var kb = document.getElementById('keyboard');
+      kb.innerHTML = '';
+
+      // Function row
+      var fnRow = document.createElement('div');
+      fnRow.className = 'key-row';
+      var fnKeys = ['Esc','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12'];
+      fnKeys.forEach(function(k) {
+        var key = document.createElement('div');
+        key.className = 'key key-fn';
+        key.textContent = k;
+        key.setAttribute('data-key', k.toLowerCase());
+        fnRow.appendChild(key);
+      });
+      kb.appendChild(fnRow);
+
+      // Number row
+      var numRow = document.createElement('div');
+      numRow.className = 'key-row';
+      layout.rows[0].forEach(function(pair, idx) {
+        var key = document.createElement('div');
+        key.className = 'key';
+        key.innerHTML = '<span class="shifted">' + (pair[1]||'') + '</span>' + pair[0];
+        key.setAttribute('data-key', pair[0]);
+        key.setAttribute('data-shifted', pair[1] || '');
+        numRow.appendChild(key);
+      });
+      var bsKey = document.createElement('div');
+      bsKey.className = 'key key-backspace';
+      bsKey.textContent = '⌫ Backspace';
+      bsKey.setAttribute('data-key', 'backspace');
+      numRow.appendChild(bsKey);
+      kb.appendChild(numRow);
+
+      // Top letter row
+      var topRow = document.createElement('div');
+      topRow.className = 'key-row';
+      var tabKey = document.createElement('div');
+      tabKey.className = 'key key-tab';
+      tabKey.textContent = 'Tab';
+      tabKey.setAttribute('data-key', 'tab');
+      topRow.appendChild(tabKey);
+      layout.rows[1].forEach(function(pair) {
+        var key = document.createElement('div');
+        key.className = 'key';
+        key.innerHTML = '<span class="shifted">' + (pair[1]||'') + '</span>' + pair[0];
+        key.setAttribute('data-key', pair[0].toLowerCase());
+        topRow.appendChild(key);
+      });
+      kb.appendChild(topRow);
+
+      // Home row
+      var homeRow = document.createElement('div');
+      homeRow.className = 'key-row';
+      var capsKey = document.createElement('div');
+      capsKey.className = 'key key-caps';
+      capsKey.textContent = 'Caps';
+      capsKey.setAttribute('data-key', 'capslock');
+      homeRow.appendChild(capsKey);
+      layout.rows[2].forEach(function(pair) {
+        var key = document.createElement('div');
+        key.className = 'key';
+        key.innerHTML = '<span class="shifted">' + (pair[1]||'') + '</span>' + pair[0];
+        key.setAttribute('data-key', pair[0].toLowerCase());
+        homeRow.appendChild(key);
+      });
+      var enterKey = document.createElement('div');
+      enterKey.className = 'key key-enter';
+      enterKey.textContent = '⏎ Enter';
+      enterKey.setAttribute('data-key', 'enter');
+      homeRow.appendChild(enterKey);
+      kb.appendChild(homeRow);
+
+      // Bottom row
+      var botRow = document.createElement('div');
+      botRow.className = 'key-row';
+      var lshift = document.createElement('div');
+      lshift.className = 'key key-lshift';
+      lshift.textContent = '⇧ Shift';
+      lshift.setAttribute('data-key', 'shiftleft');
+      botRow.appendChild(lshift);
+      layout.rows[3].forEach(function(pair) {
+        var key = document.createElement('div');
+        key.className = 'key';
+        key.innerHTML = '<span class="shifted">' + (pair[1]||'') + '</span>' + pair[0];
+        key.setAttribute('data-key', pair[0].toLowerCase());
+        botRow.appendChild(key);
+      });
+      var rshift = document.createElement('div');
+      rshift.className = 'key key-rshift';
+      rshift.textContent = '⇧ Shift';
+      rshift.setAttribute('data-key', 'shiftright');
+      botRow.appendChild(rshift);
+      kb.appendChild(botRow);
+
+      // Space row
+      var spaceRow = document.createElement('div');
+      spaceRow.className = 'key-row';
+      ['Ctrl','Alt','Cmd'].forEach(function(k) {
+        var key = document.createElement('div');
+        key.className = 'key key-fn';
+        key.textContent = k;
+        spaceRow.appendChild(key);
+      });
+      var spaceKey = document.createElement('div');
+      spaceKey.className = 'key key-space';
+      spaceKey.textContent = 'Space';
+      spaceKey.setAttribute('data-key', 'space');
+      spaceRow.appendChild(spaceKey);
+      ['Alt','Ctrl'].forEach(function(k) {
+        var key = document.createElement('div');
+        key.className = 'key key-fn';
+        key.textContent = k;
+        spaceRow.appendChild(key);
+      });
+      kb.appendChild(spaceRow);
+    }
+
+    function highlightKey(physicalCode, down) {
+      var code = physicalCode.toLowerCase().replace('key','').replace('digit','').replace('numpad','');
+      var keys = document.querySelectorAll('[data-key]');
+      keys.forEach(function(k) {
+        var dk = k.getAttribute('data-key');
+        if (dk === code || dk === physicalCode.toLowerCase()) {
+          if (down) k.classList.add('pressed');
+          else k.classList.remove('pressed');
+        }
+      });
+    }
+
+    function updateStats() {
+      document.getElementById('statKeys').textContent = keysPressed;
+      document.getElementById('statChars').textContent = typedText.length;
+      document.getElementById('statLayout').textContent = LAYOUTS[currentLayout].name;
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Layout: ' + LAYOUTS[currentLayout].name + ' — ' + keysPressed + ' key' + (keysPressed===1?'':'s') + ' pressed';
+    }
+
+    var statusBar = document.getElementById('statusBar');
+    var typedOutput = document.getElementById('typedOutput');
+
+    document.addEventListener('keydown', function(e) {
+      if (e.ctrlKey && ['c','v','x','a','z'].indexOf(e.key.toLowerCase()) !== -1) return;
+      e.preventDefault();
+      highlightKey(e.code, true);
+      keysPressed++;
+
+      if (e.key === 'Backspace') {
+        typedText = typedText.slice(0, -1);
+      } else if (e.key === 'Enter') {
+        typedText += '\n';
+      } else if (e.key.length === 1) {
+        typedText += e.key;
+      }
+
+      var display = typedText || 'Click here (or anywhere) then type on your keyboard...';
+      typedOutput.textContent = display;
+      updateStats();
+    });
+
+    document.addEventListener('keyup', function(e) {
+      highlightKey(e.code, false);
+    });
+
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentLayout = chip.getAttribute('data-layout');
+        document.getElementById('layoutLabel').textContent = 'Layout: ' + LAYOUTS[currentLayout].name;
+        buildKeyboard(currentLayout);
+        updateStats();
+        DT.trackTool('international-keyboard');
+      });
+    });
+
+    document.getElementById('clearTypedBtn').addEventListener('click', function() {
+      typedText = '';
+      keysPressed = 0;
+      typedOutput.textContent = 'Click here (or anywhere) then type on your keyboard...';
+      updateStats();
+    });
+
+    document.getElementById('copyTypedBtn').addEventListener('click', function() {
+      if (typedText) DT.copyToClipboard(typedText, this);
+    });
+
+    // Build comparison grid
+    function buildCompare() {
+      var grid = document.getElementById('compareGrid');
+      grid.innerHTML = '';
+      Object.keys(LAYOUTS).forEach(function(key) {
+        var lay = LAYOUTS[key];
+        var card = document.createElement('div');
+        card.className = 'compare-card';
+        var rows = lay.rows.map(function(row) {
+          return row.map(function(p) { return p[0]; }).join(' ');
+        }).join('\n');
+        card.innerHTML = '<h4>' + lay.name + '</h4><div class="mini-keyboard">' + rows.split('\n').map(function(r) { return '<div>' + r + '</div>'; }).join('') + '</div>';
+        grid.appendChild(card);
+      });
+    }
+
+    buildKeyboard('qwerty');
+    buildCompare();
+    updateStats();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Nearest CSS Color Name Finder — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Find the closest CSS named color for any hex or RGB color. Shows top 5 nearest matches with distance score. Browse all 148 CSS named colors. Uses LAB color space for perceptual accuracy. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/color-name-finder.html">
+  <meta property="og:title" content="Nearest CSS Color Name Finder — DevToolbox">
+  <meta property="og:description" content="Enter any hex or RGB color and find the nearest CSS named color. Top 5 matches with perceptual distance. Browse all 148 CSS colors. Free and instant.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/color-name-finder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Nearest CSS Color Name Finder",
+    "url": "https://thisdevtool.com/tools/color-name-finder.html",
+    "description": "Find the nearest CSS named color for any hex or RGB value. Top 5 matches with LAB-space perceptual distance. Browse all 148 CSS colors.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How many CSS named colors are there?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS Color Level 4 defines 148 named colors (plus the special keywords 'transparent' and 'currentColor'). These include the original 16 HTML 4 colors, the 140 X11 colors adopted by CSS, and a few additions. The full list ranges from 'aliceblue' (#F0F8FF) to 'yellowgreen' (#9ACD32)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What color space is used for distance calculation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool uses the CIE L*a*b* (LAB) color space for distance calculation. LAB was designed to be perceptually uniform, meaning equal numerical distances correspond to roughly equal perceived color differences. This is more accurate than simple Euclidean distance in RGB space, which does not correlate well with human color perception."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why is the nearest color not always visually obvious?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS color names have irregular coverage of the color wheel. Some regions of color space (like greens and blues) have many named colors close together, while other regions (like certain oranges or teals) have few options. The 'nearest' color is the mathematical closest in LAB space, which usually matches visual intuition but not always."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What input formats are supported?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool accepts: hex colors (#RRGGBB or #RGB shorthand), RGB notation (rgb(255, 0, 0)), and plain hex without the # prefix (e.g., 10b981). Named CSS colors are not inputs — they are the output. For color format conversion, use a dedicated color converter tool."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between 'nearest' and 'exact' CSS color?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An exact match means your input color is identical to a CSS named color (e.g., #FF0000 exactly equals 'red'). A nearest match means your color is close but not identical — the tool finds which of the 148 named colors has the smallest perceptual distance to your input. For exact matches, the distance shown is 0."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .color-input-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 14px 0; }
+    .color-swatch-big { width: 60px; height: 60px; border-radius: 10px; border: 2px solid var(--border, #e2e8f0); flex-shrink: 0; transition: background 0.2s; }
+    .color-text-input { flex: 1; min-width: 180px; padding: 10px 14px; font-size: 1rem; font-family: monospace; border: 1px solid var(--border, #e2e8f0); border-radius: 8px; background: var(--bg-secondary, #f8fafc); color: var(--text-primary, #0f172a); }
+    .color-picker-native { width: 44px; height: 44px; border-radius: 8px; border: 1px solid var(--border, #e2e8f0); cursor: pointer; padding: 2px; background: var(--bg-secondary, #f8fafc); }
+
+    .match-list { display: grid; gap: 10px; margin-top: 14px; }
+    .match-card {
+      display: flex; align-items: center; gap: 14px;
+      border: 1px solid var(--border, #e2e8f0); border-radius: 10px; padding: 12px 16px;
+      transition: border-color 0.15s;
+    }
+    .match-card.best { border-color: #10b981; border-width: 2px; }
+    .match-swatch { width: 48px; height: 48px; border-radius: 8px; border: 1px solid rgba(0,0,0,.1); flex-shrink: 0; }
+    .match-info { flex: 1; }
+    .match-name { font-weight: 700; font-size: 1rem; margin-bottom: 2px; }
+    .match-hex { font-family: monospace; font-size: 0.85rem; color: var(--text-muted, #64748b); }
+    .match-distance { font-size: 0.78rem; color: var(--text-muted, #64748b); }
+    .match-badge { font-size: 0.7rem; padding: 2px 8px; background: #10b981; color: #fff; border-radius: 10px; }
+    .match-copy { flex-shrink: 0; font-size: 0.75rem; padding: 4px 12px; }
+
+    .input-vs { display: flex; gap: 12px; align-items: center; margin: 10px 0; font-size: 0.9rem; }
+    .input-vs .swatch { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border,#e2e8f0); }
+
+    .browse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-top: 12px; max-height: 400px; overflow-y: auto; }
+    .browse-card { border-radius: 8px; overflow: hidden; border: 1px solid var(--border, #e2e8f0); cursor: pointer; transition: transform 0.1s; }
+    .browse-card:hover { transform: scale(1.04); border-color: #10b981; }
+    .browse-swatch { height: 44px; }
+    .browse-name { font-size: 0.65rem; padding: 4px 6px; text-align: center; background: var(--bg-secondary, #f8fafc); color: var(--text-primary, #0f172a); word-break: break-all; line-height: 1.2; }
+
+    .example-swatches { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+    .example-swatch-btn { width: 32px; height: 32px; border-radius: 6px; border: 2px solid var(--border,#e2e8f0); cursor: pointer; transition: transform 0.1s, border-color 0.15s; }
+    .example-swatch-btn:hover { transform: scale(1.15); border-color: #10b981; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/color-contrast.html">Contrast</a>
+        <a href="/tools/css-gradient.html">Gradient</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Nearest CSS Color Name Finder</h1>
+          <p class="tool-subtitle">Enter any hex or RGB color to find the closest CSS named color. Top 5 matches ranked by perceptual distance in LAB color space.</p>
+
+          <div class="color-input-row">
+            <div class="color-swatch-big" id="inputSwatch" style="background:#10b981;"></div>
+            <input type="text" class="color-text-input" id="colorInput" placeholder="#10b981 or rgb(16, 185, 129)" value="#10b981" spellcheck="false" autocomplete="off">
+            <input type="color" class="color-picker-native" id="colorPicker" value="#10b981" title="Open color picker">
+            <button class="btn btn-sm btn-secondary" id="randomBtn">Random</button>
+          </div>
+
+          <div style="font-size:0.78rem;color:var(--text-muted,#64748b);margin-bottom:8px;">Try these colors:</div>
+          <div class="example-swatches" id="exampleSwatches"></div>
+
+          <div id="matchList" class="match-list" style="min-height:80px;">
+            <div style="color:var(--text-muted,#64748b);font-size:0.875rem;padding:8px 0;">Enter a color above to find the nearest CSS color names.</div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a hex or RGB color to find the nearest CSS color.
+          </div>
+
+          <div style="margin-top:20px;">
+            <h3 style="font-size:1rem;margin-bottom:8px;">Browse All 148 CSS Named Colors</h3>
+            <div class="browse-grid" id="browseGrid"></div>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Find the Nearest CSS Color Name</h2>
+          <ol>
+            <li><strong>Enter a color</strong> — type a hex color (#RRGGBB or #RGB), an RGB value (rgb(R, G, B)), or use the color picker.</li>
+            <li><strong>See the top 5 matches</strong> — instantly ranked by perceptual distance in LAB color space, from closest to farthest.</li>
+            <li><strong>Compare swatches</strong> — your input color is shown alongside each match so you can visually judge the similarity.</li>
+            <li><strong>Copy the color name or hex</strong> — click the Copy button on any match to copy it to the clipboard.</li>
+          </ol>
+
+          <h2>Why LAB Color Space?</h2>
+          <p>The CIE L*a*b* (LAB) color space was designed in 1976 to be <em>perceptually uniform</em> — meaning equal numerical distances in LAB space should correspond to roughly equal perceived color differences for human observers. In contrast, Euclidean distance in RGB space is technically simple but does not correlate well with human color perception. Two colors with the same RGB distance can look very different or very similar depending on where they fall in the spectrum.</p>
+
+          <p>LAB uses three axes: <strong>L*</strong> (lightness, 0=black to 100=white), <strong>a*</strong> (green to red), and <strong>b*</strong> (blue to yellow). This tool converts all colors to LAB space before calculating distance using the simplified Euclidean formula: ΔE = √((ΔL)² + (Δa)² + (Δb)²). This is known as CIE76 — a simplified version of the full CIEDE2000 formula that is accurate enough for most UI applications. A ΔE of 1.0 is roughly the smallest difference a trained observer can detect under controlled conditions.</p>
+
+          <h2>CSS Named Colors — Background</h2>
+          <p>CSS named colors have a long history. The original 16 HTML 4 colors (black, white, red, green, blue, yellow, cyan, magenta, and 8 others) came from the CGA palette of early IBM PCs. The 140 additional colors were borrowed from the X11 window system's color database, which was defined in the late 1980s. Some names are famously inconsistent — "green" in CSS (#008000) is not the same as the green primary color (#00FF00, which CSS calls "lime"). The CSS Color Level 4 specification clarifies and adds to this list, and modern browsers support all 148 standard named colors.</p>
+
+          <h2>Using CSS Named Colors in Practice</h2>
+          <p>CSS named colors are primarily useful for readability and prototyping. Writing <code>color: tomato</code> or <code>background: cornflowerblue</code> is more readable than hex codes during development. However, for production UI systems, design tokens and semantic variable names (like <code>--color-primary</code>) are preferred because they allow theme changes without hunting for every color reference. Named colors are also useful in SVG files, where they keep markup human-readable, and in educational contexts when teaching HTML and CSS to beginners.</p>
+
+          <p>When naming custom brand colors, some designers use the nearest CSS color name as a starting point, then adjust. The "DevToolbox emerald" (#10b981) is perceptually closest to <strong>mediumseagreen</strong> — a standard CSS name — but the exact hex values differ. Knowing the nearest name helps communicate about a color informally and gives you a fallback if the exact custom color cannot be used.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How many CSS named colors are there?</button>
+            <div class="faq-answer">CSS Color Level 4 defines 148 named colors (plus 'transparent' and 'currentColor'). These include the 16 original HTML colors, the X11 color set, and a few additions. They range from 'aliceblue' (#F0F8FF) to 'yellowgreen' (#9ACD32). This tool displays and searches all 148 of them.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What color space is used for distance calculation?</button>
+            <div class="faq-answer">This tool uses CIE L*a*b* (LAB) color space with the CIE76 Euclidean distance formula. LAB is perceptually uniform — equal ΔE values correspond to roughly equal perceived differences. This is more accurate than RGB Euclidean distance, which doesn't correlate well with human color perception.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why is the nearest color not always visually obvious?</button>
+            <div class="faq-answer">CSS color names have uneven coverage of the color wheel — some hue ranges have many options clustered together, others have very few. The tool finds the mathematically nearest color in LAB space, which usually matches visual intuition but can surprise you in sparse regions like certain oranges or teals.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What input formats are supported?</button>
+            <div class="faq-answer">Supported formats: #RRGGBB hex, #RGB shorthand hex, rgb(R, G, B) notation, and plain 6-digit hex without the # prefix. The tool auto-detects the format. Named CSS colors are outputs, not inputs. For color format conversion (hex to HSL, etc.), use a dedicated color converter.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between 'nearest' and 'exact' CSS color?</button>
+            <div class="faq-answer">An exact match means your input color is identical to a CSS named color (e.g., #FF0000 = 'red', distance 0). A nearest match means your color is close but not identical — the tool finds which of the 148 named colors has the smallest perceptual distance. Exact matches show a distance of 0.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Color Tools</h4>
+        <a href="/tools/color-name-finder.html">CSS Color Name Finder</a>
+        <a href="/tools/color-contrast.html">Contrast Checker</a>
+        <a href="/tools/color-palette.html">Palette Generator</a>
+        <a href="/tools/css-gradient.html">CSS Gradient</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    // All 148 CSS named colors [name, hex]
+    var CSS_COLORS = [
+      ['aliceblue','#F0F8FF'],['antiquewhite','#FAEBD7'],['aqua','#00FFFF'],['aquamarine','#7FFFD4'],
+      ['azure','#F0FFFF'],['beige','#F5F5DC'],['bisque','#FFE4C4'],['black','#000000'],
+      ['blanchedalmond','#FFEBCD'],['blue','#0000FF'],['blueviolet','#8A2BE2'],['brown','#A52A2A'],
+      ['burlywood','#DEB887'],['cadetblue','#5F9EA0'],['chartreuse','#7FFF00'],['chocolate','#D2691E'],
+      ['coral','#FF7F50'],['cornflowerblue','#6495ED'],['cornsilk','#FFF8DC'],['crimson','#DC143C'],
+      ['cyan','#00FFFF'],['darkblue','#00008B'],['darkcyan','#008B8B'],['darkgoldenrod','#B8860B'],
+      ['darkgray','#A9A9A9'],['darkgreen','#006400'],['darkgrey','#A9A9A9'],['darkkhaki','#BDB76B'],
+      ['darkmagenta','#8B008B'],['darkolivegreen','#556B2F'],['darkorange','#FF8C00'],['darkorchid','#9932CC'],
+      ['darkred','#8B0000'],['darksalmon','#E9967A'],['darkseagreen','#8FBC8F'],['darkslateblue','#483D8B'],
+      ['darkslategray','#2F4F4F'],['darkslategrey','#2F4F4F'],['darkturquoise','#00CED1'],['darkviolet','#9400D3'],
+      ['deeppink','#FF1493'],['deepskyblue','#00BFFF'],['dimgray','#696969'],['dimgrey','#696969'],
+      ['dodgerblue','#1E90FF'],['firebrick','#B22222'],['floralwhite','#FFFAF0'],['forestgreen','#228B22'],
+      ['fuchsia','#FF00FF'],['gainsboro','#DCDCDC'],['ghostwhite','#F8F8FF'],['gold','#FFD700'],
+      ['goldenrod','#DAA520'],['gray','#808080'],['green','#008000'],['greenyellow','#ADFF2F'],
+      ['grey','#808080'],['honeydew','#F0FFF0'],['hotpink','#FF69B4'],['indianred','#CD5C5C'],
+      ['indigo','#4B0082'],['ivory','#FFFFF0'],['khaki','#F0E68C'],['lavender','#E6E6FA'],
+      ['lavenderblush','#FFF0F5'],['lawngreen','#7CFC00'],['lemonchiffon','#FFFACD'],['lightblue','#ADD8E6'],
+      ['lightcoral','#F08080'],['lightcyan','#E0FFFF'],['lightgoldenrodyellow','#FAFAD2'],['lightgray','#D3D3D3'],
+      ['lightgreen','#90EE90'],['lightgrey','#D3D3D3'],['lightpink','#FFB6C1'],['lightsalmon','#FFA07A'],
+      ['lightseagreen','#20B2AA'],['lightskyblue','#87CEFA'],['lightslategray','#778899'],['lightslategrey','#778899'],
+      ['lightsteelblue','#B0C4DE'],['lightyellow','#FFFFE0'],['lime','#00FF00'],['limegreen','#32CD32'],
+      ['linen','#FAF0E6'],['magenta','#FF00FF'],['maroon','#800000'],['mediumaquamarine','#66CDAA'],
+      ['mediumblue','#0000CD'],['mediumorchid','#BA55D3'],['mediumpurple','#9370DB'],['mediumseagreen','#3CB371'],
+      ['mediumslateblue','#7B68EE'],['mediumspringgreen','#00FA9A'],['mediumturquoise','#48D1CC'],['mediumvioletred','#C71585'],
+      ['midnightblue','#191970'],['mintcream','#F5FFFA'],['mistyrose','#FFE4E1'],['moccasin','#FFE4B5'],
+      ['navajowhite','#FFDEAD'],['navy','#000080'],['oldlace','#FDF5E6'],['olive','#808000'],
+      ['olivedrab','#6B8E23'],['orange','#FFA500'],['orangered','#FF4500'],['orchid','#DA70D6'],
+      ['palegoldenrod','#EEE8AA'],['palegreen','#98FB98'],['paleturquoise','#AFEEEE'],['palevioletred','#DB7093'],
+      ['papayawhip','#FFEFD5'],['peachpuff','#FFDAB9'],['peru','#CD853F'],['pink','#FFC0CB'],
+      ['plum','#DDA0DD'],['powderblue','#B0E0E6'],['purple','#800080'],['rebeccapurple','#663399'],
+      ['red','#FF0000'],['rosybrown','#BC8F8F'],['royalblue','#4169E1'],['saddlebrown','#8B4513'],
+      ['salmon','#FA8072'],['sandybrown','#F4A460'],['seagreen','#2E8B57'],['seashell','#FFF5EE'],
+      ['sienna','#A0522D'],['silver','#C0C0C0'],['skyblue','#87CEEB'],['slateblue','#6A5ACD'],
+      ['slategray','#708090'],['slategrey','#708090'],['snow','#FFFAFA'],['springgreen','#00FF7F'],
+      ['steelblue','#4682B4'],['tan','#D2B48C'],['teal','#008080'],['thistle','#D8BFD8'],
+      ['tomato','#FF6347'],['turquoise','#40E0D0'],['violet','#EE82EE'],['wheat','#F5DEB3'],
+      ['white','#FFFFFF'],['whitesmoke','#F5F5F5'],['yellow','#FFFF00'],['yellowgreen','#9ACD32']
+    ];
+
+    var EXAMPLES = ['#FF6347','#10b981','#6495ED','#FFD700','#9932CC','#FF69B4','#20B2AA','#D2691E','#3CB371','#DC143C','#1E90FF','#DAA520'];
+
+    // --- Color math ---
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      if (hex.length !== 6) return null;
+      var n = parseInt(hex, 16);
+      if (isNaN(n)) return null;
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+
+    function rgbStringToRgb(str) {
+      var m = str.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i);
+      if (!m) return null;
+      return { r: parseInt(m[1],10), g: parseInt(m[2],10), b: parseInt(m[3],10) };
+    }
+
+    function parseColor(input) {
+      input = input.trim();
+      if (input.startsWith('#')) return hexToRgb(input);
+      if (/^rgb\s*\(/i.test(input)) return rgbStringToRgb(input);
+      if (/^[0-9a-fA-F]{6}$/.test(input)) return hexToRgb('#' + input);
+      if (/^[0-9a-fA-F]{3}$/.test(input)) return hexToRgb('#' + input);
+      return null;
+    }
+
+    function rgbToLab(r, g, b) {
+      // sRGB to linear
+      function linearize(v) {
+        v /= 255;
+        return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      }
+      var lr = linearize(r), lg = linearize(g), lb = linearize(b);
+      // Linear RGB to XYZ (D65)
+      var x = lr * 0.4124564 + lg * 0.3575761 + lb * 0.1804375;
+      var y = lr * 0.2126729 + lg * 0.7151522 + lb * 0.0721750;
+      var z = lr * 0.0193339 + lg * 0.1191920 + lb * 0.9503041;
+      // XYZ to Lab (D65 white = 0.95047, 1.00000, 1.08883)
+      function f(t) { return t > 0.008856 ? Math.pow(t, 1/3) : 7.787 * t + 16/116; }
+      var fx = f(x / 0.95047), fy = f(y / 1.00000), fz = f(z / 1.08883);
+      return { L: 116 * fy - 16, a: 500 * (fx - fy), b: 200 * (fy - fz) };
+    }
+
+    function colorDistance(rgb1, rgb2) {
+      var l1 = rgbToLab(rgb1.r, rgb1.g, rgb1.b);
+      var l2 = rgbToLab(rgb2.r, rgb2.g, rgb2.b);
+      var dL = l1.L - l2.L, da = l1.a - l2.a, db = l1.b - l2.b;
+      return Math.sqrt(dL*dL + da*da + db*db);
+    }
+
+    function rgbToHex(r, g, b) {
+      return '#' + [r,g,b].map(function(v) { return ('00' + v.toString(16)).slice(-2); }).join('').toUpperCase();
+    }
+
+    function findNearest(rgb, n) {
+      var results = CSS_COLORS.map(function(c) {
+        var cRgb = hexToRgb(c[1]);
+        return { name: c[0], hex: c[1], rgb: cRgb, distance: colorDistance(rgb, cRgb) };
+      });
+      results.sort(function(a, b) { return a.distance - b.distance; });
+      return results.slice(0, n);
+    }
+
+    function renderMatches(rgb, inputHex) {
+      var nearest = findNearest(rgb, 5);
+      var html = nearest.map(function(m, i) {
+        var isBest = i === 0;
+        var copyId = 'match-name-' + i;
+        return '<div class="match-card' + (isBest ? ' best' : '') + '">' +
+          '<div class="match-swatch" style="background:' + m.hex + ';"></div>' +
+          '<div class="input-vs">' +
+          '<div class="swatch" style="background:' + inputHex + ';"></div>' +
+          '<span style="color:var(--text-muted,#64748b);">vs</span>' +
+          '<div class="swatch" style="background:' + m.hex + ';"></div>' +
+          '</div>' +
+          '<div class="match-info">' +
+          '<div class="match-name" id="' + copyId + '">' + m.name + (isBest ? ' <span class="match-badge">Closest</span>' : '') + '</div>' +
+          '<div class="match-hex">' + m.hex.toUpperCase() + ' &nbsp;·&nbsp; rgb(' + m.rgb.r + ', ' + m.rgb.g + ', ' + m.rgb.b + ')</div>' +
+          '<div class="match-distance">ΔE = ' + m.distance.toFixed(1) + (m.distance < 1 ? ' (exact/near-exact)' : m.distance < 10 ? ' (very close)' : m.distance < 25 ? ' (similar)' : ' (approximate)') + '</div>' +
+          '</div>' +
+          '<div style="display:flex;flex-direction:column;gap:4px;">' +
+          '<button class="btn btn-sm btn-secondary match-copy" data-copy="' + m.name + '">Name</button>' +
+          '<button class="btn btn-sm btn-secondary match-copy" data-copy="' + m.hex.toUpperCase() + '">Hex</button>' +
+          '</div>' +
+          '</div>';
+      }).join('');
+      document.getElementById('matchList').innerHTML = html;
+      document.querySelectorAll('.match-copy').forEach(function(btn) {
+        btn.addEventListener('click', function() { DT.copyToClipboard(btn.getAttribute('data-copy'), btn); });
+      });
+
+      var best = nearest[0];
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = inputHex.toUpperCase() + ' \u2248 ' + best.name + ' (\u0394E = ' + best.distance.toFixed(1) + ')';
+    }
+
+    function processInput(val) {
+      var rgb = parseColor(val);
+      if (!rgb) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Invalid color — enter hex (#RRGGBB) or rgb(R,G,B)';
+        document.getElementById('inputSwatch').style.background = '';
+        return;
+      }
+      var hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+      document.getElementById('inputSwatch').style.background = hex;
+      document.getElementById('colorPicker').value = hex;
+      renderMatches(rgb, hex);
+      DT.trackTool('color-name-finder');
+    }
+
+    var statusBar = document.getElementById('statusBar');
+    var colorInput = document.getElementById('colorInput');
+
+    colorInput.addEventListener('input', DT.debounce(function() { processInput(colorInput.value); }, 150));
+
+    document.getElementById('colorPicker').addEventListener('input', function() {
+      colorInput.value = this.value;
+      processInput(this.value);
+    });
+
+    document.getElementById('randomBtn').addEventListener('click', function() {
+      var r = Math.floor(Math.random()*256), g = Math.floor(Math.random()*256), b = Math.floor(Math.random()*256);
+      var hex = rgbToHex(r,g,b);
+      colorInput.value = hex;
+      processInput(hex);
+    });
+
+    // Example swatches
+    var exContainer = document.getElementById('exampleSwatches');
+    EXAMPLES.forEach(function(hex) {
+      var btn = document.createElement('button');
+      btn.className = 'example-swatch-btn';
+      btn.style.background = hex;
+      btn.title = hex;
+      btn.setAttribute('aria-label', hex);
+      btn.addEventListener('click', function() {
+        colorInput.value = hex;
+        processInput(hex);
+      });
+      exContainer.appendChild(btn);
+    });
+
+    // Browse grid
+    var browseGrid = document.getElementById('browseGrid');
+    CSS_COLORS.forEach(function(c) {
+      var card = document.createElement('div');
+      card.className = 'browse-card';
+      card.title = c[0] + ' ' + c[1];
+      card.innerHTML = '<div class="browse-swatch" style="background:' + c[1] + ';"></div><div class="browse-name">' + c[0] + '</div>';
+      card.addEventListener('click', function() {
+        colorInput.value = c[1];
+        processInput(c[1]);
+        colorInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+      browseGrid.appendChild(card);
+    });
+
+    // Initial render
+    processInput('#10b981');
+  })();
+  </script>
+</body>
+</html>

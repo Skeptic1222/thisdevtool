@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Time Zone Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert time between 30+ world time zones. See current time in multiple cities side by side. DST-aware. Free world clock and time zone converter with no signup.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/time-zone-converter.html">
+  <meta property="og:title" content="Time Zone Converter — DevToolbox">
+  <meta property="og:description" content="Convert time between 30+ time zones, view live world clocks, DST-aware. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/time-zone-converter.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Time Zone Converter",
+    "url": "https://thisdevtool.com/tools/time-zone-converter.html",
+    "description": "Convert time between 30+ world time zones. DST-aware world clock with live current time display.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I convert between time zones?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Select a source time zone, enter a date and time, then select up to 5 destination time zones. The converted times appear instantly. You can also add clocks to the world clock panel to see current times side by side."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool handle Daylight Saving Time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. This converter uses the browser's built-in Intl.DateTimeFormat API with full IANA time zone database support, which includes all DST transitions. The converted times automatically reflect whether DST is in effect on the chosen date."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is UTC and how does it relate to time zones?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "UTC (Coordinated Universal Time) is the primary time standard by which the world regulates clocks. All time zones are expressed as offsets from UTC. For example, US Eastern Standard Time is UTC-5 and Eastern Daylight Time is UTC-4."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which cities are included in the world clock?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The world clock includes 30+ major cities: New York, Los Angeles, Chicago, Toronto, London, Paris, Berlin, Madrid, Rome, Amsterdam, Dubai, Mumbai, Singapore, Shanghai, Tokyo, Seoul, Sydney, Auckland, Sao Paulo, Buenos Aires, Mexico City, Cairo, Johannesburg, Istanbul, Moscow, and more."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between EST and EDT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "EST (Eastern Standard Time) is UTC-5, used from November to March. EDT (Eastern Daylight Time) is UTC-4, used from March to November when Daylight Saving Time is in effect. The IANA identifier 'America/New_York' covers both automatically."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .tz-convert-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: end; margin-bottom: 12px; }
+    .tz-field label { display: block; font-size: .8rem; color: var(--color-muted); margin-bottom: 4px; }
+    .tz-field select, .tz-field input[type="datetime-local"] { width: 100%; }
+    .tz-arrow { display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: var(--color-primary); padding-bottom: 2px; align-self: end; height: 38px; }
+    .multi-result { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 10px; padding: 14px; margin-top: 12px; }
+    .multi-result h3 { margin: 0 0 10px; font-size: .9rem; }
+    .tz-result-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--color-border); font-size: .9rem; }
+    .tz-result-row:last-child { border-bottom: none; }
+    .tz-result-city { color: var(--color-muted); font-size: .8rem; }
+    .tz-result-time { font-weight: 700; font-size: 1rem; }
+    .tz-result-offset { font-size: .75rem; color: var(--color-muted); }
+    .world-clock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; margin-top: 12px; }
+    .clock-card { background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; text-align: center; }
+    .clock-card .clock-city { font-size: .75rem; color: var(--color-muted); margin-bottom: 4px; }
+    .clock-card .clock-time { font-size: 1.3rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .clock-card .clock-date { font-size: .7rem; color: var(--color-muted); margin-top: 2px; }
+    .clock-card .clock-offset { font-size: .68rem; color: var(--color-primary); margin-top: 2px; }
+    .add-tz-row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+    .add-tz-row select { flex: 1; }
+    @media (max-width: 560px) { .tz-convert-grid { grid-template-columns: 1fr; } .tz-arrow { display: none; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/date-calculator.html">Date Calc</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Time Zone Converter</h1>
+          <p class="tool-subtitle">Convert time between 30+ world time zones. DST-aware. See live current times side by side.</p>
+
+          <!-- Format Chips -->
+          <div class="option-chips" id="fmtChips">
+            <button class="option-chip active" data-fmt="12">12-hour (AM/PM)</button>
+            <button class="option-chip" data-fmt="24">24-hour</button>
+          </div>
+
+          <!-- Conversion Panel -->
+          <div class="tz-convert-grid">
+            <div class="tz-field">
+              <label for="srcTz">From Time Zone</label>
+              <select id="srcTz"></select>
+            </div>
+            <div class="tz-arrow">&#8594;</div>
+            <div class="tz-field">
+              <label>&nbsp;</label>
+              <div style="font-size:.8rem;color:var(--color-muted);padding:9px 0;">Multiple targets below</div>
+            </div>
+          </div>
+
+          <div class="tz-field" style="margin-bottom:12px;">
+            <label for="srcDateTime">Date &amp; Time</label>
+            <input type="datetime-local" id="srcDateTime">
+          </div>
+
+          <!-- Multi-zone results -->
+          <div class="multi-result">
+            <h3>Converted Times</h3>
+            <div id="tzResults"></div>
+          </div>
+
+          <div class="btn-group" style="margin-top:12px;">
+            <button class="btn btn-sm btn-secondary" id="nowBtn">Set to Now</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-sm btn-primary" id="copyBtn">Copy Results</button>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Select a source time zone and enter a date/time to convert.
+          </div>
+
+          <!-- World Clock -->
+          <div style="margin-top:24px;">
+            <h3 style="font-size:.95rem;margin-bottom:4px;">Live World Clock</h3>
+            <p style="font-size:.8rem;color:var(--color-muted);margin:0 0 10px;">Updates every second. Add up to 8 clocks.</p>
+            <div class="world-clock-grid" id="worldClockGrid"></div>
+            <div class="add-tz-row">
+              <select id="addTzSel"></select>
+              <button class="btn btn-sm btn-primary" id="addClockBtn">+ Add Clock</button>
+              <button class="btn btn-sm btn-secondary" id="resetClocksBtn">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Time Zone Converter</h2>
+          <ol>
+            <li><strong>Select your source time zone</strong> from the "From Time Zone" dropdown.</li>
+            <li><strong>Enter a date and time</strong> using the datetime picker, or click "Set to Now" to use the current moment.</li>
+            <li><strong>View converted times</strong> in the results panel — showing multiple major time zones at once.</li>
+            <li><strong>Use the world clock</strong> below to see live current times in up to 8 cities simultaneously.</li>
+            <li><strong>Copy results</strong> to paste a formatted time comparison into emails, Slack, or documents.</li>
+          </ol>
+
+          <h2>Understanding Time Zones</h2>
+          <p>A time zone is a region of the globe that observes a uniform standard time for legal, commercial, and social purposes. There are 24 main time zones, each roughly 15 degrees of longitude wide, but in practice time zone boundaries follow political and geographical lines. The result is an irregular patchwork of over 600 IANA (Internet Assigned Numbers Authority) time zone identifiers that account for historical changes, DST rules, and sub-hour offsets.</p>
+
+          <h3>Daylight Saving Time (DST)</h3>
+          <p>Daylight Saving Time advances clocks by one hour during the warmer months to extend evening daylight. The US and Canada move clocks forward on the second Sunday in March and back on the first Sunday in November. The European Union (until potentially abolishing DST) moves on the last Sunday in March and October. Not all countries observe DST — China, Japan, India, and most countries near the equator do not. This tool uses the browser's Intl API with the IANA time zone database, which tracks all DST rules automatically.</p>
+
+          <h3>UTC and GMT</h3>
+          <p>UTC (Coordinated Universal Time) is the successor to GMT (Greenwich Mean Time) and the international standard for civil time. All time zones are defined as offsets from UTC — for example, UTC+5:30 is India Standard Time. For most practical purposes, UTC and GMT are interchangeable (they differ by at most 0.9 seconds, adjusted by leap seconds). When scheduling meetings across continents, always use UTC as the reference to avoid DST confusion.</p>
+
+          <h3>Tips for International Scheduling</h3>
+          <p>When scheduling meetings across time zones: always confirm whether the other party's country is currently in DST, since the UTC offset changes twice a year. Use IANA zone names (like "America/New_York") rather than abbreviations like "EST" — abbreviations are ambiguous (IST means India Standard Time, Irish Standard Time, and Israel Standard Time). Consider that some time zones have 30-minute or even 45-minute offsets from UTC (India UTC+5:30, Nepal UTC+5:45, Iran UTC+3:30). And remember that not all countries observe the same week boundaries — some Middle Eastern countries use a Sunday–Thursday work week.</p>
+
+          <h3>Developer Notes</h3>
+          <p>In JavaScript, time zone conversion uses the Intl.DateTimeFormat API with the timeZone option. This tool uses this same approach, which ensures DST-correct results. When storing datetimes in databases, always use UTC. When displaying to users, convert from UTC to their local time zone in the browser. Unix timestamps (seconds since 1970-01-01T00:00:00Z) are always UTC and are the safest format for API transmission. Avoid storing local time strings without a time zone offset attached.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I convert between time zones?</button>
+            <div class="faq-answer">Select a source time zone, enter a date and time, and view the converted times in the results panel. You can also add clocks to the world clock section to see live current times side by side for up to 8 cities.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does this tool handle Daylight Saving Time?</button>
+            <div class="faq-answer">Yes. The converter uses the browser's Intl.DateTimeFormat API backed by the IANA time zone database, which includes all historical and future DST transitions. Converted times automatically reflect the correct UTC offset for the specific date chosen.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is UTC and how does it relate to time zones?</button>
+            <div class="faq-answer">UTC (Coordinated Universal Time) is the primary world time standard. All time zones are UTC offsets — e.g., US Eastern Standard Time is UTC-5, Tokyo is UTC+9. UTC itself has no DST and is the preferred format for logging and API timestamps.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Which cities are included?</button>
+            <div class="faq-answer">30+ major cities including New York, Los Angeles, London, Paris, Berlin, Dubai, Mumbai, Singapore, Tokyo, Seoul, Sydney, Auckland, São Paulo, Mexico City, Cairo, Johannesburg, Moscow, Istanbul, and more — covering all inhabited continents.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between EST and EDT?</button>
+            <div class="faq-answer">EST (Eastern Standard Time) is UTC-5, used November–March. EDT (Eastern Daylight Time) is UTC-4, used March–November during DST. The IANA identifier "America/New_York" covers both automatically and is what this tool uses internally.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Time &amp; Date</h4>
+        <a href="/tools/time-zone-converter.html">Time Zone Converter</a>
+        <a href="/tools/date-calculator.html">Date Calculator</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var hourFmt = '12';
+
+    var TZ_LIST = [
+      { city: 'UTC',             iana: 'UTC' },
+      { city: 'New York',        iana: 'America/New_York' },
+      { city: 'Chicago',         iana: 'America/Chicago' },
+      { city: 'Denver',          iana: 'America/Denver' },
+      { city: 'Los Angeles',     iana: 'America/Los_Angeles' },
+      { city: 'Toronto',         iana: 'America/Toronto' },
+      { city: 'Vancouver',       iana: 'America/Vancouver' },
+      { city: 'Sao Paulo',       iana: 'America/Sao_Paulo' },
+      { city: 'Buenos Aires',    iana: 'America/Argentina/Buenos_Aires' },
+      { city: 'Mexico City',     iana: 'America/Mexico_City' },
+      { city: 'London',          iana: 'Europe/London' },
+      { city: 'Paris',           iana: 'Europe/Paris' },
+      { city: 'Berlin',          iana: 'Europe/Berlin' },
+      { city: 'Madrid',          iana: 'Europe/Madrid' },
+      { city: 'Rome',            iana: 'Europe/Rome' },
+      { city: 'Amsterdam',       iana: 'Europe/Amsterdam' },
+      { city: 'Stockholm',       iana: 'Europe/Stockholm' },
+      { city: 'Athens',          iana: 'Europe/Athens' },
+      { city: 'Moscow',          iana: 'Europe/Moscow' },
+      { city: 'Istanbul',        iana: 'Europe/Istanbul' },
+      { city: 'Dubai',           iana: 'Asia/Dubai' },
+      { city: 'Karachi',         iana: 'Asia/Karachi' },
+      { city: 'Mumbai',          iana: 'Asia/Kolkata' },
+      { city: 'Dhaka',           iana: 'Asia/Dhaka' },
+      { city: 'Bangkok',         iana: 'Asia/Bangkok' },
+      { city: 'Singapore',       iana: 'Asia/Singapore' },
+      { city: 'Shanghai',        iana: 'Asia/Shanghai' },
+      { city: 'Hong Kong',       iana: 'Asia/Hong_Kong' },
+      { city: 'Tokyo',           iana: 'Asia/Tokyo' },
+      { city: 'Seoul',           iana: 'Asia/Seoul' },
+      { city: 'Sydney',          iana: 'Australia/Sydney' },
+      { city: 'Melbourne',       iana: 'Australia/Melbourne' },
+      { city: 'Auckland',        iana: 'Pacific/Auckland' },
+      { city: 'Honolulu',        iana: 'Pacific/Honolulu' },
+      { city: 'Johannesburg',    iana: 'Africa/Johannesburg' },
+      { city: 'Cairo',           iana: 'Africa/Cairo' },
+      { city: 'Nairobi',         iana: 'Africa/Nairobi' }
+    ];
+
+    var DEFAULT_RESULT_TZS = ['UTC', 'America/New_York', 'Europe/London', 'Asia/Kolkata', 'Asia/Tokyo', 'Australia/Sydney'];
+    var DEFAULT_CLOCKS = ['America/New_York', 'Europe/London', 'Asia/Dubai', 'Asia/Tokyo'];
+    var activeClocksIana = DEFAULT_CLOCKS.slice();
+    var clockInterval = null;
+
+    function fmtTimeInZone(date, iana) {
+      var opts = {
+        timeZone: iana,
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: hourFmt === '12'
+      };
+      try { return new Intl.DateTimeFormat('en-US', opts).format(date); }
+      catch(e) { return '—'; }
+    }
+
+    function fmtDateInZone(date, iana) {
+      var opts = { timeZone: iana, weekday: 'short', month: 'short', day: 'numeric' };
+      try { return new Intl.DateTimeFormat('en-US', opts).format(date); }
+      catch(e) { return ''; }
+    }
+
+    function getOffset(iana, date) {
+      try {
+        var jan = new Date(date.getFullYear(), 0, 1);
+        var parts = new Intl.DateTimeFormat('en-US', { timeZone: iana, timeZoneName: 'shortOffset' }).formatToParts(date);
+        var off = parts.find(function(p){ return p.type === 'timeZoneName'; });
+        return off ? off.value : '';
+      } catch(e) { return ''; }
+    }
+
+    function populateSelects() {
+      var srcSel = document.getElementById('srcTz');
+      var addSel = document.getElementById('addTzSel');
+      srcSel.innerHTML = '';
+      addSel.innerHTML = '';
+      TZ_LIST.forEach(function(tz) {
+        var o1 = document.createElement('option');
+        o1.value = tz.iana;
+        o1.textContent = tz.city + ' (' + tz.iana + ')';
+        srcSel.appendChild(o1);
+        var o2 = o1.cloneNode(true);
+        addSel.appendChild(o2);
+      });
+      srcSel.value = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York';
+    }
+
+    function setDateTimeNow() {
+      var now = new Date();
+      var local = new Date(now - now.getTimezoneOffset() * 60000);
+      document.getElementById('srcDateTime').value = local.toISOString().slice(0,16);
+    }
+
+    function getInputDate() {
+      var val = document.getElementById('srcDateTime').value;
+      if (!val) return null;
+      return new Date(val);
+    }
+
+    function convert() {
+      var date = getInputDate();
+      var srcTz = document.getElementById('srcTz').value;
+      if (!date) { setStatus('info', 'Enter a date and time to convert.'); renderResults(null); return; }
+
+      // The datetime-local value is always treated as local browser time,
+      // but we want to interpret it as the chosen srcTz.
+      // Strategy: render the datetime in srcTz and compute the offset difference.
+      var utcMs = date.getTime();
+
+      // Build results
+      var results = DEFAULT_RESULT_TZS.map(function(iana) {
+        var tzEntry = TZ_LIST.find(function(t){ return t.iana === iana; }) || { city: iana, iana: iana };
+        return {
+          city: tzEntry.city,
+          iana: iana,
+          time: fmtTimeInZone(date, iana),
+          date: fmtDateInZone(date, iana),
+          offset: getOffset(iana, date)
+        };
+      });
+
+      renderResults(results);
+
+      var src = results.find(function(r){ return r.iana === srcTz; }) || results[0];
+      setStatus('valid',
+        (src ? src.city + ' ' + src.time : '') +
+        ' → ' + results.map(function(r){ return r.city + ' ' + r.time; }).slice(0, 3).join(' | ')
+      );
+      DT.trackTool('time-zone-converter');
+    }
+
+    function renderResults(rows) {
+      var container = document.getElementById('tzResults');
+      container.innerHTML = '';
+      if (!rows) { container.innerHTML = '<div style="color:var(--color-muted);font-size:.85rem;">Enter a date and time above.</div>'; return; }
+      rows.forEach(function(r) {
+        var row = document.createElement('div');
+        row.className = 'tz-result-row';
+        row.innerHTML =
+          '<div><div class="tz-result-city">' + r.city + '</div><div style="font-size:.7rem;color:var(--color-muted);">' + r.iana + '</div></div>' +
+          '<div style="text-align:right;"><div class="tz-result-time">' + r.time + '</div><div class="tz-result-offset">' + r.date + ' &nbsp; ' + r.offset + '</div></div>';
+        container.appendChild(row);
+      });
+    }
+
+    function setStatus(cls, msg) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + cls;
+      bar.textContent = msg;
+    }
+
+    function buildWorldClocks() {
+      var grid = document.getElementById('worldClockGrid');
+      grid.innerHTML = '';
+      activeClocksIana.forEach(function(iana) {
+        var entry = TZ_LIST.find(function(t){ return t.iana === iana; }) || { city: iana, iana: iana };
+        var card = document.createElement('div');
+        card.className = 'clock-card';
+        card.setAttribute('data-iana', iana);
+        card.innerHTML =
+          '<div class="clock-city">' + entry.city + '</div>' +
+          '<div class="clock-time" id="ctime_' + iana.replace(/\//g,'_') + '">--:--:--</div>' +
+          '<div class="clock-date" id="cdate_' + iana.replace(/\//g,'_') + '"></div>' +
+          '<div class="clock-offset" id="coffset_' + iana.replace(/\//g,'_') + '"></div>';
+        grid.appendChild(card);
+      });
+    }
+
+    function tickClocks() {
+      var now = new Date();
+      activeClocksIana.forEach(function(iana) {
+        var key = iana.replace(/\//g,'_');
+        var tEl = document.getElementById('ctime_' + key);
+        var dEl = document.getElementById('cdate_' + key);
+        var oEl = document.getElementById('coffset_' + key);
+        if (tEl) tEl.textContent = fmtTimeInZone(now, iana);
+        if (dEl) dEl.textContent = fmtDateInZone(now, iana);
+        if (oEl) oEl.textContent = getOffset(iana, now);
+      });
+    }
+
+    function startClocks() {
+      if (clockInterval) clearInterval(clockInterval);
+      buildWorldClocks();
+      tickClocks();
+      clockInterval = setInterval(tickClocks, 1000);
+    }
+
+    // Format chips
+    document.getElementById('fmtChips').addEventListener('click', function(e) {
+      var chip = e.target.closest('[data-fmt]');
+      if (!chip) return;
+      document.querySelectorAll('#fmtChips .option-chip').forEach(function(c){ c.classList.remove('active'); });
+      chip.classList.add('active');
+      hourFmt = chip.getAttribute('data-fmt');
+      convert();
+      tickClocks();
+    });
+
+    document.getElementById('srcTz').addEventListener('change', convert);
+    document.getElementById('srcDateTime').addEventListener('input', DT.debounce(convert, 200));
+
+    document.getElementById('nowBtn').addEventListener('click', function() {
+      setDateTimeNow();
+      convert();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      document.getElementById('srcDateTime').value = '';
+      renderResults(null);
+      setStatus('info', 'Select a source time zone and enter a date/time to convert.');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var rows = document.querySelectorAll('.tz-result-row');
+      var lines = [];
+      rows.forEach(function(r) {
+        var city = r.querySelector('.tz-result-city');
+        var time = r.querySelector('.tz-result-time');
+        var offset = r.querySelector('.tz-result-offset');
+        if (city && time) lines.push(city.textContent + ': ' + time.textContent + (offset ? ' (' + offset.textContent.trim() + ')' : ''));
+      });
+      if (lines.length) DT.copyToClipboard(lines.join('\n'), this);
+      else DT.toast('No results to copy', 'info');
+    });
+
+    document.getElementById('addClockBtn').addEventListener('click', function() {
+      if (activeClocksIana.length >= 8) { DT.toast('Maximum 8 clocks', 'info'); return; }
+      var sel = document.getElementById('addTzSel').value;
+      if (activeClocksIana.indexOf(sel) !== -1) { DT.toast('Already added', 'info'); return; }
+      activeClocksIana.push(sel);
+      startClocks();
+    });
+
+    document.getElementById('resetClocksBtn').addEventListener('click', function() {
+      activeClocksIana = DEFAULT_CLOCKS.slice();
+      startClocks();
+    });
+
+    // Init
+    populateSelects();
+    setDateTimeNow();
+    convert();
+    startClocks();
+  })();
+  </script>
+</body>
+</html>

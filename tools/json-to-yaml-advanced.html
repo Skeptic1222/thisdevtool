@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JSON ↔ YAML Advanced Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Bidirectional JSON to YAML and YAML to JSON converter. Supports multi-document YAML, flow vs block style, indent size selector, and full validation. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/json-to-yaml-advanced.html">
+  <meta property="og:title" content="JSON ↔ YAML Advanced Converter — DevToolbox">
+  <meta property="og:description" content="Convert JSON to YAML and YAML to JSON online. Multi-document YAML, flow vs block style, indent 2/4. Free, runs in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/json-to-yaml-advanced.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON to YAML Advanced Converter",
+    "url": "https://thisdevtool.com/tools/json-to-yaml-advanced.html",
+    "description": "Bidirectional JSON ↔ YAML converter with multi-document YAML, flow/block style, indent options, and validation. Free, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is YAML?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "YAML (YAML Ain't Markup Language) is a human-readable data serialisation format. It is widely used in configuration files for tools like Docker Compose, Kubernetes, GitHub Actions, Ansible, and many others. YAML is a superset of JSON, meaning all valid JSON is also valid YAML."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a multi-document YAML file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A multi-document YAML file contains multiple independent YAML documents separated by '---' (three dashes). This is commonly used in Kubernetes manifests where a single .yaml file defines multiple resources — a Deployment, a Service, and an Ingress — each separated by '---'. This converter handles multi-document YAML and converts each document to a JSON array element."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between block style and flow style YAML?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Block style YAML uses indentation to represent structure — keys and values are on separate lines. Flow style YAML uses curly braces and square brackets like JSON. Block style is more readable for complex structures; flow style is more compact. This tool lets you choose which style to emit when converting JSON to YAML."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool send my data to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The entire conversion — parsing and emitting — runs in your browser using JavaScript. Your data never leaves your device. There is no server, no upload, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What YAML features does this converter support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This converter handles strings, numbers, booleans, nulls, arrays, and nested objects — the full set of JSON-compatible YAML types. Multi-document files using '---' separators are supported. YAML anchors and aliases in the input are resolved and expanded in the output. Advanced YAML features like custom tags, binary data, and merge keys are not supported, as they have no JSON equivalent."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/csv-json.html">CSV/JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>JSON &harr; YAML Advanced Converter</h1>
+          <p class="tool-subtitle">Bidirectional conversion with multi-document YAML, flow vs block style, and full validation.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="json2yaml">JSON &rarr; YAML</button>
+            <button class="option-chip" data-mode="yaml2json">YAML &rarr; JSON</button>
+          </div>
+
+          <!-- Options Row -->
+          <div class="option-chips" style="margin-top:0.5rem;">
+            <span class="option-chip-label" id="styleLabel">Style:
+              <select id="styleSel" class="inline-select">
+                <option value="block">Block</option>
+                <option value="flow">Flow</option>
+              </select>
+            </span>
+            <span class="option-chip-label">Indent:
+              <select id="indentSel" class="inline-select">
+                <option value="2">2 spaces</option>
+                <option value="4">4 spaces</option>
+              </select>
+            </span>
+            <span class="option-chip-label" id="jsonStyleLabel">JSON indent:
+              <select id="jsonIndentSel" class="inline-select">
+                <option value="2">2 spaces</option>
+                <option value="4">4 spaces</option>
+              </select>
+            </span>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">JSON Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="mainInput" rows="16" placeholder='Paste JSON here…
+
+Example:
+{"name": "app", "version": 1, "debug": true}' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">YAML Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="mainOutput" style="min-height:340px;white-space:pre;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste JSON or YAML above to convert.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the JSON to YAML Converter</h2>
+          <ol>
+            <li><strong>Select a direction</strong> — "JSON &rarr; YAML" or "YAML &rarr; JSON" using the chips above.</li>
+            <li><strong>Paste your data</strong> — paste JSON or YAML into the left input area.</li>
+            <li><strong>Choose style options</strong> — select block or flow style, indent width (2 or 4 spaces), and JSON output indent.</li>
+            <li><strong>View the result</strong> — the converted output appears on the right instantly.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output panel.</li>
+          </ol>
+
+          <h2>About YAML and JSON</h2>
+          <p>YAML (YAML Ain't Markup Language) and JSON (JavaScript Object Notation) are two of the most widely used structured data formats. JSON is the standard for web APIs, JavaScript configuration, and NoSQL databases. YAML is dominant in DevOps tooling — Kubernetes manifests, GitHub Actions workflows, Docker Compose files, Helm charts, Ansible playbooks, and CI/CD pipeline configs are almost universally written in YAML.</p>
+
+          <h3>Key Differences</h3>
+          <ul>
+            <li><strong>Readability</strong> — YAML uses significant whitespace and indentation instead of braces and brackets, making it feel more like prose</li>
+            <li><strong>Comments</strong> — YAML supports <code>#</code> comments; JSON does not support comments at all</li>
+            <li><strong>Multi-document</strong> — a single YAML file can contain multiple documents separated by <code>---</code>; JSON cannot</li>
+            <li><strong>Anchors and aliases</strong> — YAML can define a value once with <code>&amp;anchor</code> and reference it with <code>*alias</code>, avoiding repetition; JSON has no equivalent</li>
+            <li><strong>Data types</strong> — both support strings, numbers, booleans, nulls, arrays, and objects. YAML additionally has timestamps, binary, and sets as native types</li>
+            <li><strong>Verbosity</strong> — JSON requires all string keys to be double-quoted; YAML usually does not</li>
+          </ul>
+
+          <h3>Block Style vs Flow Style YAML</h3>
+          <p>YAML supports two styles for collections. <strong>Block style</strong> uses newlines and indentation to represent structure, making it the most readable format for human-edited files. <strong>Flow style</strong> uses braces <code>{ }</code> for objects and brackets <code>[ ]</code> for arrays — it looks exactly like JSON, which is valid because YAML is a strict superset of JSON. Flow style is more compact and is sometimes used for short, simple values inline within a larger block-style document.</p>
+
+          <h3>Multi-Document YAML</h3>
+          <p>A YAML file can contain multiple independent documents, each separated by a line containing exactly <code>---</code>. This pattern is ubiquitous in Kubernetes, where a single <code>.yaml</code> file typically defines a Deployment, a Service, and possibly an Ingress or ConfigMap, each as a separate document. When converting multi-document YAML to JSON, this tool wraps each document as an element in a JSON array. When converting a JSON array back to YAML, you can opt for multi-document output with <code>---</code> separators.</p>
+
+          <h3>Anchors and Aliases</h3>
+          <p>YAML anchors (<code>&amp;name</code>) let you label a value, and aliases (<code>*name</code>) let you reference it elsewhere in the same file. This avoids repetition in large config files — for example, defining a common environment block once and reusing it across multiple service definitions. JSON has no anchor/alias concept, so this converter resolves all anchors and expands all aliases into their full values when converting to JSON.</p>
+
+          <h3>Common Use Cases</h3>
+          <ul>
+            <li><strong>Kubernetes manifests</strong> — convert JSON output from <code>kubectl get -o json</code> to YAML for version control</li>
+            <li><strong>GitHub Actions</strong> — validate workflow YAML structure by converting to JSON and inspecting the data tree</li>
+            <li><strong>Helm charts</strong> — convert chart <code>values.yaml</code> to JSON for programmatic processing</li>
+            <li><strong>Docker Compose</strong> — inspect or convert compose files, which use YAML format</li>
+            <li><strong>API development</strong> — convert OpenAPI/Swagger specs between YAML and JSON representations</li>
+          </ul>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is YAML?</button>
+            <div class="faq-answer">YAML (YAML Ain't Markup Language) is a human-readable data serialisation format. It is widely used in configuration files for tools like Docker Compose, Kubernetes, GitHub Actions, Ansible, and many others. YAML is a superset of JSON, meaning all valid JSON is also valid YAML.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a multi-document YAML file?</button>
+            <div class="faq-answer">A multi-document YAML file contains multiple independent YAML documents separated by "---" (three dashes). This is commonly used in Kubernetes manifests where a single .yaml file defines multiple resources. This converter handles multi-document YAML and converts each document to a JSON array element.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between block style and flow style YAML?</button>
+            <div class="faq-answer">Block style YAML uses indentation to represent structure — keys and values are on separate lines. Flow style YAML uses curly braces and square brackets like JSON. Block style is more readable for complex structures; flow style is more compact. This tool lets you choose which style to emit when converting JSON to YAML.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does this tool send my data to a server?</button>
+            <div class="faq-answer">No. The entire conversion runs in your browser using JavaScript. Your data never leaves your device. There is no server, no upload, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What YAML features does this converter support?</button>
+            <div class="faq-answer">This converter handles strings, numbers, booleans, nulls, arrays, and nested objects. Multi-document files using "---" separators are supported. YAML anchors and aliases are resolved and expanded. Advanced YAML features like custom tags and binary data are not supported as they have no JSON equivalent.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+        <a href="/tools/tsv-psv-converter.html">TSV/PSV Converter</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <style>
+    .inline-select {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .option-chip-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.75rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      cursor: default;
+      white-space: nowrap;
+    }
+  </style>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input   = document.getElementById('mainInput');
+      var output  = document.getElementById('mainOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'json2yaml';
+
+      // ── YAML Emitter (JSON value → YAML string) ──────────────────────────
+
+      function jsonToYaml(value, indent, level, flow) {
+        var pad = repeat(' ', indent * level);
+        var padChild = repeat(' ', indent * (level + 1));
+
+        if (value === null) return 'null';
+        if (value === undefined) return 'null';
+        if (typeof value === 'boolean') return value ? 'true' : 'false';
+        if (typeof value === 'number') return isFinite(value) ? String(value) : 'null';
+
+        if (typeof value === 'string') {
+          return emitString(value, indent, level, flow);
+        }
+
+        if (Array.isArray(value)) {
+          if (value.length === 0) return '[]';
+          if (flow) {
+            var items = value.map(function (v) { return jsonToYaml(v, indent, 0, true); });
+            return '[' + items.join(', ') + ']';
+          }
+          var lines = value.map(function (v) {
+            var rendered = jsonToYaml(v, indent, level + 1, false);
+            // If the child is a block (contains newlines), indent its continuation lines
+            if (rendered.indexOf('\n') !== -1) {
+              var firstLine = rendered.split('\n')[0];
+              var rest = rendered.split('\n').slice(1).map(function (l) { return padChild + l; }).join('\n');
+              return pad + '- ' + firstLine + '\n' + rest;
+            }
+            return pad + '- ' + rendered;
+          });
+          return lines.join('\n');
+        }
+
+        if (typeof value === 'object') {
+          var keys = Object.keys(value);
+          if (keys.length === 0) return '{}';
+          if (flow) {
+            var pairs = keys.map(function (k) {
+              return emitKey(k) + ': ' + jsonToYaml(value[k], indent, 0, true);
+            });
+            return '{' + pairs.join(', ') + '}';
+          }
+          var objLines = keys.map(function (k) {
+            var v = value[k];
+            var renderedV = jsonToYaml(v, indent, level + 1, false);
+            var isBlock = Array.isArray(v) || (v !== null && typeof v === 'object');
+            if (isBlock && renderedV !== '[]' && renderedV !== '{}') {
+              return pad + emitKey(k) + ':\n' + renderedV;
+            }
+            return pad + emitKey(k) + ': ' + renderedV;
+          });
+          return objLines.join('\n');
+        }
+
+        return String(value);
+      }
+
+      function repeat(ch, n) {
+        var s = '';
+        for (var i = 0; i < n; i++) s += ch;
+        return s;
+      }
+
+      var YAML_SPECIAL = /^(true|false|null|yes|no|on|off|~)$/i;
+      var NEEDS_QUOTE  = /[:#\[\]{},&*?|<>=!%@`\\\n\r\t]|^[\s-]|\s$|^\s/;
+
+      function emitKey(k) {
+        if (NEEDS_QUOTE.test(k) || YAML_SPECIAL.test(k) || k === '') {
+          return '"' + k.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+        }
+        return k;
+      }
+
+      function emitString(s, indent, level, flow) {
+        // Multiline literal block scalar (only in block mode at level > 0)
+        if (!flow && s.indexOf('\n') !== -1) {
+          var pad = repeat(' ', indent * (level + 1));
+          var lines = s.split('\n');
+          var trailer = s.endsWith('\n') ? '' : '-';
+          return '|\n' + lines.map(function (l) { return pad + l; }).join('\n');
+        }
+        // Needs quoting?
+        if (NEEDS_QUOTE.test(s) || YAML_SPECIAL.test(s) || s === '' ||
+            /^\d/.test(s) && isNaN(Number(s)) === false) {
+          // use double-quote if contains special chars
+          if (/["\n\r\t\\]/.test(s)) {
+            return '"' + s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+                           .replace(/\n/g, '\\n').replace(/\r/g, '\\r')
+                           .replace(/\t/g, '\\t') + '"';
+          }
+          return '"' + s + '"';
+        }
+        // Bare numbers-as-strings must be quoted
+        if (s !== '' && !isNaN(Number(s))) return '"' + s + '"';
+        return s;
+      }
+
+      // ── YAML Parser (string → JS value) ─────────────────────────────────
+
+      function parseYaml(text) {
+        // Split on document separator
+        var docs = text.split(/^---\s*$/m).filter(function (d) { return d.trim() !== ''; });
+        if (docs.length === 0) throw new Error('Empty YAML input');
+        var parsed = docs.map(function (doc) { return parseYamlDoc(doc); });
+        return { documents: parsed };
+      }
+
+      function parseYamlDoc(text) {
+        var lines = text.split('\n');
+        var ctx = { lines: lines, pos: 0 };
+        var result = parseNode(ctx, 0);
+        return result;
+      }
+
+      function parseNode(ctx, baseIndent) {
+        skipEmptyAndComments(ctx);
+        if (ctx.pos >= ctx.lines.length) return null;
+
+        var line = ctx.lines[ctx.pos];
+        var indent = getIndent(line);
+        var trimmed = line.trim();
+
+        if (trimmed === '' || trimmed.startsWith('#')) {
+          ctx.pos++;
+          return parseNode(ctx, baseIndent);
+        }
+
+        // Sequence
+        if (trimmed.startsWith('- ') || trimmed === '-') {
+          return parseSequence(ctx, indent);
+        }
+
+        // Flow sequence
+        if (trimmed.startsWith('[')) {
+          ctx.pos++;
+          return parseFlowSequence(trimmed);
+        }
+
+        // Flow mapping
+        if (trimmed.startsWith('{')) {
+          ctx.pos++;
+          return parseFlowMapping(trimmed);
+        }
+
+        // Mapping
+        if (/^[^\s:][^:]*:\s/.test(trimmed) || /^[^\s:][^:]*:$/.test(trimmed) ||
+            /^"[^"]*":\s/.test(trimmed) || /^'[^']*':\s/.test(trimmed)) {
+          return parseMapping(ctx, indent);
+        }
+
+        // Scalar
+        ctx.pos++;
+        return parseScalar(trimmed, ctx, indent);
+      }
+
+      function getIndent(line) {
+        var m = line.match(/^(\s*)/);
+        return m ? m[1].length : 0;
+      }
+
+      function skipEmptyAndComments(ctx) {
+        while (ctx.pos < ctx.lines.length) {
+          var t = ctx.lines[ctx.pos].trim();
+          if (t === '' || t.startsWith('#')) ctx.pos++;
+          else break;
+        }
+      }
+
+      function parseSequence(ctx, baseIndent) {
+        var arr = [];
+        while (ctx.pos < ctx.lines.length) {
+          skipEmptyAndComments(ctx);
+          if (ctx.pos >= ctx.lines.length) break;
+          var line = ctx.lines[ctx.pos];
+          var indent = getIndent(line);
+          var trimmed = line.trim();
+          if (trimmed === '' || trimmed.startsWith('#')) { ctx.pos++; continue; }
+          if (indent < baseIndent) break;
+          if (!trimmed.startsWith('-')) break;
+          ctx.pos++;
+          var rest = trimmed.slice(1).trimLeft();
+          if (rest === '' || rest.startsWith('#')) {
+            // value is next lines
+            arr.push(parseNode(ctx, indent + 2));
+          } else if (rest.startsWith('[')) {
+            arr.push(parseFlowSequence(rest));
+          } else if (rest.startsWith('{')) {
+            arr.push(parseFlowMapping(rest));
+          } else if (/^[^\s:][^:]*:\s/.test(rest) || /^[^\s:][^:]*:$/.test(rest)) {
+            // inline mapping
+            arr.push(parseInlineMapping(rest, ctx, indent + 2));
+          } else {
+            arr.push(parseScalarValue(rest));
+          }
+        }
+        return arr;
+      }
+
+      function parseMapping(ctx, baseIndent) {
+        var obj = {};
+        var anchors = {};
+        while (ctx.pos < ctx.lines.length) {
+          skipEmptyAndComments(ctx);
+          if (ctx.pos >= ctx.lines.length) break;
+          var line = ctx.lines[ctx.pos];
+          var indent = getIndent(line);
+          var trimmed = line.trim();
+          if (trimmed === '' || trimmed.startsWith('#')) { ctx.pos++; continue; }
+          if (indent < baseIndent) break;
+          if (trimmed.startsWith('-') && !trimmed.startsWith('-\n')) break;
+
+          // Parse anchor definition
+          var anchorMatch = trimmed.match(/^&(\S+)\s+(.*)/);
+          var anchorName = null;
+          if (anchorMatch) { anchorName = anchorMatch[1]; trimmed = anchorMatch[2]; }
+
+          var m = trimmed.match(/^((?:"[^"]*"|'[^']*'|[^:]+?)):\s*(.*)/);
+          if (!m) { ctx.pos++; continue; }
+          ctx.pos++;
+          var key = parseScalarValue(m[1].trim());
+          var valStr = m[2].trim();
+          var value;
+
+          if (valStr === '' || valStr.startsWith('#')) {
+            value = parseNode(ctx, indent + 1);
+          } else if (valStr.startsWith('[')) {
+            value = parseFlowSequence(valStr);
+          } else if (valStr.startsWith('{')) {
+            value = parseFlowMapping(valStr);
+          } else if (valStr.startsWith('|') || valStr.startsWith('>')) {
+            value = parseLiteralBlock(ctx, indent + 1, valStr.startsWith('>'));
+          } else if (valStr.startsWith('*')) {
+            value = anchors[valStr.slice(1)] !== undefined ? anchors[valStr.slice(1)] : null;
+          } else {
+            value = parseScalarValue(valStr.split('#')[0].trimRight());
+          }
+
+          if (anchorName) anchors[anchorName] = value;
+          obj[key] = value;
+        }
+        return obj;
+      }
+
+      function parseInlineMapping(str, ctx, baseIndent) {
+        // Treat inline mapping block
+        var obj = {};
+        var lines = [str];
+        // peek ahead for continuation lines at deeper indent
+        while (ctx.pos < ctx.lines.length) {
+          var line = ctx.lines[ctx.pos];
+          var ind = getIndent(line);
+          if (ind > baseIndent - 2 && line.trim() !== '' && !line.trim().startsWith('#')) {
+            lines.push(line.trim());
+            ctx.pos++;
+          } else break;
+        }
+        var tmpCtx = { lines: lines, pos: 0 };
+        return parseMapping(tmpCtx, 0);
+      }
+
+      function parseLiteralBlock(ctx, baseIndent, folded) {
+        var lines = [];
+        while (ctx.pos < ctx.lines.length) {
+          var line = ctx.lines[ctx.pos];
+          var indent = getIndent(line);
+          var trimmed = line.trim();
+          if (trimmed === '') { lines.push(''); ctx.pos++; continue; }
+          if (indent < baseIndent) break;
+          lines.push(line.slice(baseIndent));
+          ctx.pos++;
+        }
+        // Strip trailing blank lines
+        while (lines.length > 0 && lines[lines.length - 1] === '') lines.pop();
+        return folded ? lines.join(' ') : lines.join('\n');
+      }
+
+      function parseFlowSequence(str) {
+        // Remove wrapping [ ]
+        str = str.trim();
+        if (str.startsWith('[')) str = str.slice(1);
+        if (str.endsWith(']')) str = str.slice(0, -1);
+        if (str.trim() === '') return [];
+        var items = splitFlowItems(str);
+        return items.map(function (s) {
+          s = s.trim();
+          if (s.startsWith('[')) return parseFlowSequence(s);
+          if (s.startsWith('{')) return parseFlowMapping(s);
+          return parseScalarValue(s);
+        });
+      }
+
+      function parseFlowMapping(str) {
+        str = str.trim();
+        if (str.startsWith('{')) str = str.slice(1);
+        if (str.endsWith('}')) str = str.slice(0, -1);
+        if (str.trim() === '') return {};
+        var obj = {};
+        var pairs = splitFlowItems(str);
+        pairs.forEach(function (pair) {
+          pair = pair.trim();
+          var idx = pair.indexOf(':');
+          if (idx === -1) return;
+          var k = parseScalarValue(pair.slice(0, idx).trim());
+          var v = parseScalarValue(pair.slice(idx + 1).trim());
+          obj[k] = v;
+        });
+        return obj;
+      }
+
+      function splitFlowItems(str) {
+        // Split by commas, but not inside nested brackets
+        var items = [], depth = 0, cur = '';
+        for (var i = 0; i < str.length; i++) {
+          var ch = str[i];
+          if (ch === '[' || ch === '{') { depth++; cur += ch; }
+          else if (ch === ']' || ch === '}') { depth--; cur += ch; }
+          else if (ch === ',' && depth === 0) { items.push(cur); cur = ''; }
+          else cur += ch;
+        }
+        if (cur.trim()) items.push(cur);
+        return items;
+      }
+
+      function parseScalar(trimmed, ctx, baseIndent) {
+        if (trimmed.startsWith('|') || trimmed.startsWith('>')) {
+          return parseLiteralBlock(ctx, baseIndent + 1, trimmed.startsWith('>'));
+        }
+        return parseScalarValue(trimmed);
+      }
+
+      function parseScalarValue(s) {
+        if (s === undefined || s === null) return null;
+        s = s.trim();
+        if (s === '' || s === '~' || s === 'null' || s === 'Null' || s === 'NULL') return null;
+        if (s === 'true' || s === 'True' || s === 'TRUE' || s === 'yes' || s === 'Yes' || s === 'on' || s === 'On') return true;
+        if (s === 'false' || s === 'False' || s === 'FALSE' || s === 'no' || s === 'No' || s === 'off' || s === 'Off') return false;
+        // Anchor reference
+        if (s.startsWith('*')) return s; // leave as-is (resolved at mapping level)
+        // Double-quoted string
+        if (s.startsWith('"') && s.endsWith('"')) {
+          return s.slice(1, -1)
+            .replace(/\\n/g, '\n').replace(/\\r/g, '\r').replace(/\\t/g, '\t')
+            .replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+        }
+        // Single-quoted string
+        if (s.startsWith("'") && s.endsWith("'")) {
+          return s.slice(1, -1).replace(/''/g, "'");
+        }
+        // Number
+        if (/^-?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(s)) return Number(s);
+        if (/^0x[0-9a-fA-F]+$/.test(s)) return parseInt(s, 16);
+        if (/^0o[0-7]+$/.test(s)) return parseInt(s.slice(2), 8);
+        if (s === '.inf' || s === '.Inf' || s === '+.inf') return Infinity;
+        if (s === '-.inf' || s === '-.Inf') return -Infinity;
+        if (s === '.nan' || s === '.NaN') return null;
+        return s;
+      }
+
+      // ── Conversion Entry Points ──────────────────────────────────────────
+
+      function convertJsonToYaml(raw) {
+        var indent = parseInt(document.getElementById('indentSel').value, 10);
+        var flow = document.getElementById('styleSel').value === 'flow';
+
+        // Detect multiple JSON values (newline-separated or array)
+        var trimmed = raw.trim();
+        var docs = [];
+
+        // Try parsing as array → multi-document
+        if (trimmed.startsWith('[')) {
+          var arr = JSON.parse(trimmed);
+          if (Array.isArray(arr)) docs = arr;
+          else docs = [arr];
+        } else {
+          // Try newline-separated JSON values
+          var segments = splitJsonDocuments(trimmed);
+          docs = segments.map(function (s) { return JSON.parse(s); });
+        }
+
+        var yamlDocs = docs.map(function (d) { return jsonToYaml(d, indent, 0, flow); });
+        var result = yamlDocs.join('\n---\n');
+        return { result: result, docCount: docs.length, nodeCount: countNodes(docs) };
+      }
+
+      function convertYamlToJson(raw) {
+        var jsonIndent = parseInt(document.getElementById('jsonIndentSel').value, 10);
+        var parsed = parseYaml(raw);
+        var docs = parsed.documents;
+        var result;
+        if (docs.length === 1) {
+          result = JSON.stringify(docs[0], null, jsonIndent);
+        } else {
+          result = JSON.stringify(docs, null, jsonIndent);
+        }
+        return { result: result, docCount: docs.length, nodeCount: countNodes(docs) };
+      }
+
+      function splitJsonDocuments(text) {
+        // Split concatenated JSON objects/arrays
+        var docs = [];
+        var depth = 0, start = 0, inStr = false, esc = false;
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i];
+          if (esc) { esc = false; continue; }
+          if (ch === '\\' && inStr) { esc = true; continue; }
+          if (ch === '"') { inStr = !inStr; continue; }
+          if (inStr) continue;
+          if (ch === '{' || ch === '[') depth++;
+          if (ch === '}' || ch === ']') {
+            depth--;
+            if (depth === 0) {
+              docs.push(text.slice(start, i + 1).trim());
+              start = i + 1;
+              // skip whitespace
+              while (start < text.length && /\s/.test(text[start])) start++;
+              i = start - 1;
+            }
+          }
+        }
+        var tail = text.slice(start).trim();
+        if (tail) docs.push(tail);
+        return docs.filter(function (d) { return d.length > 0; });
+      }
+
+      function countNodes(v) {
+        if (v === null || v === undefined) return 1;
+        if (typeof v !== 'object') return 1;
+        var count = 1;
+        if (Array.isArray(v)) {
+          v.forEach(function (item) { count += countNodes(item); });
+        } else {
+          Object.keys(v).forEach(function (k) { count += countNodes(v[k]); });
+        }
+        return count;
+      }
+
+      // ── UI ───────────────────────────────────────────────────────────────
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste JSON or YAML above to convert.';
+          return;
+        }
+
+        try {
+          var r;
+          if (currentMode === 'json2yaml') {
+            r = convertJsonToYaml(raw);
+          } else {
+            r = convertYamlToJson(raw);
+          }
+          output.textContent = r.result;
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Converted ' + r.nodeCount + ' nodes\u2009\u2014\u2009' + r.docCount + (r.docCount === 1 ? ' document' : ' documents');
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+        }
+
+        DT.trackTool('json-to-yaml-advanced');
+      }
+
+      var debouncedProcess = DT.debounce(process, 200);
+
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+
+          var isJ2Y = currentMode === 'json2yaml';
+          document.getElementById('inputLabel').textContent  = isJ2Y ? 'JSON Input'  : 'YAML Input';
+          document.getElementById('outputLabel').textContent = isJ2Y ? 'YAML Output' : 'JSON Output';
+          document.getElementById('styleSel').parentElement.style.display = isJ2Y ? '' : 'none';
+          document.getElementById('indentSel').parentElement.style.display = isJ2Y ? '' : 'none';
+          document.getElementById('jsonIndentSel').parentElement.style.display = isJ2Y ? 'none' : '';
+
+          input.placeholder = isJ2Y
+            ? 'Paste JSON here…\n\nExample:\n{"name":"app","version":1,"debug":true}'
+            : 'Paste YAML here…\n\nExample:\nname: app\nversion: 1\ndebug: true';
+          process();
+        });
+      });
+
+      ['styleSel', 'indentSel', 'jsonIndentSel'].forEach(function (id) {
+        document.getElementById(id).addEventListener('change', process);
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (!text) return;
+        var ext = currentMode === 'json2yaml' ? '.yaml' : '.json';
+        var mime = currentMode === 'json2yaml' ? 'text/yaml' : 'application/json';
+        DT.downloadText(text, 'converted' + ext, mime);
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      var JSON_EXAMPLE = '{\n  "apiVersion": "apps/v1",\n  "kind": "Deployment",\n  "metadata": {\n    "name": "web-app",\n    "labels": { "app": "web", "env": "production" }\n  },\n  "spec": {\n    "replicas": 3,\n    "template": {\n      "spec": {\n        "containers": [\n          { "name": "web", "image": "nginx:latest", "ports": [{ "containerPort": 80 }] }\n        ]\n      }\n    }\n  }\n}';
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = currentMode === 'json2yaml' ? JSON_EXAMPLE
+          : 'name: web-app\nkind: Deployment\nreplicas: 3\nlabels:\n  app: web\n  env: production\nports:\n  - containerPort: 80\n  - containerPort: 443\ndebug: false\nversion: "1.2.3"';
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var s = this.selectionStart, en = this.selectionEnd;
+          this.value = this.value.substring(0, s) + '  ' + this.value.substring(en);
+          this.selectionStart = this.selectionEnd = s + 2;
+          debouncedProcess();
+        }
+      });
+
+      // Hide YAML-specific controls initially
+      document.getElementById('jsonIndentSel').parentElement.style.display = 'none';
+    })();
+  </script>
+</body>
+</html>

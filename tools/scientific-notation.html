@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Scientific Notation Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert numbers to and from scientific notation. Standard, engineering, and E notation. Significant figures control, batch conversion, and full precision output. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/scientific-notation.html">
+  <meta property="og:title" content="Scientific Notation Converter — DevToolbox">
+  <meta property="og:description" content="Convert between standard numbers and scientific notation. Supports engineering notation, significant figures, and batch conversion.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/scientific-notation.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Scientific Notation Converter",
+    "url": "https://thisdevtool.com/tools/scientific-notation.html",
+    "description": "Convert between standard numbers and scientific or engineering notation. Significant figures control and batch conversion. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is scientific notation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Scientific notation expresses any number as a coefficient between 1 and 10 multiplied by a power of 10. For example, 42000 is written as 4.2 × 10⁴ and 0.00056 is written as 5.6 × 10⁻⁴. It makes very large and very small numbers compact and easy to compare."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is engineering notation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Engineering notation is like scientific notation but restricts the exponent to multiples of 3 (0, 3, 6, 9, 12, -3, -6, etc.), aligning with SI unit prefixes like kilo (10³), mega (10⁶), giga (10⁹), milli (10⁻³), micro (10⁻⁶). This makes it convenient for engineering calculations where SI prefixes are used."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are significant figures?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Significant figures (sig figs) are the meaningful digits in a number that carry measurement precision. In 4.20 × 10³, there are 3 significant figures. Leading zeros are not significant; trailing zeros after a decimal point are significant. Scientific notation makes sig fig counting unambiguous."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is E notation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "E notation is a computer-friendly way to write scientific notation using the letter E instead of '× 10^'. For example, 4.2E4 means 4.2 × 10⁴ and 5.6E-4 means 5.6 × 10⁻⁴. E notation is used in most programming languages, spreadsheets, and calculators."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I convert scientific notation back to a standard number?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Move the decimal point right by the exponent for positive powers, or left for negative powers. 4.2 × 10⁴: move decimal 4 places right → 42000. 5.6 × 10⁻³: move decimal 3 places left → 0.0056. This tool handles the conversion automatically in both directions."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .sci-input-wrap {
+      margin-bottom: .75rem;
+    }
+    .sci-input-wrap input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      font-family: var(--font-mono, monospace);
+      font-size: 1.2rem;
+      padding: .6rem .9rem;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s;
+    }
+    .sci-input-wrap input[type="text"]:focus { border-color: #10b981; }
+    .sig-fig-row {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-bottom: .75rem;
+      flex-wrap: wrap;
+    }
+    .sig-fig-row label { font-size: .85rem; font-weight: 600; }
+    .sig-fig-row input[type="range"] { flex: 1; min-width: 120px; max-width: 200px; accent-color: #10b981; }
+    .sig-fig-row .sig-val { font-weight: 700; color: #10b981; min-width: 20px; }
+    .result-display {
+      background: var(--bg-alt, #f9fafb);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin: .75rem 0;
+    }
+    [data-theme="dark"] .result-display { background: #111827; }
+    .result-row {
+      display: flex;
+      align-items: baseline;
+      gap: .75rem;
+      padding: .4rem 0;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-row .res-label {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--text-muted, #6b7280);
+      min-width: 130px;
+    }
+    .result-row .res-value {
+      font-family: var(--font-mono, monospace);
+      font-size: 1rem;
+      color: var(--text);
+      word-break: break-all;
+    }
+    .result-row .res-value.highlight { color: #10b981; font-weight: 700; font-size: 1.15rem; }
+    .copy-inline {
+      margin-left: auto;
+      padding: .2rem .55rem;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: .75rem;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .copy-inline:hover { border-color: #10b981; color: #10b981; }
+    .batch-area { margin-top: .6rem; }
+    .batch-area textarea {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 100px;
+      font-family: var(--font-mono, monospace);
+      font-size: .9rem;
+      padding: .6rem .75rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      resize: vertical;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .batch-area textarea:focus { border-color: #10b981; }
+    .batch-results {
+      max-height: 240px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-top: .5rem;
+      font-family: var(--font-mono, monospace);
+      font-size: .82rem;
+    }
+    .batch-row {
+      display: flex;
+      gap: .5rem;
+      padding: .32rem .65rem;
+      border-bottom: 1px solid var(--border);
+      align-items: baseline;
+    }
+    .batch-row:last-child { border-bottom: none; }
+    .batch-row .b-input { color: var(--text-muted, #6b7280); min-width: 100px; }
+    .batch-row .b-result { color: #10b981; font-weight: 600; }
+    .batch-row .b-error { color: #ef4444; }
+    sup { font-size: .7em; vertical-align: super; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/timestamp-converter.html">Timestamp</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Scientific Notation Converter</h1>
+          <p class="tool-subtitle">Convert between standard numbers and scientific / engineering notation. Significant figures control, E notation, and batch conversion. 100% client-side.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="single">Single</button>
+            <button class="option-chip" data-mode="batch">Batch</button>
+          </div>
+
+          <!-- Single mode -->
+          <div id="paneSingle">
+            <div class="sci-input-wrap">
+              <input type="text" id="numInput" value="42000" placeholder="Enter a number (e.g. 42000 or 4.2e4)" autocomplete="off" spellcheck="false" aria-label="Number input">
+            </div>
+
+            <div class="sig-fig-row">
+              <label for="sigFigs">Significant Figures:</label>
+              <input type="range" id="sigFigs" min="1" max="10" value="2">
+              <span class="sig-val" id="sigFigVal">2</span>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+
+            <div class="result-display" id="resultDisplay">
+              <div class="result-row">
+                <span class="res-label">Standard</span>
+                <span class="res-value" id="resStandard">—</span>
+                <button class="copy-inline" data-target="resStandard">Copy</button>
+              </div>
+              <div class="result-row">
+                <span class="res-label">Scientific Notation</span>
+                <span class="res-value highlight" id="resSciPretty">—</span>
+                <button class="copy-inline" data-target="resSciPretty">Copy</button>
+              </div>
+              <div class="result-row">
+                <span class="res-label">E Notation</span>
+                <span class="res-value" id="resENotation">—</span>
+                <button class="copy-inline" data-target="resENotation">Copy</button>
+              </div>
+              <div class="result-row">
+                <span class="res-label">Engineering Notation</span>
+                <span class="res-value" id="resEngineering">—</span>
+                <button class="copy-inline" data-target="resEngineering">Copy</button>
+              </div>
+              <div class="result-row">
+                <span class="res-label">SI Prefix</span>
+                <span class="res-value" id="resSIPrefix">—</span>
+                <button class="copy-inline" data-target="resSIPrefix">Copy</button>
+              </div>
+              <div class="result-row">
+                <span class="res-label">LaTeX</span>
+                <span class="res-value" id="resLatex">—</span>
+                <button class="copy-inline" data-target="resLatex">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Batch mode -->
+          <div id="paneBatch" style="display:none;">
+            <p class="tool-subtitle" style="margin-bottom:.4rem;">Enter one number per line (standard or E notation)</p>
+            <div class="batch-area">
+              <textarea id="batchInput" placeholder="42000&#10;0.00056&#10;1.23e8&#10;-9.99e-3&#10;6.022e23"></textarea>
+            </div>
+            <div class="btn-group" style="margin:.5rem 0;">
+              <button class="btn btn-sm btn-primary" id="batchCopyBtn">Copy Results</button>
+              <button class="btn btn-sm btn-secondary" id="batchDownloadBtn">Download CSV</button>
+            </div>
+            <div class="batch-results" id="batchResults"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter any number above to convert to scientific notation.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Scientific Notation Converter</h2>
+          <ol>
+            <li><strong>Enter a number</strong> in any format — standard (42000), E notation (4.2e4), or already in scientific notation (4.2 × 10⁴).</li>
+            <li><strong>Adjust significant figures</strong> with the slider (1–10 sig figs).</li>
+            <li><strong>View all formats</strong> — standard, scientific, E notation, engineering, SI prefix, and LaTeX.</li>
+            <li><strong>Copy any result</strong> with the inline Copy buttons on each row.</li>
+            <li><strong>Batch mode</strong> — enter multiple numbers, one per line, and download the full conversion table as CSV.</li>
+          </ol>
+
+          <h2>What is Scientific Notation?</h2>
+          <p>Scientific notation is a way to express any real number as a coefficient multiplied by a power of ten. The coefficient is always a number between 1 (inclusive) and 10 (exclusive). For example, the speed of light (299,792,458 m/s) is written as 2.998 × 10⁸ m/s. The number of atoms in a mole (6.022 × 10²³) would be nearly impossible to work with in standard notation. Scientific notation makes arithmetic with very large or very small numbers tractable.</p>
+
+          <h3>Scientific vs Engineering Notation</h3>
+          <p>Engineering notation is a variant of scientific notation where the exponent is always a multiple of 3. This aligns with the metric SI prefixes: 10³ (kilo), 10⁶ (mega), 10⁹ (giga), 10¹² (tera), 10⁻³ (milli), 10⁻⁶ (micro), 10⁻⁹ (nano), 10⁻¹² (pico). Engineers prefer this form because measurements can be directly expressed with SI prefix units: 42,000 Hz becomes 42 × 10³ Hz = 42 kHz rather than 4.2 × 10⁴ Hz which doesn't map directly to a unit prefix.</p>
+
+          <h3>Understanding Significant Figures</h3>
+          <p>Significant figures convey measurement precision. When you write 4.2 × 10⁴, you're saying the value is known to 2 significant figures — the actual value is somewhere between 41,500 and 42,500. Writing 4.20 × 10⁴ (3 sig figs) means the value is between 41,950 and 42,050. Scientific notation is the clearest way to express sig figs because trailing zeros are unambiguous: 4.200 × 10⁴ clearly has 4 sig figs, while "42000" is ambiguous about whether those trailing zeros are significant.</p>
+
+          <h3>E Notation in Programming</h3>
+          <p>Most programming languages use E notation for scientific numbers: <code>4.2e4</code> means 4.2 × 10⁴. Python, JavaScript, Java, C, C++, Go, Rust, and virtually every other language accept this syntax in numeric literals and <code>printf</code>-style formatting. JavaScript's <code>Number.toExponential()</code> method outputs E notation; <code>toPrecision()</code> applies significant figures. In spreadsheets (Excel, Google Sheets), E notation is used when numbers are too large for the cell width.</p>
+
+          <h3>Common Scientific Constants in Notation</h3>
+          <ul>
+            <li>Speed of light: 2.998 × 10⁸ m/s</li>
+            <li>Avogadro's number: 6.022 × 10²³ mol⁻¹</li>
+            <li>Planck's constant: 6.626 × 10⁻³⁴ J·s</li>
+            <li>Electron charge: 1.602 × 10⁻¹⁹ C</li>
+            <li>Gravitational constant: 6.674 × 10⁻¹¹ N·m²/kg²</li>
+            <li>Boltzmann constant: 1.381 × 10⁻²³ J/K</li>
+            <li>Distance to sun: 1.496 × 10¹¹ m</li>
+            <li>Mass of electron: 9.109 × 10⁻³¹ kg</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is scientific notation?</button>
+            <div class="faq-answer">Scientific notation expresses any number as a coefficient between 1 and 10 multiplied by a power of 10. For example, 42000 = 4.2 × 10⁴ and 0.00056 = 5.6 × 10⁻⁴. It makes very large and very small numbers easy to write, compare, and calculate with.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is engineering notation?</button>
+            <div class="faq-answer">Engineering notation is like scientific notation but restricts exponents to multiples of 3 (0, ±3, ±6, ±9, ...), matching SI unit prefixes like kilo (10³), mega (10⁶), milli (10⁻³), micro (10⁻⁶). So 42000 Hz = 42 × 10³ Hz = 42 kHz in engineering notation.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are significant figures?</button>
+            <div class="faq-answer">Significant figures are the meaningful precision digits in a number. 4.2 × 10⁴ has 2 sig figs; 4.20 × 10⁴ has 3. Scientific notation makes sig figs unambiguous — trailing zeros after the decimal are always significant.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is E notation?</button>
+            <div class="faq-answer">E notation uses the letter 'E' instead of '× 10^'. So 4.2E4 = 4.2 × 10⁴ and 5.6E-4 = 5.6 × 10⁻⁴. It's the format used in programming languages, spreadsheets, and calculators because it only uses ASCII characters.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I convert scientific notation to a standard number?</button>
+            <div class="faq-answer">Move the decimal point right by the exponent for positive powers, left for negative. 4.2 × 10⁴ → move right 4 places → 42000. 5.6 × 10⁻³ → move left 3 places → 0.0056. This tool converts automatically in both directions.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Math / Science</h4>
+        <a href="/tools/scientific-notation.html">Scientific Notation</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var sigFigs = 2;
+    var currentMode = 'single';
+
+    var SI_PREFIXES = [
+      { exp: 24, sym: 'Y', name: 'yotta' },
+      { exp: 21, sym: 'Z', name: 'zetta' },
+      { exp: 18, sym: 'E', name: 'exa' },
+      { exp: 15, sym: 'P', name: 'peta' },
+      { exp: 12, sym: 'T', name: 'tera' },
+      { exp: 9,  sym: 'G', name: 'giga' },
+      { exp: 6,  sym: 'M', name: 'mega' },
+      { exp: 3,  sym: 'k', name: 'kilo' },
+      { exp: 0,  sym: '',  name: '' },
+      { exp: -3, sym: 'm', name: 'milli' },
+      { exp: -6, sym: 'μ', name: 'micro' },
+      { exp: -9, sym: 'n', name: 'nano' },
+      { exp: -12, sym: 'p', name: 'pico' },
+      { exp: -15, sym: 'f', name: 'femto' },
+      { exp: -18, sym: 'a', name: 'atto' }
+    ];
+
+    function parseInput(s) {
+      s = s.trim().replace(/\s/g, '').replace(/×/g, '*').replace(/\^/g, 'e').replace(/⁻/g, '-');
+      // Handle "a * 10^b" or "a × 10^b" patterns
+      var mulMatch = s.match(/^([+-]?[\d.]+)\*10\^?([+-]?\d+)$/i);
+      if (mulMatch) return parseFloat(mulMatch[1]) * Math.pow(10, parseInt(mulMatch[2], 10));
+      // Remove superscript digits by mapping to normal
+      s = s.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]/g, function (c) {
+        return '⁰¹²³⁴⁵⁶⁷⁸⁹⁻'.indexOf(c) < 10 ? String('⁰¹²³⁴⁵⁶⁷⁸⁹⁻'.indexOf(c)) : '-';
+      });
+      var n = Number(s);
+      if (!isNaN(n)) return n;
+      return NaN;
+    }
+
+    function toSuperscript(n) {
+      var s = String(n);
+      var sup = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+      return s.split('').map(function (c) { return sup[c] || c; }).join('');
+    }
+
+    function getCoeffAndExp(n) {
+      if (n === 0) return { coeff: 0, exp: 0 };
+      var sign = n < 0 ? -1 : 1;
+      var abs = Math.abs(n);
+      var exp = Math.floor(Math.log10(abs));
+      var coeff = (abs / Math.pow(10, exp)) * sign;
+      return { coeff: coeff, exp: exp };
+    }
+
+    function roundToSigFigs(n, sf) {
+      if (n === 0) return 0;
+      var sign = n < 0 ? -1 : 1;
+      var abs = Math.abs(n);
+      var mag = Math.pow(10, sf - 1 - Math.floor(Math.log10(abs)));
+      return sign * Math.round(abs * mag) / mag;
+    }
+
+    function toScientific(n, sf) {
+      var ce = getCoeffAndExp(n);
+      var coeff = roundToSigFigs(ce.coeff, sf);
+      // Ensure coeff is in [1, 10)
+      var c = Math.abs(coeff);
+      if (c >= 10) { coeff = coeff / 10; ce.exp += 1; }
+      else if (c > 0 && c < 1) { coeff = coeff * 10; ce.exp -= 1; }
+      var coeffStr = coeff.toFixed(Math.max(0, sf - 1));
+      return { coeff: coeffStr, exp: ce.exp };
+    }
+
+    function toEngineering(n, sf) {
+      var ce = getCoeffAndExp(n);
+      var engExp = Math.floor(ce.exp / 3) * 3;
+      var engCoeff = n / Math.pow(10, engExp);
+      var rounded = roundToSigFigs(engCoeff, sf);
+      var decPlaces = Math.max(0, sf - Math.floor(Math.log10(Math.abs(rounded) || 1)) - 1);
+      return { coeff: rounded.toFixed(decPlaces), exp: engExp };
+    }
+
+    function getSIPrefix(exp) {
+      for (var i = 0; i < SI_PREFIXES.length; i++) {
+        if (SI_PREFIXES[i].exp === exp) return SI_PREFIXES[i];
+      }
+      return null;
+    }
+
+    function formatStandard(n) {
+      if (Math.abs(n) >= 1e15 || (Math.abs(n) < 1e-6 && n !== 0)) {
+        return n.toPrecision(15).replace(/\.?0+$/, '');
+      }
+      var s = String(n);
+      // Add thousands separators for readability
+      var parts = s.split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return parts.join('.');
+    }
+
+    function processNum(n, sf) {
+      var sci = toScientific(n, sf);
+      var eng = toEngineering(n, sf);
+      var siInfo = getSIPrefix(eng.exp);
+      var siStr = siInfo && siInfo.sym !== undefined
+        ? eng.coeff + ' ' + siInfo.sym + (siInfo.name ? ' (' + siInfo.name + ')' : '')
+        : eng.coeff + ' × 10' + toSuperscript(eng.exp) + ' (no SI prefix)';
+
+      return {
+        standard: formatStandard(n),
+        sciPretty: sci.coeff + ' × 10' + toSuperscript(sci.exp),
+        eNotation: sci.coeff + 'e' + sci.exp,
+        engineering: eng.coeff + ' × 10' + toSuperscript(eng.exp),
+        siPrefix: siStr,
+        latex: sci.coeff + ' \\times 10^{' + sci.exp + '}'
+      };
+    }
+
+    function process() {
+      var raw = document.getElementById('numInput').value.trim();
+      var status = document.getElementById('statusBar');
+      if (!raw) {
+        setResults(null);
+        status.className = 'status-bar info';
+        status.textContent = 'Enter any number above to convert to scientific notation.';
+        return;
+      }
+      var n = parseInput(raw);
+      if (isNaN(n) || !isFinite(n)) {
+        setResults(null);
+        status.className = 'status-bar invalid';
+        status.textContent = 'Invalid number. Try: 42000, 0.00056, or 4.2e4';
+        return;
+      }
+      var r = processNum(n, sigFigs);
+      document.getElementById('resStandard').textContent = r.standard;
+      document.getElementById('resSciPretty').textContent = r.sciPretty;
+      document.getElementById('resENotation').textContent = r.eNotation;
+      document.getElementById('resEngineering').textContent = r.engineering;
+      document.getElementById('resSIPrefix').textContent = r.siPrefix;
+      document.getElementById('resLatex').textContent = r.latex;
+      status.className = 'status-bar valid';
+      status.textContent = r.standard + ' = ' + r.sciPretty + ' (' + sigFigs + ' sig fig' + (sigFigs === 1 ? '' : 's') + ')';
+      DT.trackTool('scientific-notation');
+    }
+
+    function setResults(r) {
+      ['resStandard','resSciPretty','resENotation','resEngineering','resSIPrefix','resLatex'].forEach(function (id) {
+        document.getElementById(id).textContent = r ? r[id] : '—';
+      });
+    }
+
+    var dp = DT.debounce(process, 150);
+    document.getElementById('numInput').addEventListener('input', dp);
+
+    // Sig figs slider
+    document.getElementById('sigFigs').addEventListener('input', function () {
+      sigFigs = parseInt(this.value, 10);
+      document.getElementById('sigFigVal').textContent = sigFigs;
+      process();
+    });
+
+    // Mode chips
+    document.querySelectorAll('.option-chip[data-mode]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('paneSingle').style.display = currentMode === 'single' ? '' : 'none';
+        document.getElementById('paneBatch').style.display = currentMode === 'batch' ? '' : 'none';
+      });
+    });
+
+    // Example / Clear
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('numInput').value = '299792458';
+      document.getElementById('sigFigs').value = 4;
+      sigFigs = 4;
+      document.getElementById('sigFigVal').textContent = 4;
+      process();
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('numInput').value = '';
+      setResults(null);
+      document.getElementById('statusBar').className = 'status-bar info';
+      document.getElementById('statusBar').textContent = 'Enter any number above to convert to scientific notation.';
+      document.getElementById('numInput').focus();
+    });
+
+    // Inline copy buttons
+    document.querySelectorAll('.copy-inline[data-target]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var el = document.getElementById(btn.getAttribute('data-target'));
+        if (el && el.textContent && el.textContent !== '—') DT.copyToClipboard(el.textContent, btn);
+      });
+    });
+
+    // Batch mode
+    function processBatch() {
+      var lines = document.getElementById('batchInput').value.split('\n');
+      var rows = [];
+      var html = '';
+      lines.forEach(function (line) {
+        line = line.trim();
+        if (!line) return;
+        var n = parseInput(line);
+        if (isNaN(n) || !isFinite(n)) {
+          html += '<div class="batch-row"><span class="b-input">' + line + '</span><span class="b-error">Invalid number</span></div>';
+          return;
+        }
+        var r = processNum(n, sigFigs);
+        rows.push([line, r.standard, r.sciPretty, r.eNotation, r.engineering]);
+        html += '<div class="batch-row"><span class="b-input">' + r.standard + '</span><span style="color:var(--text-muted);">&rarr;</span><span class="b-result">' + r.sciPretty + '</span><span style="color:var(--text-muted);margin-left:.5rem;font-size:.78rem;">' + r.eNotation + '</span></div>';
+      });
+      document.getElementById('batchResults').innerHTML = html || '<div class="batch-row" style="color:var(--text-muted);">Enter numbers above (one per line)</div>';
+      var status = document.getElementById('statusBar');
+      status.className = rows.length > 0 ? 'status-bar valid' : 'status-bar info';
+      status.textContent = rows.length > 0 ? rows.length + ' numbers converted' : 'Enter numbers above (one per line).';
+      return rows;
+    }
+
+    document.getElementById('batchInput').addEventListener('input', DT.debounce(processBatch, 200));
+
+    document.getElementById('batchCopyBtn').addEventListener('click', function () {
+      var rows = processBatch();
+      var text = 'Input\tStandard\tScientific\tE Notation\tEngineering\n' + rows.map(function (r) { return r.join('\t'); }).join('\n');
+      DT.copyToClipboard(text, this);
+    });
+    document.getElementById('batchDownloadBtn').addEventListener('click', function () {
+      var rows = processBatch();
+      var csv = 'Input,Standard,Scientific,E Notation,Engineering\n' + rows.map(function (r) { return r.map(function (v) { return '"' + v + '"'; }).join(','); }).join('\n');
+      DT.downloadText(csv, 'scientific-notation.csv', 'text/csv');
+    });
+
+    process();
+  })();
+  </script>
+</body>
+</html>

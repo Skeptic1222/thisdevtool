@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JSON ↔ XML Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert JSON to XML and XML to JSON online. Bidirectional. Handle attributes (@attr), text content (#text), arrays. Pretty print or minify. XML declaration. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/json-to-xml.html">
+  <meta property="og:title" content="JSON ↔ XML Converter — DevToolbox">
+  <meta property="og:description" content="Free bidirectional JSON to XML and XML to JSON converter. Handles attributes, arrays, namespaces, pretty print, and XML declaration. Runs in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/json-to-xml.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON to XML Converter",
+    "url": "https://thisdevtool.com/tools/json-to-xml.html",
+    "description": "Bidirectional JSON to XML and XML to JSON converter. Handles attributes, arrays, text content, and namespaces. Pretty print or minify.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I convert JSON to XML?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Paste your JSON into the input area, make sure the JSON→XML mode is selected, and click Convert. JSON object keys become XML element names. Arrays are converted to repeated elements with the same tag name. Values become text content."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I represent XML attributes in JSON?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use keys prefixed with @ to represent XML attributes. For example, {\"element\": {\"@id\": \"1\", \"#text\": \"Hello\"}} converts to <element id=\"1\">Hello</element>. The #text key is used for the text content of an element that also has attributes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How are JSON arrays converted to XML?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Each item in a JSON array becomes a separate XML element with the same tag name as the array key. For example, {\"items\": {\"item\": [\"A\", \"B\"]}} becomes <items><item>A</item><item>B</item></items>. XML does not have a native array concept, so repeated elements are the standard representation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I add an XML declaration to the output?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Enable the 'XML declaration' chip to add <?xml version=\"1.0\" encoding=\"UTF-8\"?> at the top of the output. This is required for standalone XML documents but optional for XML fragments embedded in other documents."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between JSON and XML for data exchange?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JSON is lighter, easier to read, and maps directly to JavaScript objects, making it the dominant format for REST APIs and web applications. XML is more verbose but supports attributes, namespaces, comments, mixed content, and has mature tooling for validation (DTD, XSD) and transformation (XSLT). Many enterprise and legacy systems still use XML, especially SOAP web services."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/xml-formatter.html">XML Formatter</a>
+        <a href="/tools/yaml-json.html">YAML ↔ JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>JSON ↔ XML Converter</h1>
+          <p class="tool-subtitle">Bidirectional conversion. Handles @attributes, #text, arrays, pretty print, and XML declaration.</p>
+
+          <!-- Mode chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="json2xml">JSON → XML</button>
+            <button class="option-chip" data-mode="xml2json">XML → JSON</button>
+            <button class="option-chip active" data-opt="pretty" id="chipPretty">Pretty print</button>
+            <button class="option-chip" data-opt="declaration" id="chipDecl">XML declaration</button>
+            <button class="option-chip" data-opt="minify" id="chipMinify">Minify</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">JSON Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="mainInput" rows="16" placeholder='Paste JSON or XML here...' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">XML Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                  <button class="btn btn-sm btn-secondary" id="swapBtn">⇄ Swap</button>
+                </div>
+              </div>
+              <div class="code-output" id="mainOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste JSON or XML above and select a direction.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the JSON ↔ XML Converter</h2>
+          <ol>
+            <li><strong>Select direction</strong> — choose JSON→XML or XML→JSON using the chips at the top.</li>
+            <li><strong>Paste your data</strong> — put JSON or XML into the input area on the left.</li>
+            <li><strong>Configure options</strong> — enable pretty print, XML declaration, or minify as needed.</li>
+            <li><strong>View the result</strong> — the converted output appears instantly on the right.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output to export your result.</li>
+          </ol>
+
+          <h2>JSON and XML Conversion Conventions</h2>
+          <p>Converting between JSON and XML requires conventions because the two formats have fundamentally different data models. JSON supports objects (key-value pairs), arrays, strings, numbers, booleans, and null. XML supports elements, attributes, text content, namespaces, comments, and mixed content. This tool uses a widely-adopted convention to bridge the gap.</p>
+
+          <h3>Object Keys Become Element Names</h3>
+          <p>Each JSON object key becomes an XML element name. The value of the key becomes the element's text content (for primitives) or child elements (for nested objects). Key names must be valid XML element names — they should start with a letter or underscore and contain only letters, digits, hyphens, underscores, and periods. Keys starting with numbers will be prefixed automatically.</p>
+
+          <h3>The @attribute Convention</h3>
+          <p>JSON keys that start with <code>@</code> are treated as XML attributes. For example, the JSON <code>{"user": {"@id": "42", "name": "Alice"}}</code> converts to <code>&lt;user id="42"&gt;&lt;name&gt;Alice&lt;/name&gt;&lt;/user&gt;</code>. When converting XML back to JSON, any XML attributes are represented with the <code>@</code> prefix in the resulting JSON object.</p>
+
+          <h3>The #text Convention</h3>
+          <p>When an element has both attributes and text content, the text content is stored in a JSON key named <code>#text</code>. For example, <code>&lt;price currency="USD"&gt;9.99&lt;/price&gt;</code> becomes <code>{"price": {"@currency": "USD", "#text": "9.99"}}</code>. This allows the distinction between an element's attributes and its content to be preserved in JSON.</p>
+
+          <h3>Arrays as Repeated Elements</h3>
+          <p>JSON arrays are represented in XML as repeated elements with the same tag name. The JSON <code>{"items": {"item": ["A", "B", "C"]}}</code> becomes three <code>&lt;item&gt;</code> elements inside an <code>&lt;items&gt;</code> element. Conversely, when parsing XML, sibling elements with the same tag name are combined into a JSON array. This is the most common convention and is used by popular libraries like fast-xml-parser and xml2js.</p>
+
+          <h3>XML Declaration</h3>
+          <p>The XML declaration <code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;</code> is an optional prologue for XML documents. It is required when the XML document will be used as a standalone file. It is typically omitted for XML fragments embedded inside other documents or sent as part of a SOAP request body. Enable the "XML declaration" chip to include it.</p>
+
+          <h3>When to Use Each Format</h3>
+          <p>Use JSON for REST APIs, JavaScript applications, configuration files, and any context where human readability and browser compatibility matter. Use XML when working with SOAP web services, RSS/Atom feeds, SVG graphics, Android layouts, Microsoft Office documents, or systems that require formal schema validation with DTD or XSD. Many enterprise integration platforms (MuleSoft, BizTalk, IBM Integration Bus) work primarily in XML and require JSON-to-XML conversion when integrating with modern APIs.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I convert JSON to XML?</button>
+            <div class="faq-answer">Paste your JSON into the input area, select JSON→XML mode, and click Convert. JSON object keys become XML element names. Arrays become repeated elements. Values become text content.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I represent XML attributes in JSON?</button>
+            <div class="faq-answer">Use keys prefixed with @ to represent XML attributes. For example, {"element": {"@id": "1", "#text": "Hello"}} converts to &lt;element id="1"&gt;Hello&lt;/element&gt;. The #text key holds the element's text content.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How are JSON arrays converted to XML?</button>
+            <div class="faq-answer">Each array item becomes a separate XML element with the same tag name. {"items": {"item": ["A","B"]}} becomes &lt;items&gt;&lt;item&gt;A&lt;/item&gt;&lt;item&gt;B&lt;/item&gt;&lt;/items&gt;.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I add an XML declaration to the output?</button>
+            <div class="faq-answer">Yes. Enable the "XML declaration" chip to prepend &lt;?xml version="1.0" encoding="UTF-8"?&gt; to the output. Required for standalone XML files, optional for fragments.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between JSON and XML for data exchange?</button>
+            <div class="faq-answer">JSON is lighter, easier to read, and maps directly to JavaScript objects — the dominant format for REST APIs. XML is more verbose but supports attributes, namespaces, and has mature validation tooling (DTD, XSD). Many enterprise and legacy systems still use XML, especially SOAP services.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/xml-formatter.html">XML Formatter</a>
+        <a href="/tools/yaml-json.html">YAML ↔ JSON</a>
+        <a href="/tools/json-to-xml.html">JSON ↔ XML</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/csv-json.html">CSV ↔ JSON</a>
+        <a href="/tools/toml-json.html">TOML ↔ JSON</a>
+        <a href="/tools/json-schema-generator.html">JSON Schema</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var mode = 'json2xml';
+      var pretty = true;
+      var declaration = false;
+      var minify = false;
+
+      var mainInput = document.getElementById('mainInput');
+      var mainOutput = document.getElementById('mainOutput');
+      var statusBar = document.getElementById('statusBar');
+      var inputLabel = document.getElementById('inputLabel');
+      var outputLabel = document.getElementById('outputLabel');
+
+      // ── JSON → XML ───────────────────────────────────────────────
+      function jsonToXml(obj, nodeName, indent, depth) {
+        var pad = pretty && !minify ? Array(depth * 2 + 1).join(' ') : '';
+        var nl = pretty && !minify ? '\n' : '';
+
+        if (obj === null || obj === undefined) {
+          return pad + '<' + nodeName + '/>' + nl;
+        }
+        if (Array.isArray(obj)) {
+          return obj.map(function (item) { return jsonToXml(item, nodeName, indent, depth); }).join('');
+        }
+        if (typeof obj !== 'object') {
+          var escaped = String(obj).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          return pad + '<' + nodeName + '>' + escaped + '</' + nodeName + '>' + nl;
+        }
+
+        // Object — check for @attrs and #text
+        var attrs = '';
+        var childStr = '';
+        var hasChildren = false;
+
+        Object.keys(obj).forEach(function (key) {
+          if (key.charAt(0) === '@') {
+            var val = String(obj[key]).replace(/"/g, '&quot;');
+            attrs += ' ' + key.slice(1) + '="' + val + '"';
+          } else if (key === '#text') {
+            var t = String(obj[key]).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            childStr += t;
+          } else if (Array.isArray(obj[key])) {
+            hasChildren = true;
+            obj[key].forEach(function (item) {
+              childStr += jsonToXml(item, key, indent, depth + 1);
+            });
+          } else {
+            hasChildren = true;
+            childStr += jsonToXml(obj[key], key, indent, depth + 1);
+          }
+        });
+
+        if (!hasChildren && childStr && !childStr.includes('<')) {
+          return pad + '<' + nodeName + attrs + '>' + childStr + '</' + nodeName + '>' + nl;
+        }
+        if (!childStr) {
+          return pad + '<' + nodeName + attrs + '/>' + nl;
+        }
+        return pad + '<' + nodeName + attrs + '>' + nl + childStr + pad + '</' + nodeName + '>' + nl;
+      }
+
+      function convertJsonToXml(raw) {
+        var obj = JSON.parse(raw);
+        var keys = Object.keys(obj);
+        if (keys.length === 0) return '<root/>';
+        var rootKey = keys[0];
+        var rootVal = obj[rootKey];
+        var body = '';
+        if (keys.length === 1) {
+          body = jsonToXml(rootVal, rootKey, 2, 0);
+        } else {
+          body = jsonToXml(obj, 'root', 2, 0);
+        }
+        var decl = declaration ? '<?xml version="1.0" encoding="UTF-8"?>' + (pretty && !minify ? '\n' : '') : '';
+        return decl + body;
+      }
+
+      // ── XML → JSON ───────────────────────────────────────────────
+      function xmlNodeToJson(node) {
+        if (node.nodeType === 3) { // text
+          var t = node.textContent.trim();
+          return t || null;
+        }
+        if (node.nodeType === 8) return null; // comment
+
+        var result = {};
+        var hasAttrs = node.attributes && node.attributes.length > 0;
+        if (hasAttrs) {
+          for (var i = 0; i < node.attributes.length; i++) {
+            result['@' + node.attributes[i].name] = node.attributes[i].value;
+          }
+        }
+
+        var children = Array.from(node.childNodes).filter(function (n) { return n.nodeType !== 8; });
+        var textNodes = children.filter(function (n) { return n.nodeType === 3; });
+        var elemNodes = children.filter(function (n) { return n.nodeType === 1; });
+
+        if (elemNodes.length === 0) {
+          // Leaf
+          var text = textNodes.map(function (n) { return n.textContent; }).join('').trim();
+          if (!hasAttrs) return text || null;
+          if (text) result['#text'] = text;
+          return result;
+        }
+
+        // Group child elements by tag name
+        var groups = {};
+        elemNodes.forEach(function (child) {
+          var tag = child.tagName;
+          if (!groups[tag]) groups[tag] = [];
+          groups[tag].push(xmlNodeToJson(child));
+        });
+
+        Object.keys(groups).forEach(function (tag) {
+          result[tag] = groups[tag].length === 1 ? groups[tag][0] : groups[tag];
+        });
+
+        // Mixed content
+        var mixedText = textNodes.map(function (n) { return n.textContent.trim(); }).join('').trim();
+        if (mixedText && hasAttrs) result['#text'] = mixedText;
+
+        return result;
+      }
+
+      function convertXmlToJson(raw) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(raw, 'application/xml');
+        var err = doc.querySelector('parsererror');
+        if (err) throw new Error(err.textContent.split('\n')[0]);
+        var root = doc.documentElement;
+        var obj = {};
+        obj[root.tagName] = xmlNodeToJson(root);
+        return JSON.stringify(obj, null, pretty && !minify ? 2 : 0);
+      }
+
+      // ── Convert ──────────────────────────────────────────────────
+      function countNodes(xml) {
+        var matches = xml.match(/<[^\/][^>]*>/g);
+        return matches ? matches.length : 0;
+      }
+
+      function countDepth(xml) {
+        var depth = 0; var maxDepth = 0;
+        var tags = xml.match(/<\/?[^>]+>/g) || [];
+        tags.forEach(function (t) {
+          if (t.charAt(1) === '/') { depth--; }
+          else if (t.charAt(t.length - 2) !== '/') { depth++; if (depth > maxDepth) maxDepth = depth; }
+        });
+        return maxDepth;
+      }
+
+      function process() {
+        var raw = mainInput.value.trim();
+        if (!raw) {
+          mainOutput.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste JSON or XML above and select a direction.';
+          return;
+        }
+
+        try {
+          if (mode === 'json2xml') {
+            var result = convertJsonToXml(raw);
+            mainOutput.textContent = result;
+            var nodes = countNodes(result);
+            var depth = countDepth(result);
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Converted ' + nodes + ' nodes — ' + depth + ' levels deep';
+          } else {
+            var jsonResult = convertXmlToJson(raw);
+            mainOutput.textContent = jsonResult;
+            var lines = jsonResult.split('\n').length;
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Converted XML — ' + lines + ' JSON lines';
+          }
+          DT.trackTool('json-to-xml');
+        } catch (e) {
+          mainOutput.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+        }
+      }
+
+      var debouncedProcess = DT.debounce(process, 200);
+      mainInput.addEventListener('input', debouncedProcess);
+
+      // Mode chips
+      document.querySelectorAll('[data-mode]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          mode = chip.getAttribute('data-mode');
+          if (mode === 'json2xml') {
+            inputLabel.textContent = 'JSON Input';
+            outputLabel.textContent = 'XML Output';
+            mainInput.placeholder = '{\n  "person": {\n    "@id": "1",\n    "name": "Alice",\n    "age": 30\n  }\n}';
+          } else {
+            inputLabel.textContent = 'XML Input';
+            outputLabel.textContent = 'JSON Output';
+            mainInput.placeholder = '<person id="1">\n  <name>Alice</name>\n  <age>30</age>\n</person>';
+          }
+          process();
+        });
+      });
+
+      // Option chips
+      document.getElementById('chipPretty').addEventListener('click', function () {
+        pretty = !pretty;
+        this.classList.toggle('active', pretty);
+        if (pretty) { minify = false; document.getElementById('chipMinify').classList.remove('active'); }
+        process();
+      });
+      document.getElementById('chipDecl').addEventListener('click', function () {
+        declaration = !declaration;
+        this.classList.toggle('active', declaration);
+        process();
+      });
+      document.getElementById('chipMinify').addEventListener('click', function () {
+        minify = !minify;
+        this.classList.toggle('active', minify);
+        if (minify) { pretty = false; document.getElementById('chipPretty').classList.remove('active'); }
+        process();
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = mainOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = mainOutput.textContent;
+        if (!text) return;
+        var ext = mode === 'json2xml' ? 'xml' : 'json';
+        var mime = mode === 'json2xml' ? 'application/xml' : 'application/json';
+        DT.downloadText(text, 'converted.' + ext, mime);
+      });
+
+      document.getElementById('swapBtn').addEventListener('click', function () {
+        var output = mainOutput.textContent;
+        if (!output) return;
+        mainInput.value = output;
+        mode = mode === 'json2xml' ? 'xml2json' : 'json2xml';
+        document.querySelectorAll('[data-mode]').forEach(function (c) {
+          c.classList.toggle('active', c.getAttribute('data-mode') === mode);
+        });
+        if (mode === 'json2xml') { inputLabel.textContent = 'JSON Input'; outputLabel.textContent = 'XML Output'; }
+        else { inputLabel.textContent = 'XML Input'; outputLabel.textContent = 'JSON Output'; }
+        process();
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        mainInput.value = ''; process(); mainInput.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        if (mode === 'json2xml') {
+          mainInput.value = JSON.stringify({
+            "library": {
+              "@xmlns": "https://example.com/library",
+              "book": [
+                { "@id": "1", "title": "Clean Code", "author": "Robert C. Martin", "year": 2008 },
+                { "@id": "2", "title": "The Pragmatic Programmer", "author": "Andrew Hunt", "year": 1999 }
+              ]
+            }
+          }, null, 2);
+        } else {
+          mainInput.value = '<?xml version="1.0" encoding="UTF-8"?>\n<library xmlns="https://example.com/library">\n  <book id="1">\n    <title>Clean Code</title>\n    <author>Robert C. Martin</author>\n    <year>2008</year>\n  </book>\n  <book id="2">\n    <title>The Pragmatic Programmer</title>\n    <author>Andrew Hunt</author>\n    <year>1999</year>\n  </book>\n</library>';
+        }
+        process();
+      });
+
+      // Tab support
+      mainInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var s = this.selectionStart;
+          this.value = this.value.substring(0, s) + '  ' + this.value.substring(this.selectionEnd);
+          this.selectionStart = this.selectionEnd = s + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Bitwise Calculator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Perform bitwise AND, OR, XOR, NOT, left shift, and right shift operations online. Enter values in decimal, hex, or binary. Visual bit toggle, 8/16/32-bit modes.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/bitwise-calculator.html">
+  <meta property="og:title" content="Bitwise Calculator — DevToolbox">
+  <meta property="og:description" content="Free online bitwise calculator. AND, OR, XOR, NOT, shifts. Enter decimal, hex, or binary. Visual bit grid. 8/16/32-bit modes.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/bitwise-calculator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Bitwise Calculator",
+    "url": "https://thisdevtool.com/tools/bitwise-calculator.html",
+    "description": "Perform bitwise AND, OR, XOR, NOT, left shift, and right shift operations. Visual bit toggle, 8/16/32-bit modes.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a bitwise operation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A bitwise operation works directly on the individual bits (0s and 1s) of an integer. Common bitwise operations include AND (&), OR (|), XOR (^), NOT (~), left shift (<<), and right shift (>>). They are used extensively in low-level programming, networking, encryption, and graphics."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between AND, OR, and XOR?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AND returns 1 only when both bits are 1. OR returns 1 when at least one bit is 1. XOR (exclusive OR) returns 1 only when exactly one of the two bits is 1. XOR is commonly used for toggling bits and simple encryption."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the NOT operation do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The NOT (bitwise complement) operation flips every bit in the number. In 8-bit mode, NOT 5 (00000101) becomes 250 (11111010). In signed 32-bit integers, NOT is equivalent to -(n+1). The result depends on the bit-width mode selected."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a left shift and a right shift?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A left shift (<<) moves all bits to the left by a specified number of positions, effectively multiplying the number by 2 for each shift. A right shift (>>) moves bits to the right, dividing by 2 for each position. Bits shifted out of range are discarded."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does this tool show results in decimal, hex, and binary?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Different contexts require different number representations. Decimal is the everyday format humans use. Hexadecimal (base-16) is compact and common in memory addresses, color codes, and bytecode. Binary (base-2) shows the exact bit pattern, which is essential for understanding what a bitwise operation actually does."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .bitwise-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    @media (max-width: 600px) { .bitwise-inputs { grid-template-columns: 1fr; } }
+    .input-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .input-group input { width: 100%; }
+    .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 1rem 0; }
+    @media (max-width: 500px) { .result-grid { grid-template-columns: 1fr; } }
+    .result-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
+    .result-box .result-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.25rem; }
+    .result-box .result-value { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--accent); word-break: break-all; }
+    .bit-grid-section { margin: 1rem 0; }
+    .bit-grid-section h3 { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+    .bit-grid { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 0.5rem; }
+    .bit-grid-label { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.2rem; font-family: var(--font-mono); }
+    .bit-btn { width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-secondary); font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.1s; color: var(--text); }
+    .bit-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .bit-btn:hover { border-color: var(--accent); }
+    .bit-position { width: 30px; text-align: center; font-size: 0.6rem; color: var(--text-muted); font-family: var(--font-mono); }
+    .op-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .op-row label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+    .op-row select { flex: 1; min-width: 120px; max-width: 200px; }
+    .op-row input[type=number] { width: 80px; }
+    .copy-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/number-base-converter.html">Base Converter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Bitwise Calculator</h1>
+          <p class="tool-subtitle">Perform AND, OR, XOR, NOT, shift operations. Enter decimal, hex, or binary. Click bits to toggle them.</p>
+
+          <!-- Bit-width mode chips -->
+          <div class="option-chips">
+            <button class="option-chip" data-bits="8">8-bit</button>
+            <button class="option-chip active" data-bits="16">16-bit</button>
+            <button class="option-chip" data-bits="32">32-bit</button>
+          </div>
+
+          <!-- Inputs -->
+          <div class="bitwise-inputs">
+            <div class="input-group">
+              <label>Value A</label>
+              <input type="text" id="inputA" placeholder="42 or 0x2A or 0b101010" spellcheck="false">
+            </div>
+            <div class="input-group">
+              <label>Value B <span id="labelB">(for AND/OR/XOR)</span></label>
+              <input type="text" id="inputB" placeholder="15 or 0x0F or 0b1111" spellcheck="false">
+            </div>
+          </div>
+
+          <!-- Operation row -->
+          <div class="op-row">
+            <label>Operation:</label>
+            <select id="opSelect">
+              <option value="AND">AND (&amp;)</option>
+              <option value="OR">OR (|)</option>
+              <option value="XOR">XOR (^)</option>
+              <option value="NOT">NOT (~A)</option>
+              <option value="LSHIFT">Left Shift (&lt;&lt;)</option>
+              <option value="RSHIFT">Right Shift (&gt;&gt;)</option>
+            </select>
+            <input type="number" id="shiftAmount" value="1" min="0" max="31" style="display:none;" title="Shift amount">
+            <label id="shiftLabel" style="display:none;">by</label>
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+          </div>
+
+          <!-- Result boxes -->
+          <div class="result-grid">
+            <div class="result-box">
+              <div class="result-label">Decimal</div>
+              <div class="result-value" id="resDec">—</div>
+            </div>
+            <div class="result-box">
+              <div class="result-label">Hexadecimal</div>
+              <div class="result-value" id="resHex">—</div>
+            </div>
+            <div class="result-box">
+              <div class="result-label">Binary</div>
+              <div class="result-value" id="resBin">—</div>
+            </div>
+          </div>
+
+          <!-- Bit grids -->
+          <div class="bit-grid-section">
+            <h3>Input A — click bits to toggle</h3>
+            <div class="bit-grid" id="bitsA"></div>
+          </div>
+          <div class="bit-grid-section" id="inputBSection">
+            <h3>Input B — click bits to toggle</h3>
+            <div class="bit-grid" id="bitsB"></div>
+          </div>
+          <div class="bit-grid-section">
+            <h3>Result bits</h3>
+            <div class="bit-grid" id="bitsResult"></div>
+          </div>
+
+          <!-- Copy row -->
+          <div class="copy-row">
+            <button class="btn btn-sm btn-primary" id="copyDecBtn">Copy Decimal</button>
+            <button class="btn btn-sm btn-secondary" id="copyHexBtn">Copy Hex</button>
+            <button class="btn btn-sm btn-secondary" id="copyBinBtn">Copy Binary</button>
+          </div>
+
+          <!-- Status bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter values above or click bits to calculate.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Bitwise Calculator</h2>
+          <ol>
+            <li><strong>Select bit width</strong> — choose 8-bit, 16-bit, or 32-bit mode at the top.</li>
+            <li><strong>Enter your values</strong> — type in decimal (e.g., 42), hexadecimal (0x2A), or binary (0b101010).</li>
+            <li><strong>Choose an operation</strong> — AND, OR, XOR, NOT, Left Shift, or Right Shift.</li>
+            <li><strong>See results instantly</strong> — results appear in decimal, hex, and binary simultaneously.</li>
+            <li><strong>Toggle bits visually</strong> — click any bit in the input grids to flip it and see how the result changes.</li>
+          </ol>
+
+          <h2>Understanding Bitwise Operations</h2>
+          <p>Bitwise operations are one of the most fundamental tools in a programmer's toolkit. Unlike arithmetic operators that work on the full numeric value, bitwise operators work directly on the individual binary digits (bits) that make up a number. This gives programmers fine-grained control over memory, flags, masks, and data encoding — all with extremely fast CPU-level instructions.</p>
+
+          <h3>AND (&amp;) — Masking and Testing Bits</h3>
+          <p>The AND operation returns a 1 only when both corresponding bits are 1. Its most common use is bit masking: extracting specific bits from a value by ANDing with a mask. For example, <code>0xFF &amp; value</code> extracts the lowest 8 bits of any integer. In network programming, AND is used to extract the network portion of an IP address from a subnet mask.</p>
+
+          <h3>OR (|) — Setting Bits</h3>
+          <p>OR returns a 1 when at least one bit is 1. It is the standard way to set specific bits without changing the others. For example, in a Unix permissions system, <code>permissions | 0x4</code> sets the read bit. In graphics, OR combines color channel values. In flag-based configuration, OR merges multiple options into a single integer.</p>
+
+          <h3>XOR (^) — Toggling and Simple Encryption</h3>
+          <p>XOR returns 1 only when exactly one of the two bits is 1. XOR has a special property: <code>a ^ b ^ b == a</code>, which means XORing a value twice with the same key returns the original. This makes XOR perfect for toggling bits and for simple cipher algorithms. It is also used in RAID parity, CRC checksums, and swap-without-temp-variable tricks in C.</p>
+
+          <h3>NOT (~) — Bitwise Complement</h3>
+          <p>NOT flips every bit in the number. In an 8-bit system, NOT 0 becomes 255 (0b11111111). In standard 32-bit signed integers, NOT n equals -(n+1), so NOT 42 is -43. This is because of two's complement representation used by virtually all modern CPUs. NOT is used to create inverse masks for clearing bits, and in checksum algorithms.</p>
+
+          <h3>Left Shift (&lt;&lt;) and Right Shift (&gt;&gt;)</h3>
+          <p>Shift operations move all bits left or right by a specified number of positions. Left shift by n is equivalent to multiplying by 2^n (fast multiplication). Right shift by n is equivalent to integer dividing by 2^n (fast division). These operations are heavily optimized in CPU hardware and appear in virtually every high-performance algorithm, from image processing to network packet parsing to hash functions.</p>
+
+          <h3>Practical Applications</h3>
+          <p>Bitwise operations are used daily in: network programming (subnet masking, port flags), game development (collision detection flags, tile maps), embedded systems (hardware register manipulation), cryptography (cipher primitives, hash functions), compression algorithms (Huffman coding, LZ77), permission systems (Unix chmod), and compiler optimization (replacing multiply/divide with shifts).</p>
+
+          <h3>Number Bases: Decimal, Hex, Binary</h3>
+          <p>This tool accepts input in all three common bases. Decimal (base 10) is the normal everyday number system. Hexadecimal (base 16) uses digits 0–9 and letters A–F. One hex digit represents exactly 4 bits, so 0xFF is 8 bits and 0xFFFF is 16 bits — perfect for byte-level thinking. Binary (base 2) shows the exact bit pattern. Prefix hex with <code>0x</code> and binary with <code>0b</code> to specify the base explicitly. The tool also accepts plain decimal integers.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a bitwise operation?</button>
+            <div class="faq-answer">A bitwise operation works directly on the individual bits (0s and 1s) of an integer. Common bitwise operations include AND (&), OR (|), XOR (^), NOT (~), left shift (<<), and right shift (>>). They are used extensively in low-level programming, networking, encryption, and graphics.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between AND, OR, and XOR?</button>
+            <div class="faq-answer">AND returns 1 only when both bits are 1. OR returns 1 when at least one bit is 1. XOR (exclusive OR) returns 1 only when exactly one of the two bits is 1. XOR is commonly used for toggling bits and simple encryption.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does the NOT operation do?</button>
+            <div class="faq-answer">The NOT (bitwise complement) operation flips every bit in the number. In 8-bit mode, NOT 5 (00000101) becomes 250 (11111010). In signed 32-bit integers, NOT is equivalent to -(n+1). The result depends on the bit-width mode selected.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a left shift and a right shift?</button>
+            <div class="faq-answer">A left shift (&lt;&lt;) moves all bits to the left by a specified number of positions, effectively multiplying by 2 for each shift. A right shift (&gt;&gt;) moves bits to the right, dividing by 2 for each position. Bits shifted out of range are discarded.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does this tool show results in decimal, hex, and binary?</button>
+            <div class="faq-answer">Different contexts require different number representations. Decimal is the everyday format. Hexadecimal is compact and common in memory addresses and color codes. Binary shows the exact bit pattern, which is essential for understanding what a bitwise operation actually does.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/number-base-converter.html">Base Converter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/bitwise-calculator.html">Bitwise Calculator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/binary-code.html">Binary Code</a>
+        <a href="/tools/hex-ascii.html">Hex &harr; ASCII</a>
+        <a href="/tools/ip-converter.html">IP Converter</a>
+        <a href="/tools/chmod-calculator.html">Chmod Calculator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var bits = 16;
+      var lastResult = null;
+
+      var inputA = document.getElementById('inputA');
+      var inputB = document.getElementById('inputB');
+      var opSelect = document.getElementById('opSelect');
+      var shiftAmount = document.getElementById('shiftAmount');
+      var shiftLabel = document.getElementById('shiftLabel');
+      var statusBar = document.getElementById('statusBar');
+      var resDec = document.getElementById('resDec');
+      var resHex = document.getElementById('resHex');
+      var resBin = document.getElementById('resBin');
+      var inputBSection = document.getElementById('inputBSection');
+      var labelB = document.getElementById('labelB');
+
+      function parseInput(str) {
+        str = str.trim();
+        if (!str) return null;
+        if (/^0b[01]+$/i.test(str)) return parseInt(str.slice(2), 2);
+        if (/^0x[0-9a-f]+$/i.test(str)) return parseInt(str.slice(2), 16);
+        if (/^-?\d+$/.test(str)) return parseInt(str, 10);
+        return null;
+      }
+
+      function toUnsigned(n, b) {
+        var mask = b === 32 ? 0xFFFFFFFF : (1 << b) - 1;
+        return n & mask;
+      }
+
+      function toBinStr(n, b) {
+        var u = toUnsigned(n, b);
+        var s = u.toString(2);
+        while (s.length < b) s = '0' + s;
+        // group by 4
+        return s.replace(/(.{4})/g, '$1 ').trim();
+      }
+
+      function toHexStr(n, b) {
+        var u = toUnsigned(n, b);
+        var s = u.toString(16).toUpperCase();
+        var digits = b / 4;
+        while (s.length < digits) s = '0' + s;
+        return '0x' + s;
+      }
+
+      function calculate() {
+        var op = opSelect.value;
+        var valA = parseInput(inputA.value);
+        var shiftN = parseInt(shiftAmount.value, 10) || 0;
+        var valB = parseInput(inputB.value);
+        var mask = bits === 32 ? 0xFFFFFFFF : (1 << bits) - 1;
+
+        if (valA === null && op !== 'NOT') {
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter values above or click bits to calculate.';
+          resDec.textContent = '—'; resHex.textContent = '—'; resBin.textContent = '—';
+          renderBitGrid('bitsA', 0);
+          renderBitGrid('bitsB', 0);
+          renderBitGrid('bitsResult', 0, true);
+          lastResult = null;
+          return;
+        }
+        if (valA === null) valA = 0;
+
+        var result;
+        var expr;
+        try {
+          switch (op) {
+            case 'AND':
+              if (valB === null) { statusBar.className = 'status-bar info'; statusBar.textContent = 'Enter Value B for AND.'; return; }
+              result = (valA & valB) & mask;
+              expr = valA + ' AND ' + valB + ' = ' + result;
+              break;
+            case 'OR':
+              if (valB === null) { statusBar.className = 'status-bar info'; statusBar.textContent = 'Enter Value B for OR.'; return; }
+              result = (valA | valB) & mask;
+              expr = valA + ' OR ' + valB + ' = ' + result;
+              break;
+            case 'XOR':
+              if (valB === null) { statusBar.className = 'status-bar info'; statusBar.textContent = 'Enter Value B for XOR.'; return; }
+              result = (valA ^ valB) & mask;
+              expr = valA + ' XOR ' + valB + ' = ' + result;
+              break;
+            case 'NOT':
+              result = (~valA) & mask;
+              expr = 'NOT ' + valA + ' = ' + result;
+              break;
+            case 'LSHIFT':
+              result = (valA << shiftN) & mask;
+              expr = valA + ' << ' + shiftN + ' = ' + result;
+              break;
+            case 'RSHIFT':
+              result = (valA >>> shiftN) & mask;
+              expr = valA + ' >> ' + shiftN + ' = ' + result;
+              break;
+          }
+        } catch (e) {
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+          return;
+        }
+
+        lastResult = result;
+        resDec.textContent = result;
+        resHex.textContent = toHexStr(result, bits);
+        resBin.textContent = toBinStr(result, bits);
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = expr + '  |  ' + toHexStr(result, bits) + '  |  0b' + toUnsigned(result, bits).toString(2);
+
+        renderBitGrid('bitsA', valA);
+        if (op !== 'NOT' && op !== 'LSHIFT' && op !== 'RSHIFT') {
+          renderBitGrid('bitsB', valB !== null ? valB : 0);
+        }
+        renderBitGrid('bitsResult', result, true);
+
+        DT.trackTool('bitwise-calculator');
+      }
+
+      function renderBitGrid(containerId, value, readOnly) {
+        var container = document.getElementById(containerId);
+        container.innerHTML = '';
+        var u = toUnsigned(value, bits);
+
+        // Render position labels row
+        var posRow = document.createElement('div');
+        posRow.style.display = 'flex';
+        posRow.style.gap = '3px';
+        posRow.style.marginBottom = '2px';
+        for (var i = bits - 1; i >= 0; i--) {
+          var pos = document.createElement('div');
+          pos.className = 'bit-position';
+          pos.textContent = i;
+          posRow.appendChild(pos);
+        }
+        container.appendChild(posRow);
+
+        // Bit buttons row
+        var bitRow = document.createElement('div');
+        bitRow.style.display = 'flex';
+        bitRow.style.gap = '3px';
+
+        for (var j = bits - 1; j >= 0; j--) {
+          (function (bit) {
+            var btn = document.createElement('button');
+            btn.className = 'bit-btn' + (((u >> bit) & 1) ? ' on' : '');
+            btn.textContent = (u >> bit) & 1;
+            if (!readOnly) {
+              btn.title = 'Toggle bit ' + bit;
+              btn.addEventListener('click', function () {
+                var current = parseInput(containerId === 'bitsA' ? inputA.value : inputB.value) || 0;
+                current = toUnsigned(current, bits);
+                current ^= (1 << bit);
+                var el = containerId === 'bitsA' ? inputA : inputB;
+                el.value = current;
+                calculate();
+              });
+            } else {
+              btn.disabled = true;
+              btn.style.cursor = 'default';
+            }
+            bitRow.appendChild(btn);
+          })(j);
+        }
+        container.appendChild(bitRow);
+      }
+
+      function updateOpUI() {
+        var op = opSelect.value;
+        var needsB = op === 'AND' || op === 'OR' || op === 'XOR';
+        var needsShift = op === 'LSHIFT' || op === 'RSHIFT';
+        inputBSection.style.display = needsB ? '' : 'none';
+        shiftAmount.style.display = needsShift ? '' : 'none';
+        shiftLabel.style.display = needsShift ? '' : 'none';
+        labelB.textContent = needsB ? '(for ' + op + ')' : '(not used for ' + op + ')';
+      }
+
+      // Init grids
+      renderBitGrid('bitsA', 0);
+      renderBitGrid('bitsB', 0);
+      renderBitGrid('bitsResult', 0, true);
+
+      // Bit-width chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          bits = parseInt(chip.getAttribute('data-bits'), 10);
+          if (bits === 32 && parseInt(shiftAmount.value, 10) > 31) shiftAmount.value = 31;
+          calculate();
+        });
+      });
+
+      opSelect.addEventListener('change', function () { updateOpUI(); calculate(); });
+      shiftAmount.addEventListener('input', DT.debounce(calculate, 150));
+      inputA.addEventListener('input', DT.debounce(calculate, 150));
+      inputB.addEventListener('input', DT.debounce(calculate, 150));
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        inputA.value = '42';
+        inputB.value = '15';
+        opSelect.value = 'AND';
+        updateOpUI();
+        calculate();
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        inputA.value = '';
+        inputB.value = '';
+        calculate();
+        inputA.focus();
+      });
+
+      document.getElementById('copyDecBtn').addEventListener('click', function () {
+        if (lastResult !== null) DT.copyToClipboard(String(lastResult), this);
+      });
+      document.getElementById('copyHexBtn').addEventListener('click', function () {
+        if (lastResult !== null) DT.copyToClipboard(toHexStr(lastResult, bits), this);
+      });
+      document.getElementById('copyBinBtn').addEventListener('click', function () {
+        if (lastResult !== null) DT.copyToClipboard('0b' + toUnsigned(lastResult, bits).toString(2), this);
+      });
+
+      updateOpUI();
+    })();
+  </script>
+</body>
+</html>

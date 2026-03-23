@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Aspect Ratio Simplifier — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Simplify width×height to its aspect ratio using GCD. Resize to match a ratio, common ratio reference, batch mode. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/aspect-ratio-simplifier.html">
+  <meta property="og:title" content="Aspect Ratio Simplifier — DevToolbox">
+  <meta property="og:description" content="Convert pixel dimensions to simplified aspect ratio (16:9, 4:3, etc.) using GCD algorithm. Resize calculator and batch mode included.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/aspect-ratio-simplifier.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Aspect Ratio Simplifier",
+    "url": "https://thisdevtool.com/tools/aspect-ratio-simplifier.html",
+    "description": "Simplify pixel dimensions to the lowest common aspect ratio using GCD. Includes resize calculator and batch mode.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is aspect ratio?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Aspect ratio is the proportional relationship between an image's width and height, expressed as two numbers separated by a colon. For example, 16:9 means the image is 16 units wide for every 9 units tall. Common aspect ratios include 16:9 (widescreen HD), 4:3 (traditional TV/monitor), 1:1 (square), and 3:2 (35mm film/DSLR)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is aspect ratio calculated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Aspect ratio is calculated by dividing both width and height by their Greatest Common Divisor (GCD). For 1920×1080: GCD(1920,1080)=120, so 1920÷120=16 and 1080÷120=9, giving 16:9."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is 16:9 in pixels?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Common 16:9 resolutions include 1280×720 (720p HD), 1920×1080 (1080p Full HD), 2560×1440 (1440p QHD), and 3840×2160 (4K UHD). Any resolution where width÷height = 16÷9 ≈ 1.778 has a 16:9 aspect ratio."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What aspect ratio is 1080×1920?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "1080×1920 is 9:16 — a vertical (portrait) video frame, which is the standard for TikTok, Instagram Reels, and YouTube Shorts. It's simply 16:9 rotated 90 degrees."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I resize an image while keeping its aspect ratio?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "To resize an image while maintaining aspect ratio, fix one dimension and calculate the other: new_height = new_width × (original_height / original_width). For example, resizing a 1920×1080 image to 1280 width: new_height = 1280 × (1080/1920) = 720. Use the Resize Calculator mode in this tool to do this automatically."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .ar-inputs {
+      display: flex;
+      gap: .75rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: .75rem;
+    }
+    .ar-inputs input {
+      width: 120px;
+      padding: .55rem .75rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 1.1rem;
+      text-align: center;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .ar-inputs input:focus { border-color: #10b981; }
+    .ar-sep { font-size: 1.4rem; font-weight: 700; color: var(--text-muted, #9ca3af); }
+    .ratio-display {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #10b981;
+      text-align: center;
+      padding: 1rem;
+      letter-spacing: .05em;
+    }
+    .result-meta { display: flex; gap: .75rem; flex-wrap: wrap; justify-content: center; margin-bottom: .75rem; }
+    .meta-pill {
+      background: var(--bg-alt, #f3f4f6);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: .3rem .8rem;
+      font-size: .8rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+    [data-theme="dark"] .meta-pill { background: #1f2937; }
+    .ratio-viz {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: .75rem 0;
+    }
+    .ratio-box {
+      border: 3px solid #10b981;
+      border-radius: 6px;
+      background: #10b98122;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .85rem;
+      font-weight: 600;
+      color: #10b981;
+      transition: width .25s, height .25s;
+    }
+    .resize-section { margin-top: .75rem; background: var(--bg-alt, #f9fafb); border: 1px solid var(--border); border-radius: 10px; padding: .9rem 1rem; }
+    [data-theme="dark"] .resize-section { background: #111827; }
+    .resize-section h3 { margin: 0 0 .6rem; font-size: .95rem; }
+    .resize-inputs { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+    .resize-inputs input { width: 100px; padding: .4rem .55rem; border: 2px solid var(--border); border-radius: 7px; background: var(--bg); color: var(--text); font-size: .95rem; text-align: center; outline: none; transition: border-color .15s; }
+    .resize-inputs input:focus { border-color: #10b981; }
+    .resize-inputs .locked { color: #10b981; font-weight: 700; font-size: .85rem; min-width: 80px; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: .82rem; margin-top: .5rem; }
+    .ref-table th, .ref-table td { border: 1px solid var(--border); padding: .4rem .55rem; text-align: left; }
+    .ref-table th { background: var(--bg-alt, #f3f4f6); font-weight: 600; }
+    [data-theme="dark"] .ref-table th { background: #1f2937; }
+    .ref-table tr.highlight td { background: #10b98122; font-weight: 600; }
+    .batch-area { margin-top: .75rem; }
+    .batch-area textarea { width: 100%; box-sizing: border-box; min-height: 120px; font-family: var(--font-mono, monospace); font-size: .85rem; padding: .6rem .75rem; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); resize: vertical; outline: none; transition: border-color .15s; }
+    .batch-area textarea:focus { border-color: #10b981; }
+    .batch-results { margin-top: .5rem; max-height: 200px; overflow-y: auto; font-size: .82rem; font-family: var(--font-mono, monospace); }
+    .batch-row { padding: .25rem .5rem; border-bottom: 1px solid var(--border); }
+    .batch-row:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/dpi-calculator.html">DPI Calc</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Aspect Ratio Simplifier</h1>
+          <p class="tool-subtitle">Enter pixel dimensions to get the simplified aspect ratio, visual preview, and resize calculator. 100% client-side.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="single">Single</button>
+            <button class="option-chip" data-mode="resize">Resize Calculator</button>
+            <button class="option-chip" data-mode="batch">Batch Mode</button>
+          </div>
+
+          <!-- Single mode -->
+          <div id="paneSingle">
+            <div class="ar-inputs">
+              <input type="number" id="arW" value="1920" min="1" placeholder="Width" aria-label="Width in pixels">
+              <span class="ar-sep">&times;</span>
+              <input type="number" id="arH" value="1080" min="1" placeholder="Height" aria-label="Height in pixels">
+              <span class="ar-sep" style="margin:0 .25rem;">=</span>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+            <div class="ratio-display" id="ratioDisplay">—</div>
+            <div class="result-meta" id="resultMeta"></div>
+            <div class="ratio-viz"><div class="ratio-box" id="ratioBox" style="width:160px;height:90px;">16:9</div></div>
+
+            <details>
+              <summary style="cursor:pointer;font-weight:600;font-size:.9rem;padding:.4rem 0;">Common Ratio Reference</summary>
+              <table class="ref-table" id="refTable">
+                <thead><tr><th>Ratio</th><th>Decimal</th><th>Common Uses</th><th>Example Resolutions</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </details>
+          </div>
+
+          <!-- Resize mode -->
+          <div id="paneResize" style="display:none;">
+            <div class="ar-inputs" style="margin-bottom:.5rem;">
+              <input type="number" id="rsrcW" value="1920" min="1" placeholder="Original W">
+              <span class="ar-sep">&times;</span>
+              <input type="number" id="rsrcH" value="1080" min="1" placeholder="Original H">
+            </div>
+            <div class="resize-section">
+              <h3>Resize (lock one dimension)</h3>
+              <div class="resize-inputs">
+                <label style="font-size:.85rem;font-weight:600;">New Width:</label>
+                <input type="number" id="rnewW" value="1280" min="1" placeholder="Width">
+                <span class="locked" id="rnewHLocked">→ H: <span id="computedH">720</span> px</span>
+              </div>
+              <div class="resize-inputs" style="margin-top:.5rem;">
+                <label style="font-size:.85rem;font-weight:600;">New Height:</label>
+                <input type="number" id="rnewH" value="" min="1" placeholder="Height">
+                <span class="locked" id="rnewWLocked">→ W: <span id="computedW">—</span> px</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Batch mode -->
+          <div id="paneBatch" style="display:none;">
+            <p class="tool-subtitle" style="margin-bottom:.4rem;">Enter one dimension per line: <code>1920x1080</code> or <code>1920 1080</code></p>
+            <div class="batch-area">
+              <textarea id="batchInput" placeholder="1920x1080&#10;2560x1440&#10;3840x2160&#10;1280x720&#10;800x600"></textarea>
+            </div>
+            <div class="btn-group" style="margin:.5rem 0;">
+              <button class="btn btn-sm btn-primary" id="batchCopyBtn">Copy Results</button>
+              <button class="btn btn-sm btn-secondary" id="batchDownloadBtn">Download CSV</button>
+            </div>
+            <div class="batch-results" id="batchResults"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter width and height in pixels to calculate the aspect ratio.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Aspect Ratio Simplifier</h2>
+          <ol>
+            <li><strong>Single mode</strong> — enter your image's width and height in pixels. The simplified ratio appears instantly with a proportional visual preview.</li>
+            <li><strong>Resize Calculator</strong> — enter original dimensions, then specify either the new width or new height. The locked dimension updates automatically to maintain the ratio.</li>
+            <li><strong>Batch Mode</strong> — paste multiple dimensions (one per line) in formats like <code>1920x1080</code> or <code>1920 1080</code>. Get a full table of simplified ratios, downloadable as CSV.</li>
+          </ol>
+
+          <h2>What is Aspect Ratio?</h2>
+          <p>Aspect ratio describes the proportional relationship between the width and height of an image, screen, or frame. It is written as W:H — for example, 16:9 means the image is 16 units wide for every 9 units tall. Unlike absolute pixel dimensions, aspect ratio is scale-independent. A 1280×720 image and a 3840×2160 image both have the same 16:9 aspect ratio despite having very different pixel counts.</p>
+
+          <h3>How GCD Simplification Works</h3>
+          <p>The simplification algorithm uses the Euclidean Greatest Common Divisor (GCD). For 1920×1080: GCD(1920, 1080) = 120. Dividing both dimensions by 120 gives 16:9. The GCD is the largest integer that divides both numbers without remainder. This ensures the result is always the simplest integer ratio — no fractions or unnecessary large numbers.</p>
+
+          <h3>Common Aspect Ratios and Their Uses</h3>
+          <ul>
+            <li><strong>16:9 (1.78:1)</strong> — Widescreen HD/UHD. YouTube, Netflix, broadcast TV, most modern monitors and laptops. Resolutions: 1280×720, 1920×1080, 2560×1440, 3840×2160.</li>
+            <li><strong>4:3 (1.33:1)</strong> — Traditional TV and monitor format. Still used in photography (medium format), video conferencing, and document scanning. Resolutions: 800×600, 1024×768, 1600×1200.</li>
+            <li><strong>3:2 (1.5:1)</strong> — 35mm film and most DSLR/mirrorless cameras. Standard for professional photography. Resolutions: 3000×2000, 6000×4000.</li>
+            <li><strong>1:1</strong> — Square. Instagram posts, profile pictures, album art. Any resolution where width equals height.</li>
+            <li><strong>9:16 (0.56:1)</strong> — Vertical portrait video. TikTok, Instagram Reels, YouTube Shorts, smartphone capture. Resolutions: 1080×1920, 720×1280.</li>
+            <li><strong>21:9 (2.33:1)</strong> — Ultrawide cinema and monitor format. Common in ultra-wide monitors and anamorphic cinema. Resolutions: 2560×1080, 3440×1440.</li>
+            <li><strong>2:1</strong> — Dual-screen layouts, some cinema formats, panoramic photography.</li>
+          </ul>
+
+          <h3>Why Aspect Ratio Matters</h3>
+          <p>Maintaining aspect ratio while resizing prevents image distortion — stretching or squishing that makes photos look wrong. When you crop or resize for a specific platform, knowing the target ratio lets you calculate exact pixel dimensions. Social media platforms have strict requirements: Twitter card images work best at 16:9, LinkedIn profile photos at 1:1, Pinterest boards at 2:3 (tall portrait). Responsive web design uses aspect-ratio CSS property to reserve space for images before they load, preventing layout shift. Understanding aspect ratio is also essential for print — a 4×6 print (3:2 ratio) requires different cropping from an 8×10 print (4:5 ratio).</p>
+
+          <h3>Letterboxing and Pillarboxing</h3>
+          <p>When you display content of one aspect ratio on a screen of a different ratio, black bars appear. Horizontal black bars at the top and bottom (letterboxing) appear when displaying widescreen content on a narrower display — common when watching 21:9 cinema on a 16:9 screen. Vertical black bars on the sides (pillarboxing) appear when displaying narrower content on a wider screen — common when watching old 4:3 TV on a 16:9 monitor. Understanding these ratios helps you design content that avoids unwanted letterboxing on your target display.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is aspect ratio?</button>
+            <div class="faq-answer">Aspect ratio is the proportional relationship between width and height, expressed as W:H. For example, 16:9 means 16 units wide for every 9 units tall. It's scale-independent — a 1280×720 and 3840×2160 image both have a 16:9 ratio.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How is aspect ratio calculated?</button>
+            <div class="faq-answer">Both dimensions are divided by their Greatest Common Divisor (GCD). For 1920×1080: GCD(1920,1080)=120, giving 16:9. The GCD is the largest number that divides both values without a remainder.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is 16:9 in pixels?</button>
+            <div class="faq-answer">Common 16:9 resolutions: 1280×720 (720p), 1920×1080 (1080p Full HD), 2560×1440 (1440p QHD), 3840×2160 (4K UHD). Any resolution where width/height ≈ 1.778 is 16:9.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What aspect ratio is 1080×1920?</button>
+            <div class="faq-answer">1080×1920 is 9:16 — vertical portrait video, the standard for TikTok, Instagram Reels, and YouTube Shorts. It's simply a 16:9 frame rotated 90 degrees.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I resize while keeping the aspect ratio?</button>
+            <div class="faq-answer">Fix one dimension and compute the other: new_height = new_width × (original_height / original_width). For 1920×1080 resized to width 1280: new_height = 1280 × (1080/1920) = 720. Use the Resize Calculator mode in this tool for automatic calculation.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Design Tools</h4>
+        <a href="/tools/aspect-ratio-simplifier.html">Aspect Ratio</a>
+        <a href="/tools/dpi-calculator.html">DPI Calculator</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var commonRatios = [
+      { r: '1:1',   dec: 1.000, uses: 'Square, Instagram, profile pics', ex: '1080×1080' },
+      { r: '4:3',   dec: 1.333, uses: 'Traditional TV, old monitors, photography', ex: '1024×768, 1600×1200' },
+      { r: '3:2',   dec: 1.500, uses: '35mm film, DSLR cameras', ex: '3000×2000, 6000×4000' },
+      { r: '16:9',  dec: 1.778, uses: 'HDTV, YouTube, most monitors', ex: '1920×1080, 3840×2160' },
+      { r: '16:10', dec: 1.600, uses: 'Widescreen laptops, MacBooks', ex: '1920×1200, 2560×1600' },
+      { r: '21:9',  dec: 2.333, uses: 'Ultrawide monitors, cinema', ex: '2560×1080, 3440×1440' },
+      { r: '9:16',  dec: 0.563, uses: 'Portrait video, TikTok, Reels', ex: '1080×1920, 720×1280' },
+      { r: '2:3',   dec: 0.667, uses: 'Portrait photo, Pinterest', ex: '800×1200, 1000×1500' },
+      { r: '5:4',   dec: 1.250, uses: 'Large-format prints, some monitors', ex: '1280×1024' },
+      { r: '3:4',   dec: 0.750, uses: 'Portrait monitor, iPad', ex: '768×1024' },
+      { r: '2:1',   dec: 2.000, uses: 'Panoramic, dual-screen', ex: '2000×1000' },
+      { r: '1:2',   dec: 0.500, uses: 'Tall banner, vertical scroll', ex: '500×1000' }
+    ];
+
+    (function buildRefTable() {
+      var tbody = document.querySelector('#refTable tbody');
+      commonRatios.forEach(function (r) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td><strong>' + r.r + '</strong></td><td>' + r.dec.toFixed(3) + '</td><td>' + r.uses + '</td><td>' + r.ex + '</td>';
+        tr.setAttribute('data-ratio', r.r);
+        tbody.appendChild(tr);
+      });
+    })();
+
+    function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+    function simplify(w, h) {
+      var g = gcd(Math.round(w), Math.round(h));
+      return { rw: w / g, rh: h / g, g: g };
+    }
+
+    var currentMode = 'single';
+
+    function highlightRefRow(rw, rh) {
+      var label = rw + ':' + rh;
+      document.querySelectorAll('#refTable tbody tr').forEach(function (tr) {
+        tr.classList.toggle('highlight', tr.getAttribute('data-ratio') === label);
+      });
+    }
+
+    function processSingle() {
+      var w = parseFloat(document.getElementById('arW').value) || 0;
+      var h = parseFloat(document.getElementById('arH').value) || 0;
+      var status = document.getElementById('statusBar');
+      if (!w || !h) {
+        document.getElementById('ratioDisplay').textContent = '—';
+        document.getElementById('resultMeta').innerHTML = '';
+        document.getElementById('ratioBox').textContent = '—';
+        status.className = 'status-bar info';
+        status.textContent = 'Enter width and height in pixels to calculate the aspect ratio.';
+        return;
+      }
+      var s = simplify(w, h);
+      var ratioStr = s.rw + ':' + s.rh;
+      var decimal = (w / h).toFixed(4);
+      document.getElementById('ratioDisplay').textContent = ratioStr;
+      document.getElementById('resultMeta').innerHTML =
+        '<span class="meta-pill">GCD: ' + s.g + '</span>' +
+        '<span class="meta-pill">Decimal: ' + decimal + '</span>' +
+        '<span class="meta-pill">' + w + '&times;' + h + ' px</span>' +
+        '<span class="meta-pill">' + ((w * h) / 1e6).toFixed(2) + ' MP</span>';
+
+      // Visual box — max 240px wide, proportional height
+      var boxW = Math.min(240, 240);
+      var boxH = Math.round(boxW * (h / w));
+      if (boxH > 180) { boxH = 180; boxW = Math.round(boxH * (w / h)); }
+      var box = document.getElementById('ratioBox');
+      box.style.width = boxW + 'px';
+      box.style.height = boxH + 'px';
+      box.textContent = ratioStr;
+
+      highlightRefRow(s.rw, s.rh);
+      status.className = 'status-bar valid';
+      status.textContent = w + '&times;' + h + ' \u2192 ' + ratioStr + ' (GCD: ' + s.g + ')';
+      document.getElementById('statusBar').textContent = w + '\xd7' + h + ' \u2192 ' + ratioStr + ' (GCD: ' + s.g + ')';
+      DT.trackTool('aspect-ratio-simplifier');
+    }
+
+    function processResize() {
+      var sw = parseFloat(document.getElementById('rsrcW').value) || 0;
+      var sh = parseFloat(document.getElementById('rsrcH').value) || 0;
+      var nw = parseFloat(document.getElementById('rnewW').value) || 0;
+      var nh = parseFloat(document.getElementById('rnewH').value) || 0;
+      var status = document.getElementById('statusBar');
+      if (!sw || !sh) {
+        status.className = 'status-bar info';
+        status.textContent = 'Enter the original dimensions first.';
+        return;
+      }
+      if (nw) {
+        var ch = Math.round(nw * (sh / sw));
+        document.getElementById('computedH').textContent = ch;
+        document.querySelector('#rnewHLocked span').textContent = ch;
+      }
+      if (nh) {
+        var cw = Math.round(nh * (sw / sh));
+        document.getElementById('computedW').textContent = cw;
+        document.querySelector('#rnewWLocked span').textContent = cw;
+      }
+      var s = simplify(sw, sh);
+      status.className = 'status-bar valid';
+      status.textContent = 'Original: ' + sw + '\xd7' + sh + ' (' + s.rw + ':' + s.rh + ')' +
+        (nw ? ' \u2192 ' + nw + '\xd7' + Math.round(nw * (sh / sw)) : '') +
+        (nh ? ' \u2192 ' + Math.round(nh * (sw / sh)) + '\xd7' + nh : '');
+    }
+
+    function processBatch() {
+      var lines = document.getElementById('batchInput').value.split('\n');
+      var rows = [];
+      var html = '';
+      lines.forEach(function (line) {
+        line = line.trim();
+        if (!line) return;
+        var match = line.match(/^(\d+)\s*[x×\s,]\s*(\d+)/i);
+        if (!match) { html += '<div class="batch-row" style="color:#ef4444;">' + line + ' — invalid format</div>'; return; }
+        var w = parseInt(match[1], 10);
+        var h = parseInt(match[2], 10);
+        var s = simplify(w, h);
+        var ratio = s.rw + ':' + s.rh;
+        var dec = (w / h).toFixed(4);
+        rows.push([w + 'x' + h, ratio, s.g, dec]);
+        html += '<div class="batch-row"><strong>' + w + '&times;' + h + '</strong> &rarr; <strong style="color:#10b981;">' + ratio + '</strong> &nbsp;(GCD:' + s.g + ', ' + dec + ')</div>';
+      });
+      document.getElementById('batchResults').innerHTML = html || '<div class="batch-row">No valid dimensions found.</div>';
+      var status = document.getElementById('statusBar');
+      status.className = rows.length > 0 ? 'status-bar valid' : 'status-bar info';
+      status.textContent = rows.length > 0 ? rows.length + ' dimensions processed' : 'Paste dimensions above (one per line).';
+      return rows;
+    }
+
+    var batchData = [];
+    document.getElementById('batchCopyBtn').addEventListener('click', function () {
+      var rows = processBatch();
+      var text = 'Input\tRatio\tGCD\tDecimal\n' + rows.map(function (r) { return r.join('\t'); }).join('\n');
+      DT.copyToClipboard(text, this);
+    });
+    document.getElementById('batchDownloadBtn').addEventListener('click', function () {
+      var rows = processBatch();
+      var csv = 'Input,Ratio,GCD,Decimal\n' + rows.map(function (r) { return r.map(function (v) { return '"' + v + '"'; }).join(','); }).join('\n');
+      DT.downloadText(csv, 'aspect-ratios.csv', 'text/csv');
+    });
+
+    // Mode chips
+    document.querySelectorAll('.option-chip[data-mode]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('paneSingle').style.display = currentMode === 'single' ? '' : 'none';
+        document.getElementById('paneResize').style.display = currentMode === 'resize' ? '' : 'none';
+        document.getElementById('paneBatch').style.display = currentMode === 'batch' ? '' : 'none';
+        if (currentMode === 'single') processSingle();
+        else if (currentMode === 'resize') processResize();
+        else processBatch();
+      });
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('arW').value = 1920;
+      document.getElementById('arH').value = 1080;
+      processSingle();
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('arW').value = '';
+      document.getElementById('arH').value = '';
+      processSingle();
+    });
+
+    var dp = DT.debounce(function () {
+      if (currentMode === 'single') processSingle();
+      else if (currentMode === 'resize') processResize();
+      else processBatch();
+    }, 150);
+
+    ['arW','arH','rsrcW','rsrcH','rnewW','rnewH'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', dp);
+    });
+    document.getElementById('batchInput').addEventListener('input', DT.debounce(processBatch, 250));
+
+    processSingle();
+  })();
+  </script>
+</body>
+</html>

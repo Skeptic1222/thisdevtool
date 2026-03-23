@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Named Colors Browser — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Browse all 148 CSS named colors in a searchable grid. View name, hex, RGB, and HSL values. Sort by name, hue, lightness. Filter by color family. Click to copy.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-named-colors.html">
+  <meta property="og:title" content="CSS Named Colors Browser — DevToolbox">
+  <meta property="og:description" content="Browse all 148 CSS named colors. Searchable, sortable by name/hue/lightness. Click any color to copy its hex, RGB, or HSL value.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-named-colors.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <style>
+    .color-toolbar { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center; margin-bottom:1rem; }
+    .search-box { flex:1; min-width:180px; padding:.55rem 1rem; font-size:.95rem; border:1px solid var(--border); border-radius:8px; background:var(--input-bg); color:var(--text); }
+    .search-box:focus { outline:none; border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.15); }
+    .color-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:.6rem; }
+    .color-swatch { border-radius:8px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:border-color .12s, transform .12s; }
+    .color-swatch:hover { border-color:#10b981; transform:scale(1.04); }
+    .color-swatch.selected { border-color:#10b981; }
+    .swatch-block { height:60px; }
+    .swatch-info { padding:.35rem .45rem; background:var(--card-bg); border-top:1px solid var(--border); }
+    .swatch-name { font-size:.7rem; font-weight:600; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .swatch-hex { font-size:.68rem; color:var(--text-muted); font-family:monospace; }
+    .detail-panel { background:var(--card-bg); border:1px solid var(--border); border-radius:10px; padding:1.25rem; margin-top:1.25rem; display:none; }
+    .detail-panel.visible { display:flex; flex-wrap:wrap; gap:1.5rem; align-items:flex-start; }
+    .detail-swatch { width:120px; height:120px; border-radius:10px; border:1px solid var(--border); flex-shrink:0; }
+    .detail-info { flex:1; min-width:200px; }
+    .detail-info h3 { margin-bottom:.75rem; }
+    .detail-row { display:flex; align-items:center; gap:.75rem; margin-bottom:.5rem; }
+    .detail-label { font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); width:40px; flex-shrink:0; }
+    .detail-value { font-family:monospace; font-size:.9rem; flex:1; }
+    .copy-value-btn { font-size:.7rem; padding:.15rem .5rem; }
+    .family-badge { font-size:.7rem; padding:.2rem .55rem; border-radius:20px; background:var(--bg-alt); border:1px solid var(--border); }
+    .group-label { grid-column:1/-1; font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); padding:.5rem 0 .25rem; border-bottom:1px solid var(--border); }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Named Colors Browser",
+    "url": "https://thisdevtool.com/tools/css-named-colors.html",
+    "description": "Browse all 148 CSS named colors in a searchable, sortable grid. Click any color to copy hex, RGB, or HSL values.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How many CSS named colors are there?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The CSS Color Level 4 specification defines 148 named colors. These include the original 16 Windows VGA colors from CSS1, the X11/SVG colors added in CSS2, and the special keywords transparent and currentColor (not counted as colors). All 148 are supported in every modern browser."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are CSS named colors case-sensitive?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. CSS named colors are case-insensitive. You can write 'red', 'Red', 'RED', or 'rEd' and all are equivalent. However, the convention is to use all lowercase for consistency with modern CSS practices."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between 'gray' and 'grey' in CSS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS accepts both spellings for most gray colors. 'gray' and 'grey' are aliases for the same color (#808080). Similarly, 'darkgray'/'darkgrey', 'lightgray'/'lightgrey', 'darkslategray'/'darkslategrey', and 'lightslategray'/'lightslategrey' are all interchangeable."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When should I use CSS named colors vs hex codes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS named colors are most useful for quick prototyping, readability in code, and simple color values where precision is not critical. Hex codes (or HSL) give you precise control over the exact color and are preferred for production design systems. Named colors are a subset of the full color space — there are only 148 of them compared to 16.7 million hex colors."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the rebeccapurple color?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "rebeccapurple (#663399) was added to the CSS specification in 2014 in honor of Rebecca Meyer, daughter of CSS expert Eric Meyer, who passed away at age 6. It is the only CSS named color named after a person. The color was submitted to the CSS working group and accepted as a tribute by the web standards community."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/web-safe-fonts.html">Web Fonts</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Named Colors Browser</h1>
+          <p class="tool-subtitle">All 148 CSS named colors — searchable, sortable, filterable. Click any color to copy hex, RGB, or HSL.</p>
+
+          <div class="color-toolbar">
+            <input type="text" class="search-box" id="searchInput" placeholder="Search colors (e.g. blue, coral, #ff...)">
+            <div class="option-chips" style="margin:0;">
+              <button class="option-chip active" data-sort="name">By Name</button>
+              <button class="option-chip" data-sort="hue">By Hue</button>
+              <button class="option-chip" data-sort="lightness">By Lightness</button>
+              <button class="option-chip" data-sort="saturation">By Saturation</button>
+            </div>
+          </div>
+
+          <div class="filter-chips option-chips" id="familyFilter" style="flex-wrap:wrap;">
+            <button class="option-chip active" data-family="all">All</button>
+            <button class="option-chip" data-family="reds">Reds</button>
+            <button class="option-chip" data-family="pinks">Pinks</button>
+            <button class="option-chip" data-family="oranges">Oranges</button>
+            <button class="option-chip" data-family="yellows">Yellows</button>
+            <button class="option-chip" data-family="greens">Greens</button>
+            <button class="option-chip" data-family="cyans">Cyans</button>
+            <button class="option-chip" data-family="blues">Blues</button>
+            <button class="option-chip" data-family="purples">Purples</button>
+            <button class="option-chip" data-family="browns">Browns</button>
+            <button class="option-chip" data-family="whites">Whites</button>
+            <button class="option-chip" data-family="grays">Grays/Blacks</button>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">148 colors</div>
+
+          <div class="detail-panel" id="detailPanel"></div>
+
+          <div class="color-grid" id="colorGrid"></div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>About CSS Named Colors</h2>
+          <p>CSS named colors are predefined color keywords that can be used anywhere a color value is accepted in CSS. The current specification defines 148 named colors, from the familiar "red" and "blue" to the obscure "papayawhip" and "blanchedalmond." Each named color maps to a specific RGB value and is supported in all modern browsers.</p>
+
+          <h3>History of CSS Named Colors</h3>
+          <p>The first CSS specification (CSS1, 1996) defined just 16 color keywords, mirroring the Windows VGA color palette: aqua, black, blue, fuchsia, gray, green, lime, maroon, navy, olive, purple, red, silver, teal, white, and yellow. CSS2 (1998) expanded this by incorporating the X11 color names used in Unix/Linux systems, which were later standardized in the SVG specification. The current CSS Colors Level 4 specification formalizes all 148 names, including the beloved <code>rebeccapurple</code> added in 2014.</p>
+
+          <h3>Named Colors in Production</h3>
+          <p>Named colors are most useful for prototyping and simple styling where exact brand colors are not required. In production design systems, hex codes, HSL, or CSS custom properties are preferred because they offer precise control and can be systematically manipulated (e.g., adjusting lightness programmatically). Named colors remain popular for utility classes, debugging, and learning CSS because they are easy to read and remember.</p>
+
+          <h3>Understanding HSL Values</h3>
+          <p>HSL (Hue, Saturation, Lightness) is often more intuitive than RGB or hex for understanding a color. Hue is a degree on the color wheel (0°=red, 120°=green, 240°=blue). Saturation is how vivid the color is (0%=gray, 100%=fully saturated). Lightness controls brightness (0%=black, 50%=normal, 100%=white). Sorting by hue in this tool shows colors in spectrum order; sorting by lightness shows from dark to light.</p>
+
+          <h3>Color Families</h3>
+          <p>The 148 CSS colors can be grouped into families for easier navigation. Reds and pinks include crimson, firebrick, hotpink, and deeppink. Greens range from the bright chartreuse to the deep darkgreen. Blues include the ocean-like teal, dodgerblue, and royalblue families. The white/off-white family contains surprisingly distinct shades: ivory, linen, seashell, snow, and whitesmoke all appear nearly white but have subtle warm or cool tints that affect readability over colored backgrounds.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How many CSS named colors are there?</button>
+            <div class="faq-answer">The CSS Color Level 4 specification defines 148 named colors. These include the original 16 Windows VGA colors from CSS1, X11/SVG colors added in CSS2, and all are supported in every modern browser.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Are CSS named colors case-sensitive?</button>
+            <div class="faq-answer">No. CSS named colors are case-insensitive. 'red', 'Red', and 'RED' are all equivalent. The convention is lowercase for consistency with modern CSS.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between 'gray' and 'grey' in CSS?</button>
+            <div class="faq-answer">'gray' and 'grey' are aliases for the same color (#808080). Similarly, darkgray/darkgrey, lightgray/lightgrey, and others with "gray" in the name accept both spellings.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">When should I use CSS named colors vs hex codes?</button>
+            <div class="faq-answer">Named colors are great for prototyping and readability. Hex codes (or HSL) give precise control and are preferred for production design systems. There are only 148 named colors vs. 16.7 million possible hex colors.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the rebeccapurple color?</button>
+            <div class="faq-answer">rebeccapurple (#663399) was added to CSS in 2014 in honor of Rebecca Meyer, daughter of CSS expert Eric Meyer, who passed away at age 6. It is the only CSS named color named after a person.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Design Tools</h4>
+        <a href="/tools/web-safe-fonts.html">Web-Safe Fonts</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Reference</h4>
+        <a href="/tools/html-symbols-reference.html">HTML Symbols</a>
+        <a href="/tools/http-method-reference.html">HTTP Methods</a>
+        <a href="/tools/meta-tag-generator.html">Meta Tags</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      var DT = DevToolbox;
+
+      var COLORS_RAW = [
+        ['aliceblue','#f0f8ff','blues'],['antiquewhite','#faebd7','whites'],['aqua','#00ffff','cyans'],
+        ['aquamarine','#7fffd4','cyans'],['azure','#f0ffff','whites'],['beige','#f5f5dc','yellows'],
+        ['bisque','#ffe4c4','oranges'],['black','#000000','grays'],['blanchedalmond','#ffebcd','whites'],
+        ['blue','#0000ff','blues'],['blueviolet','#8a2be2','purples'],['brown','#a52a2a','reds'],
+        ['burlywood','#deb887','browns'],['cadetblue','#5f9ea0','blues'],['chartreuse','#7fff00','greens'],
+        ['chocolate','#d2691e','browns'],['coral','#ff7f50','oranges'],['cornflowerblue','#6495ed','blues'],
+        ['cornsilk','#fff8dc','whites'],['crimson','#dc143c','reds'],['cyan','#00ffff','cyans'],
+        ['darkblue','#00008b','blues'],['darkcyan','#008b8b','cyans'],['darkgoldenrod','#b8860b','yellows'],
+        ['darkgray','#a9a9a9','grays'],['darkgreen','#006400','greens'],['darkkhaki','#bdb76b','yellows'],
+        ['darkmagenta','#8b008b','purples'],['darkolivegreen','#556b2f','greens'],['darkorange','#ff8c00','oranges'],
+        ['darkorchid','#9932cc','purples'],['darkred','#8b0000','reds'],['darksalmon','#e9967a','pinks'],
+        ['darkseagreen','#8fbc8f','greens'],['darkslateblue','#483d8b','blues'],['darkslategray','#2f4f4f','grays'],
+        ['darkturquoise','#00ced1','cyans'],['darkviolet','#9400d3','purples'],['deeppink','#ff1493','pinks'],
+        ['deepskyblue','#00bfff','blues'],['dimgray','#696969','grays'],['dodgerblue','#1e90ff','blues'],
+        ['firebrick','#b22222','reds'],['floralwhite','#fffaf0','whites'],['forestgreen','#228b22','greens'],
+        ['fuchsia','#ff00ff','purples'],['gainsboro','#dcdcdc','grays'],['ghostwhite','#f8f8ff','whites'],
+        ['gold','#ffd700','yellows'],['goldenrod','#daa520','yellows'],['gray','#808080','grays'],
+        ['green','#008000','greens'],['greenyellow','#adff2f','greens'],['honeydew','#f0fff0','whites'],
+        ['hotpink','#ff69b4','pinks'],['indianred','#cd5c5c','reds'],['indigo','#4b0082','purples'],
+        ['ivory','#fffff0','whites'],['khaki','#f0e68c','yellows'],['lavender','#e6e6fa','purples'],
+        ['lavenderblush','#fff0f5','whites'],['lawngreen','#7cfc00','greens'],['lemonchiffon','#fffacd','yellows'],
+        ['lightblue','#add8e6','blues'],['lightcoral','#f08080','pinks'],['lightcyan','#e0ffff','cyans'],
+        ['lightgoldenrodyellow','#fafad2','yellows'],['lightgray','#d3d3d3','grays'],['lightgreen','#90ee90','greens'],
+        ['lightpink','#ffb6c1','pinks'],['lightsalmon','#ffa07a','pinks'],['lightseagreen','#20b2aa','cyans'],
+        ['lightskyblue','#87cefa','blues'],['lightslategray','#778899','grays'],['lightsteelblue','#b0c4de','blues'],
+        ['lightyellow','#ffffe0','whites'],['lime','#00ff00','greens'],['limegreen','#32cd32','greens'],
+        ['linen','#faf0e6','whites'],['magenta','#ff00ff','purples'],['maroon','#800000','reds'],
+        ['mediumaquamarine','#66cdaa','cyans'],['mediumblue','#0000cd','blues'],['mediumorchid','#ba55d3','purples'],
+        ['mediumpurple','#9370db','purples'],['mediumseagreen','#3cb371','greens'],['mediumslateblue','#7b68ee','blues'],
+        ['mediumspringgreen','#00fa9a','greens'],['mediumturquoise','#48d1cc','cyans'],['mediumvioletred','#c71585','pinks'],
+        ['midnightblue','#191970','blues'],['mintcream','#f5fffa','whites'],['mistyrose','#ffe4e1','whites'],
+        ['moccasin','#ffe4b5','oranges'],['navajowhite','#ffdead','oranges'],['navy','#000080','blues'],
+        ['oldlace','#fdf5e6','whites'],['olive','#808000','yellows'],['olivedrab','#6b8e23','greens'],
+        ['orange','#ffa500','oranges'],['orangered','#ff4500','oranges'],['orchid','#da70d6','purples'],
+        ['palegoldenrod','#eee8aa','yellows'],['palegreen','#98fb98','greens'],['paleturquoise','#afeeee','cyans'],
+        ['palevioletred','#db7093','pinks'],['papayawhip','#ffefd5','whites'],['peachpuff','#ffdab9','oranges'],
+        ['peru','#cd853f','browns'],['pink','#ffc0cb','pinks'],['plum','#dda0dd','purples'],
+        ['powderblue','#b0e0e6','blues'],['purple','#800080','purples'],['rebeccapurple','#663399','purples'],
+        ['red','#ff0000','reds'],['rosybrown','#bc8f8f','browns'],['royalblue','#4169e1','blues'],
+        ['saddlebrown','#8b4513','browns'],['salmon','#fa8072','pinks'],['sandybrown','#f4a460','browns'],
+        ['seagreen','#2e8b57','greens'],['seashell','#fff5ee','whites'],['sienna','#a0522d','browns'],
+        ['silver','#c0c0c0','grays'],['skyblue','#87ceeb','blues'],['slateblue','#6a5acd','blues'],
+        ['slategray','#708090','grays'],['snow','#fffafa','whites'],['springgreen','#00ff7f','greens'],
+        ['steelblue','#4682b4','blues'],['tan','#d2b48c','browns'],['teal','#008080','cyans'],
+        ['thistle','#d8bfd8','purples'],['tomato','#ff6347','reds'],['turquoise','#40e0d0','cyans'],
+        ['violet','#ee82ee','purples'],['wheat','#f5deb3','browns'],['white','#ffffff','whites'],
+        ['whitesmoke','#f5f5f5','whites'],['yellow','#ffff00','yellows'],['yellowgreen','#9acd32','greens']
+      ];
+
+      function hexToRgb(hex) {
+        var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+        return { r:r, g:g, b:b };
+      }
+
+      function rgbToHsl(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        var max = Math.max(r,g,b), min = Math.min(r,g,b);
+        var h, s, l = (max + min) / 2;
+        if (max === min) { h = s = 0; }
+        else {
+          var d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          switch(max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+          }
+        }
+        return { h: Math.round(h*360), s: Math.round(s*100), l: Math.round(l*100) };
+      }
+
+      var COLORS = COLORS_RAW.map(function (c) {
+        var rgb = hexToRgb(c[1]);
+        var hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+        return { name:c[0], hex:c[1], family:c[2], r:rgb.r, g:rgb.g, b:rgb.b, h:hsl.h, s:hsl.s, l:hsl.l };
+      });
+
+      var currentSort = 'name';
+      var currentFamily = 'all';
+      var selectedColor = null;
+
+      function getFiltered() {
+        var q = document.getElementById('searchInput').value.trim().toLowerCase();
+        var colors = currentFamily === 'all' ? COLORS : COLORS.filter(function(c){ return c.family===currentFamily; });
+        if (q) {
+          colors = colors.filter(function(c){
+            return c.name.includes(q) || c.hex.includes(q) ||
+              ('rgb('+c.r+','+c.g+','+c.b+')').replace(/\s/g,'').includes(q.replace(/\s/g,''));
+          });
+        }
+        return colors;
+      }
+
+      function getSorted(colors) {
+        var sorted = colors.slice();
+        if (currentSort === 'name') sorted.sort(function(a,b){ return a.name.localeCompare(b.name); });
+        else if (currentSort === 'hue') sorted.sort(function(a,b){ return a.h-b.h || a.s-b.s || a.l-b.l; });
+        else if (currentSort === 'lightness') sorted.sort(function(a,b){ return a.l-b.l || a.h-b.h; });
+        else if (currentSort === 'saturation') sorted.sort(function(a,b){ return b.s-a.s || a.h-b.h; });
+        return sorted;
+      }
+
+      function isLight(l) { return l > 60; }
+
+      function renderGrid() {
+        var grid = document.getElementById('colorGrid');
+        var colors = getSorted(getFiltered());
+        grid.innerHTML = '';
+
+        if (currentSort === 'hue' && currentFamily === 'all') {
+          var families = ['reds','oranges','yellows','greens','cyans','blues','purples','pinks','browns','whites','grays'];
+          var familyLabels = {reds:'Reds',oranges:'Oranges',yellows:'Yellows',greens:'Greens',cyans:'Cyans/Teals',blues:'Blues',purples:'Purples/Violets',pinks:'Pinks',browns:'Browns',whites:'Whites/Off-Whites',grays:'Grays/Blacks'};
+          families.forEach(function(fam) {
+            var fc = colors.filter(function(c){ return c.family===fam; });
+            if (!fc.length) return;
+            var lbl = document.createElement('div');
+            lbl.className = 'group-label';
+            lbl.textContent = familyLabels[fam] + ' (' + fc.length + ')';
+            grid.appendChild(lbl);
+            fc.forEach(function(c){ grid.appendChild(createSwatch(c)); });
+          });
+        } else {
+          colors.forEach(function(c){ grid.appendChild(createSwatch(c)); });
+        }
+
+        var statusBar = document.getElementById('statusBar');
+        var familyLabel = currentFamily === 'all' ? '' : ' — Group: ' + currentFamily.charAt(0).toUpperCase()+currentFamily.slice(1) + ' (' + colors.length + ')';
+        statusBar.textContent = colors.length + ' color' + (colors.length!==1?'s':'') + familyLabel;
+      }
+
+      function createSwatch(c) {
+        var el = document.createElement('div');
+        el.className = 'color-swatch' + (selectedColor && selectedColor.name===c.name ? ' selected' : '');
+        el.setAttribute('title', c.name + ' — ' + c.hex);
+        el.innerHTML = '<div class="swatch-block" style="background:' + c.hex + ';"></div>' +
+          '<div class="swatch-info">' +
+            '<span class="swatch-name">' + c.name + '</span>' +
+            '<span class="swatch-hex">' + c.hex + '</span>' +
+          '</div>';
+        el.addEventListener('click', function() {
+          selectedColor = c;
+          showDetail(c);
+          renderGrid();
+          DT.copyToClipboard(c.hex, null);
+          DevToolbox.toast('Copied ' + c.hex, 'info', 1500);
+          DT.trackTool('css-named-colors');
+        });
+        return el;
+      }
+
+      function showDetail(c) {
+        var panel = document.getElementById('detailPanel');
+        panel.classList.add('visible');
+        var textColor = isLight(c.l) ? '#1a1a1a' : '#ffffff';
+        panel.innerHTML =
+          '<div class="detail-swatch" style="background:' + c.hex + ';display:flex;align-items:center;justify-content:center;color:'+textColor+';font-weight:700;font-size:1.1rem;">' + c.name + '</div>' +
+          '<div class="detail-info">' +
+            '<h3>' + c.name + ' <span class="family-badge">' + c.family + '</span></h3>' +
+            makeDetailRow('Name', c.name) +
+            makeDetailRow('HEX', c.hex) +
+            makeDetailRow('RGB', 'rgb(' + c.r + ', ' + c.g + ', ' + c.b + ')') +
+            makeDetailRow('HSL', 'hsl(' + c.h + ', ' + c.s + '%, ' + c.l + '%)') +
+            '<button class="btn btn-secondary btn-sm" id="closeDetailBtn" style="margin-top:.75rem;">Close</button>' +
+          '</div>';
+        panel.querySelectorAll('.copy-value-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            DT.copyToClipboard(btn.getAttribute('data-val'), btn);
+          });
+        });
+        document.getElementById('closeDetailBtn').addEventListener('click', function() {
+          panel.classList.remove('visible');
+          selectedColor = null;
+          renderGrid();
+        });
+        panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      }
+
+      function makeDetailRow(label, value) {
+        return '<div class="detail-row">' +
+          '<span class="detail-label">' + label + '</span>' +
+          '<span class="detail-value">' + escapeHTML(value) + '</span>' +
+          '<button class="btn btn-sm copy-value-btn" data-val="' + escapeHTML(value) + '">Copy</button>' +
+        '</div>';
+      }
+
+      function escapeHTML(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+
+      var debouncedRender = DT.debounce(renderGrid, 150);
+      document.getElementById('searchInput').addEventListener('input', debouncedRender);
+
+      document.querySelectorAll('[data-sort]').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('[data-sort]').forEach(function(c){ c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentSort = chip.getAttribute('data-sort');
+          renderGrid();
+        });
+      });
+
+      document.querySelectorAll('[data-family]').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('[data-family]').forEach(function(c){ c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentFamily = chip.getAttribute('data-family');
+          renderGrid();
+        });
+      });
+
+      renderGrid();
+    })();
+  </script>
+</body>
+</html>

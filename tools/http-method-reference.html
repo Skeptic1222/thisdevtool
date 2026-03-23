@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>HTTP Methods Reference — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Complete HTTP methods reference: GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS, TRACE, CONNECT. Descriptions, idempotency, safety, examples, and comparison table.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/http-method-reference.html">
+  <meta property="og:title" content="HTTP Methods Reference — DevToolbox">
+  <meta property="og:description" content="Complete reference for all 9 HTTP methods: descriptions, idempotency badges, safety flags, request body support, use cases, and example requests.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/http-method-reference.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <style>
+    .method-grid { display:grid; gap:1.25rem; }
+    .method-card { background:var(--card-bg); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+    .method-card-header { display:flex; align-items:center; gap:.75rem; padding:.85rem 1.1rem; background:var(--bg-alt); border-bottom:1px solid var(--border); cursor:pointer; }
+    .method-badge { font-size:.8rem; font-weight:700; letter-spacing:.04em; padding:.25rem .6rem; border-radius:5px; min-width:4.5rem; text-align:center; }
+    .method-GET { background:#d1fae5; color:#065f46; }
+    .method-POST { background:#dbeafe; color:#1e40af; }
+    .method-PUT { background:#fef3c7; color:#92400e; }
+    .method-PATCH { background:#ede9fe; color:#5b21b6; }
+    .method-DELETE { background:#fee2e2; color:#991b1b; }
+    .method-HEAD { background:#f0fdf4; color:#14532d; }
+    .method-OPTIONS { background:#f0f9ff; color:#0c4a6e; }
+    .method-TRACE { background:#fdf4ff; color:#701a75; }
+    .method-CONNECT { background:#fff7ed; color:#7c2d12; }
+    [data-theme="dark"] .method-GET { background:#064e3b; color:#6ee7b7; }
+    [data-theme="dark"] .method-POST { background:#1e3a5f; color:#93c5fd; }
+    [data-theme="dark"] .method-PUT { background:#451a03; color:#fcd34d; }
+    [data-theme="dark"] .method-PATCH { background:#3b0764; color:#c4b5fd; }
+    [data-theme="dark"] .method-DELETE { background:#450a0a; color:#fca5a5; }
+    [data-theme="dark"] .method-HEAD { background:#052e16; color:#86efac; }
+    [data-theme="dark"] .method-OPTIONS { background:#082f49; color:#7dd3fc; }
+    [data-theme="dark"] .method-TRACE { background:#3b0764; color:#e9d5ff; }
+    [data-theme="dark"] .method-CONNECT { background:#431407; color:#fdba74; }
+    .method-name { font-size:1.1rem; font-weight:700; flex:1; }
+    .method-summary { font-size:.875rem; color:var(--text-muted); }
+    .prop-badges { display:flex; flex-wrap:wrap; gap:.4rem; }
+    .prop-badge { font-size:.75rem; padding:.2rem .55rem; border-radius:20px; font-weight:600; }
+    .badge-yes { background:#d1fae5; color:#065f46; }
+    .badge-no { background:#fee2e2; color:#991b1b; }
+    .badge-conditional { background:#fef3c7; color:#92400e; }
+    [data-theme="dark"] .badge-yes { background:#064e3b; color:#6ee7b7; }
+    [data-theme="dark"] .badge-no { background:#450a0a; color:#fca5a5; }
+    [data-theme="dark"] .badge-conditional { background:#451a03; color:#fcd34d; }
+    .method-card-body { padding:1rem 1.1rem; display:none; }
+    .method-card.open .method-card-body { display:block; }
+    .method-card.open .method-card-header::after { content:'▲'; }
+    .method-card-header::after { content:'▼'; margin-left:auto; color:var(--text-muted); font-size:.75rem; }
+    .method-section { margin-bottom:1rem; }
+    .method-section h4 { font-size:.85rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:.4rem; }
+    .method-example { background:var(--bg-alt); border-radius:6px; padding:.75rem 1rem; font-family:monospace; font-size:.82rem; white-space:pre-wrap; word-break:break-all; border:1px solid var(--border); }
+    .use-case-list { margin:0; padding-left:1.25rem; font-size:.9rem; line-height:1.7; }
+    .comparison-table { width:100%; border-collapse:collapse; font-size:.875rem; margin-top:1rem; }
+    .comparison-table th, .comparison-table td { padding:.6rem .8rem; border:1px solid var(--border); text-align:center; }
+    .comparison-table th { background:var(--bg-alt); font-weight:600; }
+    .comparison-table td:first-child { text-align:left; font-weight:700; }
+    .search-box { width:100%; padding:.6rem 1rem; font-size:1rem; border:1px solid var(--border); border-radius:8px; background:var(--input-bg); color:var(--text); margin-bottom:1.25rem; }
+    .search-box:focus { outline:none; border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.15); }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "HTTP Methods Reference",
+    "url": "https://thisdevtool.com/tools/http-method-reference.html",
+    "description": "Complete reference for all 9 HTTP methods with descriptions, idempotency, safety, examples, and comparison table.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between PUT and PATCH?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PUT replaces the entire resource with the request body. If you omit a field, it is deleted from the resource. PATCH applies a partial update — only the fields included in the request body are changed. Use PUT when you want to replace a resource entirely, and PATCH when you only want to update specific fields."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does idempotent mean in HTTP?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An idempotent HTTP method produces the same result no matter how many times you call it with the same input. GET, PUT, DELETE, HEAD, OPTIONS, and TRACE are idempotent. POST and PATCH are not — calling POST twice creates two resources, and PATCH behavior can vary by implementation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between GET and POST?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GET retrieves data and should not change server state. Parameters are sent in the URL query string. POST submits data to be processed, can change server state, and parameters are sent in the request body. GET requests can be cached and bookmarked; POST requests cannot."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When should I use DELETE vs setting a field to inactive?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use DELETE when you want to permanently remove a resource. If you need soft deletes (keeping data for auditing or recovery), use PATCH to set an 'active' or 'deleted_at' field instead. Many production systems prefer soft deletes because they allow recovery and maintain referential integrity."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the OPTIONS method used for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "OPTIONS returns the HTTP methods allowed for a given URL. It is most commonly used in CORS (Cross-Origin Resource Sharing) preflight requests — browsers automatically send an OPTIONS request before a cross-origin POST, PUT, or DELETE to check if the server allows it."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>HTTP Methods Reference</h1>
+          <p class="tool-subtitle">Complete reference for all 9 HTTP methods — descriptions, idempotency, safety, request body, use cases, and examples.</p>
+
+          <input type="text" class="search-box" id="searchInput" placeholder="Search methods (e.g. POST, idempotent, REST)..." aria-label="Search HTTP methods">
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">9 HTTP methods</div>
+
+          <div class="method-grid" id="methodGrid"></div>
+
+          <div style="margin-top:2rem;">
+            <h3 style="margin-bottom:.75rem;">Quick Comparison Table</h3>
+            <div style="overflow-x:auto;">
+              <table class="comparison-table" id="compTable">
+                <thead>
+                  <tr>
+                    <th>Method</th>
+                    <th>Safe</th>
+                    <th>Idempotent</th>
+                    <th>Request Body</th>
+                    <th>Response Body</th>
+                    <th>Cacheable</th>
+                  </tr>
+                </thead>
+                <tbody id="compTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>Understanding HTTP Methods</h2>
+          <p>HTTP methods (also called HTTP verbs) define the action to be performed on a resource identified by a URL. They are a fundamental part of the HTTP protocol and form the backbone of RESTful API design. Choosing the right method is not just about convention — it affects caching behavior, browser handling, security, and how intermediate proxies treat requests.</p>
+
+          <h3>Safe vs. Unsafe Methods</h3>
+          <p>A "safe" HTTP method is one that does not modify server state. GET, HEAD, OPTIONS, and TRACE are considered safe — they are read-only operations. POST, PUT, PATCH, DELETE, and CONNECT are unsafe because they can modify or delete data. Browsers and caches treat safe methods more liberally, allowing them to be repeated automatically (for example, when reloading a page).</p>
+
+          <h3>Idempotency Explained</h3>
+          <p>An idempotent method produces the same result regardless of how many times it is called with the same input. GET, PUT, DELETE, HEAD, OPTIONS, and TRACE are all idempotent. POST is the notable exception — submitting the same form twice creates two records. PATCH is technically not required to be idempotent by the spec, though well-designed APIs often make it so. Idempotency is critical for retry logic in distributed systems: if a DELETE request times out, you can safely retry it without worrying about double-deleting.</p>
+
+          <h3>REST and HTTP Methods</h3>
+          <p>RESTful APIs use HTTP methods to represent CRUD operations: GET (Read), POST (Create), PUT/PATCH (Update), DELETE (Delete). A well-designed REST API maps these operations to resource URLs: <code>GET /users/123</code> retrieves a user, <code>POST /users</code> creates one, <code>PUT /users/123</code> replaces it, <code>PATCH /users/123</code> partially updates it, and <code>DELETE /users/123</code> removes it.</p>
+
+          <h3>CORS Preflight and OPTIONS</h3>
+          <p>Modern browsers enforce CORS (Cross-Origin Resource Sharing) policy by sending an OPTIONS preflight request before any cross-origin POST, PUT, PATCH, or DELETE request. The server must respond with the appropriate <code>Access-Control-Allow-*</code> headers, or the actual request will be blocked. Understanding OPTIONS is essential for debugging CORS errors in web applications.</p>
+
+          <h3>HEAD for Metadata</h3>
+          <p>HEAD is often overlooked but extremely useful. It returns the same headers as a GET request without the body, making it ideal for checking if a resource exists, checking its <code>Content-Type</code>, or checking its <code>Last-Modified</code> date without downloading the full response. Web crawlers, link checkers, and download managers use HEAD extensively.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between PUT and PATCH?</button>
+            <div class="faq-answer">PUT replaces the entire resource with the request body. If you omit a field, it is deleted. PATCH applies a partial update — only the fields in the request body are changed. Use PUT for full replacements, PATCH for partial updates.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does idempotent mean in HTTP?</button>
+            <div class="faq-answer">An idempotent method produces the same result no matter how many times you call it. GET, PUT, DELETE, HEAD, OPTIONS, and TRACE are idempotent. POST and PATCH are not — calling POST twice creates two resources.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between GET and POST?</button>
+            <div class="faq-answer">GET retrieves data without changing state; parameters go in the URL. POST submits data that changes state; parameters go in the body. GET can be cached and bookmarked; POST cannot.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">When should I use DELETE vs setting a field to inactive?</button>
+            <div class="faq-answer">Use DELETE for hard deletes. For soft deletes (keeping audit trail), use PATCH to set an 'active' or 'deleted_at' field. Many production systems prefer soft deletes for data recovery and referential integrity.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the OPTIONS method used for?</button>
+            <div class="faq-answer">OPTIONS returns the allowed HTTP methods for a URL. It is most commonly used in CORS preflight requests — browsers automatically send OPTIONS before cross-origin POST/PUT/DELETE to check if the server permits it.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Reference</h4>
+        <a href="/tools/http-status-codes.html">HTTP Status Codes</a>
+        <a href="/tools/html-symbols-reference.html">HTML Symbols</a>
+        <a href="/tools/css-named-colors.html">CSS Named Colors</a>
+        <a href="/tools/web-safe-fonts.html">Web-Safe Fonts</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      var DT = DevToolbox;
+
+      var METHODS = [
+        {
+          name: 'GET',
+          summary: 'Retrieve a resource',
+          safe: true, idempotent: true, requestBody: false, responseBody: true, cacheable: true,
+          description: 'GET requests a representation of a resource. It should only retrieve data and must not have any side effects on the server. GET is the most common HTTP method and is used for all standard page loads and API data fetches.',
+          useCases: [
+            'Fetch a list of users: GET /api/users',
+            'Retrieve a single resource: GET /api/users/123',
+            'Load a web page in a browser',
+            'Fetch paginated API results: GET /api/posts?page=2',
+            'Search queries: GET /api/search?q=javascript'
+          ],
+          exampleRequest: 'GET /api/users/123 HTTP/1.1\nHost: api.example.com\nAccept: application/json\nAuthorization: Bearer eyJhbGci...',
+          exampleResponse: 'HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n  "id": 123,\n  "name": "Alice",\n  "email": "alice@example.com"\n}'
+        },
+        {
+          name: 'POST',
+          summary: 'Create a new resource',
+          safe: false, idempotent: false, requestBody: true, responseBody: true, cacheable: false,
+          description: 'POST submits data to the server to create a new resource or trigger a process. The server determines the URL of the created resource. POST is not idempotent — submitting the same request twice creates two resources.',
+          useCases: [
+            'Create a new user: POST /api/users',
+            'Submit a web form',
+            'Upload a file',
+            'Trigger an action: POST /api/emails/send',
+            'Login endpoint: POST /api/auth/login'
+          ],
+          exampleRequest: 'POST /api/users HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\nAuthorization: Bearer eyJhbGci...\n\n{\n  "name": "Bob",\n  "email": "bob@example.com"\n}',
+          exampleResponse: 'HTTP/1.1 201 Created\nLocation: /api/users/124\nContent-Type: application/json\n\n{\n  "id": 124,\n  "name": "Bob",\n  "email": "bob@example.com"\n}'
+        },
+        {
+          name: 'PUT',
+          summary: 'Replace a resource entirely',
+          safe: false, idempotent: true, requestBody: true, responseBody: true, cacheable: false,
+          description: 'PUT replaces the entire resource at the given URL with the request body. If any fields are omitted from the body, they are removed from the resource. PUT is idempotent — calling it multiple times with the same body always results in the same resource state.',
+          useCases: [
+            'Replace a user record entirely: PUT /api/users/123',
+            'Upsert a resource (create if not exists)',
+            'Update a configuration object fully',
+            'Replace a document in a document store',
+            'Set file contents: PUT /api/files/readme.txt'
+          ],
+          exampleRequest: 'PUT /api/users/123 HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\nAuthorization: Bearer eyJhbGci...\n\n{\n  "id": 123,\n  "name": "Alice Smith",\n  "email": "alice.smith@example.com",\n  "role": "admin"\n}',
+          exampleResponse: 'HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n  "id": 123,\n  "name": "Alice Smith",\n  "email": "alice.smith@example.com",\n  "role": "admin"\n}'
+        },
+        {
+          name: 'PATCH',
+          summary: 'Partially update a resource',
+          safe: false, idempotent: false, requestBody: true, responseBody: true, cacheable: false,
+          description: 'PATCH applies a partial modification to a resource. Only the fields provided in the request body are updated; all other fields remain unchanged. PATCH is generally not idempotent, though well-designed APIs often implement it as idempotent.',
+          useCases: [
+            'Update just the email: PATCH /api/users/123',
+            'Toggle a boolean field: PATCH /api/posts/456 {"published": true}',
+            'Increment a counter',
+            'Update order status: PATCH /api/orders/789',
+            'Rename a file without changing contents'
+          ],
+          exampleRequest: 'PATCH /api/users/123 HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\nAuthorization: Bearer eyJhbGci...\n\n{\n  "email": "new-email@example.com"\n}',
+          exampleResponse: 'HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n  "id": 123,\n  "name": "Alice",\n  "email": "new-email@example.com",\n  "role": "user"\n}'
+        },
+        {
+          name: 'DELETE',
+          summary: 'Remove a resource',
+          safe: false, idempotent: true, requestBody: false, responseBody: false, cacheable: false,
+          description: 'DELETE removes the resource at the given URL. It is idempotent — deleting a resource that has already been deleted should return 404 or 204, not an error. The response body is typically empty or a confirmation message.',
+          useCases: [
+            'Delete a user: DELETE /api/users/123',
+            'Remove an item from a cart',
+            'Cancel a subscription',
+            'Revoke an API key: DELETE /api/keys/abc123',
+            'Remove a file: DELETE /api/files/photo.jpg'
+          ],
+          exampleRequest: 'DELETE /api/users/123 HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer eyJhbGci...',
+          exampleResponse: 'HTTP/1.1 204 No Content'
+        },
+        {
+          name: 'HEAD',
+          summary: 'Retrieve headers only (no body)',
+          safe: true, idempotent: true, requestBody: false, responseBody: false, cacheable: true,
+          description: 'HEAD is identical to GET but the server must not return a response body. The headers returned are the same as a GET response. HEAD is used to check if a resource exists, check its size, or verify its last-modified date without downloading the content.',
+          useCases: [
+            'Check if a URL exists (link checker)',
+            'Get file size before downloading',
+            'Check if cache is still valid via Last-Modified',
+            'Verify API endpoint availability',
+            'Web crawler URL existence check'
+          ],
+          exampleRequest: 'HEAD /files/large-dataset.csv HTTP/1.1\nHost: files.example.com',
+          exampleResponse: 'HTTP/1.1 200 OK\nContent-Type: text/csv\nContent-Length: 104857600\nLast-Modified: Sat, 01 Mar 2026 12:00:00 GMT\nETag: "abc123def456"'
+        },
+        {
+          name: 'OPTIONS',
+          summary: 'Describe communication options',
+          safe: true, idempotent: true, requestBody: false, responseBody: true, cacheable: false,
+          description: 'OPTIONS returns the HTTP methods supported by a server for a given URL. It is primarily used by browsers to perform CORS preflight checks. The server responds with Allow and Access-Control-Allow-* headers.',
+          useCases: [
+            'CORS preflight request (automatic by browser)',
+            'Discover allowed methods for an endpoint',
+            'API capability detection',
+            'Check CORS policy before making a cross-origin request',
+            'API gateway health checks'
+          ],
+          exampleRequest: 'OPTIONS /api/users HTTP/1.1\nHost: api.example.com\nOrigin: https://app.example.com\nAccess-Control-Request-Method: POST\nAccess-Control-Request-Headers: Content-Type',
+          exampleResponse: 'HTTP/1.1 204 No Content\nAllow: GET, POST, OPTIONS\nAccess-Control-Allow-Origin: https://app.example.com\nAccess-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE\nAccess-Control-Allow-Headers: Content-Type, Authorization\nAccess-Control-Max-Age: 86400'
+        },
+        {
+          name: 'TRACE',
+          summary: 'Echo request for debugging',
+          safe: true, idempotent: true, requestBody: false, responseBody: true, cacheable: false,
+          description: 'TRACE performs a message loop-back test along the path to the target resource. The server echoes back the received request, allowing the client to see what changes or additions have been made by intermediate servers (proxies). TRACE is rarely used in production and is disabled on most servers due to XST (Cross-Site Tracing) security concerns.',
+          useCases: [
+            'Debug proxy modifications to requests',
+            'Diagnose network path issues',
+            'Test load balancer header injection',
+            'Verify reverse proxy behavior',
+            'Network troubleshooting'
+          ],
+          exampleRequest: 'TRACE /api/test HTTP/1.1\nHost: api.example.com\nX-Custom-Header: test-value',
+          exampleResponse: 'HTTP/1.1 200 OK\nContent-Type: message/http\n\nTRACE /api/test HTTP/1.1\nHost: api.example.com\nX-Custom-Header: test-value\nVia: 1.1 proxy.example.com'
+        },
+        {
+          name: 'CONNECT',
+          summary: 'Establish a tunnel (HTTPS proxies)',
+          safe: false, idempotent: false, requestBody: false, responseBody: false, cacheable: false,
+          description: 'CONNECT establishes a tunnel to a server identified by a target resource. It is used primarily to set up SSL/TLS tunnels through HTTP proxies — when you access an HTTPS site via an HTTP proxy, your browser sends CONNECT to the proxy to establish an end-to-end encrypted tunnel.',
+          useCases: [
+            'HTTPS via HTTP proxy (browser does this automatically)',
+            'Corporate proxy traversal for SSL traffic',
+            'VPN-like tunneling over HTTP',
+            'WebSocket upgrade through a proxy',
+            'SSL inspection bypass'
+          ],
+          exampleRequest: 'CONNECT api.example.com:443 HTTP/1.1\nHost: api.example.com:443\nProxy-Authorization: Basic dXNlcjpwYXNz',
+          exampleResponse: 'HTTP/1.1 200 Connection Established\n\n[Encrypted TLS tunnel begins here]'
+        }
+      ];
+
+      function yesNo(val, conditional) {
+        if (conditional) return '<span class="prop-badge badge-conditional">Conditional</span>';
+        return val
+          ? '<span class="prop-badge badge-yes">Yes</span>'
+          : '<span class="prop-badge badge-no">No</span>';
+      }
+
+      function renderMethods(methods) {
+        var grid = document.getElementById('methodGrid');
+        grid.innerHTML = '';
+        methods.forEach(function (m) {
+          var card = document.createElement('div');
+          card.className = 'method-card';
+          card.innerHTML = '<div class="method-card-header">' +
+            '<span class="method-badge method-' + m.name + '">' + m.name + '</span>' +
+            '<span class="method-name">' + m.name + '</span>' +
+            '<span class="method-summary">' + m.summary + '</span>' +
+            '<div class="prop-badges">' +
+              (m.safe ? '<span class="prop-badge badge-yes">Safe</span>' : '<span class="prop-badge badge-no">Unsafe</span>') +
+              (m.idempotent ? '<span class="prop-badge badge-yes">Idempotent</span>' : '<span class="prop-badge badge-no">Not Idempotent</span>') +
+            '</div>' +
+          '</div>' +
+          '<div class="method-card-body">' +
+            '<div class="method-section"><p>' + m.description + '</p></div>' +
+            '<div class="method-section"><h4>Common Use Cases</h4><ul class="use-case-list">' +
+              m.useCases.map(function (uc) { return '<li>' + uc + '</li>'; }).join('') +
+            '</ul></div>' +
+            '<div class="method-section"><h4>Example Request</h4><div class="method-example">' + escapeHTML(m.exampleRequest) + '</div></div>' +
+            '<div class="method-section"><h4>Example Response</h4><div class="method-example">' + escapeHTML(m.exampleResponse) + '</div></div>' +
+          '</div>';
+          card.querySelector('.method-card-header').addEventListener('click', function () {
+            card.classList.toggle('open');
+          });
+          grid.appendChild(card);
+        });
+
+        var statusBar = document.getElementById('statusBar');
+        statusBar.textContent = methods.length + ' HTTP method' + (methods.length !== 1 ? 's' : '');
+      }
+
+      function renderTable(methods) {
+        var tbody = document.getElementById('compTableBody');
+        tbody.innerHTML = '';
+        methods.forEach(function (m) {
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td><span class="method-badge method-' + m.name + '">' + m.name + '</span></td>' +
+            '<td>' + yesNo(m.safe) + '</td>' +
+            '<td>' + yesNo(m.idempotent) + '</td>' +
+            '<td>' + yesNo(m.requestBody) + '</td>' +
+            '<td>' + yesNo(m.responseBody) + '</td>' +
+            '<td>' + yesNo(m.cacheable) + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      function escapeHTML(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function filterMethods(query) {
+        if (!query) return METHODS;
+        var q = query.toLowerCase();
+        return METHODS.filter(function (m) {
+          return m.name.toLowerCase().includes(q) ||
+            m.summary.toLowerCase().includes(q) ||
+            m.description.toLowerCase().includes(q) ||
+            (m.idempotent && 'idempotent'.includes(q)) ||
+            (m.safe && 'safe'.includes(q)) ||
+            m.useCases.some(function (uc) { return uc.toLowerCase().includes(q); });
+        });
+      }
+
+      var debouncedSearch = DT.debounce(function () {
+        var q = document.getElementById('searchInput').value.trim();
+        var filtered = filterMethods(q);
+        renderMethods(filtered);
+        renderTable(filtered);
+        DT.trackTool('http-method-reference');
+      }, 200);
+
+      document.getElementById('searchInput').addEventListener('input', debouncedSearch);
+
+      renderMethods(METHODS);
+      renderTable(METHODS);
+    })();
+  </script>
+</body>
+</html>
