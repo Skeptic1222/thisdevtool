@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Glassmorphism CSS Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate glassmorphism / frosted glass CSS with live preview. Adjust blur, opacity, border, and background tint. Copy ready-to-use CSS instantly.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-glassmorphism.html">
+  <meta property="og:title" content="Glassmorphism CSS Generator — DevToolbox">
+  <meta property="og:description" content="Free online glassmorphism generator with live preview. Adjust blur, opacity, and border. Copy CSS instantly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-glassmorphism.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Glassmorphism CSS Generator",
+    "url": "https://thisdevtool.com/tools/css-glassmorphism.html",
+    "description": "Generate glassmorphism frosted glass CSS with live preview. Adjust blur, opacity, border, and background tint.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is glassmorphism?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Glassmorphism is a UI design trend that creates a frosted glass effect using CSS backdrop-filter: blur() combined with semi-transparent backgrounds and subtle borders. It was popularized by Apple's macOS Big Sur and Microsoft's Windows 11 Fluent Design."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which browsers support backdrop-filter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "backdrop-filter is supported in Chrome 76+, Edge 17+, Safari 9+ (with -webkit- prefix), and Firefox 103+. It is not supported in Internet Explorer. Always include the -webkit-backdrop-filter prefix for Safari compatibility."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I make glassmorphism work on Firefox?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Firefox added support for backdrop-filter in version 103 (released July 2022). For older Firefox versions, you can use a fallback with a slightly opaque background color. Enable it via about:config by setting layout.css.backdrop-filter.enabled to true in older builds."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does glassmorphism affect performance?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "backdrop-filter uses GPU compositing and can impact performance on low-end devices or when applied to many elements simultaneously. Use it sparingly — typically only on modal overlays, navigation bars, or key UI cards. Avoid using it on elements that animate frequently."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between filter: blur() and backdrop-filter: blur()?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "filter: blur() blurs the element itself and all its children. backdrop-filter: blur() blurs only what is behind the element, creating the frosted glass effect. For glassmorphism, you always want backdrop-filter so the element's content remains sharp while the background is blurred."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .glass-preview-wrapper {
+      border-radius: var(--radius);
+      overflow: hidden;
+      min-height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 30%, #f093fb 60%, #f5576c 100%);
+      position: relative;
+    }
+    .glass-preview-wrapper::before {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      top: -60px; right: -60px;
+    }
+    .glass-preview-wrapper::after {
+      content: '';
+      position: absolute;
+      width: 150px; height: 150px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      bottom: -40px; left: -40px;
+    }
+    .glass-card {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+      text-align: center;
+      color: #fff;
+      min-width: 240px;
+      transition: all 0.2s;
+    }
+    .glass-card h3 { margin-bottom: 0.5rem; font-size: 1.25rem; }
+    .glass-card p { font-size: 0.9rem; opacity: 0.9; margin-bottom: 1rem; }
+    .glass-card .glass-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.2);
+      font-size: 0.8rem;
+    }
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    @media (max-width: 600px) { .controls-grid { grid-template-columns: 1fr; } }
+    .control-row { display: flex; flex-direction: column; gap: 0.25rem; }
+    .control-row label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
+    .control-row .range-val { font-weight: 600; color: var(--accent); font-size: 0.9rem; }
+    .color-row { display: flex; align-items: center; gap: 0.75rem; }
+    .color-row input[type="color"] { width: 48px; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; background: none; padding: 2px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-neumorphism.html">Neumorphism</a>
+        <a href="/tools/css-unit-converter.html">CSS Units</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Glassmorphism CSS Generator</h1>
+          <p class="tool-subtitle">Create frosted glass UI effects with live preview. Adjust blur, opacity, and border — copy CSS instantly.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-preset="custom">Custom</button>
+            <button class="option-chip" data-preset="apple">Apple-style</button>
+            <button class="option-chip" data-preset="fluent">Windows Fluent</button>
+            <button class="option-chip" data-preset="subtle">Subtle</button>
+            <button class="option-chip" data-preset="bold">Bold</button>
+          </div>
+
+          <!-- Live Preview -->
+          <div class="glass-preview-wrapper" id="previewWrapper">
+            <div class="glass-card" id="glassCard">
+              <h3>Frosted Glass Card</h3>
+              <p>This card uses backdrop-filter to create the glassmorphism effect on any background.</p>
+              <span class="glass-badge">Live Preview</span>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="controls-grid">
+            <div class="control-row">
+              <label>Background Opacity — <span class="range-val" id="bgOpacityVal">18%</span></label>
+              <input type="range" class="slider-input" id="bgOpacity" min="0" max="80" value="18">
+            </div>
+            <div class="control-row">
+              <label>Blur Amount — <span class="range-val" id="blurVal">12px</span></label>
+              <input type="range" class="slider-input" id="blurAmount" min="0" max="40" value="12">
+            </div>
+            <div class="control-row">
+              <label>Border Opacity — <span class="range-val" id="borderOpacityVal">30%</span></label>
+              <input type="range" class="slider-input" id="borderOpacity" min="0" max="80" value="30">
+            </div>
+            <div class="control-row">
+              <label>Border Radius — <span class="range-val" id="radiusVal">16px</span></label>
+              <input type="range" class="slider-input" id="borderRadius" min="0" max="48" value="16">
+            </div>
+            <div class="control-row">
+              <label>Background Color</label>
+              <div class="color-row">
+                <input type="color" id="bgColor" value="#ffffff">
+                <span style="font-size:0.85rem;color:var(--text-secondary);">Tint color</span>
+              </div>
+            </div>
+            <div class="control-row">
+              <label>Saturation — <span class="range-val" id="satVal">100%</span></label>
+              <input type="range" class="slider-input" id="saturation" min="0" max="200" value="100">
+            </div>
+          </div>
+
+          <!-- Output -->
+          <div style="margin-top:1rem;">
+            <div class="pane-label">
+              <span>Generated CSS</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy CSS</button>
+                <button class="btn btn-sm btn-secondary" id="downloadBtn">Download .css</button>
+              </div>
+            </div>
+            <div class="code-output" id="cssOutput" style="min-height:140px;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Adjust controls above to generate glassmorphism CSS.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Glassmorphism Generator</h2>
+          <ol>
+            <li><strong>Choose a preset</strong> — start with Apple-style, Windows Fluent, Subtle, or Bold to see different looks instantly.</li>
+            <li><strong>Adjust the sliders</strong> — fine-tune blur amount, background opacity, border opacity, and border radius.</li>
+            <li><strong>Pick a tint color</strong> — click the color picker to change the glass tint from white to any color.</li>
+            <li><strong>Copy the CSS</strong> — click "Copy CSS" to grab the ready-to-use code with vendor prefixes.</li>
+          </ol>
+
+          <h2>What Is Glassmorphism?</h2>
+          <p>Glassmorphism is a visual design style that simulates frosted glass using CSS <code>backdrop-filter: blur()</code> combined with a semi-transparent background color. The effect was popularized by Apple in macOS Big Sur (2020) and Microsoft in Windows 11 Fluent Design, and has since become one of the most recognizable UI trends in modern web and app design.</p>
+          <p>The key properties that create glassmorphism are: a semi-transparent <code>background</code> using <code>rgba()</code>, <code>backdrop-filter: blur()</code> to blur what is behind the element, and a subtle <code>border</code> using a semi-transparent white or light color to simulate the edge of real glass. The <code>backdrop-filter: saturate()</code> property can also be applied to enhance the vibrancy of colors seen through the glass, mimicking the effect used in macOS.</p>
+
+          <h3>CSS Properties Used</h3>
+          <ul>
+            <li><strong>backdrop-filter: blur(Npx)</strong> — blurs the content behind the element. Values of 8–20px work well for most cards.</li>
+            <li><strong>backdrop-filter: saturate(N%)</strong> — boosts color saturation of the blurred background, adding vibrancy.</li>
+            <li><strong>background: rgba(r, g, b, alpha)</strong> — sets a semi-transparent tinted background. Keep alpha between 0.1 and 0.4 for glass-like appearance.</li>
+            <li><strong>border: 1px solid rgba(255,255,255,alpha)</strong> — a light, semi-transparent border gives the impression of a glass edge.</li>
+            <li><strong>border-radius</strong> — rounded corners reinforce the soft, modern aesthetic.</li>
+            <li><strong>-webkit-backdrop-filter</strong> — required for Safari compatibility; always include alongside the unprefixed version.</li>
+          </ul>
+
+          <h3>Design Presets Explained</h3>
+          <ul>
+            <li><strong>Apple-style</strong> — high blur (20px), low opacity (10%), vibrant saturation. Used in macOS sidebars, menus, and notifications.</li>
+            <li><strong>Windows Fluent</strong> — moderate blur (15px), slightly higher opacity (20%), inspired by Acrylic material in WinUI 3.</li>
+            <li><strong>Subtle</strong> — light blur (8px) with barely-there opacity for backgrounds that should not distract from content.</li>
+            <li><strong>Bold</strong> — strong blur (30px) and brighter tint for hero sections and splash screens where the glass effect is the focal point.</li>
+          </ul>
+
+          <h3>Browser Compatibility</h3>
+          <p><code>backdrop-filter</code> is supported in Chrome 76+, Edge 17+, Safari 9+ (with <code>-webkit-</code> prefix), and Firefox 103+. Internet Explorer does not support it. The generated CSS always includes both <code>-webkit-backdrop-filter</code> and <code>backdrop-filter</code> to maximize compatibility. For users on unsupported browsers, the element will fall back to displaying only the semi-transparent background without the blur — still readable, just without the frosted effect.</p>
+
+          <h3>Performance Considerations</h3>
+          <p>Because <code>backdrop-filter</code> triggers GPU compositing, it is more expensive than regular CSS properties. Keep these tips in mind: limit the number of elements with backdrop-filter on a single page, avoid animating the blur value directly (animate opacity instead), use <code>will-change: backdrop-filter</code> sparingly on elements you know will animate, and test on mobile devices where GPU resources are more limited. For complex layouts, consider applying glassmorphism only to the primary modal or navigation overlay, not every card.</p>
+
+          <h3>Glassmorphism vs. Neumorphism</h3>
+          <p>Glassmorphism and neumorphism are two popular modern design trends that are often confused. Glassmorphism uses transparency and blur to create the illusion of looking through frosted glass — it works best on top of colorful, vibrant backgrounds. Neumorphism (or "soft UI") creates a raised or indented plastic-like effect using carefully calculated box-shadows on flat monochrome backgrounds. Try the <a href="/tools/css-neumorphism.html">Neumorphism Generator</a> to compare both styles and decide which fits your project.</p>
+
+          <h3>When to Use Glassmorphism</h3>
+          <p>Glassmorphism works best for: modal dialogs and overlays, navigation bars (especially on sites with hero images), cards that float over a gradient or photo background, dashboard widgets, and notification toasts. Avoid using it for long-form text content, data tables, or any element where readability is critical and the background behind the element is unpredictable. For more CSS tools, explore the <a href="/tools/css-specificity.html">CSS Specificity Calculator</a> and <a href="/tools/css-unit-converter.html">CSS Unit Converter</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is glassmorphism?</button>
+            <div class="faq-answer">Glassmorphism is a UI design trend that creates a frosted glass effect using CSS backdrop-filter: blur() combined with semi-transparent backgrounds and subtle borders. It was popularized by Apple's macOS Big Sur and Microsoft's Windows 11 Fluent Design.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Which browsers support backdrop-filter?</button>
+            <div class="faq-answer">backdrop-filter is supported in Chrome 76+, Edge 17+, Safari 9+ (with -webkit- prefix), and Firefox 103+. It is not supported in Internet Explorer. Always include the -webkit-backdrop-filter prefix for Safari compatibility.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I make glassmorphism work on Firefox?</button>
+            <div class="faq-answer">Firefox added support for backdrop-filter in version 103 (released July 2022). For older Firefox versions, you can use a fallback with a slightly opaque background color. Enable it via about:config by setting layout.css.backdrop-filter.enabled to true in older builds.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does glassmorphism affect performance?</button>
+            <div class="faq-answer">backdrop-filter uses GPU compositing and can impact performance on low-end devices or when applied to many elements simultaneously. Use it sparingly — typically only on modal overlays, navigation bars, or key UI cards. Avoid using it on elements that animate frequently.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between filter: blur() and backdrop-filter: blur()?</button>
+            <div class="faq-answer">filter: blur() blurs the element itself and all its children. backdrop-filter: blur() blurs only what is behind the element, creating the frosted glass effect. For glassmorphism, you always want backdrop-filter so the element's content remains sharp while the background is blurred.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS & Design</h4>
+        <a href="/tools/css-glassmorphism.html">Glassmorphism</a>
+        <a href="/tools/css-neumorphism.html">Neumorphism</a>
+        <a href="/tools/css-easing-visualizer.html">Easing Curves</a>
+        <a href="/tools/css-specificity.html">Specificity</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-unit-converter.html">CSS Units</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var PRESETS = {
+      custom:  { bgOpacity: 18, blur: 12, borderOpacity: 30, radius: 16, bgColor: '#ffffff', sat: 100 },
+      apple:   { bgOpacity: 10, blur: 20, borderOpacity: 20, radius: 20, bgColor: '#ffffff', sat: 180 },
+      fluent:  { bgOpacity: 20, blur: 15, borderOpacity: 25, radius: 12, bgColor: '#f0f4ff', sat: 120 },
+      subtle:  { bgOpacity: 8,  blur: 8,  borderOpacity: 15, radius: 10, bgColor: '#ffffff', sat: 100 },
+      bold:    { bgOpacity: 35, blur: 30, borderOpacity: 50, radius: 24, bgColor: '#d0e8ff', sat: 150 }
+    };
+
+    var bgOpacityEl   = document.getElementById('bgOpacity');
+    var blurEl        = document.getElementById('blurAmount');
+    var borderOpacEl  = document.getElementById('borderOpacity');
+    var radiusEl      = document.getElementById('borderRadius');
+    var bgColorEl     = document.getElementById('bgColor');
+    var satEl         = document.getElementById('saturation');
+
+    var bgOpacityVal  = document.getElementById('bgOpacityVal');
+    var blurVal       = document.getElementById('blurVal');
+    var borderOpacVal = document.getElementById('borderOpacityVal');
+    var radiusVal     = document.getElementById('radiusVal');
+    var satValEl      = document.getElementById('satVal');
+
+    var glassCard  = document.getElementById('glassCard');
+    var cssOutput  = document.getElementById('cssOutput');
+    var statusBar  = document.getElementById('statusBar');
+
+    function hexToRgb(hex) {
+      var r = parseInt(hex.slice(1,3),16);
+      var g = parseInt(hex.slice(3,5),16);
+      var b = parseInt(hex.slice(5,7),16);
+      return {r:r,g:g,b:b};
+    }
+
+    function generateCSS() {
+      var bgOp = parseFloat(bgOpacityEl.value) / 100;
+      var blur = parseInt(blurEl.value);
+      var borderOp = parseFloat(borderOpacEl.value) / 100;
+      var radius = parseInt(radiusEl.value);
+      var rgb = hexToRgb(bgColorEl.value);
+      var sat = parseInt(satEl.value);
+
+      bgOpacityVal.textContent  = bgOpacityEl.value + '%';
+      blurVal.textContent       = blur + 'px';
+      borderOpacVal.textContent = borderOpacEl.value + '%';
+      radiusVal.textContent     = radius + 'px';
+      satValEl.textContent      = sat + '%';
+
+      var bg = 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', ' + bgOp.toFixed(2) + ')';
+      var border = 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', ' + borderOp.toFixed(2) + ')';
+      var bdFilter = 'blur(' + blur + 'px)' + (sat !== 100 ? ' saturate(' + sat + '%)' : '');
+
+      glassCard.style.background = bg;
+      glassCard.style.backdropFilter = bdFilter;
+      glassCard.style.webkitBackdropFilter = bdFilter;
+      glassCard.style.border = '1px solid ' + border;
+      glassCard.style.borderRadius = radius + 'px';
+      glassCard.style.boxShadow = '0 8px 32px rgba(0,0,0,0.15)';
+
+      var css = [
+        '/* Glassmorphism — generated by DevToolbox */',
+        '.glass {',
+        '  background: ' + bg + ';',
+        '  -webkit-backdrop-filter: ' + bdFilter + ';',
+        '  backdrop-filter: ' + bdFilter + ';',
+        '  border: 1px solid ' + border + ';',
+        '  border-radius: ' + radius + 'px;',
+        '  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);',
+        '}'
+      ].join('\n');
+
+      cssOutput.textContent = css;
+
+      var supported = CSS.supports && CSS.supports('backdrop-filter', 'blur(1px)');
+      statusBar.className = supported ? 'status-bar valid' : 'status-bar info';
+      statusBar.textContent = supported
+        ? 'backdrop-filter supported in this browser. CSS copied is ready to use.'
+        : 'backdrop-filter may not be fully supported here. The CSS includes -webkit- prefix for Safari.';
+
+      DT.trackTool('css-glassmorphism');
+    }
+
+    var controls = [bgOpacityEl, blurEl, borderOpacEl, radiusEl, bgColorEl, satEl];
+    var debouncedGenerate = DT.debounce(generateCSS, 80);
+    controls.forEach(function(el) { el.addEventListener('input', debouncedGenerate); });
+
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var p = PRESETS[chip.dataset.preset];
+        if (!p) return;
+        bgOpacityEl.value  = p.bgOpacity;
+        blurEl.value       = p.blur;
+        borderOpacEl.value = p.borderOpacity;
+        radiusEl.value     = p.radius;
+        bgColorEl.value    = p.bgColor;
+        satEl.value        = p.sat;
+        generateCSS();
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      if (cssOutput.textContent) DT.copyToClipboard(cssOutput.textContent, this);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      if (cssOutput.textContent) DT.downloadText(cssOutput.textContent, 'glassmorphism.css', 'text/css');
+    });
+
+    generateCSS();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Flexbox Generator — Visual Flexbox Playground | DevToolbox</title>
+  <meta name="description" content="Build CSS Flexbox layouts visually. Control flex-direction, justify-content, align-items, wrap, and individual item properties. Free, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-flexbox-generator.html">
+  <meta property="og:title" content="CSS Flexbox Generator — DevToolbox">
+  <meta property="og:description" content="Visual Flexbox playground with live preview and instant CSS output. 100% client-side, no signup.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-flexbox-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Flexbox Generator",
+    "url": "https://thisdevtool.com/tools/css-flexbox-generator.html",
+    "description": "Visual CSS Flexbox playground with live preview and instant code output.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between justify-content and align-items in Flexbox?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "justify-content controls alignment along the main axis (horizontal by default for flex-direction: row). align-items controls alignment along the cross axis (vertical by default). When you change flex-direction to column, the axes flip: justify-content controls vertical alignment and align-items controls horizontal alignment."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does flex-grow do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "flex-grow determines how much a flex item grows relative to other items when extra space is available in the container. A value of 1 means the item takes an equal share of extra space. A value of 2 means it takes twice as much extra space as items with flex-grow: 1. A value of 0 (the default) means the item does not grow at all."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I center an element with Flexbox?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The simplest way to center a single element both horizontally and vertically is: display: flex; justify-content: center; align-items: center; on the parent container. This is the most common use case for Flexbox and requires no fixed heights or absolute positioning."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is flex-basis?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "flex-basis sets the initial main-axis size of a flex item before any growing or shrinking. It works similarly to width (for row layouts) or height (for column layouts). A value of auto uses the item's content size. Setting flex-basis: 0 combined with flex-grow: 1 makes items distribute space equally regardless of their content size."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When should I use Flexbox vs CSS Grid?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use Flexbox for one-dimensional layouts — when you only need to control either a row or a column of items at a time. Navigation bars, button groups, form rows, and centering single elements are ideal Flexbox use cases. Use CSS Grid when you need to control both rows and columns simultaneously, such as page layouts, card grids, and dashboards."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .flex-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1.25rem; margin-bottom: 1rem; }
+    .flex-controls label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+    .flex-controls select, .flex-controls input[type="range"], .flex-controls input[type="number"] {
+      padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg-input, var(--bg-secondary)); color: var(--text); font-size: 0.875rem;
+    }
+    .flex-preview { min-height: 200px; border: 2px dashed var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+    .flex-preview-inner { display: flex; min-height: 160px; gap: 8px; }
+    .flex-item-block { background: #10b981; color: #fff; border-radius: 6px; padding: 0.5rem; cursor: pointer; font-size: 0.75rem; font-weight: 700; min-width: 40px; min-height: 40px; display: flex; align-items: center; justify-content: center; position: relative; transition: outline 0.1s; }
+    .flex-item-block.selected { outline: 3px solid #f59e0b; }
+    .item-props { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 0.75rem; }
+    .item-props h3 { font-size: 0.9rem; margin: 0 0 0.5rem; color: var(--text-muted); }
+    .item-props-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.5rem 1rem; }
+    .item-props-grid label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+    .item-props-grid select, .item-props-grid input { padding: 0.25rem 0.4rem; border: 1px solid var(--border); border-radius: 5px; background: var(--bg-input, var(--bg-secondary)); color: var(--text); font-size: 0.82rem; }
+    .add-remove { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .range-row { display: flex; align-items: center; gap: 0.4rem; }
+    .range-val { font-size: 0.78rem; color: var(--text-muted); min-width: 2.2rem; }
+    @media (max-width: 600px) { .flex-controls { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-grid-generator.html">CSS Grid</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+        <a href="/tools/css-gradient-generator.html">Gradients</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Flexbox Generator</h1>
+          <p class="tool-subtitle">Visually configure Flexbox container and item properties with a live preview. Copy the generated CSS instantly.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-dir="row">row</button>
+            <button class="option-chip" data-dir="column">column</button>
+            <button class="option-chip" data-dir="row-reverse">row-reverse</button>
+            <button class="option-chip" data-dir="column-reverse">column-reverse</button>
+          </div>
+
+          <div class="flex-controls">
+            <label>
+              justify-content
+              <select id="justifyContent">
+                <option value="flex-start">flex-start</option>
+                <option value="flex-end">flex-end</option>
+                <option value="center">center</option>
+                <option value="space-between">space-between</option>
+                <option value="space-around">space-around</option>
+                <option value="space-evenly" selected>space-evenly</option>
+              </select>
+            </label>
+            <label>
+              align-items
+              <select id="alignItems">
+                <option value="stretch" selected>stretch</option>
+                <option value="flex-start">flex-start</option>
+                <option value="flex-end">flex-end</option>
+                <option value="center">center</option>
+                <option value="baseline">baseline</option>
+              </select>
+            </label>
+            <label>
+              flex-wrap
+              <select id="flexWrap">
+                <option value="nowrap" selected>nowrap</option>
+                <option value="wrap">wrap</option>
+                <option value="wrap-reverse">wrap-reverse</option>
+              </select>
+            </label>
+            <label>
+              align-content
+              <select id="alignContent">
+                <option value="normal" selected>normal</option>
+                <option value="flex-start">flex-start</option>
+                <option value="flex-end">flex-end</option>
+                <option value="center">center</option>
+                <option value="space-between">space-between</option>
+                <option value="space-around">space-around</option>
+              </select>
+            </label>
+            <label>
+              Gap
+              <div class="range-row">
+                <input type="range" id="flexGap" min="0" max="48" value="8">
+                <span class="range-val" id="flexGapVal">8px</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="add-remove">
+            <button class="btn btn-sm btn-secondary" id="addItemBtn">+ Add Item</button>
+            <button class="btn btn-sm btn-secondary" id="removeItemBtn">− Remove Item</button>
+          </div>
+
+          <div class="flex-preview">
+            <div class="flex-preview-inner" id="flexPreview"></div>
+          </div>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-top:-0.5rem;margin-bottom:0.75rem;">Click an item to edit its individual properties below.</p>
+
+          <div class="item-props" id="itemProps">
+            <h3>Item <span id="selectedItemLabel">1</span> Properties</h3>
+            <div class="item-props-grid">
+              <label>flex-grow <input type="number" id="itemGrow" min="0" max="10" value="0" step="1"></label>
+              <label>flex-shrink <input type="number" id="itemShrink" min="0" max="10" value="1" step="1"></label>
+              <label>flex-basis <input type="text" id="itemBasis" value="auto" placeholder="auto / 100px"></label>
+              <label>order <input type="number" id="itemOrder" min="-5" max="10" value="0"></label>
+              <label>align-self
+                <select id="itemAlignSelf">
+                  <option value="auto" selected>auto</option>
+                  <option value="flex-start">flex-start</option>
+                  <option value="flex-end">flex-end</option>
+                  <option value="center">center</option>
+                  <option value="stretch">stretch</option>
+                  <option value="baseline">baseline</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="pane-label">
+            <span>Generated CSS</span>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Reset</button>
+            </div>
+          </div>
+          <div class="code-output" id="cssOutput" style="min-height:120px;"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Configure the Flexbox container above, then click items to adjust individual properties.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Flexbox Generator</h2>
+          <ol>
+            <li><strong>Choose a flex-direction</strong> using the chips at the top — row (horizontal), column (vertical), or reversed variants.</li>
+            <li><strong>Set container properties</strong> — justify-content, align-items, flex-wrap, and gap control how all items are arranged.</li>
+            <li><strong>Add or remove items</strong> using the buttons above the preview to see how the layout adapts.</li>
+            <li><strong>Click any item</strong> in the preview to select it and edit its individual flex-grow, flex-shrink, flex-basis, order, and align-self values.</li>
+            <li><strong>Copy or download</strong> the generated CSS for both the container and all items.</li>
+          </ol>
+
+          <h2>Understanding CSS Flexbox</h2>
+          <p>CSS Flexbox (Flexible Box Layout) is a one-dimensional layout model that distributes space along a single axis — either horizontally (row) or vertically (column). It excels at tasks that were previously painful with floats and inline-block: centering elements, distributing space between items, and making items equal height regardless of content. Since its introduction, Flexbox has become the default tool for component-level layout in virtually every CSS framework.</p>
+
+          <h3>The Main Axis and Cross Axis</h3>
+          <p>Flexbox has two axes that change based on <code>flex-direction</code>. When direction is <code>row</code> (the default), the main axis runs horizontally left to right, and the cross axis runs vertically top to bottom. When direction is <code>column</code>, these flip. <strong>justify-content</strong> always controls alignment on the main axis. <strong>align-items</strong> always controls alignment on the cross axis. Understanding this relationship is the key to mastering Flexbox — once you know which axis you are on, the behavior becomes predictable.</p>
+
+          <h3>The Three Flex Properties</h3>
+          <p>Each flex item can have three properties that control how it sizes itself: <strong>flex-grow</strong> determines how much the item expands when extra space is available. <strong>flex-shrink</strong> determines how much it contracts when there is not enough space. <strong>flex-basis</strong> sets the initial size before growing or shrinking. The shorthand <code>flex: 1</code> sets grow to 1, shrink to 1, and basis to 0%, which distributes space equally. <code>flex: auto</code> sets grow to 1, shrink to 1, and basis to <code>auto</code>, which grows items proportionally to their content size.</p>
+
+          <h3>Common Flexbox Patterns</h3>
+          <ul>
+            <li><strong>Perfect centering:</strong> <code>display: flex; justify-content: center; align-items: center;</code></li>
+            <li><strong>Sticky footer:</strong> <code>min-height: 100vh; display: flex; flex-direction: column;</code> with <code>flex: 1</code> on the main content</li>
+            <li><strong>Equal height cards:</strong> <code>display: flex; align-items: stretch;</code> (stretch is the default)</li>
+            <li><strong>Space between nav items:</strong> <code>display: flex; justify-content: space-between;</code></li>
+            <li><strong>Responsive pill row:</strong> <code>display: flex; flex-wrap: wrap; gap: 0.5rem;</code></li>
+          </ul>
+
+          <h3>align-items vs align-content</h3>
+          <p><code>align-items</code> controls how individual items are aligned on the cross axis within a single row or column. <code>align-content</code> only has an effect when items wrap onto multiple lines (when <code>flex-wrap: wrap</code> is set). It controls how the rows themselves are distributed along the cross axis. If all items fit on one line, <code>align-content</code> has no visual effect. This distinction is a common source of confusion — if your items are not wrapping, focus on <code>align-items</code>.</p>
+
+          <h3>Flexbox and Accessibility</h3>
+          <p>The <code>order</code> property lets you visually reorder flex items without changing the HTML source order. This is powerful for responsive layouts where you want a sidebar to appear below main content on mobile but to the left on desktop. However, be aware that screen readers and keyboard navigation follow the source order, not the visual order. If you change the visual order in a way that does not match the logical reading order, it can create a confusing experience for keyboard users. Always test with keyboard navigation when using <code>order</code>. For full page layout with semantic ordering, combine Flexbox for components with <a href="/tools/css-grid-generator.html">CSS Grid</a> for the page shell.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between justify-content and align-items in Flexbox?</button>
+            <div class="faq-answer">justify-content controls alignment along the main axis (horizontal by default for flex-direction: row). align-items controls alignment along the cross axis (vertical by default). When you change flex-direction to column, the axes flip: justify-content controls vertical alignment and align-items controls horizontal alignment.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does flex-grow do?</button>
+            <div class="faq-answer">flex-grow determines how much a flex item grows relative to other items when extra space is available in the container. A value of 1 means the item takes an equal share of extra space. A value of 2 means it takes twice as much extra space as items with flex-grow: 1. A value of 0 (the default) means the item does not grow at all.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I center an element with Flexbox?</button>
+            <div class="faq-answer">The simplest way to center a single element both horizontally and vertically is: display: flex; justify-content: center; align-items: center; on the parent container. This is the most common use case for Flexbox and requires no fixed heights or absolute positioning.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is flex-basis?</button>
+            <div class="faq-answer">flex-basis sets the initial main-axis size of a flex item before any growing or shrinking. It works similarly to width (for row layouts) or height (for column layouts). A value of auto uses the item's content size. Setting flex-basis: 0 combined with flex-grow: 1 makes items distribute space equally regardless of their content size.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">When should I use Flexbox vs CSS Grid?</button>
+            <div class="faq-answer">Use Flexbox for one-dimensional layouts — when you only need to control either a row or a column of items at a time. Navigation bars, button groups, form rows, and centering single elements are ideal Flexbox use cases. Use CSS Grid when you need to control both rows and columns simultaneously, such as page layouts, card grids, and dashboards.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS Tools</h4>
+        <a href="/tools/css-flexbox-generator.html">Flexbox Generator</a>
+        <a href="/tools/css-grid-generator.html">Grid Generator</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+        <a href="/tools/css-gradient-generator.html">Gradient Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-text-shadow.html">Text Shadow</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var flexDir = 'row';
+      var selectedItem = 0;
+      var itemData = [
+        { grow: 0, shrink: 1, basis: 'auto', order: 0, alignSelf: 'auto', label: '1' },
+        { grow: 0, shrink: 1, basis: 'auto', order: 0, alignSelf: 'auto', label: '2' },
+        { grow: 0, shrink: 1, basis: 'auto', order: 0, alignSelf: 'auto', label: '3' }
+      ];
+      var colors = ['#10b981','#6366f1','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#14b8a6'];
+
+      var preview = document.getElementById('flexPreview');
+      var cssOutput = document.getElementById('cssOutput');
+      var statusBar = document.getElementById('statusBar');
+      var justifyContent = document.getElementById('justifyContent');
+      var alignItems = document.getElementById('alignItems');
+      var flexWrap = document.getElementById('flexWrap');
+      var alignContent = document.getElementById('alignContent');
+      var flexGap = document.getElementById('flexGap');
+      var itemGrow = document.getElementById('itemGrow');
+      var itemShrink = document.getElementById('itemShrink');
+      var itemBasis = document.getElementById('itemBasis');
+      var itemOrder = document.getElementById('itemOrder');
+      var itemAlignSelf = document.getElementById('itemAlignSelf');
+
+      flexGap.addEventListener('input', function () {
+        document.getElementById('flexGapVal').textContent = this.value + 'px';
+        update();
+      });
+      justifyContent.addEventListener('change', update);
+      alignItems.addEventListener('change', update);
+      flexWrap.addEventListener('change', update);
+      alignContent.addEventListener('change', update);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          flexDir = chip.getAttribute('data-dir');
+          update();
+        });
+      });
+
+      function loadItemProps() {
+        var d = itemData[selectedItem];
+        itemGrow.value = d.grow;
+        itemShrink.value = d.shrink;
+        itemBasis.value = d.basis;
+        itemOrder.value = d.order;
+        itemAlignSelf.value = d.alignSelf;
+        document.getElementById('selectedItemLabel').textContent = selectedItem + 1;
+      }
+
+      function saveItemProps() {
+        var d = itemData[selectedItem];
+        d.grow = parseInt(itemGrow.value) || 0;
+        d.shrink = parseInt(itemShrink.value) || 1;
+        d.basis = itemBasis.value || 'auto';
+        d.order = parseInt(itemOrder.value) || 0;
+        d.alignSelf = itemAlignSelf.value;
+      }
+
+      [itemGrow, itemShrink, itemBasis, itemOrder, itemAlignSelf].forEach(function (el) {
+        el.addEventListener('change', function () { saveItemProps(); update(); });
+        el.addEventListener('input', DT.debounce(function () { saveItemProps(); update(); }, 150));
+      });
+
+      document.getElementById('addItemBtn').addEventListener('click', function () {
+        if (itemData.length >= 12) return;
+        itemData.push({ grow: 0, shrink: 1, basis: 'auto', order: 0, alignSelf: 'auto', label: String(itemData.length + 1) });
+        update();
+      });
+
+      document.getElementById('removeItemBtn').addEventListener('click', function () {
+        if (itemData.length <= 1) return;
+        itemData.pop();
+        if (selectedItem >= itemData.length) selectedItem = itemData.length - 1;
+        loadItemProps();
+        update();
+      });
+
+      function renderPreview() {
+        preview.style.flexDirection = flexDir;
+        preview.style.justifyContent = justifyContent.value;
+        preview.style.alignItems = alignItems.value;
+        preview.style.flexWrap = flexWrap.value;
+        preview.style.alignContent = alignContent.value;
+        preview.style.gap = flexGap.value + 'px';
+        preview.innerHTML = '';
+        itemData.forEach(function (d, i) {
+          var el = document.createElement('div');
+          el.className = 'flex-item-block' + (i === selectedItem ? ' selected' : '');
+          el.textContent = d.label;
+          el.style.background = colors[i % colors.length];
+          el.style.flexGrow = d.grow;
+          el.style.flexShrink = d.shrink;
+          el.style.flexBasis = d.basis;
+          el.style.order = d.order;
+          el.style.alignSelf = d.alignSelf === 'auto' ? '' : d.alignSelf;
+          (function (idx) {
+            el.addEventListener('click', function () {
+              selectedItem = idx;
+              loadItemProps();
+              renderPreview();
+            });
+          })(i);
+          preview.appendChild(el);
+        });
+      }
+
+      function buildCSS() {
+        var lines = ['.flex-container {'];
+        lines.push('  display: flex;');
+        lines.push('  flex-direction: ' + flexDir + ';');
+        lines.push('  justify-content: ' + justifyContent.value + ';');
+        lines.push('  align-items: ' + alignItems.value + ';');
+        lines.push('  flex-wrap: ' + flexWrap.value + ';');
+        if (alignContent.value !== 'normal') lines.push('  align-content: ' + alignContent.value + ';');
+        if (flexGap.value !== '0') lines.push('  gap: ' + flexGap.value + 'px;');
+        lines.push('}');
+
+        itemData.forEach(function (d, i) {
+          var props = [];
+          if (d.grow !== 0) props.push('  flex-grow: ' + d.grow + ';');
+          if (d.shrink !== 1) props.push('  flex-shrink: ' + d.shrink + ';');
+          if (d.basis !== 'auto') props.push('  flex-basis: ' + d.basis + ';');
+          if (d.order !== 0) props.push('  order: ' + d.order + ';');
+          if (d.alignSelf !== 'auto') props.push('  align-self: ' + d.alignSelf + ';');
+          if (props.length) {
+            lines.push('');
+            lines.push('.flex-item:nth-child(' + (i + 1) + ') {');
+            props.forEach(function (p) { lines.push(p); });
+            lines.push('}');
+          }
+        });
+
+        return lines.join('\n');
+      }
+
+      function update() {
+        renderPreview();
+        var css = buildCSS();
+        cssOutput.textContent = css;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = itemData.length + ' items — flex-direction: ' + flexDir + ' — justify: ' + justifyContent.value;
+        DT.trackTool('css-flexbox-generator');
+      }
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = cssOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = cssOutput.textContent;
+        if (text) DT.downloadText(text, 'flexbox.css', 'text/css');
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        flexDir = 'row';
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        document.querySelector('[data-dir="row"]').classList.add('active');
+        justifyContent.value = 'center';
+        alignItems.value = 'center';
+        flexWrap.value = 'wrap';
+        alignContent.value = 'normal';
+        flexGap.value = 16; document.getElementById('flexGapVal').textContent = '16px';
+        itemData = [
+          { grow: 1, shrink: 1, basis: '200px', order: 0, alignSelf: 'auto', label: 'Card 1' },
+          { grow: 1, shrink: 1, basis: '200px', order: 0, alignSelf: 'auto', label: 'Card 2' },
+          { grow: 1, shrink: 1, basis: '200px', order: 0, alignSelf: 'auto', label: 'Card 3' }
+        ];
+        selectedItem = 0;
+        loadItemProps();
+        update();
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        flexDir = 'row';
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        document.querySelector('[data-dir="row"]').classList.add('active');
+        justifyContent.value = 'space-evenly';
+        alignItems.value = 'stretch';
+        flexWrap.value = 'nowrap';
+        alignContent.value = 'normal';
+        flexGap.value = 8; document.getElementById('flexGapVal').textContent = '8px';
+        itemData = [
+          { grow: 0, shrink: 1, basis: 'auto', order: 0, alignSelf: 'auto', label: '1' },
+          { grow: 0, shrink: 1, basis: 'auto', order: 0, alignSelf: 'auto', label: '2' },
+          { grow: 0, shrink: 1, basis: 'auto', order: 0, alignSelf: 'auto', label: '3' }
+        ];
+        selectedItem = 0;
+        loadItemProps();
+        update();
+      });
+
+      loadItemProps();
+      update();
+    })();
+  </script>
+</body>
+</html>

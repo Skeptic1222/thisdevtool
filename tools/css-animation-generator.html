@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Animation Generator — Free Online Keyframe Builder | DevToolbox</title>
+  <meta name="description" content="Build CSS keyframe animations visually. Add keyframes, set timing functions, duration, delay, and see the animation play live. Copy @keyframes CSS instantly.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-animation-generator.html">
+  <meta property="og:title" content="CSS Animation Generator — DevToolbox">
+  <meta property="og:description" content="Free online CSS keyframe animation builder with live preview. Generate @keyframes and animation shorthand, then copy the CSS.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-animation-generator.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Animation Generator",
+    "url": "https://thisdevtool.com/tools/css-animation-generator.html",
+    "description": "Build CSS keyframe animations visually with live preview and copy-ready CSS output.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are CSS keyframe animations?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS keyframe animations let you animate an element through multiple states. You define what the element looks like at specific percentages of the animation timeline (keyframes), and the browser interpolates smoothly between them. They are defined with the @keyframes rule and applied with the animation property."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between CSS transitions and animations?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS transitions animate between two states (start and end) triggered by a state change like :hover. CSS animations use @keyframes to animate through multiple states automatically, without requiring a trigger. Animations can loop, alternate direction, and have delays."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are animation timing functions?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Timing functions control the speed curve of an animation. ease starts fast and slows down, linear is constant speed, ease-in starts slow, ease-out ends slow, ease-in-out starts and ends slowly. cubic-bezier() lets you create custom curves. steps() creates discrete jumps for frame-by-frame animations."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is animation-fill-mode?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Animation-fill-mode controls what styles apply before and after the animation runs. 'forwards' keeps the final keyframe styles after the animation ends. 'backwards' applies the first keyframe styles during any delay. 'both' combines both effects. 'none' (default) reverts to original styles."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I make an animation loop forever?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Set animation-iteration-count to 'infinite'. You can also use 'alternate' for animation-direction to make it play forward, then reverse, then forward again — which creates a seamless ping-pong loop. For example: animation: my-anim 2s ease-in-out infinite alternate."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .anim-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .anim-control { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; }
+    .anim-control label { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+    .anim-control label span { color: var(--accent); font-weight: 700; }
+    .anim-control input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .anim-control select { width: 100%; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-card); color: var(--text); font-size: 0.85rem; }
+    .keyframe-list { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; margin-bottom: 1rem; }
+    .keyframe-item { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.5rem; background: var(--bg-card); }
+    .keyframe-header { display: flex; align-items: center; gap: 0.5rem; }
+    .keyframe-pct { font-weight: 700; color: var(--accent); font-size: 0.9rem; min-width: 3rem; }
+    .keyframe-props { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem; }
+    .kf-prop { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .kf-prop input, .kf-prop select { padding: 0.25rem 0.4rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-card); color: var(--text); font-size: 0.8rem; width: 100%; }
+    .kf-prop input[type="color"] { height: 30px; padding: 0; cursor: pointer; }
+    .preview-stage { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .preview-scene { width: 100%; max-width: 400px; height: 120px; display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(45deg, var(--border) 0, var(--border) 1px, transparent 0, transparent 50%) 0 0 / 20px 20px; border-radius: var(--radius); overflow: hidden; }
+    #animPreview { width: 80px; height: 80px; background: var(--accent); border-radius: 8px; }
+    .play-controls { display: flex; gap: 0.5rem; }
+    .css-output-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text); white-space: pre; overflow-x: auto; min-height: 4rem; }
+    @media (max-width: 500px) { .anim-controls { grid-template-columns: 1fr; } .keyframe-props { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-transform.html">Transform</a>
+        <a href="/tools/css-border-radius.html">Border Radius</a>
+        <a href="/tools/css-filter-playground.html">Filters</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Animation Generator</h1>
+          <p class="tool-subtitle">Build @keyframes animations visually. Set timing, duration, and keyframe properties with a live preview.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="basic">Basic</button>
+            <button class="option-chip" data-mode="multi">Multi-Property</button>
+            <button class="option-chip" data-mode="presets">Presets</button>
+          </div>
+
+          <!-- Presets -->
+          <div id="presetsPanel" style="display:none;">
+            <div class="option-chips" style="flex-wrap:wrap;">
+              <button class="option-chip preset-btn" data-preset="bounce">Bounce</button>
+              <button class="option-chip preset-btn" data-preset="fadein">Fade In</button>
+              <button class="option-chip preset-btn" data-preset="slideup">Slide Up</button>
+              <button class="option-chip preset-btn" data-preset="pulse">Pulse</button>
+              <button class="option-chip preset-btn" data-preset="shake">Shake</button>
+              <button class="option-chip preset-btn" data-preset="spin">Spin</button>
+              <button class="option-chip preset-btn" data-preset="flip">Flip</button>
+            </div>
+          </div>
+
+          <!-- Animation timing controls -->
+          <div class="anim-controls">
+            <div class="anim-control">
+              <label>Duration <span id="durVal">1s</span></label>
+              <input type="range" id="durSlider" min="100" max="5000" value="1000" step="100">
+            </div>
+            <div class="anim-control">
+              <label>Delay <span id="delayVal">0s</span></label>
+              <input type="range" id="delaySlider" min="0" max="3000" value="0" step="100">
+            </div>
+            <div class="anim-control">
+              <label>Timing Function</label>
+              <select id="timingSelect">
+                <option value="ease">ease</option>
+                <option value="linear">linear</option>
+                <option value="ease-in">ease-in</option>
+                <option value="ease-out">ease-out</option>
+                <option value="ease-in-out">ease-in-out</option>
+                <option value="cubic-bezier(0.68,-0.55,0.27,1.55)">spring (overshoot)</option>
+                <option value="steps(6, end)">steps(6)</option>
+              </select>
+            </div>
+            <div class="anim-control">
+              <label>Iterations</label>
+              <select id="iterSelect">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="infinite" selected>infinite</option>
+              </select>
+            </div>
+            <div class="anim-control">
+              <label>Direction</label>
+              <select id="dirSelect">
+                <option value="normal">normal</option>
+                <option value="reverse">reverse</option>
+                <option value="alternate">alternate</option>
+                <option value="alternate-reverse">alternate-reverse</option>
+              </select>
+            </div>
+            <div class="anim-control">
+              <label>Fill Mode</label>
+              <select id="fillSelect">
+                <option value="none">none</option>
+                <option value="forwards">forwards</option>
+                <option value="backwards">backwards</option>
+                <option value="both">both</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Keyframe editor -->
+          <div class="keyframe-list">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <h3 style="font-size:0.95rem;margin:0;">Keyframes</h3>
+              <button class="btn btn-sm btn-primary" id="addKfBtn">+ Add Keyframe</button>
+            </div>
+            <div id="keyframeItems"></div>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-stage">
+            <div class="preview-scene">
+              <div id="animPreview"></div>
+            </div>
+            <div class="play-controls">
+              <button class="btn btn-sm btn-primary" id="playBtn">Play</button>
+              <button class="btn btn-sm btn-secondary" id="pauseBtn">Pause</button>
+              <button class="btn btn-sm btn-secondary" id="restartBtn">Restart</button>
+            </div>
+          </div>
+
+          <div class="pane-label" style="margin-top:1rem;">
+            <span>Generated CSS</span>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+            </div>
+          </div>
+          <div class="css-output-box" id="cssOutput"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Configure keyframes and timing to generate your animation CSS.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the CSS Animation Generator</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — Basic for transform/opacity animations, Multi-Property for color and background changes, or Presets for instant animations.</li>
+            <li><strong>Set the timing</strong> — Adjust duration, delay, easing function, iteration count, and direction using the controls.</li>
+            <li><strong>Edit keyframes</strong> — Each keyframe row represents a moment in the animation timeline. Set properties for 0%, 50%, 100%, or any custom percentage.</li>
+            <li><strong>Watch the preview</strong> — The preview box animates live. Use Play, Pause, and Restart to control it.</li>
+            <li><strong>Copy the CSS</strong> — Click Copy to grab the @keyframes rule and animation shorthand, ready to paste.</li>
+          </ol>
+
+          <h2>Understanding CSS Keyframe Animations</h2>
+          <p>CSS animations let you define smooth transitions between multiple visual states over time. Unlike transitions that animate between two states on user interaction, animations play automatically and can loop indefinitely. They are defined using the <code>@keyframes</code> rule and controlled with the <code>animation</code> shorthand property.</p>
+
+          <h3>The animation Shorthand</h3>
+          <p>The full <code>animation</code> shorthand is: <code>animation: name duration timing-function delay iteration-count direction fill-mode;</code>. For example: <code>animation: bounce 1s ease-in-out 0s infinite alternate both;</code> This applies a pre-defined <code>@keyframes bounce</code> animation with the specified timing settings.</p>
+
+          <h3>Timing Functions Explained</h3>
+          <ul>
+            <li><strong>ease</strong> — Starts quickly, decelerates. The most natural motion. Default value.</li>
+            <li><strong>linear</strong> — Constant speed. Good for spinning loaders and progress indicators.</li>
+            <li><strong>ease-in</strong> — Slow start, then accelerates. Good for exiting animations.</li>
+            <li><strong>ease-out</strong> — Fast start, decelerates. Good for entering animations.</li>
+            <li><strong>ease-in-out</strong> — Slow start and end, fast middle. Smooth and natural.</li>
+            <li><strong>cubic-bezier()</strong> — Full control over the speed curve with 4 values.</li>
+            <li><strong>steps()</strong> — Discrete jumps. Use for sprite sheet animation and typewriter effects.</li>
+          </ul>
+
+          <h3>Animation Direction and Iteration</h3>
+          <p>Setting <code>animation-direction: alternate</code> makes the animation play forward, then backward. Combined with <code>animation-iteration-count: infinite</code>, this creates seamless ping-pong loops without abrupt jumps. For a single play-through that retains the final state, use <code>animation-iteration-count: 1</code> and <code>animation-fill-mode: forwards</code>.</p>
+
+          <h3>Performance: Which Properties to Animate</h3>
+          <p>Always prefer animating <code>transform</code> and <code>opacity</code>. These are the only properties that browsers can animate on the GPU compositor thread without triggering layout or paint. Animating <code>width</code>, <code>height</code>, <code>color</code>, or <code>background-color</code> triggers paint operations and can cause frame drops on complex pages. For best performance, combine CSS animations with <code>will-change: transform, opacity</code> on elements you know will animate frequently. Explore more with the <a href="/tools/css-transform.html">CSS Transform Playground</a> or the <a href="/tools/css-filter-playground.html">CSS Filter Playground</a>.</p>
+
+          <h3>Accessible Animations</h3>
+          <p>Always wrap looping or decorative animations in a <code>prefers-reduced-motion</code> media query: <code>@media (prefers-reduced-motion: reduce) { .element { animation: none; } }</code>. Users with vestibular disorders, epilepsy, or motion sensitivity benefit greatly from this. The WCAG 2.1 success criterion 2.3.3 recommends providing a way to pause, stop, or hide any moving content that lasts more than five seconds.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What are CSS keyframe animations?</button>
+            <div class="faq-answer">CSS keyframe animations let you animate an element through multiple states. You define what the element looks like at specific percentages of the animation timeline (keyframes), and the browser interpolates smoothly between them. They are defined with the @keyframes rule and applied with the animation property.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between CSS transitions and animations?</button>
+            <div class="faq-answer">CSS transitions animate between two states triggered by a state change like :hover. CSS animations use @keyframes to animate through multiple states automatically, without requiring a trigger. Animations can loop, alternate direction, and have delays.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are animation timing functions?</button>
+            <div class="faq-answer">Timing functions control the speed curve of an animation. ease starts fast and slows down, linear is constant speed, ease-in starts slow, ease-out ends slow, ease-in-out starts and ends slowly. cubic-bezier() lets you create custom curves. steps() creates discrete jumps for frame-by-frame animations.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is animation-fill-mode?</button>
+            <div class="faq-answer">Animation-fill-mode controls what styles apply before and after the animation runs. 'forwards' keeps the final keyframe styles after the animation ends. 'backwards' applies the first keyframe styles during any delay. 'both' combines both effects. 'none' (default) reverts to original styles.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I make an animation loop forever?</button>
+            <div class="faq-answer">Set animation-iteration-count to 'infinite'. You can also use 'alternate' for animation-direction to make it play forward, then reverse — creating a seamless ping-pong loop. For example: <code>animation: my-anim 2s ease-in-out infinite alternate;</code></div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS & Design</h4>
+        <a href="/tools/css-border-radius.html">Border Radius</a>
+        <a href="/tools/css-transform.html">CSS Transform</a>
+        <a href="/tools/css-animation-generator.html">Animation Generator</a>
+        <a href="/tools/css-filter-playground.html">Filter Effects</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-clip-path.html">Clip Path Editor</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var currentMode = 'basic';
+      var animName = 'dt-anim';
+      var keyframes = [
+        { pct: 0, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' },
+        { pct: 100, translateX: 0, translateY: -40, rotate: 0, scale: 1, opacity: 1, background: '#10b981' }
+      ];
+
+      var presets = {
+        bounce: [
+          { pct: 0, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' },
+          { pct: 50, translateX: 0, translateY: -50, rotate: 0, scale: 1.1, opacity: 1, background: '#10b981' },
+          { pct: 100, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' }
+        ],
+        fadein: [
+          { pct: 0, translateX: 0, translateY: 20, rotate: 0, scale: 1, opacity: 0, background: '#10b981' },
+          { pct: 100, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' }
+        ],
+        slideup: [
+          { pct: 0, translateX: 0, translateY: 60, rotate: 0, scale: 1, opacity: 0, background: '#10b981' },
+          { pct: 100, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' }
+        ],
+        pulse: [
+          { pct: 0, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' },
+          { pct: 50, translateX: 0, translateY: 0, rotate: 0, scale: 1.15, opacity: 0.8, background: '#059669' },
+          { pct: 100, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' }
+        ],
+        shake: [
+          { pct: 0, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' },
+          { pct: 20, translateX: -10, translateY: 0, rotate: -3, scale: 1, opacity: 1, background: '#10b981' },
+          { pct: 40, translateX: 10, translateY: 0, rotate: 3, scale: 1, opacity: 1, background: '#10b981' },
+          { pct: 60, translateX: -8, translateY: 0, rotate: -2, scale: 1, opacity: 1, background: '#10b981' },
+          { pct: 80, translateX: 8, translateY: 0, rotate: 2, scale: 1, opacity: 1, background: '#10b981' },
+          { pct: 100, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' }
+        ],
+        spin: [
+          { pct: 0, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' },
+          { pct: 100, translateX: 0, translateY: 0, rotate: 360, scale: 1, opacity: 1, background: '#10b981' }
+        ],
+        flip: [
+          { pct: 0, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' },
+          { pct: 50, translateX: 0, translateY: 0, rotate: 90, scale: 0.1, opacity: 0.5, background: '#0ea5e9' },
+          { pct: 100, translateX: 0, translateY: 0, rotate: 0, scale: 1, opacity: 1, background: '#10b981' }
+        ]
+      };
+
+      var previewEl = document.getElementById('animPreview');
+      var cssOutput = document.getElementById('cssOutput');
+      var statusBar = document.getElementById('statusBar');
+      var styleTag = document.createElement('style');
+      document.head.appendChild(styleTag);
+      var isPaused = false;
+
+      function getTimingVal() {
+        var dur = document.getElementById('durSlider').value / 1000;
+        var delay = document.getElementById('delaySlider').value / 1000;
+        var timing = document.getElementById('timingSelect').value;
+        var iter = document.getElementById('iterSelect').value;
+        var dir = document.getElementById('dirSelect').value;
+        var fill = document.getElementById('fillSelect').value;
+        return { dur: dur, delay: delay, timing: timing, iter: iter, dir: dir, fill: fill };
+      }
+
+      function buildKeyframesCSS() {
+        var lines = ['@keyframes ' + animName + ' {'];
+        keyframes.forEach(function(kf) {
+          var tx = kf.translateX || 0;
+          var ty = kf.translateY || 0;
+          var rot = kf.rotate || 0;
+          var sc = kf.scale !== undefined ? kf.scale : 1;
+          var transformParts = [];
+          if (tx !== 0 || ty !== 0) transformParts.push('translate(' + tx + 'px, ' + ty + 'px)');
+          if (rot !== 0) transformParts.push('rotate(' + rot + 'deg)');
+          if (sc !== 1) transformParts.push('scale(' + sc + ')');
+          var props = [];
+          if (transformParts.length) props.push('  transform: ' + transformParts.join(' ') + ';');
+          if (kf.opacity !== undefined && kf.opacity !== 1) props.push('  opacity: ' + kf.opacity + ';');
+          if (currentMode === 'multi' && kf.background) props.push('  background: ' + kf.background + ';');
+          lines.push('  ' + kf.pct + '% {');
+          props.forEach(function(p) { lines.push('  ' + p); });
+          lines.push('  }');
+        });
+        lines.push('}');
+        return lines.join('\n');
+      }
+
+      function buildAnimCSS() {
+        var t = getTimingVal();
+        return '.element {\n  animation: ' + animName + ' ' + t.dur + 's ' + t.timing + ' ' + t.delay + 's ' + t.iter + ' ' + t.dir + ' ' + t.fill + ';\n}';
+      }
+
+      function applyAnimation() {
+        var kfCSS = buildKeyframesCSS();
+        var t = getTimingVal();
+        var animDecl = animName + ' ' + t.dur + 's ' + t.timing + ' ' + t.delay + 's ' + t.iter + ' ' + t.dir + ' ' + t.fill;
+        styleTag.textContent = kfCSS + '\n#animPreview { animation: ' + animDecl + '; }';
+        if (currentMode === 'multi' && keyframes[0] && keyframes[0].background) {
+          previewEl.style.background = keyframes[0].background;
+        }
+        if (isPaused) { previewEl.style.animationPlayState = 'paused'; }
+        cssOutput.textContent = kfCSS + '\n\n' + buildAnimCSS();
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Animation CSS generated.';
+        DT.trackTool('css-animation-generator');
+      }
+
+      function renderKeyframeItems() {
+        var container = document.getElementById('keyframeItems');
+        container.innerHTML = '';
+        keyframes.forEach(function(kf, idx) {
+          var item = document.createElement('div');
+          item.className = 'keyframe-item';
+          var header = document.createElement('div');
+          header.className = 'keyframe-header';
+          var pctLabel = document.createElement('span');
+          pctLabel.className = 'keyframe-pct';
+          pctLabel.textContent = kf.pct + '%';
+          var pctInput = document.createElement('input');
+          pctInput.type = 'number'; pctInput.min = 0; pctInput.max = 100; pctInput.value = kf.pct;
+          pctInput.style.cssText = 'width:60px;padding:0.2rem 0.4rem;border:1px solid var(--border);border-radius:4px;background:var(--bg-card);color:var(--text);font-size:0.85rem;';
+          pctInput.addEventListener('input', function() { kf.pct = parseInt(pctInput.value) || 0; pctLabel.textContent = kf.pct + '%'; applyAnimation(); });
+          var delBtn = document.createElement('button');
+          delBtn.className = 'btn btn-sm btn-secondary';
+          delBtn.textContent = 'Remove';
+          delBtn.style.marginLeft = 'auto';
+          if (idx === 0 || idx === keyframes.length - 1) delBtn.disabled = true;
+          delBtn.addEventListener('click', function() { keyframes.splice(idx, 1); renderKeyframeItems(); applyAnimation(); });
+          header.appendChild(pctLabel);
+          header.appendChild(pctInput);
+          header.appendChild(delBtn);
+          item.appendChild(header);
+
+          var props = document.createElement('div');
+          props.className = 'keyframe-props';
+
+          function addProp(label, key, type, min, max, step) {
+            var wrap = document.createElement('div'); wrap.className = 'kf-prop';
+            var lbl = document.createElement('label'); lbl.textContent = label;
+            var inp = document.createElement('input'); inp.type = type;
+            if (type === 'range') { inp.min = min; inp.max = max; inp.step = step || 1; inp.value = kf[key] !== undefined ? kf[key] : (key === 'scale' ? 1 : (key === 'opacity' ? 1 : 0)); }
+            else if (type === 'color') { inp.value = kf[key] || '#10b981'; }
+            else { inp.value = kf[key] !== undefined ? kf[key] : 0; }
+            if (type === 'range') {
+              var display = document.createElement('span');
+              display.style.cssText = 'font-size:0.75rem;color:var(--accent);margin-left:0.25rem;';
+              display.textContent = inp.value;
+              inp.addEventListener('input', function() { kf[key] = key === 'scale' || key === 'opacity' ? parseFloat(inp.value) : parseInt(inp.value); display.textContent = inp.value; applyAnimation(); });
+              lbl.appendChild(display);
+            } else {
+              inp.addEventListener('input', function() { kf[key] = inp.value; applyAnimation(); });
+            }
+            wrap.appendChild(lbl); wrap.appendChild(inp); props.appendChild(wrap);
+          }
+
+          addProp('Translate X (px)', 'translateX', 'range', -200, 200, 1);
+          addProp('Translate Y (px)', 'translateY', 'range', -200, 200, 1);
+          addProp('Rotate (deg)', 'rotate', 'range', -360, 360, 1);
+          addProp('Scale', 'scale', 'range', 0, 300, 1);
+          addProp('Opacity', 'opacity', 'range', 0, 100, 1);
+          if (currentMode === 'multi') {
+            addProp('Background', 'background', 'color');
+          }
+          item.appendChild(props);
+          container.appendChild(item);
+        });
+      }
+
+      // Scale and opacity need to be treated differently (0-300 range = 0-3 for scale, 0-100 = 0-1 for opacity)
+      // Patch kf getters so slider value maps correctly
+      function fixScaleOpacity() {
+        keyframes.forEach(function(kf) {
+          if (typeof kf.scale === 'number' && kf.scale > 3) kf.scale = kf.scale / 100;
+          if (typeof kf.opacity === 'number' && kf.opacity > 1) kf.opacity = kf.opacity / 100;
+        });
+      }
+
+      document.getElementById('addKfBtn').addEventListener('click', function() {
+        var pct = 50;
+        keyframes.push({ pct: pct, translateX: 0, translateY: -30, rotate: 0, scale: 1, opacity: 1, background: '#10b981' });
+        keyframes.sort(function(a, b) { return a.pct - b.pct; });
+        renderKeyframeItems();
+        applyAnimation();
+      });
+
+      // Timing controls
+      document.getElementById('durSlider').addEventListener('input', function() {
+        document.getElementById('durVal').textContent = (this.value / 1000).toFixed(1) + 's';
+        applyAnimation();
+      });
+      document.getElementById('delaySlider').addEventListener('input', function() {
+        document.getElementById('delayVal').textContent = (this.value / 1000).toFixed(1) + 's';
+        applyAnimation();
+      });
+      ['timingSelect','iterSelect','dirSelect','fillSelect'].forEach(function(id) {
+        document.getElementById(id).addEventListener('change', applyAnimation);
+      });
+
+      // Mode chips
+      document.querySelectorAll('.option-chip[data-mode]').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('.option-chip[data-mode]').forEach(function(c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          document.getElementById('presetsPanel').style.display = currentMode === 'presets' ? '' : 'none';
+          renderKeyframeItems();
+          applyAnimation();
+        });
+      });
+
+      // Presets
+      document.querySelectorAll('.preset-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var p = presets[btn.getAttribute('data-preset')];
+          if (p) { keyframes = JSON.parse(JSON.stringify(p)); renderKeyframeItems(); applyAnimation(); }
+        });
+      });
+
+      // Play/Pause/Restart
+      document.getElementById('playBtn').addEventListener('click', function() {
+        isPaused = false;
+        previewEl.style.animationPlayState = 'running';
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Animation playing.';
+      });
+      document.getElementById('pauseBtn').addEventListener('click', function() {
+        isPaused = true;
+        previewEl.style.animationPlayState = 'paused';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Animation paused.';
+      });
+      document.getElementById('restartBtn').addEventListener('click', function() {
+        isPaused = false;
+        previewEl.style.animation = 'none';
+        previewEl.offsetHeight; // reflow
+        applyAnimation();
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function() {
+        DT.copyToClipboard(cssOutput.textContent, this);
+      });
+      document.getElementById('downloadBtn').addEventListener('click', function() {
+        DT.downloadText(cssOutput.textContent, 'animation.css', 'text/css');
+      });
+
+      // Init
+      renderKeyframeItems();
+      applyAnimation();
+    })();
+  </script>
+</body>
+</html>

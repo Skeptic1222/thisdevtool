@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Gradient Generator — Free Linear, Radial & Conic | DevToolbox</title>
+  <meta name="description" content="Generate CSS gradients visually. Linear, radial, conic, and repeating gradients with multiple color stops. 8+ presets. Copy CSS instantly. No signup required.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-gradient-generator.html">
+  <meta property="og:title" content="CSS Gradient Generator — DevToolbox">
+  <meta property="og:description" content="Build linear, radial, conic and repeating CSS gradients visually with a live preview and preset gallery. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-gradient-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Gradient Generator",
+    "url": "https://thisdevtool.com/tools/css-gradient-generator.html",
+    "description": "Generate linear, radial, conic, and repeating CSS gradients visually with color stops, live preview, and preset gallery.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between linear-gradient and radial-gradient?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "linear-gradient transitions colors along a straight line at a specified angle. radial-gradient transitions colors outward from a center point in a circular or elliptical shape. conic-gradient transitions colors around a center point like a color wheel or pie chart."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I control the position of color stops in a CSS gradient?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Add a percentage or length value after the color in the gradient function. For example: linear-gradient(to right, red 0%, blue 50%, green 100%). Without explicit positions, browsers distribute stops evenly. You can also use two stops at the same position to create a hard color transition with no fade."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use CSS gradients as backgrounds for text?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Use background: linear-gradient(...), then add background-clip: text and -webkit-background-clip: text, and set color: transparent. This clips the gradient to the text shape, creating a gradient-filled text effect that works in all modern browsers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a repeating gradient?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "repeating-linear-gradient and repeating-radial-gradient tile the gradient pattern infinitely. If your stops don't cover the full 0% to 100% range, the pattern repeats. For example, repeating-linear-gradient(45deg, red 0%, blue 20%) creates diagonal stripes by repeating the red-to-blue pattern every 20 percentage points."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are CSS gradients better than gradient images?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS gradients are almost always better than image files for gradient backgrounds. They are resolution-independent (sharp on any screen density), zero file size, easily updated via CSS without touching images, and can be animated or transitioned with CSS. The only case for a gradient image is when you need a very complex photographic gradient or noise texture that CSS cannot replicate."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .gradient-preview { width: 100%; height: 160px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1rem; transition: background 0.15s; }
+    .gradient-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem 1.25rem; margin-bottom: 1rem; }
+    .gradient-controls label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.83rem; font-weight: 600; color: var(--text-muted); }
+    .gradient-controls select, .gradient-controls input[type="number"], .gradient-controls input[type="range"] {
+      padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 6px;
+      background: var(--bg-input, var(--bg-secondary)); color: var(--text); font-size: 0.875rem;
+    }
+    .stops-section { margin-bottom: 1rem; }
+    .stops-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .stop-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.4rem 0.75rem; border-radius: 6px; background: var(--bg-secondary); border: 1px solid var(--border); margin-bottom: 0.35rem; }
+    .stop-row input[type="color"] { width: 36px; height: 32px; border-radius: 5px; border: 1px solid var(--border); cursor: pointer; flex-shrink: 0; }
+    .stop-row input[type="range"] { flex: 1; }
+    .stop-row .stop-pos { font-size: 0.78rem; color: var(--text-muted); min-width: 2.8rem; text-align: right; }
+    .stop-row .del-btn { font-size: 0.8rem; color: var(--text-muted); cursor: pointer; flex-shrink: 0; }
+    .stop-row .del-btn:hover { color: #ef4444; }
+    .preset-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }
+    .preset-swatch { height: 56px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s, transform 0.1s; }
+    .preset-swatch:hover { border-color: #10b981; transform: scale(1.04); }
+    .preset-name { font-size: 0.7rem; color: var(--text-muted); text-align: center; margin-top: 0.2rem; }
+    .range-row { display: flex; align-items: center; gap: 0.4rem; }
+    .range-val { font-size: 0.78rem; color: var(--text-muted); min-width: 2.5rem; text-align: right; }
+    @media (max-width: 600px) { .gradient-controls { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+        <a href="/tools/css-text-shadow.html">Text Shadow</a>
+        <a href="/tools/css-grid-generator.html">CSS Grid</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Gradient Generator</h1>
+          <p class="tool-subtitle">Build linear, radial, conic, and repeating CSS gradients visually. Add color stops, pick presets, and copy the CSS instantly.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-type="linear">Linear</button>
+            <button class="option-chip" data-type="radial">Radial</button>
+            <button class="option-chip" data-type="conic">Conic</button>
+            <button class="option-chip" data-type="repeating-linear">Repeating</button>
+          </div>
+
+          <div class="gradient-preview" id="gradientPreview"></div>
+
+          <div class="gradient-controls" id="gradientControls">
+            <label id="angleLabel">
+              Angle (deg)
+              <div class="range-row">
+                <input type="range" id="gradientAngle" min="0" max="360" value="135">
+                <span class="range-val" id="gradientAngleVal">135°</span>
+              </div>
+            </label>
+            <label id="radialShapeLabel" style="display:none;">
+              Shape
+              <select id="radialShape">
+                <option value="ellipse" selected>ellipse</option>
+                <option value="circle">circle</option>
+              </select>
+            </label>
+            <label id="radialPosLabel" style="display:none;">
+              Center Position
+              <select id="radialPos">
+                <option value="center" selected>center</option>
+                <option value="top left">top left</option>
+                <option value="top right">top right</option>
+                <option value="bottom left">bottom left</option>
+                <option value="bottom right">bottom right</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="stops-section">
+            <div class="stops-header">
+              <strong style="font-size:0.85rem;">Color Stops</strong>
+              <button class="btn btn-sm btn-secondary" id="addStopBtn">+ Add Stop</button>
+            </div>
+            <div id="stopsList"></div>
+          </div>
+
+          <div>
+            <strong style="font-size:0.85rem;display:block;margin-bottom:0.5rem;">Preset Gallery</strong>
+            <div class="preset-gallery" id="presetGallery"></div>
+          </div>
+
+          <div class="pane-label" style="margin-top:0.5rem;">
+            <span>Generated CSS</span>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Reset</button>
+            </div>
+          </div>
+          <div class="code-output" id="cssOutput" style="min-height:60px;"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Add or adjust color stops to build your gradient.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the CSS Gradient Generator</h2>
+          <ol>
+            <li><strong>Choose a gradient type</strong> — Linear for directional fades, Radial for circular bursts, Conic for color wheel effects, or Repeating for tiled patterns.</li>
+            <li><strong>Adjust the angle or position</strong> — for linear gradients, drag the angle slider. For radial, choose the shape and center position.</li>
+            <li><strong>Edit color stops</strong> — change the color using the color picker and drag the slider to set the stop position (0% to 100%). Click "+ Add Stop" to add more stops.</li>
+            <li><strong>Browse presets</strong> — click any swatch in the preset gallery to load a curated gradient instantly.</li>
+            <li><strong>Copy or download</strong> the CSS and paste it into your stylesheet as a <code>background</code> or <code>background-image</code> property.</li>
+          </ol>
+
+          <h2>Understanding CSS Gradients</h2>
+          <p>CSS gradients are images generated by the browser using mathematical color transitions. They can be used anywhere a CSS image is valid: as a <code>background</code>, a <code>background-image</code>, a <code>border-image</code>, or even a <code>list-style-image</code>. Because they are resolution-independent, they look sharp on every screen density — from standard monitors to 4K displays and Retina devices — without any extra files or image assets.</p>
+
+          <h3>Linear Gradients</h3>
+          <p><code>linear-gradient()</code> creates a color transition along a straight line. The direction can be specified as a keyword (<code>to right</code>, <code>to bottom right</code>) or as a precise degree angle. Angles work like a clock: 0deg points up, 90deg points right, 180deg points down. The default direction when no angle is specified is <code>to bottom</code> (180deg). Linear gradients are the most common type, used for button backgrounds, section dividers, header banners, and card overlays.</p>
+
+          <h3>Radial Gradients</h3>
+          <p><code>radial-gradient()</code> radiates colors outward from a center point. The shape can be a circle (equal radius in all directions) or an ellipse (different horizontal and vertical radii). The center position can be set using CSS position keywords or pixel/percentage values. Radial gradients are used for spotlight effects, vignettes, glowing button backgrounds, and circular badge designs.</p>
+
+          <h3>Conic Gradients</h3>
+          <p><code>conic-gradient()</code> rotates colors around a center point like a color wheel or pie chart. Unlike radial gradients, the transition happens along the angular axis, not the radial axis. Conic gradients are commonly used for pie charts (using hard stops), color wheels for design tools, progress indicator backgrounds, and decorative patterns. They are also composable with <code>radial-gradient()</code> to create donut chart effects.</p>
+
+          <h3>Repeating Gradients for Patterns</h3>
+          <p><code>repeating-linear-gradient()</code> and <code>repeating-radial-gradient()</code> tile the gradient pattern when the stops do not cover the full 0%–100% range. This makes them ideal for creating CSS-only patterns: diagonal stripes, checkerboards (by layering multiple gradients), and radiating rings. A striped background can be created with just two stops: <code>repeating-linear-gradient(45deg, #000 0%, #000 10%, transparent 10%, transparent 20%)</code>.</p>
+
+          <h3>Multiple Gradients and Layering</h3>
+          <p>CSS background properties accept multiple values separated by commas. This means you can layer multiple gradients on top of each other. For example, combining a radial gradient spotlight with a linear gradient base, or overlaying diagonal stripe patterns. Transparency is key — gradients with transparent stops let lower layers show through. This technique produces complex backgrounds without any image files. For more CSS design tools, explore the <a href="/tools/css-box-shadow.html">Box Shadow Generator</a> and <a href="/tools/css-grid-generator.html">CSS Grid Generator</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between linear-gradient and radial-gradient?</button>
+            <div class="faq-answer">linear-gradient transitions colors along a straight line at a specified angle. radial-gradient transitions colors outward from a center point in a circular or elliptical shape. conic-gradient transitions colors around a center point like a color wheel or pie chart.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I control the position of color stops in a CSS gradient?</button>
+            <div class="faq-answer">Add a percentage or length value after the color in the gradient function. For example: linear-gradient(to right, red 0%, blue 50%, green 100%). Without explicit positions, browsers distribute stops evenly. You can also use two stops at the same position to create a hard color transition with no fade.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use CSS gradients as backgrounds for text?</button>
+            <div class="faq-answer">Yes. Use background: linear-gradient(...), then add background-clip: text and -webkit-background-clip: text, and set color: transparent. This clips the gradient to the text shape, creating a gradient-filled text effect that works in all modern browsers.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a repeating gradient?</button>
+            <div class="faq-answer">repeating-linear-gradient and repeating-radial-gradient tile the gradient pattern infinitely. If your stops don't cover the full 0% to 100% range, the pattern repeats. For example, repeating-linear-gradient(45deg, red 0%, blue 20%) creates diagonal stripes by repeating the red-to-blue pattern every 20 percentage points.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Are CSS gradients better than gradient images?</button>
+            <div class="faq-answer">CSS gradients are almost always better than image files for gradient backgrounds. They are resolution-independent (sharp on any screen density), zero file size, easily updated via CSS without touching images, and can be animated or transitioned with CSS. The only case for a gradient image is when you need a very complex photographic gradient or noise texture that CSS cannot replicate.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS Tools</h4>
+        <a href="/tools/css-gradient-generator.html">Gradient Generator</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+        <a href="/tools/css-text-shadow.html">Text Shadow</a>
+        <a href="/tools/css-grid-generator.html">Grid Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-flexbox-generator.html">Flexbox Generator</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var gradType = 'linear';
+
+      var PRESETS = [
+        { name:'Sunrise', type:'linear', angle:135, stops:[{c:'#f97316',p:0},{c:'#facc15',p:50},{c:'#fb923c',p:100}] },
+        { name:'Ocean', type:'linear', angle:160, stops:[{c:'#0ea5e9',p:0},{c:'#2563eb',p:50},{c:'#1e3a8a',p:100}] },
+        { name:'Forest', type:'linear', angle:135, stops:[{c:'#6ee7b7',p:0},{c:'#059669',p:50},{c:'#064e3b',p:100}] },
+        { name:'Purple Haze', type:'linear', angle:135, stops:[{c:'#c084fc',p:0},{c:'#8b5cf6',p:50},{c:'#6d28d9',p:100}] },
+        { name:'Peach', type:'linear', angle:120, stops:[{c:'#fed7aa',p:0},{c:'#f97316',p:100}] },
+        { name:'Night Sky', type:'linear', angle:180, stops:[{c:'#0f0c29',p:0},{c:'#302b63',p:50},{c:'#24243e',p:100}] },
+        { name:'Emerald', type:'linear', angle:90, stops:[{c:'#10b981',p:0},{c:'#6ee7b7',p:100}] },
+        { name:'Rose Gold', type:'linear', angle:135, stops:[{c:'#fda4af',p:0},{c:'#fb7185',p:40},{c:'#e11d48',p:100}] },
+        { name:'Radial Glow', type:'radial', shape:'ellipse', pos:'center', stops:[{c:'#7c3aed',p:0},{c:'#1e1b4b',p:100}] },
+        { name:'Conic Demo', type:'conic', angle:0, stops:[{c:'#10b981',p:0},{c:'#6366f1',p:33},{c:'#f59e0b',p:66},{c:'#10b981',p:100}] }
+      ];
+
+      var stops = [
+        { c:'#667eea', p:0 },
+        { c:'#764ba2', p:100 }
+      ];
+
+      var gradientPreview = document.getElementById('gradientPreview');
+      var cssOutput = document.getElementById('cssOutput');
+      var statusBar = document.getElementById('statusBar');
+      var gradientAngle = document.getElementById('gradientAngle');
+      var radialShape = document.getElementById('radialShape');
+      var radialPos = document.getElementById('radialPos');
+
+      gradientAngle.addEventListener('input', function () {
+        document.getElementById('gradientAngleVal').textContent = this.value + '°';
+        update();
+      });
+      radialShape.addEventListener('change', update);
+      radialPos.addEventListener('change', update);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          gradType = chip.getAttribute('data-type');
+          updateControls();
+          update();
+        });
+      });
+
+      function updateControls() {
+        var angleLabel = document.getElementById('angleLabel');
+        var radialShapeLabel = document.getElementById('radialShapeLabel');
+        var radialPosLabel = document.getElementById('radialPosLabel');
+        if (gradType === 'radial') {
+          angleLabel.style.display = 'none';
+          radialShapeLabel.style.display = '';
+          radialPosLabel.style.display = '';
+        } else if (gradType === 'conic') {
+          angleLabel.style.display = '';
+          radialShapeLabel.style.display = 'none';
+          radialPosLabel.style.display = '';
+        } else {
+          angleLabel.style.display = '';
+          radialShapeLabel.style.display = 'none';
+          radialPosLabel.style.display = 'none';
+        }
+      }
+
+      function buildGradientValue() {
+        var stopStr = stops.map(function (s) { return s.c + ' ' + s.p + '%'; }).join(', ');
+        if (gradType === 'linear' || gradType === 'repeating-linear') {
+          return (gradType === 'repeating-linear' ? 'repeating-linear-gradient' : 'linear-gradient') + '(' + gradientAngle.value + 'deg, ' + stopStr + ')';
+        } else if (gradType === 'radial') {
+          return 'radial-gradient(' + radialShape.value + ' at ' + radialPos.value + ', ' + stopStr + ')';
+        } else if (gradType === 'conic') {
+          return 'conic-gradient(from ' + gradientAngle.value + 'deg at ' + (radialPos.value || 'center') + ', ' + stopStr + ')';
+        }
+        return 'linear-gradient(135deg, ' + stopStr + ')';
+      }
+
+      function buildCSS() {
+        var val = buildGradientValue();
+        return '.element {\n  background: ' + val + ';\n  background-image: ' + val + ';\n}';
+      }
+
+      function renderStops() {
+        var list = document.getElementById('stopsList');
+        list.innerHTML = '';
+        stops.forEach(function (s, i) {
+          var row = document.createElement('div');
+          row.className = 'stop-row';
+          var colorInput = document.createElement('input');
+          colorInput.type = 'color';
+          colorInput.value = s.c;
+          var posInput = document.createElement('input');
+          posInput.type = 'range';
+          posInput.min = 0;
+          posInput.max = 100;
+          posInput.value = s.p;
+          var posLabel = document.createElement('span');
+          posLabel.className = 'stop-pos';
+          posLabel.textContent = s.p + '%';
+          var del = document.createElement('span');
+          del.className = 'del-btn';
+          del.textContent = '✕';
+          (function (idx) {
+            colorInput.addEventListener('input', function () {
+              stops[idx].c = this.value;
+              update();
+            });
+            posInput.addEventListener('input', function () {
+              stops[idx].p = parseInt(this.value);
+              posLabel.textContent = this.value + '%';
+              update();
+            });
+            del.addEventListener('click', function () {
+              if (stops.length <= 2) return;
+              stops.splice(idx, 1);
+              update();
+            });
+          })(i);
+          row.appendChild(colorInput);
+          row.appendChild(posInput);
+          row.appendChild(posLabel);
+          row.appendChild(del);
+          list.appendChild(row);
+        });
+      }
+
+      function update() {
+        renderStops();
+        var gradVal = buildGradientValue();
+        gradientPreview.style.background = gradVal;
+        var css = buildCSS();
+        cssOutput.textContent = css;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = stops.length + ' color stops — type: ' + gradType + (gradType === 'linear' || gradType === 'repeating-linear' ? ' — ' + gradientAngle.value + '°' : '');
+        DT.trackTool('css-gradient-generator');
+      }
+
+      document.getElementById('addStopBtn').addEventListener('click', function () {
+        if (stops.length >= 8) return;
+        var mid = Math.round((stops[stops.length - 2].p + stops[stops.length - 1].p) / 2);
+        stops.splice(stops.length - 1, 0, { c:'#10b981', p:mid });
+        update();
+      });
+
+      function buildPresetGallery() {
+        var gallery = document.getElementById('presetGallery');
+        gallery.innerHTML = '';
+        PRESETS.forEach(function (p) {
+          var wrap = document.createElement('div');
+          var swatch = document.createElement('div');
+          swatch.className = 'preset-swatch';
+          var stopStr = p.stops.map(function (s) { return s.c + ' ' + s.p + '%'; }).join(', ');
+          var grad;
+          if (p.type === 'radial') {
+            grad = 'radial-gradient(' + (p.shape||'ellipse') + ' at ' + (p.pos||'center') + ', ' + stopStr + ')';
+          } else if (p.type === 'conic') {
+            grad = 'conic-gradient(from ' + (p.angle||0) + 'deg, ' + stopStr + ')';
+          } else {
+            grad = 'linear-gradient(' + (p.angle||135) + 'deg, ' + stopStr + ')';
+          }
+          swatch.style.background = grad;
+          var name = document.createElement('div');
+          name.className = 'preset-name';
+          name.textContent = p.name;
+          (function (preset) {
+            swatch.addEventListener('click', function () {
+              stops = JSON.parse(JSON.stringify(preset.stops));
+              if (preset.type === 'linear') gradType = 'linear';
+              else if (preset.type === 'radial') gradType = 'radial';
+              else if (preset.type === 'conic') gradType = 'conic';
+              if (preset.angle !== undefined) { gradientAngle.value = preset.angle; document.getElementById('gradientAngleVal').textContent = preset.angle + '°'; }
+              if (preset.shape) radialShape.value = preset.shape;
+              if (preset.pos) radialPos.value = preset.pos;
+              document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+              var chipSel = document.querySelector('[data-type="' + gradType + '"]');
+              if (chipSel) chipSel.classList.add('active');
+              updateControls();
+              update();
+            });
+          })(p);
+          wrap.appendChild(swatch);
+          wrap.appendChild(name);
+          gallery.appendChild(wrap);
+        });
+      }
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = cssOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = cssOutput.textContent;
+        if (text) DT.downloadText(text, 'gradient.css', 'text/css');
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        var p = PRESETS[1]; // Ocean
+        stops = JSON.parse(JSON.stringify(p.stops));
+        gradType = 'linear';
+        gradientAngle.value = p.angle;
+        document.getElementById('gradientAngleVal').textContent = p.angle + '°';
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        document.querySelector('[data-type="linear"]').classList.add('active');
+        updateControls();
+        update();
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        stops = [{ c:'#667eea', p:0 }, { c:'#764ba2', p:100 }];
+        gradType = 'linear';
+        gradientAngle.value = 135;
+        document.getElementById('gradientAngleVal').textContent = '135°';
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        document.querySelector('[data-type="linear"]').classList.add('active');
+        updateControls();
+        update();
+      });
+
+      buildPresetGallery();
+      updateControls();
+      update();
+    })();
+  </script>
+</body>
+</html>

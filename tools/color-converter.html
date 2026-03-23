@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Color Converter — HEX, RGB, HSL, HSV, CMYK — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert colors between HEX, RGB, RGBA, HSL, HSLA, HSV, and CMYK instantly. View color harmonies, blend two colors, find CSS named colors. Free, browser-based.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/color-converter.html">
+  <meta property="og:title" content="Color Converter — DevToolbox">
+  <meta property="og:description" content="Universal color converter: HEX, RGB, HSL, HSV, CMYK, color harmonies, blend, color blindness simulation. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/color-converter.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Color Converter",
+    "url": "https://thisdevtool.com/tools/color-converter.html",
+    "description": "Convert between HEX, RGB, HSL, HSV, CMYK. View harmonies, blend colors, simulate color blindness. Free, 100% client-side.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between RGB and HEX color codes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "RGB and HEX represent the same color space. RGB expresses colors as three decimal values (0–255) for red, green, and blue: rgb(16, 185, 129). HEX expresses the same values in base-16 (hexadecimal): #10b981. Both describe the same color — HEX is just a more compact notation used in CSS and HTML."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is HSL color?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "HSL stands for Hue, Saturation, and Lightness. Hue is the color angle on a 360-degree wheel (0=red, 120=green, 240=blue). Saturation is how vivid the color is (0%=gray, 100%=full color). Lightness is how light or dark it is (0%=black, 50%=pure color, 100%=white). HSL is more intuitive for designing color variations than RGB."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is CMYK used for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CMYK (Cyan, Magenta, Yellow, Key/Black) is the color model used in color printing. Printers mix ink in these four colors to produce a full range of colors on paper. Screen colors (RGB/HEX) are additive (combining light), while CMYK is subtractive (combining ink). Designs intended for print need to be converted to CMYK to ensure accurate color reproduction."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are color harmonies?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Color harmonies are predefined color combinations based on their positions on the color wheel. Complementary colors are opposite each other (maximum contrast). Analogous colors are adjacent (harmonious and natural). Triadic colors are evenly spaced by 120 degrees. Split-complementary uses a color and the two colors adjacent to its complement. Tetradic uses four colors at 90-degree intervals."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is color blindness simulation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Color blindness simulation shows how a color appears to people with color vision deficiencies. Protanopia (red-blind) and deuteranopia (green-blind) are the most common forms, affecting about 8% of males. Tritanopia (blue-blind) is rare. Designers use simulation to ensure their color choices remain distinguishable for all users, which is a requirement under WCAG accessibility guidelines."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .color-swatch-main {
+      width: 100%;
+      height: 100px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      transition: background-color 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .color-input-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .color-input-row input[type="text"] {
+      flex: 1;
+      min-width: 180px;
+      padding: 0.6rem 0.9rem;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 1rem;
+    }
+    .color-input-row input[type="text"]:focus { border-color: var(--accent); outline: none; }
+    .color-input-row input[type="color"] {
+      width: 48px;
+      height: 42px;
+      padding: 2px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      background: var(--bg-card);
+    }
+    .format-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+    .format-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.75rem;
+      gap: 0.5rem;
+    }
+    .format-row .f-label { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); min-width: 50px; }
+    .format-row .f-value { font-family: var(--font-mono); font-size: 0.82rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .format-row .f-copy { flex-shrink: 0; }
+    .harmony-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .harmony-swatch {
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .harmony-swatch:hover { border-color: var(--accent); }
+    .harmony-swatch .hs-color { height: 56px; }
+    .harmony-swatch .hs-label { font-size: 0.68rem; text-align: center; padding: 0.25rem; background: var(--bg-secondary); color: var(--text-secondary); }
+    .harmony-section { margin-top: 1rem; }
+    .harmony-section h4 { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; font-weight: 600; }
+    .blend-row { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; margin-top: 1rem; }
+    .blend-swatch { width: 48px; height: 48px; border-radius: var(--radius); border: 1px solid var(--border); }
+    .blend-preview {
+      flex: 1;
+      height: 60px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      min-width: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .blend-field { display: flex; flex-direction: column; gap: 0.3rem; }
+    .blend-field label { font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; }
+    .blend-field input[type="color"] {
+      width: 48px; height: 38px; padding: 2px;
+      border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; background: var(--bg-card);
+    }
+    .blend-field input[type="range"] { width: 140px; accent-color: var(--accent); }
+    .cb-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    .cb-card { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+    .cb-swatch { height: 56px; }
+    .cb-label { font-size: 0.78rem; padding: 0.4rem 0.6rem; background: var(--bg-secondary); color: var(--text-secondary); font-weight: 600; }
+    @media (max-width: 600px) {
+      .format-grid { grid-template-columns: 1fr; }
+      .cb-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/color-contrast-checker.html">Contrast Checker</a>
+        <a href="/tools/color-palette-generator.html">Palette Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Color Converter</h1>
+          <p class="tool-subtitle">Convert any color between HEX, RGB, HSL, HSV, and CMYK. Explore harmonies, blend colors, and simulate color blindness.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="convert">Convert</button>
+            <button class="option-chip" data-mode="harmonies">Harmonies</button>
+            <button class="option-chip" data-mode="blend">Blend</button>
+            <button class="option-chip" data-mode="blindness">Color Blindness</button>
+          </div>
+
+          <!-- Color input row (always visible) -->
+          <div class="color-input-row">
+            <input type="color" id="colorPicker" value="#10b981" title="Use color picker">
+            <input type="text" id="colorInput" value="#10b981" placeholder="Enter HEX, rgb(), hsl(), or hsv()..." autocomplete="off" spellcheck="false">
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+          </div>
+
+          <!-- Main swatch -->
+          <div class="color-swatch-main" id="mainSwatch" title="Click to copy HEX"></div>
+
+          <!-- Convert Mode -->
+          <div id="mode-convert">
+            <div class="format-grid" id="formatGrid"></div>
+          </div>
+
+          <!-- Harmonies Mode -->
+          <div id="mode-harmonies" style="display:none;">
+            <div class="harmony-section">
+              <h4>Complementary</h4>
+              <div class="harmony-grid" id="hComplement"></div>
+            </div>
+            <div class="harmony-section">
+              <h4>Analogous</h4>
+              <div class="harmony-grid" id="hAnalogous"></div>
+            </div>
+            <div class="harmony-section">
+              <h4>Triadic</h4>
+              <div class="harmony-grid" id="hTriadic"></div>
+            </div>
+            <div class="harmony-section">
+              <h4>Split-Complementary</h4>
+              <div class="harmony-grid" id="hSplitComp"></div>
+            </div>
+            <div class="harmony-section">
+              <h4>Tetradic</h4>
+              <div class="harmony-grid" id="hTetradic"></div>
+            </div>
+          </div>
+
+          <!-- Blend Mode -->
+          <div id="mode-blend" style="display:none;">
+            <div class="blend-row">
+              <div class="blend-field">
+                <label>Color A</label>
+                <input type="color" id="blendColorA" value="#10b981">
+              </div>
+              <div class="blend-field">
+                <label>Color B</label>
+                <input type="color" id="blendColorB" value="#6366f1">
+              </div>
+              <div class="blend-field" style="flex:1;">
+                <label>Mix: <span id="blendRatioLabel">50%</span> A / <span id="blendRatioBLabel">50%</span> B</label>
+                <input type="range" id="blendRatio" min="0" max="100" value="50">
+              </div>
+            </div>
+            <div class="blend-preview" id="blendPreview" style="margin-top:1rem;color:#fff;">
+              Blended Color
+            </div>
+            <div class="format-grid" id="blendFormatGrid" style="margin-top:0.75rem;"></div>
+          </div>
+
+          <!-- Color Blindness Mode -->
+          <div id="mode-blindness" style="display:none;">
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.75rem;">Approximate simulation of how this color appears under different types of color vision deficiency.</p>
+            <div class="cb-grid" id="cbGrid"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter any color in HEX, rgb(), hsl(), or hsv() format to begin.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Color Converter</h2>
+          <ol>
+            <li><strong>Enter a color</strong> — Type any HEX (#10b981), RGB (rgb(16,185,129)), or HSL (hsl(160,84%,39%)) value, or use the color picker.</li>
+            <li><strong>View all formats</strong> — The Convert tab shows HEX, RGB, RGBA, HSL, HSLA, HSV, CMYK, and the nearest CSS named color simultaneously.</li>
+            <li><strong>Explore harmonies</strong> — The Harmonies tab shows complementary, analogous, triadic, split-complementary, and tetradic color combinations.</li>
+            <li><strong>Blend colors</strong> — Mix two colors at any ratio to find a middle value.</li>
+            <li><strong>Simulate color blindness</strong> — See how the color looks under protanopia, deuteranopia, and tritanopia.</li>
+          </ol>
+
+          <h2>Color Format Reference</h2>
+          <p>Understanding the different color formats used in design and development is essential for working across screens, print, and code:</p>
+
+          <h3>HEX (Hexadecimal)</h3>
+          <p>HEX is the most common color format in web development. It uses a # symbol followed by six hexadecimal digits (0–9, A–F) representing red, green, and blue channels: <code>#RRGGBB</code>. For example, <code>#10b981</code> means red=16, green=185, blue=129 in base-10. Short form: <code>#RGB</code> where each digit is doubled (e.g., <code>#fff</code> = <code>#ffffff</code>).</p>
+
+          <h3>RGB and RGBA</h3>
+          <p>RGB expresses colors as three values 0–255 for red, green, and blue. RGBA adds a fourth value (alpha) from 0 (transparent) to 1 (opaque). Example: <code>rgba(16, 185, 129, 0.8)</code> is the emerald green at 80% opacity. Both forms are widely used in CSS.</p>
+
+          <h3>HSL and HSLA</h3>
+          <p>HSL (Hue, Saturation, Lightness) is the most intuitive format for designers. Hue is a 0–360 degree angle on the color wheel. Saturation (0–100%) controls vividness. Lightness (0–100%) controls brightness. To darken a color in HSL, reduce the L value; to mute it, reduce S. This makes it easy to create tints and shades systematically.</p>
+
+          <h3>HSV/HSB</h3>
+          <p>HSV (Hue, Saturation, Value) is similar to HSL but uses Value (brightness) instead of Lightness. HSV is the color model used in most image editing software color pickers, including Photoshop and Figma. At full saturation and value (S=100%, V=100%), the color is pure and fully bright.</p>
+
+          <h3>CMYK</h3>
+          <p>CMYK (Cyan, Magenta, Yellow, Key/Black) is used for print design. Unlike RGB which adds light (additive), CMYK subtracts light by applying ink. When designing for print, work in CMYK to ensure your colors match what the printer produces. Vibrant screen colors (especially vivid greens and blues) often cannot be accurately reproduced in CMYK. For more design tools, see <a href="/tools/color-contrast-checker.html">Color Contrast Checker</a> and <a href="/tools/font-pairing-suggester.html">Font Pairing Suggester</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between RGB and HEX color codes?</button>
+            <div class="faq-answer">RGB and HEX represent the same color space. RGB expresses colors as three decimal values (0–255) for red, green, and blue: rgb(16, 185, 129). HEX expresses the same values in base-16: #10b981. Both describe the same color — HEX is just a more compact notation used in CSS and HTML.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is HSL color?</button>
+            <div class="faq-answer">HSL stands for Hue, Saturation, and Lightness. Hue is the color angle on a 360-degree wheel (0=red, 120=green, 240=blue). Saturation controls vividness (0%=gray). Lightness controls brightness (0%=black, 50%=pure color, 100%=white). HSL is more intuitive for designing color variations than RGB.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is CMYK used for?</button>
+            <div class="faq-answer">CMYK (Cyan, Magenta, Yellow, Key/Black) is the color model used in color printing. Printers mix these four ink colors to produce a full range on paper. Screen colors (RGB/HEX) are additive, while CMYK is subtractive. Print designs need CMYK conversion for accurate color reproduction.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are color harmonies?</button>
+            <div class="faq-answer">Color harmonies are predefined combinations based on color wheel positions. Complementary colors are opposite each other (maximum contrast). Analogous colors are adjacent (harmonious). Triadic colors are 120 degrees apart. Split-complementary uses a color plus two adjacent to its complement. Tetradic uses four colors at 90-degree intervals.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is color blindness simulation?</button>
+            <div class="faq-answer">Color blindness simulation shows how a color appears to people with color vision deficiencies. Protanopia (red-blind) and deuteranopia (green-blind) affect about 8% of males. Tritanopia (blue-blind) is rarer. Designers use simulation to ensure colors remain distinguishable for all users — a WCAG accessibility requirement.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/color-contrast-checker.html">Contrast Checker</a>
+        <a href="/tools/color-palette-generator.html">Palette Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/font-pairing-suggester.html">Font Pairing</a>
+        <a href="/tools/aspect-ratio-calculator.html">Aspect Ratio</a>
+        <a href="/tools/placeholder-image.html">Placeholder Image</a>
+        <a href="/tools/wcag-palette-generator.html">WCAG Palette</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'convert';
+    var currentColor = { r: 16, g: 185, b: 129 };
+
+    // ---- Color Math ----
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      if (hex.length !== 6) return null;
+      var n = parseInt(hex, 16);
+      if (isNaN(n)) return null;
+      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+    }
+
+    function rgbToHex(r, g, b) {
+      return '#' + [r,g,b].map(function(v){ return ('0'+Math.round(v).toString(16)).slice(-2); }).join('');
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      var max = Math.max(r,g,b), min = Math.min(r,g,b);
+      var h, s, l = (max+min)/2;
+      if (max === min) { h = s = 0; }
+      else {
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max) {
+          case r: h = ((g-b)/d + (g<b?6:0))/6; break;
+          case g: h = ((b-r)/d + 2)/6; break;
+          case b: h = ((r-g)/d + 4)/6; break;
+        }
+      }
+      return { h: Math.round(h*360), s: Math.round(s*100), l: Math.round(l*100) };
+    }
+
+    function hslToRgb(h, s, l) {
+      h /= 360; s /= 100; l /= 100;
+      var r, g, b;
+      if (s === 0) { r = g = b = l; }
+      else {
+        function hue2rgb(p, q, t) {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1/6) return p + (q-p)*6*t;
+          if (t < 1/2) return q;
+          if (t < 2/3) return p + (q-p)*(2/3-t)*6;
+          return p;
+        }
+        var q = l < 0.5 ? l*(1+s) : l+s-l*s;
+        var p = 2*l - q;
+        r = hue2rgb(p,q,h+1/3);
+        g = hue2rgb(p,q,h);
+        b = hue2rgb(p,q,h-1/3);
+      }
+      return { r: Math.round(r*255), g: Math.round(g*255), b: Math.round(b*255) };
+    }
+
+    function rgbToHsv(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      var max = Math.max(r,g,b), min = Math.min(r,g,b), d = max - min;
+      var h, s = max === 0 ? 0 : d/max, v = max;
+      if (max === min) { h = 0; }
+      else {
+        switch(max) {
+          case r: h = ((g-b)/d + (g<b?6:0))/6; break;
+          case g: h = ((b-r)/d + 2)/6; break;
+          case b: h = ((r-g)/d + 4)/6; break;
+        }
+      }
+      return { h: Math.round(h*360), s: Math.round(s*100), v: Math.round(v*100) };
+    }
+
+    function rgbToCmyk(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      var k = 1 - Math.max(r,g,b);
+      if (k === 1) return { c:0, m:0, y:0, k:100 };
+      return {
+        c: Math.round((1-r-k)/(1-k)*100),
+        m: Math.round((1-g-k)/(1-k)*100),
+        y: Math.round((1-b-k)/(1-k)*100),
+        k: Math.round(k*100)
+      };
+    }
+
+    function blendRgb(c1, c2, t) {
+      return {
+        r: Math.round(c1.r*(1-t) + c2.r*t),
+        g: Math.round(c1.g*(1-t) + c2.g*t),
+        b: Math.round(c1.b*(1-t) + c2.b*t)
+      };
+    }
+
+    function contrastColor(r, g, b) {
+      return (0.299*r + 0.587*g + 0.114*b) > 128 ? '#000000' : '#ffffff';
+    }
+
+    // Parse input string
+    function parseColor(str) {
+      str = str.trim();
+      // HEX
+      if (/^#?[0-9a-fA-F]{3,8}$/.test(str)) {
+        return hexToRgb(str.startsWith('#') ? str : '#'+str);
+      }
+      // rgb(a)
+      var rgbMatch = str.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+      if (rgbMatch) return { r: parseInt(rgbMatch[1]), g: parseInt(rgbMatch[2]), b: parseInt(rgbMatch[3]) };
+      // hsl(a)
+      var hslMatch = str.match(/hsla?\s*\(\s*([\d.]+)\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?/i);
+      if (hslMatch) return hslToRgb(parseFloat(hslMatch[1]), parseFloat(hslMatch[2]), parseFloat(hslMatch[3]));
+      // hsv
+      var hsvMatch = str.match(/hsv\s*\(\s*([\d.]+)\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?/i);
+      if (hsvMatch) {
+        var h = parseFloat(hsvMatch[1]), s = parseFloat(hsvMatch[2])/100, v = parseFloat(hsvMatch[3])/100;
+        var i = Math.floor(h/60), f = h/60-i;
+        var p = v*(1-s), q = v*(1-f*s), t2 = v*(1-(1-f)*s);
+        var rgb;
+        switch(i%6){
+          case 0: rgb={r:v,g:t2,b:p}; break;
+          case 1: rgb={r:q,g:v,b:p}; break;
+          case 2: rgb={r:p,g:v,b:t2}; break;
+          case 3: rgb={r:p,g:q,b:v}; break;
+          case 4: rgb={r:t2,g:p,b:v}; break;
+          default: rgb={r:v,g:p,b:q};
+        }
+        return { r:Math.round(rgb.r*255), g:Math.round(rgb.g*255), b:Math.round(rgb.b*255) };
+      }
+      // CSS named color via canvas
+      var tmp = document.createElement('canvas'); tmp.width = tmp.height = 1;
+      var ctx = tmp.getContext('2d');
+      ctx.fillStyle = str;
+      ctx.fillRect(0,0,1,1);
+      var d = ctx.getImageData(0,0,1,1).data;
+      if (d[0]===0&&d[1]===0&&d[2]===0&&str.toLowerCase()!=='black'&&str.toLowerCase()!=='#000'&&str!=='#000000') return null;
+      return { r:d[0], g:d[1], b:d[2] };
+    }
+
+    // Nearest CSS named color (subset)
+    var CSS_COLORS = [
+      ['aliceblue','#f0f8ff'],['antiquewhite','#faebd7'],['aqua','#00ffff'],['aquamarine','#7fffd4'],
+      ['azure','#f0ffff'],['beige','#f5f5dc'],['bisque','#ffe4c4'],['black','#000000'],
+      ['blanchedalmond','#ffebcd'],['blue','#0000ff'],['blueviolet','#8a2be2'],['brown','#a52a2a'],
+      ['cadetblue','#5f9ea0'],['chartreuse','#7fff00'],['chocolate','#d2691e'],['coral','#ff7f50'],
+      ['cornflowerblue','#6495ed'],['cornsilk','#fff8dc'],['crimson','#dc143c'],['cyan','#00ffff'],
+      ['darkblue','#00008b'],['darkcyan','#008b8b'],['darkgoldenrod','#b8860b'],['darkgray','#a9a9a9'],
+      ['darkgreen','#006400'],['darkkhaki','#bdb76b'],['darkmagenta','#8b008b'],['darkolivegreen','#556b2f'],
+      ['darkorange','#ff8c00'],['darkorchid','#9932cc'],['darkred','#8b0000'],['darksalmon','#e9967a'],
+      ['darkseagreen','#8fbc8f'],['darkslateblue','#483d8b'],['darkslategray','#2f4f4f'],['darkturquoise','#00ced1'],
+      ['darkviolet','#9400d3'],['deeppink','#ff1493'],['deepskyblue','#00bfff'],['dimgray','#696969'],
+      ['dodgerblue','#1e90ff'],['firebrick','#b22222'],['floralwhite','#fffaf0'],['forestgreen','#228b22'],
+      ['fuchsia','#ff00ff'],['gainsboro','#dcdcdc'],['ghostwhite','#f8f8ff'],['gold','#ffd700'],
+      ['goldenrod','#daa520'],['gray','#808080'],['green','#008000'],['greenyellow','#adff2f'],
+      ['honeydew','#f0fff0'],['hotpink','#ff69b4'],['indianred','#cd5c5c'],['indigo','#4b0082'],
+      ['ivory','#fffff0'],['khaki','#f0e68c'],['lavender','#e6e6fa'],['lavenderblush','#fff0f5'],
+      ['lawngreen','#7cfc00'],['lemonchiffon','#fffacd'],['lightblue','#add8e6'],['lightcoral','#f08080'],
+      ['lightcyan','#e0ffff'],['lightgoldenrodyellow','#fafad2'],['lightgray','#d3d3d3'],['lightgreen','#90ee90'],
+      ['lightpink','#ffb6c1'],['lightsalmon','#ffa07a'],['lightseagreen','#20b2aa'],['lightskyblue','#87cefa'],
+      ['lightslategray','#778899'],['lightsteelblue','#b0c4de'],['lightyellow','#ffffe0'],['lime','#00ff00'],
+      ['limegreen','#32cd32'],['linen','#faf0e6'],['magenta','#ff00ff'],['maroon','#800000'],
+      ['mediumaquamarine','#66cdaa'],['mediumblue','#0000cd'],['mediumorchid','#ba55d3'],['mediumpurple','#9370db'],
+      ['mediumseagreen','#3cb371'],['mediumslateblue','#7b68ee'],['mediumspringgreen','#00fa9a'],['mediumturquoise','#48d1cc'],
+      ['mediumvioletred','#c71585'],['midnightblue','#191970'],['mintcream','#f5fffa'],['mistyrose','#ffe4e1'],
+      ['moccasin','#ffe4b5'],['navajowhite','#ffdead'],['navy','#000080'],['oldlace','#fdf5e6'],
+      ['olive','#808000'],['olivedrab','#6b8e23'],['orange','#ffa500'],['orangered','#ff4500'],
+      ['orchid','#da70d6'],['palegoldenrod','#eee8aa'],['palegreen','#98fb98'],['paleturquoise','#afeeee'],
+      ['palevioletred','#db7093'],['papayawhip','#ffefd5'],['peachpuff','#ffdab9'],['peru','#cd853f'],
+      ['pink','#ffc0cb'],['plum','#dda0dd'],['powderblue','#b0e0e6'],['purple','#800080'],
+      ['red','#ff0000'],['rosybrown','#bc8f8f'],['royalblue','#4169e1'],['saddlebrown','#8b4513'],
+      ['salmon','#fa8072'],['sandybrown','#f4a460'],['seagreen','#2e8b57'],['seashell','#fff5ee'],
+      ['sienna','#a0522d'],['silver','#c0c0c0'],['skyblue','#87ceeb'],['slateblue','#6a5acd'],
+      ['slategray','#708090'],['snow','#fffafa'],['springgreen','#00ff7f'],['steelblue','#4682b4'],
+      ['tan','#d2b48c'],['teal','#008080'],['thistle','#d8bfd8'],['tomato','#ff6347'],
+      ['turquoise','#40e0d0'],['violet','#ee82ee'],['wheat','#f5deb3'],['white','#ffffff'],
+      ['whitesmoke','#f5f5f5'],['yellow','#ffff00'],['yellowgreen','#9acd32']
+    ];
+
+    function nearestCssName(r, g, b) {
+      var best = null, bestDist = Infinity;
+      CSS_COLORS.forEach(function (pair) {
+        var c = hexToRgb(pair[1]);
+        var d = Math.pow(c.r-r,2)+Math.pow(c.g-g,2)+Math.pow(c.b-b,2);
+        if (d < bestDist) { bestDist = d; best = pair[0]; }
+      });
+      return best;
+    }
+
+    // Color blindness simulation (Brettel/Vienot approximation)
+    function simulateColorBlind(r, g, b, type) {
+      r /= 255; g /= 255; b /= 255;
+      var out;
+      if (type === 'protanopia') {
+        out = {
+          r: 0.567*r + 0.433*g + 0*b,
+          g: 0.558*r + 0.442*g + 0*b,
+          b: 0*r + 0.242*g + 0.758*b
+        };
+      } else if (type === 'deuteranopia') {
+        out = {
+          r: 0.625*r + 0.375*g + 0*b,
+          g: 0.700*r + 0.300*g + 0*b,
+          b: 0*r + 0.300*g + 0.700*b
+        };
+      } else if (type === 'tritanopia') {
+        out = {
+          r: 0.950*r + 0.050*g + 0*b,
+          g: 0*r + 0.433*g + 0.567*b,
+          b: 0*r + 0.475*g + 0.525*b
+        };
+      } else {
+        var avg = 0.299*r + 0.587*g + 0.114*b;
+        out = { r:avg, g:avg, b:avg };
+      }
+      return {
+        r: Math.min(255, Math.max(0, Math.round(out.r*255))),
+        g: Math.min(255, Math.max(0, Math.round(out.g*255))),
+        b: Math.min(255, Math.max(0, Math.round(out.b*255)))
+      };
+    }
+
+    function makeHarmonySwatch(r, g, b, label) {
+      var hex = rgbToHex(r,g,b);
+      var txt = contrastColor(r,g,b);
+      var div = document.createElement('div');
+      div.className = 'harmony-swatch';
+      div.innerHTML = '<div class="hs-color" style="background:' + hex + ';"></div>' +
+        '<div class="hs-label">' + label + '<br>' + hex + '</div>';
+      div.title = hex;
+      div.addEventListener('click', function () {
+        document.getElementById('colorInput').value = hex;
+        document.getElementById('colorPicker').value = hex;
+        updateColor(hex);
+      });
+      return div;
+    }
+
+    function formatRow(label, value) {
+      var row = document.createElement('div');
+      row.className = 'format-row';
+      var btn = document.createElement('button');
+      btn.className = 'btn btn-sm btn-secondary f-copy';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', function () { DT.copyToClipboard(value, btn); });
+      row.innerHTML = '<span class="f-label">' + label + '</span><span class="f-value" title="' + value + '">' + value + '</span>';
+      row.appendChild(btn);
+      return row;
+    }
+
+    function renderFormats(r, g, b, container) {
+      container.innerHTML = '';
+      var hsl = rgbToHsl(r,g,b);
+      var hsv = rgbToHsv(r,g,b);
+      var cmyk = rgbToCmyk(r,g,b);
+      var hex = rgbToHex(r,g,b);
+      var nearest = nearestCssName(r,g,b);
+      var formats = [
+        ['HEX', hex],
+        ['RGB', 'rgb(' + r + ', ' + g + ', ' + b + ')'],
+        ['RGBA', 'rgba(' + r + ', ' + g + ', ' + b + ', 1)'],
+        ['HSL', 'hsl(' + hsl.h + ', ' + hsl.s + '%, ' + hsl.l + '%)'],
+        ['HSLA', 'hsla(' + hsl.h + ', ' + hsl.s + '%, ' + hsl.l + '%, 1)'],
+        ['HSV', 'hsv(' + hsv.h + ', ' + hsv.s + '%, ' + hsv.v + '%)'],
+        ['CMYK', 'cmyk(' + cmyk.c + '%, ' + cmyk.m + '%, ' + cmyk.y + '%, ' + cmyk.k + '%)'],
+        ['CSS Name', nearest]
+      ];
+      formats.forEach(function (f) { container.appendChild(formatRow(f[0], f[1])); });
+    }
+
+    function renderHarmonies(r, g, b) {
+      var hsl = rgbToHsl(r,g,b);
+      var H = hsl.h, S = hsl.s, L = hsl.l;
+
+      function swatchHsl(h, s, l, lbl) {
+        h = ((h % 360) + 360) % 360;
+        var c = hslToRgb(h,s,l);
+        return makeHarmonySwatch(c.r,c.g,c.b, lbl);
+      }
+
+      var c = document.getElementById('hComplement');
+      c.innerHTML = '';
+      c.appendChild(swatchHsl(H,S,L,'Base'));
+      c.appendChild(swatchHsl(H+180,S,L,'Complement'));
+
+      var a = document.getElementById('hAnalogous');
+      a.innerHTML = '';
+      [-30,-15,0,15,30].forEach(function(d,i){
+        a.appendChild(swatchHsl(H+d,S,L, d===0?'Base':d+'°'));
+      });
+
+      var tri = document.getElementById('hTriadic');
+      tri.innerHTML = '';
+      [0,120,240].forEach(function(d){
+        tri.appendChild(swatchHsl(H+d,S,L, d===0?'Base':'+'+d+'°'));
+      });
+
+      var sc = document.getElementById('hSplitComp');
+      sc.innerHTML = '';
+      [0,150,210].forEach(function(d){
+        sc.appendChild(swatchHsl(H+d,S,L, d===0?'Base':'+'+d+'°'));
+      });
+
+      var tet = document.getElementById('hTetradic');
+      tet.innerHTML = '';
+      [0,90,180,270].forEach(function(d){
+        tet.appendChild(swatchHsl(H+d,S,L, d===0?'Base':'+'+d+'°'));
+      });
+    }
+
+    function renderBlend() {
+      var c1 = hexToRgb(document.getElementById('blendColorA').value) || currentColor;
+      var c2 = hexToRgb(document.getElementById('blendColorB').value) || currentColor;
+      var ratio = parseInt(document.getElementById('blendRatio').value) / 100;
+      document.getElementById('blendRatioLabel').textContent = Math.round((1-ratio)*100) + '%';
+      document.getElementById('blendRatioBLabel').textContent = Math.round(ratio*100) + '%';
+      var blended = blendRgb(c1, c2, ratio);
+      var hex = rgbToHex(blended.r, blended.g, blended.b);
+      var bp = document.getElementById('blendPreview');
+      bp.style.background = hex;
+      bp.style.color = contrastColor(blended.r, blended.g, blended.b);
+      bp.textContent = hex;
+      renderFormats(blended.r, blended.g, blended.b, document.getElementById('blendFormatGrid'));
+    }
+
+    function renderBlindness(r, g, b) {
+      var grid = document.getElementById('cbGrid');
+      grid.innerHTML = '';
+      var types = [
+        { id: 'normal', label: 'Normal Vision' },
+        { id: 'protanopia', label: 'Protanopia (red-blind)' },
+        { id: 'deuteranopia', label: 'Deuteranopia (green-blind)' },
+        { id: 'tritanopia', label: 'Tritanopia (blue-blind)' }
+      ];
+      types.forEach(function (t) {
+        var sim = t.id === 'normal' ? { r:r,g:g,b:b } : simulateColorBlind(r,g,b,t.id);
+        var hex = rgbToHex(sim.r,sim.g,sim.b);
+        var card = document.createElement('div');
+        card.className = 'cb-card';
+        card.innerHTML = '<div class="cb-swatch" style="background:' + hex + ';"></div>' +
+          '<div class="cb-label">' + t.label + '<br><span style="font-family:var(--font-mono);font-weight:400;">' + hex + '</span></div>';
+        grid.appendChild(card);
+      });
+    }
+
+    function updateColor(input) {
+      var c = parseColor(input);
+      if (!c) return;
+      currentColor = c;
+      var hex = rgbToHex(c.r, c.g, c.b);
+      var hsl = rgbToHsl(c.r, c.g, c.b);
+      var nearest = nearestCssName(c.r, c.g, c.b);
+
+      document.getElementById('mainSwatch').style.background = hex;
+      document.getElementById('colorPicker').value = hex;
+
+      renderFormats(c.r, c.g, c.b, document.getElementById('formatGrid'));
+      renderHarmonies(c.r, c.g, c.b);
+      renderBlindness(c.r, c.g, c.b);
+
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar valid';
+      sb.textContent = 'Color: ' + hex + ' — ' + nearest + ' — Lightness: ' + hsl.l + '%';
+      DT.trackTool('color-converter');
+    }
+
+    // Events
+    document.getElementById('colorInput').addEventListener('input', DT.debounce(function () {
+      updateColor(document.getElementById('colorInput').value);
+    }, 200));
+
+    document.getElementById('colorPicker').addEventListener('input', function () {
+      var hex = this.value;
+      document.getElementById('colorInput').value = hex;
+      updateColor(hex);
+    });
+
+    document.getElementById('mainSwatch').addEventListener('click', function () {
+      var hex = rgbToHex(currentColor.r, currentColor.g, currentColor.b);
+      DT.copyToClipboard(hex, this);
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      var hex = '#10b981';
+      document.getElementById('colorInput').value = hex;
+      document.getElementById('colorPicker').value = hex;
+      updateColor(hex);
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('colorInput').value = '';
+      document.getElementById('statusBar').className = 'status-bar info';
+      document.getElementById('statusBar').textContent = 'Enter any color in HEX, rgb(), hsl(), or hsv() format.';
+    });
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        ['convert','harmonies','blend','blindness'].forEach(function (m) {
+          document.getElementById('mode-' + m).style.display = m === currentMode ? '' : 'none';
+        });
+      });
+    });
+
+    // Blend events
+    ['blendColorA','blendColorB','blendRatio'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', renderBlend);
+    });
+
+    // Init
+    updateColor('#10b981');
+    renderBlend();
+  })();
+  </script>
+</body>
+</html>

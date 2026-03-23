@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Filter Playground — Free Online Filter Effects Tool | DevToolbox</title>
+  <meta name="description" content="Apply and combine CSS filter effects visually: blur, brightness, contrast, grayscale, hue-rotate, and more. Preview live and copy the CSS instantly.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-filter-playground.html">
+  <meta property="og:title" content="CSS Filter Playground — DevToolbox">
+  <meta property="og:description" content="Free online CSS filter editor with sliders for blur, brightness, contrast, grayscale, hue-rotate, and more. Live preview with copy-ready CSS.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-filter-playground.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Filter Playground",
+    "url": "https://thisdevtool.com/tools/css-filter-playground.html",
+    "description": "Apply and combine CSS filter effects visually with live preview and copy-ready CSS.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are CSS filters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS filters are visual effects applied to elements using the filter property. They include blur, brightness, contrast, grayscale, hue-rotate, invert, opacity, saturate, and sepia. Multiple filters can be combined in a single filter declaration and are applied in order."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between filter and backdrop-filter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The filter property applies effects to the element itself and all its contents. backdrop-filter applies effects to the area behind the element — visible through semi-transparent backgrounds. Backdrop-filter is commonly used to create frosted glass effects on cards, modals, and navigation bars."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do CSS filters affect performance?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS filters are GPU-accelerated but can be costly depending on complexity. Blur is the most expensive filter, especially at large radii. Applying blur to a large element or animating it can cause frame drops on lower-end devices. For best performance, apply filters to smaller elements or use will-change: filter to promote the element to its own GPU layer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I animate CSS filters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. CSS filters are animatable using transitions and keyframe animations. For example, you can transition from grayscale(100%) to grayscale(0%) on :hover for a color-reveal effect, or animate hue-rotate from 0deg to 360deg for a rainbow cycling effect. All filter values can be interpolated smoothly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I create a frosted glass effect?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use backdrop-filter: blur(10px) combined with a semi-transparent background: background: rgba(255,255,255,0.2). The backdrop-filter blurs whatever is behind the element, creating the frosted glass appearance. You may need to add -webkit-backdrop-filter for Safari compatibility."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .filter-row { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; }
+    .filter-row label { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+    .filter-row label span { color: var(--accent); font-weight: 700; font-family: var(--font-mono); }
+    .filter-row input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .filter-row .reset-single { font-size: 0.7rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; padding: 0; margin-left: 0.25rem; }
+    .filter-row .reset-single:hover { color: var(--accent); }
+    .preview-stage { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; align-items: center; }
+    .preview-box-wrap { position: relative; width: 280px; height: 200px; overflow: visible; display: flex; align-items: center; justify-content: center; }
+    #filterPreview { width: 260px; height: 180px; background: linear-gradient(135deg, #10b981 0%, #0ea5e9 35%, #8b5cf6 65%, #f59e0b 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; }
+    #filterPreview .preview-text { color: rgba(255,255,255,0.9); font-weight: 700; font-size: 1rem; text-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+    #backdropDemo { width: 260px; height: 180px; background: linear-gradient(135deg, #10b981 0%, #0ea5e9 35%, #8b5cf6 65%, #f59e0b 100%); border-radius: 12px; position: relative; overflow: hidden; }
+    #backdropLayer { position: absolute; inset: 30px; border-radius: 8px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.85rem; }
+    .css-output-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); word-break: break-all; min-height: 2.5rem; }
+    @media (max-width: 480px) { .filter-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-transform.html">Transform</a>
+        <a href="/tools/css-animation-generator.html">Animation</a>
+        <a href="/tools/css-border-radius.html">Border Radius</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Filter Playground</h1>
+          <p class="tool-subtitle">Apply blur, brightness, contrast, hue-rotate, and more. Combine filters and copy the CSS.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="combined">Combined</button>
+            <button class="option-chip" data-mode="single">Single Filter</button>
+            <button class="option-chip" data-mode="backdrop">Backdrop Filter</button>
+            <button class="option-chip" data-mode="presets">Presets</button>
+          </div>
+
+          <!-- Presets -->
+          <div id="presetsPanel" style="display:none;">
+            <div class="option-chips" style="flex-wrap:wrap;">
+              <button class="option-chip preset-btn" data-preset="vintage">Vintage</button>
+              <button class="option-chip preset-btn" data-preset="bw">B&W</button>
+              <button class="option-chip preset-btn" data-preset="warm">Warm</button>
+              <button class="option-chip preset-btn" data-preset="cool">Cool</button>
+              <button class="option-chip preset-btn" data-preset="hicontrast">High Contrast</button>
+              <button class="option-chip preset-btn" data-preset="faded">Faded</button>
+              <button class="option-chip preset-btn" data-preset="none">Reset All</button>
+            </div>
+          </div>
+
+          <!-- Filter Sliders -->
+          <div class="filter-grid" id="filterGrid">
+            <!-- populated by JS -->
+          </div>
+
+          <!-- Backdrop controls -->
+          <div id="backdropPanel" style="display:none;">
+            <div class="filter-grid">
+              <div class="filter-row">
+                <label>Backdrop Blur <span id="bdBlurVal">10px</span> <button class="reset-single" data-bd="blur">↺</button></label>
+                <input type="range" id="bdBlurSlider" min="0" max="40" value="10">
+              </div>
+              <div class="filter-row">
+                <label>Backdrop Brightness <span id="bdBrightVal">100%</span> <button class="reset-single" data-bd="brightness">↺</button></label>
+                <input type="range" id="bdBrightSlider" min="0" max="200" value="100">
+              </div>
+              <div class="filter-row">
+                <label>BG Opacity <span id="bdOpacVal">0.15</span></label>
+                <input type="range" id="bdOpacSlider" min="0" max="100" value="15">
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-stage">
+            <div class="preview-box-wrap">
+              <div id="filterPreview">
+                <span class="preview-text">Preview</span>
+              </div>
+              <div id="backdropDemo" style="display:none;">
+                <div id="backdropLayer">Frosted Glass</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap;">
+            <button class="btn btn-sm btn-secondary" id="resetAllBtn">Reset All</button>
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+          </div>
+
+          <div class="pane-label" style="margin-top:1rem;">
+            <span>Generated CSS</span>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+            </div>
+          </div>
+          <div class="css-output-box" id="cssOutput">filter: none;</div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Adjust sliders to apply CSS filters.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the CSS Filter Playground</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — Combined lets you stack multiple filters, Single focuses on one filter, Backdrop demonstrates the frosted glass effect, and Presets give you instant Instagram-style filters.</li>
+            <li><strong>Drag the sliders</strong> — Each slider controls a filter function. Changes apply instantly to the preview.</li>
+            <li><strong>Reset individual filters</strong> — Click the ↺ icon next to any filter label to reset just that value.</li>
+            <li><strong>Copy the CSS</strong> — Click Copy to get the filter property declaration. For backdrop mode, you also get the backdrop-filter value.</li>
+          </ol>
+
+          <h2>CSS Filter Functions Explained</h2>
+          <p>The <code>filter</code> property accepts one or more filter functions that are applied sequentially from left to right. Each function modifies the visual output of the element. They work on any element including images, videos, divs, and SVGs.</p>
+
+          <h3>Available Filter Functions</h3>
+          <ul>
+            <li><strong>blur(px)</strong> — Applies a Gaussian blur. Higher values create a more out-of-focus effect. Best used on background decorations, not on text.</li>
+            <li><strong>brightness(%)</strong> — 100% is normal. 0% = black, 200% = double brightness. Useful for hover effects on images and dark mode adjustments.</li>
+            <li><strong>contrast(%)</strong> — 100% is normal. 0% = flat gray, 200% = very high contrast. Useful for creating graphic poster effects.</li>
+            <li><strong>grayscale(%)</strong> — 0% = full color, 100% = completely grayscale. Often used for disabled states or hover effects that reveal color.</li>
+            <li><strong>hue-rotate(deg)</strong> — Rotates the hue of all colors in the element. 0deg = original, 180deg = opposite hues. Cycling 0-360 creates a rainbow animation.</li>
+            <li><strong>invert(%)</strong> — 0% = normal, 100% = fully inverted colors (like a photo negative). 50% produces a flat grey.</li>
+            <li><strong>opacity(%)</strong> — Similar to the opacity property, but composited differently. When used inside filter, it is applied after other filters.</li>
+            <li><strong>saturate(%)</strong> — 0% = grayscale, 100% = normal, 200% = double saturation. Great for dramatic color effects and hover reveals.</li>
+            <li><strong>sepia(%)</strong> — 100% gives a warm brown-tone vintage photo look. Combine with brightness and contrast for authentic film effects.</li>
+          </ul>
+
+          <h3>Creating Instagram-Style Presets</h3>
+          <p>Vintage: <code>filter: sepia(0.4) brightness(1.1) contrast(1.1) saturate(0.8);</code><br>
+          B&W: <code>filter: grayscale(1) contrast(1.1);</code><br>
+          Warm: <code>filter: sepia(0.25) saturate(1.4) brightness(1.05);</code><br>
+          Cool: <code>filter: hue-rotate(200deg) saturate(0.9) brightness(1.05);</code></p>
+
+          <h3>Backdrop Filter and Frosted Glass</h3>
+          <p><code>backdrop-filter</code> applies filter effects to the area behind an element. The element itself must have a semi-transparent or transparent background for the effect to show through. This is the technique behind iOS-style frosted glass modals, nav bars, and card overlays. Example: <code>backdrop-filter: blur(10px); background: rgba(255,255,255,0.2);</code>. Add <code>-webkit-backdrop-filter</code> for Safari support. For more CSS design tools, explore the <a href="/tools/css-animation-generator.html">CSS Animation Generator</a> or the <a href="/tools/css-clip-path.html">CSS Clip Path Editor</a>.</p>
+
+          <h3>Filter vs. SVG Filters</h3>
+          <p>CSS filter functions are shorthand for common SVG filter effects. Under the hood, blur maps to feGaussianBlur, brightness maps to feComponentTransfer, and so on. For advanced effects not covered by CSS filters — such as drop shadows that follow element shape (not bounding box), color matrix transformations, displacement maps, or morphology — use the <code>filter: url(#svg-filter-id)</code> syntax referencing an SVG filter definition. CSS filters cover 95% of common design needs with much simpler syntax.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What are CSS filters?</button>
+            <div class="faq-answer">CSS filters are visual effects applied to elements using the filter property. They include blur, brightness, contrast, grayscale, hue-rotate, invert, opacity, saturate, and sepia. Multiple filters can be combined in a single filter declaration and are applied in order.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between filter and backdrop-filter?</button>
+            <div class="faq-answer">The filter property applies effects to the element itself and all its contents. backdrop-filter applies effects to the area behind the element — visible through semi-transparent backgrounds. Backdrop-filter is commonly used to create frosted glass effects on cards, modals, and navigation bars.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Do CSS filters affect performance?</button>
+            <div class="faq-answer">CSS filters are GPU-accelerated but can be costly depending on complexity. Blur is the most expensive filter, especially at large radii. For best performance, apply filters to smaller elements or use will-change: filter to promote the element to its own GPU layer.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I animate CSS filters?</button>
+            <div class="faq-answer">Yes. CSS filters are animatable using transitions and keyframe animations. You can transition from grayscale(100%) to grayscale(0%) on :hover for a color-reveal effect, or animate hue-rotate from 0deg to 360deg for a rainbow cycling effect.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I create a frosted glass effect?</button>
+            <div class="faq-answer">Use <code>backdrop-filter: blur(10px)</code> combined with a semi-transparent background: <code>background: rgba(255,255,255,0.2)</code>. The backdrop-filter blurs whatever is behind the element. Add <code>-webkit-backdrop-filter</code> for Safari compatibility.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS & Design</h4>
+        <a href="/tools/css-border-radius.html">Border Radius</a>
+        <a href="/tools/css-transform.html">CSS Transform</a>
+        <a href="/tools/css-animation-generator.html">Animation Generator</a>
+        <a href="/tools/css-filter-playground.html">Filter Effects</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-clip-path.html">Clip Path Editor</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var currentMode = 'combined';
+
+      var filterDefs = [
+        { key: 'blur',       label: 'Blur',        min: 0,   max: 20,  step: 0.5, def: 0,   unit: 'px',  fmt: function(v){ return v+'px'; } },
+        { key: 'brightness', label: 'Brightness',  min: 0,   max: 200, step: 1,   def: 100, unit: '%',   fmt: function(v){ return v+'%'; } },
+        { key: 'contrast',   label: 'Contrast',    min: 0,   max: 200, step: 1,   def: 100, unit: '%',   fmt: function(v){ return v+'%'; } },
+        { key: 'grayscale',  label: 'Grayscale',   min: 0,   max: 100, step: 1,   def: 0,   unit: '%',   fmt: function(v){ return v+'%'; } },
+        { key: 'hue-rotate', label: 'Hue Rotate',  min: 0,   max: 360, step: 1,   def: 0,   unit: 'deg', fmt: function(v){ return v+'deg'; } },
+        { key: 'invert',     label: 'Invert',      min: 0,   max: 100, step: 1,   def: 0,   unit: '%',   fmt: function(v){ return v+'%'; } },
+        { key: 'opacity',    label: 'Opacity',     min: 0,   max: 100, step: 1,   def: 100, unit: '%',   fmt: function(v){ return v+'%'; } },
+        { key: 'saturate',   label: 'Saturate',    min: 0,   max: 300, step: 1,   def: 100, unit: '%',   fmt: function(v){ return v+'%'; } },
+        { key: 'sepia',      label: 'Sepia',       min: 0,   max: 100, step: 1,   def: 0,   unit: '%',   fmt: function(v){ return v+'%'; } }
+      ];
+
+      var presets = {
+        vintage: { blur:0, brightness:110, contrast:110, grayscale:0, 'hue-rotate':0, invert:0, opacity:100, saturate:80, sepia:40 },
+        bw:      { blur:0, brightness:100, contrast:110, grayscale:100, 'hue-rotate':0, invert:0, opacity:100, saturate:100, sepia:0 },
+        warm:    { blur:0, brightness:105, contrast:100, grayscale:0, 'hue-rotate':10, invert:0, opacity:100, saturate:140, sepia:25 },
+        cool:    { blur:0, brightness:105, contrast:100, grayscale:0, 'hue-rotate':200, invert:0, opacity:100, saturate:90, sepia:0 },
+        hicontrast: { blur:0, brightness:100, contrast:180, grayscale:0, 'hue-rotate':0, invert:0, opacity:100, saturate:150, sepia:0 },
+        faded:   { blur:0, brightness:110, contrast:80, grayscale:10, 'hue-rotate':0, invert:0, opacity:90, saturate:60, sepia:10 },
+        none:    { blur:0, brightness:100, contrast:100, grayscale:0, 'hue-rotate':0, invert:0, opacity:100, saturate:100, sepia:0 }
+      };
+
+      var state = {};
+      filterDefs.forEach(function(f) { state[f.key] = f.def; });
+
+      var previewEl = document.getElementById('filterPreview');
+      var backdropDemoEl = document.getElementById('backdropDemo');
+      var backdropLayerEl = document.getElementById('backdropLayer');
+      var cssOutput = document.getElementById('cssOutput');
+      var statusBar = document.getElementById('statusBar');
+
+      function isDefault(f) {
+        return state[f.key] === f.def;
+      }
+
+      function buildFilterStr() {
+        var parts = [];
+        filterDefs.forEach(function(f) {
+          if (!isDefault(f)) {
+            var val = state[f.key];
+            if (f.unit === '%') val = val / 100;
+            parts.push(f.key + '(' + (f.unit === 'px' || f.unit === 'deg' ? state[f.key] + f.unit : val) + ')');
+          }
+        });
+        return parts.length ? parts.join(' ') : 'none';
+      }
+
+      function buildFullFilterStr() {
+        var parts = [];
+        filterDefs.forEach(function(f) {
+          var val = state[f.key];
+          if (f.unit === '%') val = val / 100;
+          parts.push(f.key + '(' + (f.unit === 'px' || f.unit === 'deg' ? state[f.key] + f.unit : val) + ')');
+        });
+        return parts.join(' ');
+      }
+
+      function update() {
+        var filterStr = buildFilterStr();
+        if (currentMode === 'backdrop') {
+          var bdBlur = document.getElementById('bdBlurSlider').value;
+          var bdBright = document.getElementById('bdBrightSlider').value / 100;
+          var bdOpac = document.getElementById('bdOpacSlider').value / 100;
+          var bdFilter = 'blur(' + bdBlur + 'px) brightness(' + bdBright + ')';
+          backdropLayerEl.style.cssText = 'position:absolute;inset:30px;border-radius:8px;border:1px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.85rem;-webkit-backdrop-filter:' + bdFilter + ';backdrop-filter:' + bdFilter + ';background:rgba(255,255,255,' + bdOpac + ');';
+          cssOutput.textContent = '-webkit-backdrop-filter: ' + bdFilter + ';\nbackdrop-filter: ' + bdFilter + ';\nbackground: rgba(255, 255, 255, ' + bdOpac + ');';
+        } else {
+          previewEl.style.filter = filterStr;
+          cssOutput.textContent = 'filter: ' + filterStr + ';';
+        }
+        statusBar.className = filterStr === 'none' ? 'status-bar info' : 'status-bar valid';
+        statusBar.textContent = filterStr === 'none' ? 'All filters at default values.' : 'Filter CSS generated.';
+        DT.trackTool('css-filter-playground');
+      }
+
+      function buildFilterGrid() {
+        var grid = document.getElementById('filterGrid');
+        grid.innerHTML = '';
+        filterDefs.forEach(function(f) {
+          var row = document.createElement('div');
+          row.className = 'filter-row';
+          var lbl = document.createElement('label');
+          var valSpan = document.createElement('span');
+          valSpan.id = f.key + 'Val';
+          valSpan.textContent = f.fmt(f.def);
+          var resetBtn = document.createElement('button');
+          resetBtn.className = 'reset-single';
+          resetBtn.textContent = '↺';
+          resetBtn.title = 'Reset ' + f.label;
+          resetBtn.addEventListener('click', function() {
+            state[f.key] = f.def;
+            slider.value = f.def;
+            valSpan.textContent = f.fmt(f.def);
+            update();
+          });
+          lbl.textContent = f.label + ' ';
+          lbl.appendChild(valSpan);
+          lbl.appendChild(resetBtn);
+          var slider = document.createElement('input');
+          slider.type = 'range';
+          slider.min = f.min; slider.max = f.max; slider.step = f.step; slider.value = f.def;
+          slider.id = f.key + 'Slider';
+          slider.addEventListener('input', function() {
+            state[f.key] = parseFloat(slider.value);
+            valSpan.textContent = f.fmt(state[f.key]);
+            update();
+          });
+          row.appendChild(lbl);
+          row.appendChild(slider);
+          grid.appendChild(row);
+        });
+      }
+
+      // Mode chips
+      document.querySelectorAll('.option-chip[data-mode]').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('.option-chip[data-mode]').forEach(function(c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          var isBackdrop = currentMode === 'backdrop';
+          document.getElementById('filterGrid').style.display = isBackdrop ? 'none' : '';
+          document.getElementById('backdropPanel').style.display = isBackdrop ? '' : 'none';
+          document.getElementById('presetsPanel').style.display = currentMode === 'presets' ? '' : 'none';
+          previewEl.style.display = isBackdrop ? 'none' : '';
+          backdropDemoEl.style.display = isBackdrop ? '' : 'none';
+          if (!isBackdrop) previewEl.style.filter = buildFilterStr();
+          update();
+        });
+      });
+
+      // Presets
+      document.querySelectorAll('.preset-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var p = presets[btn.getAttribute('data-preset')];
+          if (!p) return;
+          Object.assign(state, p);
+          filterDefs.forEach(function(f) {
+            var sl = document.getElementById(f.key + 'Slider');
+            var vl = document.getElementById(f.key + 'Val');
+            if (sl) sl.value = state[f.key];
+            if (vl) vl.textContent = f.fmt(state[f.key]);
+          });
+          update();
+        });
+      });
+
+      // Backdrop sliders
+      document.getElementById('bdBlurSlider').addEventListener('input', function() {
+        document.getElementById('bdBlurVal').textContent = this.value + 'px';
+        update();
+      });
+      document.getElementById('bdBrightSlider').addEventListener('input', function() {
+        document.getElementById('bdBrightVal').textContent = this.value + '%';
+        update();
+      });
+      document.getElementById('bdOpacSlider').addEventListener('input', function() {
+        document.getElementById('bdOpacVal').textContent = (this.value / 100).toFixed(2);
+        update();
+      });
+
+      document.getElementById('resetAllBtn').addEventListener('click', function() {
+        filterDefs.forEach(function(f) {
+          state[f.key] = f.def;
+          var sl = document.getElementById(f.key + 'Slider');
+          var vl = document.getElementById(f.key + 'Val');
+          if (sl) sl.value = f.def;
+          if (vl) vl.textContent = f.fmt(f.def);
+        });
+        update();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function() {
+        Object.assign(state, presets.vintage);
+        filterDefs.forEach(function(f) {
+          var sl = document.getElementById(f.key + 'Slider');
+          var vl = document.getElementById(f.key + 'Val');
+          if (sl) sl.value = state[f.key];
+          if (vl) vl.textContent = f.fmt(state[f.key]);
+        });
+        update();
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function() {
+        DT.copyToClipboard(cssOutput.textContent, this);
+      });
+      document.getElementById('downloadBtn').addEventListener('click', function() {
+        DT.downloadText(cssOutput.textContent, 'filter.css', 'text/css');
+      });
+
+      buildFilterGrid();
+      update();
+    })();
+  </script>
+</body>
+</html>

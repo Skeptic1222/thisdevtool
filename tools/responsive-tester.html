@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Responsive Design Tester — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Test your website's responsive design at multiple screen sizes. Paste HTML or enter a URL and preview it at iPhone, iPad, laptop, and desktop breakpoints instantly.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/responsive-tester.html">
+  <meta property="og:title" content="Responsive Design Tester — DevToolbox">
+  <meta property="og:description" content="Preview HTML layouts at any device size. Device presets, custom dimensions, side-by-side comparison, and orientation toggle. Free, browser-based.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/responsive-tester.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Responsive Design Tester",
+    "url": "https://thisdevtool.com/tools/responsive-tester.html",
+    "description": "Preview HTML at any viewport size with device presets. Free, 100% client-side.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why can't I preview live websites using iframe?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Most modern websites send an X-Frame-Options or Content-Security-Policy header that prevents their pages from being embedded in iframes. This is a security measure to prevent clickjacking attacks. For testing live sites, use your browser's built-in DevTools (F12 > Device Toolbar). For testing your own HTML, use the HTML paste mode in this tool."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the most important breakpoints for responsive design?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The most commonly used CSS breakpoints are: 320px (small phones), 375-390px (modern iPhones), 768px (tablets), 1024px (large tablets / small laptops), 1280-1366px (laptops), and 1920px (desktops). Tailwind CSS uses 640px, 768px, 1024px, 1280px, and 1536px. Bootstrap uses 576px, 768px, 992px, and 1200px."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between viewport width and screen width?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Screen width is the physical display resolution of the device. Viewport width is the width of the browser window that CSS media queries respond to. On mobile devices, the viewport width is typically 375–430px for iPhones and 360–412px for Android phones, even though physical screen resolutions are much higher (due to device pixel ratio)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is mobile-first design?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Mobile-first design means writing CSS that works for small screens by default, then using min-width media queries to add styles for larger screens. This approach produces leaner CSS and ensures mobile users get a fast experience. The CSS would look like: .element { width: 100%; } @media (min-width: 768px) { .element { width: 50%; } }"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I test responsive design in Chrome DevTools?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Open Chrome DevTools with F12 (or Cmd+Option+I on Mac), then click the device toolbar icon (Ctrl+Shift+M / Cmd+Shift+M) to enter responsive mode. You can choose preset devices from the dropdown or set a custom viewport size. The DevTools responsive mode is the gold standard for testing live websites."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .device-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .device-btn {
+      padding: 0.5rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-align: left;
+      transition: all 0.2s;
+      line-height: 1.3;
+    }
+    .device-btn:hover, .device-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+    .device-btn .d-name { font-weight: 700; display: block; }
+    .device-btn .d-size { font-size: 0.72rem; color: var(--text-secondary); }
+    .device-btn.active .d-size { color: var(--accent); }
+    .preview-wrapper {
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      padding: 1rem 0;
+      align-items: flex-start;
+    }
+    .device-frame {
+      flex-shrink: 0;
+      background: var(--bg-card);
+      border-radius: 18px;
+      border: 3px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      overflow: hidden;
+      position: relative;
+      transition: all 0.3s;
+    }
+    .device-frame.mobile-frame { border-radius: 28px; border-width: 6px; }
+    .device-frame.tablet-frame { border-radius: 16px; border-width: 5px; }
+    .device-frame-label {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+      font-weight: 600;
+    }
+    .device-frame iframe {
+      display: block;
+      border: none;
+      background: #fff;
+    }
+    .preview-scale-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .html-input-area {
+      width: 100%;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      color: var(--text);
+      resize: vertical;
+      min-height: 140px;
+      margin-top: 0.75rem;
+    }
+    .url-input-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; align-items: center; }
+    .url-input-row input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    .ctrl-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-top: 0.75rem; }
+    .ctrl-row label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; }
+    .ctrl-row input[type="number"] {
+      width: 80px;
+      padding: 0.4rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    .iframe-notice {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.75rem;
+    }
+    @media (max-width: 600px) {
+      .device-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/aspect-ratio-calculator.html">Aspect Ratio</a>
+        <a href="/tools/placeholder-image.html">Placeholder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Responsive Design Tester</h1>
+          <p class="tool-subtitle">Preview your HTML at any screen size. Test device breakpoints, compare viewports side by side, and toggle orientation.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="device">Device</button>
+            <button class="option-chip" data-mode="custom">Custom</button>
+            <button class="option-chip" data-mode="sidebyside">Side-by-Side</button>
+          </div>
+
+          <!-- HTML Paste Input -->
+          <div>
+            <div class="pane-label" style="margin-top:1rem;">
+              <span>Paste your HTML</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearHtmlBtn">Clear</button>
+              </div>
+            </div>
+            <textarea class="html-input-area" id="htmlInput" placeholder="Paste your HTML here to preview it at different sizes...
+&#10;Tip: Include a full <!DOCTYPE html> document with your CSS for best results.
+&#10;Note: iframe embedding of live URLs is blocked by most sites for security reasons. Use HTML paste mode instead."></textarea>
+          </div>
+
+          <!-- Device Mode -->
+          <div id="mode-device">
+            <div class="device-grid" id="deviceGrid"></div>
+            <div class="ctrl-row" style="margin-top:0.75rem;">
+              <label>Orientation:</label>
+              <button class="btn btn-sm btn-secondary" id="portraitBtn">Portrait</button>
+              <button class="btn btn-sm btn-secondary" id="landscapeBtn">Landscape</button>
+              <label style="margin-left:0.5rem;">Scale to fit:
+                <input type="checkbox" id="scaleToFit" checked style="margin-left:0.3rem;accent-color:var(--accent);">
+              </label>
+            </div>
+          </div>
+
+          <!-- Custom Mode -->
+          <div id="mode-custom" style="display:none;">
+            <div class="ctrl-row" style="margin-top:0.75rem;">
+              <label for="customW">Width:</label>
+              <input type="number" id="customW" value="768" min="200" max="3000">
+              <label for="customH">Height:</label>
+              <input type="number" id="customH" value="1024" min="200" max="3000">
+              <button class="btn btn-primary btn-sm" id="applyCustomBtn">Preview</button>
+            </div>
+          </div>
+
+          <!-- Side-by-Side Mode -->
+          <div id="mode-sidebyside" style="display:none;">
+            <div class="ctrl-row" style="margin-top:0.75rem;">
+              <span style="font-size:0.85rem;color:var(--text-secondary);">Showing 3 viewports simultaneously (mobile, tablet, desktop)</span>
+            </div>
+          </div>
+
+          <!-- Preview Area -->
+          <div class="preview-wrapper" id="previewWrapper"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste HTML above and select a device to preview your layout.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Responsive Design Tester</h2>
+          <ol>
+            <li><strong>Paste your HTML</strong> — Include a full HTML document with inline styles or a &lt;style&gt; block for best results.</li>
+            <li><strong>Select a device</strong> — Click any device preset (iPhone SE, iPad, Laptop, etc.) to preview at that viewport.</li>
+            <li><strong>Toggle orientation</strong> — Switch between portrait and landscape to test both orientations.</li>
+            <li><strong>Custom mode</strong> — Enter any width and height to test specific breakpoints.</li>
+            <li><strong>Side-by-Side</strong> — See mobile, tablet, and desktop viewports simultaneously to compare layouts.</li>
+          </ol>
+          <div class="iframe-notice">
+            <strong>Note on URL previews:</strong> Most live websites send security headers (X-Frame-Options, Content-Security-Policy) that prevent iframe embedding. For testing your own HTML, use the paste area above. For live sites, use your browser's built-in DevTools (F12 → Device Toolbar), which has direct access to the page.
+          </div>
+
+          <h2>Understanding Responsive Design Breakpoints</h2>
+          <p>Responsive design is the practice of building web interfaces that adapt their layout and typography to different screen sizes. This is achieved using CSS media queries — conditional rules that apply styles only when the viewport meets certain conditions, most commonly a minimum or maximum width.</p>
+
+          <h3>Common Breakpoints</h3>
+          <ul>
+            <li><strong>320–375px</strong> — Small to medium phones (iPhone SE, Galaxy A series)</li>
+            <li><strong>390–430px</strong> — Modern large phones (iPhone 14/15, Pixel 7)</li>
+            <li><strong>768px</strong> — Tablets in portrait mode (iPad, Android tablets)</li>
+            <li><strong>1024px</strong> — Tablets in landscape, small laptops</li>
+            <li><strong>1280–1366px</strong> — Standard laptop screens</li>
+            <li><strong>1440–1920px</strong> — Desktop monitors</li>
+          </ul>
+
+          <h3>Mobile-First vs. Desktop-First</h3>
+          <p><strong>Mobile-first</strong> means writing base CSS for mobile screens, then adding <code>@media (min-width: ...)</code> queries to enhance the layout for larger screens. This produces smaller CSS for mobile users (who often have slower connections) and is the approach recommended by all major frameworks including Tailwind CSS, Bootstrap 5, and Material Design. <strong>Desktop-first</strong> does the opposite — starting with desktop styles and using <code>@media (max-width: ...)</code> to adapt for smaller screens.</p>
+
+          <h3>The Viewport Meta Tag</h3>
+          <p>Every responsive page needs <code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code> in its &lt;head&gt;. Without it, mobile browsers render the page at a virtual 980px wide and scale it down, making text tiny and layouts broken. This meta tag tells the browser to use the actual device width as the viewport width, allowing media queries to work correctly.</p>
+
+          <h3>Testing Beyond This Tool</h3>
+          <p>While this tool is great for quick HTML prototyping, the gold standard for responsive testing is browser DevTools. Chrome DevTools (F12) provides device simulation with network throttling, touch event simulation, and CPU throttling to simulate low-end devices. For production sites, also test on real physical devices since some touch interactions and system fonts can only be tested on actual hardware. Also try our <a href="/tools/aspect-ratio-calculator.html">Aspect Ratio Calculator</a> to plan your image and video dimensions across breakpoints.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">Why can't I preview live websites using iframe?</button>
+            <div class="faq-answer">Most modern websites send an X-Frame-Options or Content-Security-Policy header that prevents their pages from being embedded in iframes. This is a security measure to prevent clickjacking attacks. For testing live sites, use your browser's built-in DevTools (F12 > Device Toolbar). For testing your own HTML, use the HTML paste mode in this tool.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are the most important breakpoints for responsive design?</button>
+            <div class="faq-answer">The most commonly used CSS breakpoints are: 320px (small phones), 375–390px (modern iPhones), 768px (tablets), 1024px (large tablets / small laptops), 1280–1366px (laptops), and 1920px (desktops). Tailwind CSS uses 640px, 768px, 1024px, 1280px, and 1536px.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between viewport width and screen width?</button>
+            <div class="faq-answer">Screen width is the physical display resolution. Viewport width is the width the browser uses for CSS media queries. On mobile, viewport width is typically 375–430px for iPhones, even though the physical pixel count is much higher (due to device pixel ratio of 2–3×).</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is mobile-first design?</button>
+            <div class="faq-answer">Mobile-first means writing CSS that works for small screens by default, then using min-width media queries to add styles for larger screens. This produces leaner CSS and ensures mobile users get a fast, uncluttered experience. All major modern CSS frameworks use mobile-first conventions.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I test responsive design in Chrome DevTools?</button>
+            <div class="faq-answer">Open Chrome DevTools with F12, then click the device toolbar icon (or press Ctrl+Shift+M). You can select preset devices from the dropdown or set a custom viewport size. Chrome DevTools is the gold standard for testing live websites at different screen sizes.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/css-minifier.html">CSS Minifier</a>
+        <a href="/tools/color-converter.html">Color Converter</a>
+        <a href="/tools/aspect-ratio-calculator.html">Aspect Ratio</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/placeholder-image.html">Placeholder Image</a>
+        <a href="/tools/font-pairing-suggester.html">Font Pairing</a>
+        <a href="/tools/color-contrast-checker.html">Contrast Checker</a>
+        <a href="/tools/meta-tag-generator.html">Meta Tag Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'device';
+    var currentOrientation = 'portrait';
+    var scaleToFit = true;
+    var activeDeviceIndex = 0;
+    var currentW = 390, currentH = 844;
+
+    var DEVICES = [
+      { name: 'iPhone SE', w: 375, h: 667, type: 'mobile' },
+      { name: 'iPhone 14', w: 390, h: 844, type: 'mobile' },
+      { name: 'iPhone 14 Pro Max', w: 430, h: 932, type: 'mobile' },
+      { name: 'Galaxy S23', w: 360, h: 780, type: 'mobile' },
+      { name: 'iPad', w: 768, h: 1024, type: 'tablet' },
+      { name: 'iPad Pro', w: 1024, h: 1366, type: 'tablet' },
+      { name: 'Laptop 1366', w: 1366, h: 768, type: 'desktop' },
+      { name: 'Desktop FHD', w: 1920, h: 1080, type: 'desktop' }
+    ];
+
+    var SBS_DEVICES = [
+      { name: 'Mobile 390', w: 390, h: 844, type: 'mobile' },
+      { name: 'Tablet 768', w: 768, h: 1024, type: 'tablet' },
+      { name: 'Desktop 1280', w: 1280, h: 800, type: 'desktop' }
+    ];
+
+    var EXAMPLE_HTML = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>Responsive Test</title>\n<style>\n* { box-sizing: border-box; margin: 0; padding: 0; }\nbody { font-family: system-ui, sans-serif; background: #f0fdf4; color: #1a1a2e; }\n.header { background: #10b981; color: #fff; padding: 1rem; text-align: center; }\n.hero { padding: 2rem 1rem; text-align: center; }\n.hero h1 { font-size: clamp(1.5rem, 5vw, 2.5rem); margin-bottom: 0.75rem; }\n.hero p { font-size: 1rem; color: #555; max-width: 500px; margin: 0 auto; }\n.grid { display: grid; grid-template-columns: 1fr; gap: 1rem; padding: 1rem; }\n@media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } }\n@media (min-width: 1024px) { .grid { grid-template-columns: 1fr 1fr 1fr; } }\n.card { background: #fff; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }\n.card h3 { color: #10b981; margin-bottom: 0.5rem; }\n.btn { display: inline-block; background: #10b981; color: #fff; padding: 0.6rem 1.5rem; border-radius: 20px; font-size: 0.9rem; text-decoration: none; margin-top: 1rem; }\n.footer { text-align: center; padding: 1rem; font-size: 0.8rem; color: #888; border-top: 1px solid #e2e8f0; margin-top: 2rem; }\n</style>\n</head>\n<body>\n<div class="header"><strong>DevToolbox</strong> — Responsive Test</div>\n<div class="hero"><h1>Test Your Responsive Layout</h1><p>Resize the viewport to see how this example grid responds to different screen widths. The columns collapse on mobile.</p><a href="#" class="btn">Get Started</a></div>\n<div class="grid">\n<div class="card"><h3>Card One</h3><p>This card spans full width on mobile, 50% on tablet, and 33% on desktop.</p></div>\n<div class="card"><h3>Card Two</h3><p>Media queries control the layout using min-width breakpoints for a mobile-first approach.</p></div>\n<div class="card"><h3>Card Three</h3><p>The CSS Grid and clamp() function make fluid layouts easy and maintainable.</p></div>\n</div>\n<div class="footer">&copy; 2026 DevToolbox Example</div>\n</body>\n</html>';
+
+    // Build device buttons
+    var deviceGrid = document.getElementById('deviceGrid');
+    DEVICES.forEach(function (d, i) {
+      var btn = document.createElement('button');
+      btn.className = 'device-btn' + (i === 1 ? ' active' : '');
+      btn.dataset.index = i;
+      btn.innerHTML = '<span class="d-name">' + d.name + '</span><span class="d-size">' + d.w + '×' + d.h + '</span>';
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.device-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        activeDeviceIndex = i;
+        var dev = DEVICES[i];
+        currentW = currentOrientation === 'portrait' ? dev.w : dev.h;
+        currentH = currentOrientation === 'portrait' ? dev.h : dev.w;
+        renderPreview();
+      });
+      deviceGrid.appendChild(btn);
+    });
+
+    function getHtml() { return document.getElementById('htmlInput').value.trim(); }
+
+    function createIframe(w, h, html) {
+      var frame = document.createElement('iframe');
+      frame.width = w;
+      frame.height = h;
+      frame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
+      if (html) {
+        frame.srcdoc = html;
+      } else {
+        frame.srcdoc = '<html><body style="display:flex;align-items:center;justify-content:center;height:100%;font-family:sans-serif;color:#888;font-size:14px;margin:0;background:#f8f9fa;">Paste HTML above to preview</body></html>';
+      }
+      return frame;
+    }
+
+    function getFrameClass(type) {
+      if (type === 'mobile') return 'device-frame mobile-frame';
+      if (type === 'tablet') return 'device-frame tablet-frame';
+      return 'device-frame';
+    }
+
+    function renderSingleFrame(w, h, label, type) {
+      var html = getHtml();
+      var maxPreviewW = Math.min(w, window.innerWidth - 60);
+      var scale = scaleToFit && w > maxPreviewW ? maxPreviewW / w : 1;
+      var displayW = Math.round(w * scale);
+      var displayH = Math.round(h * scale);
+
+      var wrapper = document.createElement('div');
+      wrapper.className = 'preview-scale-wrapper';
+
+      var frameDiv = document.createElement('div');
+      frameDiv.className = getFrameClass(type);
+      frameDiv.style.width = displayW + 'px';
+      frameDiv.style.height = displayH + 'px';
+
+      var iframe = createIframe(w, h, html);
+      iframe.style.transformOrigin = '0 0';
+      if (scale < 1) {
+        iframe.style.transform = 'scale(' + scale + ')';
+        iframe.style.width = w + 'px';
+        iframe.style.height = h + 'px';
+      }
+      frameDiv.appendChild(iframe);
+
+      var lbl = document.createElement('div');
+      lbl.className = 'device-frame-label';
+      lbl.textContent = label + ' — ' + w + '×' + h + (scale < 1 ? ' (scaled ' + Math.round(scale * 100) + '%)' : '');
+
+      wrapper.appendChild(frameDiv);
+      wrapper.appendChild(lbl);
+      return wrapper;
+    }
+
+    function renderPreview() {
+      var wrapper = document.getElementById('previewWrapper');
+      wrapper.innerHTML = '';
+      var html = getHtml();
+      var sb = document.getElementById('statusBar');
+
+      if (currentMode === 'device') {
+        var dev = DEVICES[activeDeviceIndex];
+        var w = currentOrientation === 'portrait' ? dev.w : dev.h;
+        var h = currentOrientation === 'portrait' ? dev.h : dev.w;
+        wrapper.appendChild(renderSingleFrame(w, h, dev.name + ' (' + currentOrientation + ')', dev.type));
+        sb.className = 'status-bar ' + (html ? 'valid' : 'info');
+        sb.textContent = html ? ('Previewing: ' + dev.name + ' — ' + w + '×' + h + 'px') : 'Paste HTML above to see a preview.';
+      } else if (currentMode === 'custom') {
+        var cw = parseInt(document.getElementById('customW').value) || 768;
+        var ch = parseInt(document.getElementById('customH').value) || 1024;
+        wrapper.appendChild(renderSingleFrame(cw, ch, 'Custom', 'desktop'));
+        sb.className = 'status-bar ' + (html ? 'valid' : 'info');
+        sb.textContent = html ? ('Custom viewport: ' + cw + '×' + ch + 'px') : 'Paste HTML above to see a preview.';
+      } else if (currentMode === 'sidebyside') {
+        SBS_DEVICES.forEach(function (d) {
+          wrapper.appendChild(renderSingleFrame(d.w, d.h, d.name, d.type));
+        });
+        sb.className = 'status-bar ' + (html ? 'valid' : 'info');
+        sb.textContent = html ? 'Side-by-Side: Mobile / Tablet / Desktop' : 'Paste HTML above to see a preview.';
+      }
+
+      if (html) DT.trackTool('responsive-tester');
+    }
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('mode-device').style.display = currentMode === 'device' ? '' : 'none';
+        document.getElementById('mode-custom').style.display = currentMode === 'custom' ? '' : 'none';
+        document.getElementById('mode-sidebyside').style.display = currentMode === 'sidebyside' ? '' : 'none';
+        renderPreview();
+      });
+    });
+
+    document.getElementById('portraitBtn').addEventListener('click', function () {
+      currentOrientation = 'portrait';
+      renderPreview();
+    });
+    document.getElementById('landscapeBtn').addEventListener('click', function () {
+      currentOrientation = 'landscape';
+      renderPreview();
+    });
+    document.getElementById('scaleToFit').addEventListener('change', function () {
+      scaleToFit = this.checked;
+      renderPreview();
+    });
+    document.getElementById('applyCustomBtn').addEventListener('click', renderPreview);
+
+    document.getElementById('htmlInput').addEventListener('input', DT.debounce(renderPreview, 400));
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('htmlInput').value = EXAMPLE_HTML;
+      renderPreview();
+    });
+
+    document.getElementById('clearHtmlBtn').addEventListener('click', function () {
+      document.getElementById('htmlInput').value = '';
+      renderPreview();
+    });
+
+    document.getElementById('customW').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') renderPreview();
+    });
+    document.getElementById('customH').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') renderPreview();
+    });
+
+    renderPreview();
+  })();
+  </script>
+</body>
+</html>

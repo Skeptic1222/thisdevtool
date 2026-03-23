@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Placeholder Image Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate custom placeholder images with solid colors, gradients, patterns, and text overlays. Download as PNG. No server needed — 100% browser-based using Canvas API.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/placeholder-image.html">
+  <meta property="og:title" content="Placeholder Image Generator — DevToolbox">
+  <meta property="og:description" content="Create solid, gradient, and pattern placeholder images of any size. Add custom text, download as PNG. Free, instant, client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/placeholder-image.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Placeholder Image Generator",
+    "url": "https://thisdevtool.com/tools/placeholder-image.html",
+    "description": "Generate placeholder images with solid colors, gradients, and patterns. Download as PNG. Free, 100% client-side.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a placeholder image?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A placeholder image is a temporary image used during development or design to represent content that has not yet been provided. Placeholders are typically a solid color or pattern with dimensions displayed as text, helping designers visualize layouts before real images are available."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What formats can I download placeholder images in?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool generates PNG files using the browser's Canvas API. PNG is the best format for placeholder images because it supports transparency, has lossless compression, and is universally supported in browsers, design tools, and operating systems."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How large a placeholder image can I generate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This browser-based generator can create images up to approximately 4096×4096 pixels on most modern devices, depending on available GPU memory. For very large images (poster size, print resolution), you may need a dedicated image editor or server-side tool."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are common placeholder image sizes for web design?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Common sizes include: Open Graph/social share (1200×630), Instagram square (1080×1080), Twitter header (1500×500), banner ad (728×90, 300×250), hero image (1920×600), thumbnail (400×300), favicon (512×512), and app icon (1024×1024)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use placeholder images in production?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. While placeholder images are primarily used during development, solid color or pattern images can be used in production as decorative backgrounds, color swatches, or loading states. However, they should be replaced with meaningful images for accessibility and SEO reasons in most content areas."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .canvas-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: repeating-conic-gradient(#e0e0e0 0% 25%, #fff 0% 50%) 0 0 / 20px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      min-height: 200px;
+      padding: 1rem;
+      overflow: auto;
+    }
+    #placeholderCanvas {
+      max-width: 100%;
+      border-radius: 2px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      display: block;
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    .form-field { display: flex; flex-direction: column; gap: 0.3rem; }
+    .form-field label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
+    .form-field input, .form-field select {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    .form-field input[type="color"] {
+      padding: 0.25rem;
+      height: 38px;
+      cursor: pointer;
+    }
+    .preset-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    .preset-chip {
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      cursor: pointer;
+      font-size: 0.78rem;
+      color: var(--text);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .preset-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .image-info { font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.5rem; text-align: center; }
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/aspect-ratio-calculator.html">Aspect Ratio</a>
+        <a href="/tools/color-converter.html">Color Converter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Placeholder Image Generator</h1>
+          <p class="tool-subtitle">Generate custom placeholder images with solid colors, gradients, patterns, and text. Download as PNG instantly.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="solid">Solid</button>
+            <button class="option-chip" data-mode="gradient">Gradient</button>
+            <button class="option-chip" data-mode="text">Text</button>
+            <button class="option-chip" data-mode="pattern">Pattern</button>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="imgWidth">Width (px)</label>
+              <input type="number" id="imgWidth" value="800" min="1" max="4096">
+            </div>
+            <div class="form-field">
+              <label for="imgHeight">Height (px)</label>
+              <input type="number" id="imgHeight" value="600" min="1" max="4096">
+            </div>
+            <div class="form-field" id="bgColorField">
+              <label for="bgColor">Background Color</label>
+              <input type="color" id="bgColor" value="#6366f1">
+            </div>
+            <div class="form-field" id="bgColor2Field" style="display:none;">
+              <label for="bgColor2">Gradient Color 2</label>
+              <input type="color" id="bgColor2" value="#10b981">
+            </div>
+            <div class="form-field" id="gradientDirField" style="display:none;">
+              <label for="gradientDir">Direction</label>
+              <select id="gradientDir">
+                <option value="horizontal">Horizontal →</option>
+                <option value="vertical">Vertical ↓</option>
+                <option value="diagonal">Diagonal ↗</option>
+                <option value="radial">Radial ●</option>
+              </select>
+            </div>
+            <div class="form-field" id="patternTypeField" style="display:none;">
+              <label for="patternType">Pattern</label>
+              <select id="patternType">
+                <option value="stripes">Stripes</option>
+                <option value="dots">Dots</option>
+                <option value="grid">Grid</option>
+                <option value="crosshatch">Crosshatch</option>
+              </select>
+            </div>
+            <div class="form-field" id="textOverlayField">
+              <label for="textOverlay">Text Overlay</label>
+              <input type="text" id="textOverlay" placeholder="Leave blank for dimensions" maxlength="80">
+            </div>
+            <div class="form-field" id="textColorField">
+              <label for="textColor">Text Color</label>
+              <input type="color" id="textColor" value="#ffffff">
+            </div>
+            <div class="form-field" id="textSizeField">
+              <label for="textSize">Font Size (px)</label>
+              <input type="number" id="textSize" value="0" min="0" max="200" placeholder="0 = auto">
+            </div>
+          </div>
+
+          <!-- Presets -->
+          <div>
+            <p style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);margin-top:1rem;">Quick Presets:</p>
+            <div class="preset-chips" id="presetChips"></div>
+          </div>
+
+          <!-- Canvas Preview -->
+          <div class="canvas-wrapper" style="margin-top:1rem;">
+            <canvas id="placeholderCanvas"></canvas>
+          </div>
+          <div class="image-info" id="imgInfo"></div>
+
+          <!-- Actions -->
+          <div class="btn-group" style="margin-top:1rem;">
+            <button class="btn btn-primary" id="downloadBtn">Download PNG</button>
+            <button class="btn btn-secondary" id="copyUrlBtn">Copy Data URL</button>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Adjust settings above and click Download to save your image.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Placeholder Image Generator</h2>
+          <ol>
+            <li><strong>Choose a style</strong> — Solid color, gradient, text overlay, or pattern using the mode chips.</li>
+            <li><strong>Set dimensions</strong> — Enter width and height in pixels, or click a preset for common sizes.</li>
+            <li><strong>Customize</strong> — Pick background color(s), text content, text color, and font size.</li>
+            <li><strong>Download</strong> — Click "Download PNG" to save the image, or "Copy Data URL" to use it inline in CSS or HTML.</li>
+          </ol>
+
+          <h2>What Are Placeholder Images Used For?</h2>
+          <p>Placeholder images are essential tools in the design and development workflow. They allow designers and developers to build and test layouts without waiting for final photography or artwork. They communicate image dimensions, aspect ratios, and intended content to stakeholders during the wireframing and prototyping stages.</p>
+
+          <h3>Common Use Cases</h3>
+          <ul>
+            <li><strong>UI wireframing</strong> — Show the size and position of images in mockups before real content is available.</li>
+            <li><strong>HTML/CSS prototyping</strong> — Use placeholder images in HTML templates while awaiting final assets from clients or photographers.</li>
+            <li><strong>Responsive design testing</strong> — Quickly generate images at exact breakpoint dimensions to test layout behavior.</li>
+            <li><strong>Email templates</strong> — Create placeholder images at exact email-safe dimensions (e.g., 600×200 header).</li>
+            <li><strong>Social media templates</strong> — Generate correctly sized images for every platform before real content is ready.</li>
+            <li><strong>Documentation</strong> — Add correctly sized images to screenshots, user guides, and API documentation.</li>
+          </ul>
+
+          <h3>Common Size Reference</h3>
+          <ul>
+            <li><strong>Open Graph / Social Share:</strong> 1200×630 (all platforms)</li>
+            <li><strong>Instagram Square:</strong> 1080×1080</li>
+            <li><strong>Instagram Story / Reel:</strong> 1080×1920</li>
+            <li><strong>Twitter / X Header:</strong> 1500×500</li>
+            <li><strong>YouTube Thumbnail:</strong> 1280×720</li>
+            <li><strong>Standard Banner Ad:</strong> 728×90</li>
+            <li><strong>Medium Rectangle Ad:</strong> 300×250</li>
+            <li><strong>Favicon:</strong> 512×512</li>
+          </ul>
+
+          <h3>Canvas API vs. Server-Side Generation</h3>
+          <p>Traditional placeholder image services (placehold.co, via.placeholder.com) generate images server-side. This tool uses the browser's built-in Canvas API to generate images entirely on your device. This means no network request, no rate limiting, no server downtime, and full privacy — your dimensions and content are never sent anywhere. The Canvas API supports pixel-perfect rendering of solid colors, gradients, text, and repeating patterns, making it ideal for generating placeholder images up to about 4096×4096 pixels.</p>
+
+          <h3>Pattern Types</h3>
+          <p>The pattern mode generates four visual styles:</p>
+          <ul>
+            <li><strong>Stripes</strong> — Diagonal 45° stripes, useful for "under construction" or "reserved" states.</li>
+            <li><strong>Dots</strong> — Regular dot grid, common in design mockups and wireframe tools.</li>
+            <li><strong>Grid</strong> — Horizontal and vertical lines forming a grid, useful for showing layout structure.</li>
+            <li><strong>Crosshatch</strong> — Overlapping diagonal lines in both directions, creates a dense texture.</li>
+          </ul>
+          <p>For related tools, try the <a href="/tools/aspect-ratio-calculator.html">Aspect Ratio Calculator</a> and <a href="/tools/color-converter.html">Color Converter</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a placeholder image?</button>
+            <div class="faq-answer">A placeholder image is a temporary image used during development or design to represent content that has not yet been provided. Placeholders are typically a solid color or pattern with dimensions displayed as text, helping designers visualize layouts before real images are available.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What formats can I download placeholder images in?</button>
+            <div class="faq-answer">This tool generates PNG files using the browser's Canvas API. PNG is the best format for placeholder images because it supports transparency, has lossless compression, and is universally supported in browsers, design tools, and operating systems.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How large a placeholder image can I generate?</button>
+            <div class="faq-answer">This browser-based generator can create images up to approximately 4096×4096 pixels on most modern devices. For very large images you may need a dedicated image editor or server-side tool.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are common placeholder image sizes for web design?</button>
+            <div class="faq-answer">Common sizes include: Open Graph/social share (1200×630), Instagram square (1080×1080), Twitter header (1500×500), banner ad (728×90, 300×250), hero image (1920×600), thumbnail (400×300), favicon (512×512), and app icon (1024×1024).</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I use placeholder images in production?</button>
+            <div class="faq-answer">Yes. While placeholder images are primarily used during development, solid color or pattern images can be used in production as decorative backgrounds, color swatches, or loading states. However, they should be replaced with meaningful images for accessibility and SEO in most content areas.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/color-converter.html">Color Converter</a>
+        <a href="/tools/aspect-ratio-calculator.html">Aspect Ratio</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/responsive-tester.html">Responsive Tester</a>
+        <a href="/tools/font-pairing-suggester.html">Font Pairing</a>
+        <a href="/tools/color-palette-generator.html">Color Palette</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'solid';
+    var canvas = document.getElementById('placeholderCanvas');
+    var ctx = canvas.getContext('2d');
+
+    var PRESETS = [
+      { label: 'OG Image', w: 1200, h: 630 },
+      { label: 'Instagram Square', w: 1080, h: 1080 },
+      { label: 'YouTube Thumb', w: 1280, h: 720 },
+      { label: 'Twitter Header', w: 1500, h: 500 },
+      { label: 'Banner 728×90', w: 728, h: 90 },
+      { label: 'Rect 300×250', w: 300, h: 250 },
+      { label: 'Favicon 512', w: 512, h: 512 },
+      { label: 'Hero 1920×600', w: 1920, h: 600 },
+      { label: 'Thumbnail', w: 400, h: 300 },
+      { label: 'IG Story', w: 1080, h: 1920 }
+    ];
+
+    var presetContainer = document.getElementById('presetChips');
+    PRESETS.forEach(function (p) {
+      var chip = document.createElement('button');
+      chip.className = 'preset-chip';
+      chip.textContent = p.label + ' (' + p.w + '×' + p.h + ')';
+      chip.addEventListener('click', function () {
+        document.getElementById('imgWidth').value = p.w;
+        document.getElementById('imgHeight').value = p.h;
+        generateImage();
+      });
+      presetContainer.appendChild(chip);
+    });
+
+    function showModeFields(mode) {
+      document.getElementById('bgColor2Field').style.display = mode === 'gradient' ? '' : 'none';
+      document.getElementById('gradientDirField').style.display = mode === 'gradient' ? '' : 'none';
+      document.getElementById('patternTypeField').style.display = mode === 'pattern' ? '' : 'none';
+      document.getElementById('textOverlayField').style.display = (mode === 'text' || mode === 'solid') ? '' : 'none';
+      document.getElementById('textColorField').style.display = (mode === 'text' || mode === 'solid') ? '' : 'none';
+      document.getElementById('textSizeField').style.display = (mode === 'text' || mode === 'solid') ? '' : 'none';
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        showModeFields(currentMode);
+        generateImage();
+      });
+    });
+
+    function generateImage() {
+      var w = parseInt(document.getElementById('imgWidth').value) || 800;
+      var h = parseInt(document.getElementById('imgHeight').value) || 600;
+      w = Math.min(Math.max(w, 1), 4096);
+      h = Math.min(Math.max(h, 1), 4096);
+
+      canvas.width = w;
+      canvas.height = h;
+
+      var bg = document.getElementById('bgColor').value;
+      var bg2 = document.getElementById('bgColor2').value;
+      var dir = document.getElementById('gradientDir').value;
+      var pattern = document.getElementById('patternType').value;
+      var textStr = document.getElementById('textOverlay').value.trim();
+      var textColor = document.getElementById('textColor').value;
+      var textSizeInput = parseInt(document.getElementById('textSize').value) || 0;
+
+      // Draw background
+      if (currentMode === 'solid' || currentMode === 'text') {
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, w, h);
+      } else if (currentMode === 'gradient') {
+        var grad;
+        if (dir === 'horizontal') {
+          grad = ctx.createLinearGradient(0, 0, w, 0);
+        } else if (dir === 'vertical') {
+          grad = ctx.createLinearGradient(0, 0, 0, h);
+        } else if (dir === 'diagonal') {
+          grad = ctx.createLinearGradient(0, 0, w, h);
+        } else {
+          grad = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) / 2);
+        }
+        grad.addColorStop(0, bg);
+        grad.addColorStop(1, bg2);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      } else if (currentMode === 'pattern') {
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, w, h);
+        ctx.strokeStyle = bg2 || '#ffffff44';
+        ctx.lineWidth = Math.max(1, Math.round(Math.min(w, h) / 60));
+        var step = Math.max(8, Math.round(Math.min(w, h) / 20));
+
+        if (pattern === 'stripes') {
+          ctx.save();
+          for (var i = -h; i < w + h; i += step * 2) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i + h, h);
+            ctx.stroke();
+          }
+          ctx.restore();
+        } else if (pattern === 'dots') {
+          var r = Math.max(2, step / 4);
+          ctx.fillStyle = bg2 || '#ffffff44';
+          for (var x = step; x < w; x += step) {
+            for (var y = step; y < h; y += step) {
+              ctx.beginPath();
+              ctx.arc(x, y, r, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        } else if (pattern === 'grid') {
+          for (var gx = 0; gx <= w; gx += step) {
+            ctx.beginPath();
+            ctx.moveTo(gx, 0);
+            ctx.lineTo(gx, h);
+            ctx.stroke();
+          }
+          for (var gy = 0; gy <= h; gy += step) {
+            ctx.beginPath();
+            ctx.moveTo(0, gy);
+            ctx.lineTo(w, gy);
+            ctx.stroke();
+          }
+        } else if (pattern === 'crosshatch') {
+          for (var ci = -h; ci < w + h; ci += step * 2) {
+            ctx.beginPath();
+            ctx.moveTo(ci, 0);
+            ctx.lineTo(ci + h, h);
+            ctx.stroke();
+          }
+          for (var cj = w + h; cj > -h; cj -= step * 2) {
+            ctx.beginPath();
+            ctx.moveTo(cj, 0);
+            ctx.lineTo(cj - h, h);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Text overlay
+      if (currentMode === 'solid' || currentMode === 'text') {
+        var label = textStr || (w + ' × ' + h);
+        var fontSize = textSizeInput > 0 ? textSizeInput : Math.max(14, Math.min(w / 8, h / 4, 80));
+        ctx.fillStyle = textColor;
+        ctx.font = 'bold ' + fontSize + 'px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0,0,0,0.25)';
+        ctx.shadowBlur = 4;
+        ctx.fillText(label, w / 2, h / 2);
+        ctx.shadowBlur = 0;
+      }
+
+      // Update info
+      var dataURL = canvas.toDataURL('image/png');
+      var byteLen = Math.round((dataURL.length * 3) / 4 / 1024);
+      document.getElementById('imgInfo').textContent = w + ' × ' + h + ' px — approx. ' + byteLen + ' KB PNG';
+
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar valid';
+      sb.textContent = 'Generated: ' + w + '×' + h + ' PNG — ' + byteLen + ' KB';
+      DT.trackTool('placeholder-image');
+    }
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var w = parseInt(document.getElementById('imgWidth').value) || 800;
+      var h = parseInt(document.getElementById('imgHeight').value) || 600;
+      var link = document.createElement('a');
+      link.download = 'placeholder-' + w + 'x' + h + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    document.getElementById('copyUrlBtn').addEventListener('click', function () {
+      DT.copyToClipboard(canvas.toDataURL('image/png'), this);
+    });
+
+    // Live update on any input change
+    var allInputs = ['imgWidth','imgHeight','bgColor','bgColor2','gradientDir','patternType','textOverlay','textColor','textSize'];
+    allInputs.forEach(function (id) {
+      var el = document.getElementById(id);
+      el.addEventListener('input', DT.debounce(generateImage, 200));
+      el.addEventListener('change', DT.debounce(generateImage, 200));
+    });
+
+    showModeFields('solid');
+    generateImage();
+  })();
+  </script>
+</body>
+</html>

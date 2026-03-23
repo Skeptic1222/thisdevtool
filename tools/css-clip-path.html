@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Clip Path Generator — Free Online Shape Editor | DevToolbox</title>
+  <meta name="description" content="Create CSS clip-path shapes visually. Build circles, ellipses, polygons, insets, and custom paths. Interactive vertex editor with live preview and CSS copy.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-clip-path.html">
+  <meta property="og:title" content="CSS Clip Path Generator — DevToolbox">
+  <meta property="og:description" content="Free online clip-path editor. Build polygon, circle, ellipse, and inset shapes visually with live preview and copy-ready CSS.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-clip-path.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Clip Path Generator",
+    "url": "https://thisdevtool.com/tools/css-clip-path.html",
+    "description": "Create CSS clip-path shapes visually with an interactive editor. Supports circle, ellipse, polygon, and inset with live preview.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is CSS clip-path?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS clip-path masks an element to a defined shape, hiding parts outside the clipping region. Unlike border-radius which only rounds corners, clip-path can create any shape: triangles, hexagons, arrows, stars, and custom polygons. The clipped area is hidden but the element's layout space is preserved."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What shapes does clip-path support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS clip-path supports: circle() for circles, ellipse() for ellipses, polygon() for any multi-sided shape defined by vertices, inset() for rectangular clips with optional rounded corners, and path() for arbitrary SVG paths. Polygon is the most flexible, as you can define as many vertices as needed."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does clip-path affect layout and click areas?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Clip-path affects what is visible but also affects pointer events — clicks outside the clip region do not register. However, the element's layout box (used for positioning other elements) remains the full original size. This means invisible clipped areas still take up space in the layout flow."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I animate clip-path?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. clip-path is animatable with CSS transitions and keyframe animations, as long as both the start and end states use the same shape type with the same number of vertices. For example, animating between two polygon() shapes with the same vertex count creates a smooth morph effect."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between clip-path and mask in CSS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "clip-path uses geometric shapes or SVG paths to define a clipping region — everything inside is shown, everything outside is hidden. mask uses an image (or gradient) as an alpha channel, allowing smooth gradual transparency. Masks are more flexible but more expensive; clip-path is simpler and more performant for hard-edged shapes."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .clip-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .clip-row { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; }
+    .clip-row label { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+    .clip-row label span { color: var(--accent); font-weight: 700; }
+    .clip-row input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .preview-stage { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .clip-canvas-wrap { position: relative; width: 300px; height: 240px; }
+    #clipPreview { width: 300px; height: 240px; background: linear-gradient(135deg, #10b981, #0ea5e9); position: absolute; top: 0; left: 0; }
+    #clipOverlay { position: absolute; top: 0; left: 0; width: 300px; height: 240px; pointer-events: none; }
+    .vertex-dot { position: absolute; width: 14px; height: 14px; background: white; border: 2px solid var(--accent); border-radius: 50%; transform: translate(-50%, -50%); cursor: grab; touch-action: none; z-index: 10; }
+    .vertex-dot:hover { background: var(--accent); }
+    .vertex-dot:active { cursor: grabbing; }
+    .vertices-list { width: 100%; max-width: 300px; }
+    .vertex-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; font-size: 0.8rem; }
+    .vertex-row input { width: 60px; padding: 0.2rem 0.4rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-card); color: var(--text); font-size: 0.8rem; }
+    .vertex-row span { color: var(--text-secondary); }
+    .css-output-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); word-break: break-all; min-height: 2.5rem; }
+    @media (max-width: 500px) { .clip-controls { grid-template-columns: 1fr; } .clip-canvas-wrap, #clipPreview, #clipOverlay { width: 260px; height: 200px; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-border-radius.html">Border Radius</a>
+        <a href="/tools/css-transform.html">Transform</a>
+        <a href="/tools/css-filter-playground.html">Filters</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Clip Path Generator</h1>
+          <p class="tool-subtitle">Build clip-path shapes visually. Drag vertices, pick presets, and copy the CSS.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="polygon">Polygon</button>
+            <button class="option-chip" data-mode="circle">Circle</button>
+            <button class="option-chip" data-mode="ellipse">Ellipse</button>
+            <button class="option-chip" data-mode="inset">Inset</button>
+            <button class="option-chip" data-mode="presets">Presets</button>
+          </div>
+
+          <!-- Polygon controls -->
+          <div id="polygonPanel">
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap;align-items:center;">
+              <button class="btn btn-sm btn-primary" id="addVertexBtn">+ Add Vertex</button>
+              <button class="btn btn-sm btn-secondary" id="removeVertexBtn">Remove Last</button>
+              <span style="font-size:0.8rem;color:var(--text-secondary);">Drag the white dots to move vertices</span>
+            </div>
+            <div class="vertices-list" id="vertexList"></div>
+          </div>
+
+          <!-- Circle controls -->
+          <div id="circlePanel" style="display:none;">
+            <div class="clip-controls">
+              <div class="clip-row">
+                <label>Radius <span id="circleRVal">50%</span></label>
+                <input type="range" id="circleRSlider" min="5" max="100" value="50">
+              </div>
+              <div class="clip-row">
+                <label>Center X <span id="circleCXVal">50%</span></label>
+                <input type="range" id="circleCXSlider" min="0" max="100" value="50">
+              </div>
+              <div class="clip-row">
+                <label>Center Y <span id="circleCYVal">50%</span></label>
+                <input type="range" id="circleCYSlider" min="0" max="100" value="50">
+              </div>
+            </div>
+          </div>
+
+          <!-- Ellipse controls -->
+          <div id="ellipsePanel" style="display:none;">
+            <div class="clip-controls">
+              <div class="clip-row">
+                <label>Radius X <span id="ellipseRXVal">50%</span></label>
+                <input type="range" id="ellipseRXSlider" min="5" max="100" value="50">
+              </div>
+              <div class="clip-row">
+                <label>Radius Y <span id="ellipseRYVal">35%</span></label>
+                <input type="range" id="ellipseRYSlider" min="5" max="100" value="35">
+              </div>
+              <div class="clip-row">
+                <label>Center X <span id="ellipseCXVal">50%</span></label>
+                <input type="range" id="ellipseCXSlider" min="0" max="100" value="50">
+              </div>
+              <div class="clip-row">
+                <label>Center Y <span id="ellipseCYVal">50%</span></label>
+                <input type="range" id="ellipseCYSlider" min="0" max="100" value="50">
+              </div>
+            </div>
+          </div>
+
+          <!-- Inset controls -->
+          <div id="insetPanel" style="display:none;">
+            <div class="clip-controls">
+              <div class="clip-row">
+                <label>Top <span id="insetTVal">10%</span></label>
+                <input type="range" id="insetTSlider" min="0" max="50" value="10">
+              </div>
+              <div class="clip-row">
+                <label>Right <span id="insetRVal">10%</span></label>
+                <input type="range" id="insetRSlider" min="0" max="50" value="10">
+              </div>
+              <div class="clip-row">
+                <label>Bottom <span id="insetBVal">10%</span></label>
+                <input type="range" id="insetBSlider" min="0" max="50" value="10">
+              </div>
+              <div class="clip-row">
+                <label>Left <span id="insetLVal">10%</span></label>
+                <input type="range" id="insetLSlider" min="0" max="50" value="10">
+              </div>
+              <div class="clip-row">
+                <label>Round Corners <span id="insetRndVal">0%</span></label>
+                <input type="range" id="insetRndSlider" min="0" max="50" value="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Presets -->
+          <div id="presetsPanel" style="display:none;">
+            <div class="option-chips" style="flex-wrap:wrap;">
+              <button class="option-chip preset-btn" data-preset="triangle">Triangle</button>
+              <button class="option-chip preset-btn" data-preset="pentagon">Pentagon</button>
+              <button class="option-chip preset-btn" data-preset="hexagon">Hexagon</button>
+              <button class="option-chip preset-btn" data-preset="star">Star</button>
+              <button class="option-chip preset-btn" data-preset="arrow">Arrow</button>
+              <button class="option-chip preset-btn" data-preset="cross">Cross</button>
+              <button class="option-chip preset-btn" data-preset="diamond">Diamond</button>
+              <button class="option-chip preset-btn" data-preset="chevron">Chevron</button>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-stage">
+            <div class="clip-canvas-wrap" id="canvasWrap">
+              <div id="clipPreview"></div>
+              <div id="clipOverlay"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+          </div>
+
+          <div class="pane-label" style="margin-top:1rem;">
+            <span>Generated CSS</span>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+            </div>
+          </div>
+          <div class="css-output-box" id="cssOutput">clip-path: none;</div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Drag the vertices or adjust sliders to build your clip-path shape.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Clip Path Generator</h2>
+          <ol>
+            <li><strong>Choose a shape type</strong> — Polygon for custom multi-point shapes, Circle for perfect circles, Ellipse for ovals, or Inset for rectangular clips. Use Presets for instant common shapes.</li>
+            <li><strong>Edit the shape</strong> — In Polygon mode, drag the white dots on the preview to move vertices. Use "Add Vertex" to add more points. In other modes, use the sliders.</li>
+            <li><strong>Apply a preset</strong> — Click any preset shape to load its polygon coordinates instantly.</li>
+            <li><strong>Copy the CSS</strong> — Click Copy to grab the clip-path declaration, or Download to save it as a .css file.</li>
+          </ol>
+
+          <h2>Understanding CSS clip-path</h2>
+          <p>The <code>clip-path</code> property clips an element to a defined shape. Anything outside the shape is invisible, while anything inside is fully visible. Unlike <code>overflow: hidden</code> which clips to the element's rectangular bounds, clip-path can use any geometric shape, creating triangles, arrows, hexagons, stars, and smooth curves.</p>
+
+          <h3>Shape Types</h3>
+          <ul>
+            <li><strong>polygon()</strong> — The most flexible type. Define any number of vertex points as percentage or pixel coordinates. Used for triangles, arrows, stars, chevrons, and custom brand shapes.</li>
+            <li><strong>circle(radius at x y)</strong> — Clips to a circle. The radius can be a length or percentage; the center position defaults to 50% 50%.</li>
+            <li><strong>ellipse(rx ry at x y)</strong> — Like circle but with separate horizontal and vertical radii. Useful for oval hero section decorations.</li>
+            <li><strong>inset(top right bottom left round radius)</strong> — A rectangular clip inset from the element's edges. The optional <code>round</code> keyword adds corner rounding to the inset rectangle.</li>
+            <li><strong>path()</strong> — An SVG path string for completely arbitrary shapes including curves, arcs, and complex paths.</li>
+          </ul>
+
+          <h3>Polygon Coordinate System</h3>
+          <p>Polygon coordinates are measured from the top-left corner of the element. Using percentages (recommended) makes the shape responsive — it scales with the element. Using pixel values creates a fixed shape that does not scale. For a triangle pointing up: <code>polygon(50% 0%, 0% 100%, 100% 100%)</code>. For a hexagon: <code>polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)</code>.</p>
+
+          <h3>Animating clip-path</h3>
+          <p>You can animate between two polygon shapes as long as they have the same number of vertices. This creates smooth morphing transitions: <code>transition: clip-path 0.4s ease;</code>. Add a :hover rule with a different polygon to create interactive shape morphs. For star-to-circle effects, use the same number of points in both shapes. Combine with the <a href="/tools/css-animation-generator.html">CSS Animation Generator</a> for keyframe-based clip-path morphing.</p>
+
+          <h3>Clip-path and Accessibility</h3>
+          <p>Because clip-path hides the clipped portions visually, be careful with text and interactive content. Screen readers can still read text inside a clipped element even if it is not visible. Pointer events are also disabled in clipped regions, so buttons or links outside the clip shape are not clickable. Always test clipped interactive elements across devices. For pure decorative shapes, clip-path is ideal. For content masking, consider whether a mask or overflow approach better serves your use case. Explore more CSS design tools like the <a href="/tools/css-filter-playground.html">Filter Playground</a> or the <a href="/tools/css-border-radius.html">Border Radius Generator</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is CSS clip-path?</button>
+            <div class="faq-answer">CSS clip-path masks an element to a defined shape, hiding parts outside the clipping region. Unlike border-radius which only rounds corners, clip-path can create any shape: triangles, hexagons, arrows, stars, and custom polygons. The clipped area is hidden but the element's layout space is preserved.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What shapes does clip-path support?</button>
+            <div class="faq-answer">CSS clip-path supports: circle() for circles, ellipse() for ellipses, polygon() for any multi-sided shape, inset() for rectangular clips with optional rounded corners, and path() for arbitrary SVG paths. Polygon is the most flexible for custom shapes.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does clip-path affect layout and click areas?</button>
+            <div class="faq-answer">Clip-path affects what is visible and also affects pointer events — clicks outside the clip region do not register. However, the element's layout box remains the full original size, so invisible clipped areas still take up space in the layout flow.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I animate clip-path?</button>
+            <div class="faq-answer">Yes. clip-path is animatable as long as both the start and end states use the same shape type with the same number of vertices. Animating between two polygon() shapes with the same vertex count creates a smooth morph effect.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between clip-path and mask in CSS?</button>
+            <div class="faq-answer">clip-path uses geometric shapes to define a clipping region — everything inside is shown, everything outside is hidden. mask uses an image as an alpha channel, allowing smooth gradual transparency. Masks are more flexible but more expensive; clip-path is simpler and more performant for hard-edged shapes.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS & Design</h4>
+        <a href="/tools/css-border-radius.html">Border Radius</a>
+        <a href="/tools/css-transform.html">CSS Transform</a>
+        <a href="/tools/css-animation-generator.html">Animation Generator</a>
+        <a href="/tools/css-filter-playground.html">Filter Effects</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-clip-path.html">Clip Path Editor</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var currentMode = 'polygon';
+      var W = 300, H = 240;
+
+      var previewEl = document.getElementById('clipPreview');
+      var overlayEl = document.getElementById('clipOverlay');
+      var cssOutput = document.getElementById('cssOutput');
+      var statusBar = document.getElementById('statusBar');
+
+      // Polygon vertices as % values [0..100]
+      var vertices = [
+        { x: 50, y: 0 },
+        { x: 0, y: 100 },
+        { x: 100, y: 100 }
+      ];
+
+      var polygonPresets = {
+        triangle:  [{ x:50, y:0 }, { x:0, y:100 }, { x:100, y:100 }],
+        pentagon:  [{ x:50, y:0 }, { x:100, y:38 }, { x:82, y:100 }, { x:18, y:100 }, { x:0, y:38 }],
+        hexagon:   [{ x:25, y:0 }, { x:75, y:0 }, { x:100, y:50 }, { x:75, y:100 }, { x:25, y:100 }, { x:0, y:50 }],
+        star:      [{ x:50, y:0 }, { x:61, y:35 }, { x:98, y:35 }, { x:68, y:57 }, { x:79, y:91 }, { x:50, y:70 }, { x:21, y:91 }, { x:32, y:57 }, { x:2, y:35 }, { x:39, y:35 }],
+        arrow:     [{ x:0, y:20 }, { x:60, y:20 }, { x:60, y:0 }, { x:100, y:50 }, { x:60, y:100 }, { x:60, y:80 }, { x:0, y:80 }],
+        cross:     [{ x:33, y:0 }, { x:67, y:0 }, { x:67, y:33 }, { x:100, y:33 }, { x:100, y:67 }, { x:67, y:67 }, { x:67, y:100 }, { x:33, y:100 }, { x:33, y:67 }, { x:0, y:67 }, { x:0, y:33 }, { x:33, y:33 }],
+        diamond:   [{ x:50, y:0 }, { x:100, y:50 }, { x:50, y:100 }, { x:0, y:50 }],
+        chevron:   [{ x:0, y:0 }, { x:80, y:0 }, { x:100, y:50 }, { x:80, y:100 }, { x:0, y:100 }, { x:20, y:50 }]
+      };
+
+      function buildPolygonCSS() {
+        var pts = vertices.map(function(v) { return Math.round(v.x) + '% ' + Math.round(v.y) + '%'; });
+        return 'clip-path: polygon(' + pts.join(', ') + ');';
+      }
+
+      function buildCircleCSS() {
+        var r = document.getElementById('circleRSlider').value;
+        var cx = document.getElementById('circleCXSlider').value;
+        var cy = document.getElementById('circleCYSlider').value;
+        return 'clip-path: circle(' + r + '% at ' + cx + '% ' + cy + '%);';
+      }
+
+      function buildEllipseCSS() {
+        var rx = document.getElementById('ellipseRXSlider').value;
+        var ry = document.getElementById('ellipseRYSlider').value;
+        var cx = document.getElementById('ellipseCXSlider').value;
+        var cy = document.getElementById('ellipseCYSlider').value;
+        return 'clip-path: ellipse(' + rx + '% ' + ry + '% at ' + cx + '% ' + cy + '%);';
+      }
+
+      function buildInsetCSS() {
+        var t = document.getElementById('insetTSlider').value;
+        var r = document.getElementById('insetRSlider').value;
+        var b = document.getElementById('insetBSlider').value;
+        var l = document.getElementById('insetLSlider').value;
+        var rnd = document.getElementById('insetRndSlider').value;
+        var base = 'inset(' + t + '% ' + r + '% ' + b + '% ' + l + '%)';
+        if (parseInt(rnd) > 0) base += ' round ' + rnd + '%';
+        return 'clip-path: ' + base + ';';
+      }
+
+      function getCurrentCSS() {
+        switch (currentMode) {
+          case 'circle': return buildCircleCSS();
+          case 'ellipse': return buildEllipseCSS();
+          case 'inset': return buildInsetCSS();
+          default: return buildPolygonCSS();
+        }
+      }
+
+      function update() {
+        var css = getCurrentCSS();
+        var raw = css.replace('clip-path: ', '').replace(';', '');
+        previewEl.style.clipPath = raw;
+        cssOutput.textContent = css;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Clip-path CSS generated.';
+        DT.trackTool('css-clip-path');
+      }
+
+      // Render draggable dots for polygon
+      function renderDots() {
+        overlayEl.innerHTML = '';
+        vertices.forEach(function(v, idx) {
+          var dot = document.createElement('div');
+          dot.className = 'vertex-dot';
+          dot.style.left = (v.x / 100 * W) + 'px';
+          dot.style.top = (v.y / 100 * H) + 'px';
+          dot.title = idx + ': ' + Math.round(v.x) + '%, ' + Math.round(v.y) + '%';
+
+          var dragging = false, startX, startY, startVX, startVY;
+          function onStart(clientX, clientY) {
+            dragging = true;
+            startX = clientX; startY = clientY;
+            startVX = v.x; startVY = v.y;
+          }
+          function onMove(clientX, clientY) {
+            if (!dragging) return;
+            var rect = overlayEl.getBoundingClientRect();
+            var nx = ((clientX - rect.left) / rect.width * 100);
+            var ny = ((clientY - rect.top) / rect.height * 100);
+            v.x = Math.max(0, Math.min(100, nx));
+            v.y = Math.max(0, Math.min(100, ny));
+            dot.style.left = (v.x / 100 * W) + 'px';
+            dot.style.top = (v.y / 100 * H) + 'px';
+            dot.title = idx + ': ' + Math.round(v.x) + '%, ' + Math.round(v.y) + '%';
+            renderVertexList();
+            update();
+          }
+          function onEnd() { dragging = false; }
+
+          dot.addEventListener('mousedown', function(e) { e.preventDefault(); onStart(e.clientX, e.clientY); });
+          document.addEventListener('mousemove', function(e) { onMove(e.clientX, e.clientY); });
+          document.addEventListener('mouseup', onEnd);
+          dot.addEventListener('touchstart', function(e) { e.preventDefault(); onStart(e.touches[0].clientX, e.touches[0].clientY); }, { passive: false });
+          document.addEventListener('touchmove', function(e) { if(dragging) { e.preventDefault(); onMove(e.touches[0].clientX, e.touches[0].clientY); } }, { passive: false });
+          document.addEventListener('touchend', onEnd);
+
+          overlayEl.appendChild(dot);
+        });
+      }
+
+      function renderVertexList() {
+        var list = document.getElementById('vertexList');
+        list.innerHTML = '';
+        vertices.forEach(function(v, idx) {
+          var row = document.createElement('div');
+          row.className = 'vertex-row';
+          var lbl = document.createElement('span');
+          lbl.textContent = '#' + (idx + 1);
+          lbl.style.minWidth = '2rem';
+          var xInp = document.createElement('input');
+          xInp.type = 'number'; xInp.min = 0; xInp.max = 100; xInp.value = Math.round(v.x);
+          var sep = document.createElement('span'); sep.textContent = '%, ';
+          var yInp = document.createElement('input');
+          yInp.type = 'number'; yInp.min = 0; yInp.max = 100; yInp.value = Math.round(v.y);
+          var pct2 = document.createElement('span'); pct2.textContent = '%';
+          xInp.addEventListener('input', function() { v.x = parseFloat(xInp.value) || 0; renderDots(); update(); });
+          yInp.addEventListener('input', function() { v.y = parseFloat(yInp.value) || 0; renderDots(); update(); });
+          row.appendChild(lbl); row.appendChild(xInp); row.appendChild(sep); row.appendChild(yInp); row.appendChild(pct2);
+          list.appendChild(row);
+        });
+      }
+
+      document.getElementById('addVertexBtn').addEventListener('click', function() {
+        vertices.push({ x: 50, y: 50 });
+        renderDots(); renderVertexList(); update();
+      });
+
+      document.getElementById('removeVertexBtn').addEventListener('click', function() {
+        if (vertices.length > 3) { vertices.pop(); renderDots(); renderVertexList(); update(); }
+      });
+
+      // Mode chips
+      document.querySelectorAll('.option-chip[data-mode]').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('.option-chip[data-mode]').forEach(function(c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          document.getElementById('polygonPanel').style.display = currentMode === 'polygon' ? '' : 'none';
+          document.getElementById('circlePanel').style.display = currentMode === 'circle' ? '' : 'none';
+          document.getElementById('ellipsePanel').style.display = currentMode === 'ellipse' ? '' : 'none';
+          document.getElementById('insetPanel').style.display = currentMode === 'inset' ? '' : 'none';
+          document.getElementById('presetsPanel').style.display = currentMode === 'presets' ? '' : 'none';
+          overlayEl.style.display = currentMode === 'polygon' ? '' : 'none';
+          update();
+        });
+      });
+
+      // Preset buttons
+      document.querySelectorAll('.preset-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var p = polygonPresets[btn.getAttribute('data-preset')];
+          if (!p) return;
+          vertices = JSON.parse(JSON.stringify(p));
+          currentMode = 'polygon';
+          document.querySelectorAll('.option-chip[data-mode]').forEach(function(c) { c.classList.remove('active'); });
+          document.querySelector('.option-chip[data-mode="polygon"]').classList.add('active');
+          document.getElementById('polygonPanel').style.display = '';
+          document.getElementById('presetsPanel').style.display = 'none';
+          document.getElementById('circlePanel').style.display = 'none';
+          document.getElementById('ellipsePanel').style.display = 'none';
+          document.getElementById('insetPanel').style.display = 'none';
+          overlayEl.style.display = '';
+          renderDots(); renderVertexList(); update();
+        });
+      });
+
+      // Slider bindings for circle/ellipse/inset
+      function bindClipSlider(sliderId, displayId, fmt) {
+        var sl = document.getElementById(sliderId);
+        var dv = document.getElementById(displayId);
+        sl.addEventListener('input', function() {
+          dv.textContent = fmt(sl.value);
+          update();
+        });
+      }
+      bindClipSlider('circleRSlider', 'circleRVal', function(v){ return v+'%'; });
+      bindClipSlider('circleCXSlider', 'circleCXVal', function(v){ return v+'%'; });
+      bindClipSlider('circleCYSlider', 'circleCYVal', function(v){ return v+'%'; });
+      bindClipSlider('ellipseRXSlider', 'ellipseRXVal', function(v){ return v+'%'; });
+      bindClipSlider('ellipseRYSlider', 'ellipseRYVal', function(v){ return v+'%'; });
+      bindClipSlider('ellipseCXSlider', 'ellipseCXVal', function(v){ return v+'%'; });
+      bindClipSlider('ellipseCYSlider', 'ellipseCYVal', function(v){ return v+'%'; });
+      bindClipSlider('insetTSlider', 'insetTVal', function(v){ return v+'%'; });
+      bindClipSlider('insetRSlider', 'insetRVal', function(v){ return v+'%'; });
+      bindClipSlider('insetBSlider', 'insetBVal', function(v){ return v+'%'; });
+      bindClipSlider('insetLSlider', 'insetLVal', function(v){ return v+'%'; });
+      bindClipSlider('insetRndSlider', 'insetRndVal', function(v){ return v+'%'; });
+
+      document.getElementById('exampleBtn').addEventListener('click', function() {
+        vertices = JSON.parse(JSON.stringify(polygonPresets.star));
+        currentMode = 'polygon';
+        document.querySelectorAll('.option-chip[data-mode]').forEach(function(c) { c.classList.remove('active'); });
+        document.querySelector('.option-chip[data-mode="polygon"]').classList.add('active');
+        document.getElementById('polygonPanel').style.display = '';
+        ['circlePanel','ellipsePanel','insetPanel','presetsPanel'].forEach(function(id){ document.getElementById(id).style.display='none'; });
+        overlayEl.style.display = '';
+        renderDots(); renderVertexList(); update();
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function() {
+        DT.copyToClipboard(cssOutput.textContent, this);
+      });
+      document.getElementById('downloadBtn').addEventListener('click', function() {
+        DT.downloadText(cssOutput.textContent, 'clip-path.css', 'text/css');
+      });
+
+      // Init
+      renderDots();
+      renderVertexList();
+      update();
+    })();
+  </script>
+</body>
+</html>

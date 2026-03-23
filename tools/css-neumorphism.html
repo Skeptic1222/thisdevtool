@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Neumorphism CSS Generator — Soft UI Generator | DevToolbox</title>
+  <meta name="description" content="Generate neumorphism (soft UI) CSS with live preview. Adjust size, radius, blur, and intensity. Auto-calculate light and shadow colors. Copy CSS instantly.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-neumorphism.html">
+  <meta property="og:title" content="Neumorphism CSS Generator — DevToolbox">
+  <meta property="og:description" content="Free online neumorphism generator with live preview. Adjust shadow intensity, blur, and shape. Copy CSS instantly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-neumorphism.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Neumorphism CSS Generator",
+    "url": "https://thisdevtool.com/tools/css-neumorphism.html",
+    "description": "Generate neumorphism soft UI CSS with live preview. Auto-calculate shadow colors from your base color.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is neumorphism?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Neumorphism (or 'soft UI') is a design style that creates raised or indented elements on a flat background using two carefully placed box-shadows: a lighter shadow on the top-left and a darker shadow on the bottom-right. The result looks like elements are made of the same material as the background, slightly raised or pressed into the surface."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do you calculate neumorphic shadow colors?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Neumorphic shadows are derived from the base background color. The light shadow is calculated by lightening the base color (increasing brightness), and the dark shadow is calculated by darkening it (decreasing brightness). The intensity slider controls how much lighter and darker these colors are relative to the base."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between flat, concave, and convex neumorphism?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Flat neumorphism uses equal shadow on both sides to create a raised effect with a flat surface. Concave adds a gradient going from dark-to-light top-to-bottom, making the surface appear to curve inward like a bowl. Convex uses a light-to-dark gradient, making the surface appear to bulge outward. Pressed reverses the shadow direction to make the element look pushed into the surface."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is neumorphism accessible?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Neumorphism has accessibility concerns because the low-contrast shadows can be hard to distinguish for users with visual impairments. Always test with WCAG contrast checkers and avoid using neumorphic styles for interactive elements without additional visual indicators like color changes, outlines, or focus rings. Use the Color Contrast Checker tool to verify your color choices."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What background colors work best for neumorphism?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Neumorphism works best with muted, mid-tone colors — not too light and not too dark. Pure white or pure black make it hard to see the shadow difference. Colors like #e0e5ec (light gray-blue), #f0f0f0 (warm gray), and pastel tones in the #c0-#e0 hex range work beautifully. Avoid saturated bright colors, which make the shadows look muddy."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .neu-preview-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+      border-radius: var(--radius);
+      padding: 3rem 2rem;
+      transition: background 0.3s;
+    }
+    .neu-element {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    @media (max-width: 600px) { .controls-grid { grid-template-columns: 1fr; } }
+    .control-row { display: flex; flex-direction: column; gap: 0.25rem; }
+    .control-row label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
+    .control-row .range-val { font-weight: 600; color: var(--accent); font-size: 0.9rem; }
+    .color-row { display: flex; align-items: center; gap: 0.75rem; }
+    .color-row input[type="color"] { width: 48px; height: 36px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; background: none; padding: 2px; }
+    .shadow-colors { display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .shadow-swatch { display: inline-block; width: 16px; height: 16px; border-radius: 50%; vertical-align: middle; margin-right: 4px; border: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-glassmorphism.html">Glassmorphism</a>
+        <a href="/tools/css-unit-converter.html">CSS Units</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Neumorphism CSS Generator</h1>
+          <p class="tool-subtitle">Create soft UI / neumorphic elements with live preview. Shadow colors auto-calculated from your base color.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-shape="flat">Flat</button>
+            <button class="option-chip" data-shape="concave">Concave</button>
+            <button class="option-chip" data-shape="convex">Convex</button>
+            <button class="option-chip" data-shape="pressed">Pressed</button>
+          </div>
+
+          <!-- Live Preview -->
+          <div class="neu-preview-wrapper" id="previewWrapper">
+            <div class="neu-element" id="neuElement">Soft UI</div>
+          </div>
+
+          <!-- Shadow Colors Display -->
+          <div class="shadow-colors">
+            <span><span class="shadow-swatch" id="lightSwatch"></span>Light shadow: <strong id="lightColor">#ffffff</strong></span>
+            <span><span class="shadow-swatch" id="darkSwatch"></span>Dark shadow: <strong id="darkColor">#c0c0c0</strong></span>
+          </div>
+
+          <!-- Controls -->
+          <div class="controls-grid">
+            <div class="control-row">
+              <label>Base Color</label>
+              <div class="color-row">
+                <input type="color" id="baseColor" value="#e0e5ec">
+                <span style="font-size:0.85rem;color:var(--text-secondary);">Background color</span>
+              </div>
+            </div>
+            <div class="control-row">
+              <label>Size — <span class="range-val" id="sizeVal">150px</span></label>
+              <input type="range" class="slider-input" id="sizeSlider" min="60" max="300" value="150">
+            </div>
+            <div class="control-row">
+              <label>Border Radius — <span class="range-val" id="radiusVal">20px</span></label>
+              <input type="range" class="slider-input" id="radiusSlider" min="0" max="100" value="20">
+            </div>
+            <div class="control-row">
+              <label>Shadow Distance — <span class="range-val" id="distanceVal">15px</span></label>
+              <input type="range" class="slider-input" id="distanceSlider" min="1" max="50" value="15">
+            </div>
+            <div class="control-row">
+              <label>Blur — <span class="range-val" id="blurVal">30px</span></label>
+              <input type="range" class="slider-input" id="blurSlider" min="1" max="80" value="30">
+            </div>
+            <div class="control-row">
+              <label>Intensity — <span class="range-val" id="intensityVal">20%</span></label>
+              <input type="range" class="slider-input" id="intensitySlider" min="5" max="50" value="20">
+            </div>
+          </div>
+
+          <!-- Preset Buttons -->
+          <div style="margin-top:1rem;">
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.5rem;">Presets:</p>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-secondary" data-preset="button">Button</button>
+              <button class="btn btn-sm btn-secondary" data-preset="card">Card</button>
+              <button class="btn btn-sm btn-secondary" data-preset="input">Input</button>
+              <button class="btn btn-sm btn-secondary" data-preset="toggle">Toggle</button>
+              <button class="btn btn-sm btn-secondary" data-preset="circle">Circle</button>
+            </div>
+          </div>
+
+          <!-- Output -->
+          <div style="margin-top:1rem;">
+            <div class="pane-label">
+              <span>Generated CSS</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy CSS</button>
+                <button class="btn btn-sm btn-secondary" id="downloadBtn">Download .css</button>
+              </div>
+            </div>
+            <div class="code-output" id="cssOutput" style="min-height:140px;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Adjust controls to generate neumorphic CSS.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Neumorphism Generator</h2>
+          <ol>
+            <li><strong>Pick a base color</strong> — use the color picker to select your background/base color. Mid-tone, muted colors work best.</li>
+            <li><strong>Choose a shape</strong> — select Flat, Concave, Convex, or Pressed using the chips at the top.</li>
+            <li><strong>Adjust the sliders</strong> — control size, border radius, shadow distance, blur, and intensity.</li>
+            <li><strong>Apply a preset</strong> — click Button, Card, Input, Toggle, or Circle to jump to common configurations.</li>
+            <li><strong>Copy the CSS</strong> — copy the generated box-shadow values for use in your project.</li>
+          </ol>
+
+          <h2>What Is Neumorphism?</h2>
+          <p>Neumorphism (a portmanteau of "new" and "skeuomorphism") is a design style coined around 2020 that creates a soft, plastic-like appearance using carefully placed CSS <code>box-shadow</code> values. Unlike the glossy surfaces of skeuomorphism or the flat colors of flat design, neumorphism gives elements a subtle three-dimensional look as if they are slightly raised from or pressed into the background surface.</p>
+          <p>The key insight of neumorphism is that the element, the light shadow, and the dark shadow all derive from the same base color — just lighter and darker. This creates a monochromatic, cohesive feel where UI elements look as if they are made from the same material as the page itself.</p>
+
+          <h3>How Shadow Colors Are Calculated</h3>
+          <p>Given a base hex color, the neumorphism algorithm works as follows: the hex color is converted to HSL (hue, saturation, lightness), and then two derived colors are created — one with increased lightness (the highlight shadow, top-left) and one with decreased lightness (the shadow color, bottom-right). The intensity slider controls how far these colors deviate from the base. Higher intensity creates more pronounced shadows that are easier to see; lower intensity creates a more subtle, refined look.</p>
+
+          <h3>Shape Types Explained</h3>
+          <ul>
+            <li><strong>Flat</strong> — the standard neumorphic raised shape. Light shadow top-left, dark shadow bottom-right. The surface appears flat but raised from the background.</li>
+            <li><strong>Concave</strong> — adds an inward gradient (dark-to-light, top-to-bottom) to the flat shape, making the center appear to sink in like a shallow bowl.</li>
+            <li><strong>Convex</strong> — adds an outward gradient (light-to-dark, top-to-bottom) to the flat shape, making the center bulge outward like a dome.</li>
+            <li><strong>Pressed</strong> — reverses the inset shadows to simulate a button that has been pushed in, the opposite of flat.</li>
+          </ul>
+
+          <h3>Choosing the Right Base Color</h3>
+          <p>The best neumorphic colors are mid-range grays and pastel tones in the lightness range of 75–90% in HSL. Pure white (#ffffff) means the light shadow is invisible, and pure black means the dark shadow is invisible. Warm grays like #e0d8d0, cool grays like #e0e5ec, and soft pastels like #d4e8d4 all work beautifully. Highly saturated colors can produce harsh-looking shadows, so reduce saturation if the shadows look too colorful.</p>
+
+          <h3>Accessibility Warning</h3>
+          <p>Neumorphism has been criticized for accessibility issues. The low-contrast shadow-based visual language is difficult to perceive for users with low vision or contrast sensitivity disorders. When using neumorphism in production: always add clear focus states with high-contrast outlines for keyboard navigation, use additional visual indicators (icons, labels) on interactive elements, test your design with WCAG contrast checkers, and consider offering a high-contrast mode. See the <a href="/tools/color-contrast.html">Color Contrast Checker</a> to verify your choices meet WCAG 2.1 AA standards.</p>
+
+          <h3>Neumorphism vs. Glassmorphism</h3>
+          <p>Both trends emerged in the same era, but they serve different aesthetics. Neumorphism works on flat monochromatic backgrounds with no transparency, creating a physical, tactile feel. Glassmorphism requires a colorful background to blur, creating an airy, light, translucent feel. Neumorphism struggles in dark mode because the shadow contrast becomes very subtle, while glassmorphism can look stunning in dark interfaces. Try the <a href="/tools/css-glassmorphism.html">Glassmorphism Generator</a> to compare. For more CSS tools, see the <a href="/tools/css-specificity.html">CSS Specificity Calculator</a> and <a href="/tools/css-easing-visualizer.html">Cubic Bezier Easing Editor</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is neumorphism?</button>
+            <div class="faq-answer">Neumorphism (or 'soft UI') is a design style that creates raised or indented elements on a flat background using two carefully placed box-shadows: a lighter shadow on the top-left and a darker shadow on the bottom-right. The result looks like elements are made of the same material as the background, slightly raised or pressed into the surface.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do you calculate neumorphic shadow colors?</button>
+            <div class="faq-answer">Neumorphic shadows are derived from the base background color. The light shadow is calculated by lightening the base color (increasing brightness), and the dark shadow is calculated by darkening it (decreasing brightness). The intensity slider controls how much lighter and darker these colors are relative to the base.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between flat, concave, and convex neumorphism?</button>
+            <div class="faq-answer">Flat neumorphism uses equal shadow on both sides to create a raised effect with a flat surface. Concave adds a gradient going from dark-to-light top-to-bottom, making the surface appear to curve inward like a bowl. Convex uses a light-to-dark gradient, making the surface appear to bulge outward. Pressed reverses the shadow direction to make the element look pushed into the surface.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is neumorphism accessible?</button>
+            <div class="faq-answer">Neumorphism has accessibility concerns because the low-contrast shadows can be hard to distinguish for users with visual impairments. Always test with WCAG contrast checkers and avoid using neumorphic styles for interactive elements without additional visual indicators like color changes, outlines, or focus rings.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What background colors work best for neumorphism?</button>
+            <div class="faq-answer">Neumorphism works best with muted, mid-tone colors — not too light and not too dark. Pure white or pure black make it hard to see the shadow difference. Colors like #e0e5ec (light gray-blue), #f0f0f0 (warm gray), and pastel tones in the #c0-#e0 hex range work beautifully. Avoid saturated bright colors, which make the shadows look muddy.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS & Design</h4>
+        <a href="/tools/css-glassmorphism.html">Glassmorphism</a>
+        <a href="/tools/css-neumorphism.html">Neumorphism</a>
+        <a href="/tools/css-easing-visualizer.html">Easing Curves</a>
+        <a href="/tools/css-specificity.html">Specificity</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-unit-converter.html">CSS Units</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    var baseColorEl    = document.getElementById('baseColor');
+    var sizeEl         = document.getElementById('sizeSlider');
+    var radiusEl       = document.getElementById('radiusSlider');
+    var distanceEl     = document.getElementById('distanceSlider');
+    var blurEl         = document.getElementById('blurSlider');
+    var intensityEl    = document.getElementById('intensitySlider');
+
+    var sizeVal        = document.getElementById('sizeVal');
+    var radiusVal      = document.getElementById('radiusVal');
+    var distanceVal    = document.getElementById('distanceVal');
+    var blurVal        = document.getElementById('blurVal');
+    var intensityVal   = document.getElementById('intensityVal');
+
+    var previewWrapper = document.getElementById('previewWrapper');
+    var neuElement     = document.getElementById('neuElement');
+    var cssOutput      = document.getElementById('cssOutput');
+    var statusBar      = document.getElementById('statusBar');
+    var lightSwatch    = document.getElementById('lightSwatch');
+    var darkSwatch     = document.getElementById('darkSwatch');
+    var lightColorEl   = document.getElementById('lightColor');
+    var darkColorEl    = document.getElementById('darkColor');
+
+    var currentShape = 'flat';
+
+    var PRESETS = {
+      button: { size: 120, radius: 12, distance: 10, blur: 20, intensity: 18 },
+      card:   { size: 220, radius: 20, distance: 15, blur: 30, intensity: 20 },
+      input:  { size: 200, radius: 8,  distance: 8,  blur: 16, intensity: 15 },
+      toggle: { size: 100, radius: 50, distance: 10, blur: 20, intensity: 20 },
+      circle: { size: 150, radius: 100, distance: 15, blur: 30, intensity: 20 }
+    };
+
+    function hexToRgb(hex) {
+      return { r: parseInt(hex.slice(1,3),16), g: parseInt(hex.slice(3,5),16), b: parseInt(hex.slice(5,7),16) };
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      var max = Math.max(r,g,b), min = Math.min(r,g,b), h, s, l = (max+min)/2;
+      if (max === min) { h = s = 0; }
+      else {
+        var d = max - min;
+        s = l > 0.5 ? d/(2-max-min) : d/(max+min);
+        switch(max) {
+          case r: h = ((g-b)/d + (g<b?6:0))/6; break;
+          case g: h = ((b-r)/d+2)/6; break;
+          case b: h = ((r-g)/d+4)/6; break;
+        }
+      }
+      return { h: h*360, s: s*100, l: l*100 };
+    }
+
+    function hslToHex(h, s, l) {
+      h /= 360; s /= 100; l /= 100;
+      var r, g, b;
+      if (s === 0) { r = g = b = l; }
+      else {
+        var q = l < 0.5 ? l*(1+s) : l+s-l*s, p = 2*l-q;
+        function hue(t) { if(t<0)t+=1; if(t>1)t-=1; if(t<1/6)return p+(q-p)*6*t; if(t<1/2)return q; if(t<2/3)return p+(q-p)*(2/3-t)*6; return p; }
+        r = hue(h+1/3); g = hue(h); b = hue(h-1/3);
+      }
+      return '#' + [r,g,b].map(function(x){ return Math.round(x*255).toString(16).padStart(2,'0'); }).join('');
+    }
+
+    function generate() {
+      var hex      = baseColorEl.value;
+      var size     = parseInt(sizeEl.value);
+      var radius   = parseInt(radiusEl.value);
+      var distance = parseInt(distanceEl.value);
+      var blur     = parseInt(blurEl.value);
+      var intensity= parseInt(intensityEl.value);
+
+      sizeVal.textContent      = size + 'px';
+      radiusVal.textContent    = radius + 'px';
+      distanceVal.textContent  = distance + 'px';
+      blurVal.textContent      = blur + 'px';
+      intensityVal.textContent = intensity + '%';
+
+      var rgb  = hexToRgb(hex);
+      var hsl  = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      var lightHex = hslToHex(hsl.h, hsl.s, Math.min(100, hsl.l + intensity));
+      var darkHex  = hslToHex(hsl.h, hsl.s, Math.max(0,   hsl.l - intensity));
+
+      lightSwatch.style.background = lightHex;
+      darkSwatch.style.background  = darkHex;
+      lightColorEl.textContent     = lightHex;
+      darkColorEl.textContent      = darkHex;
+
+      var shadowNormal  = distance + 'px ' + distance + 'px ' + blur + 'px ' + darkHex + ', -' + distance + 'px -' + distance + 'px ' + blur + 'px ' + lightHex;
+      var shadowPressed = 'inset ' + distance + 'px ' + distance + 'px ' + blur + 'px ' + darkHex + ', inset -' + distance + 'px -' + distance + 'px ' + blur + 'px ' + lightHex;
+
+      var boxShadow;
+      var gradient = 'none';
+
+      if (currentShape === 'flat') {
+        boxShadow = shadowNormal;
+      } else if (currentShape === 'pressed') {
+        boxShadow = shadowPressed;
+      } else if (currentShape === 'concave') {
+        boxShadow = shadowNormal;
+        gradient = 'linear-gradient(145deg, ' + darkHex + ', ' + lightHex + ')';
+      } else if (currentShape === 'convex') {
+        boxShadow = shadowNormal;
+        gradient = 'linear-gradient(145deg, ' + lightHex + ', ' + darkHex + ')';
+      }
+
+      previewWrapper.style.background = hex;
+      neuElement.style.width        = size + 'px';
+      neuElement.style.height       = size + 'px';
+      neuElement.style.borderRadius = radius + 'px';
+      neuElement.style.boxShadow    = boxShadow;
+      neuElement.style.background   = gradient !== 'none' ? gradient : hex;
+
+      var radiusPercent = radius >= 100 ? '50%' : radius + 'px';
+      var cssLines = [
+        '/* Neumorphism — generated by DevToolbox */',
+        '.neumorphic {',
+        '  background: ' + hex + ';',
+        '  border-radius: ' + radius + 'px;',
+        '  box-shadow: ' + boxShadow + ';'
+      ];
+      if (gradient !== 'none') cssLines.push('  background: ' + gradient + ';');
+      cssLines.push('}');
+      cssOutput.textContent = cssLines.join('\n');
+
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Shape: ' + currentShape + ' — Light: ' + lightHex + ' — Dark: ' + darkHex;
+      DT.trackTool('css-neumorphism');
+    }
+
+    var debouncedGenerate = DT.debounce(generate, 100);
+    [baseColorEl, sizeEl, radiusEl, distanceEl, blurEl, intensityEl].forEach(function(el) {
+      el.addEventListener('input', debouncedGenerate);
+    });
+
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentShape = chip.dataset.shape;
+        generate();
+      });
+    });
+
+    document.querySelectorAll('[data-preset]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var p = PRESETS[btn.dataset.preset];
+        if (!p) return;
+        sizeEl.value     = p.size;
+        radiusEl.value   = p.radius;
+        distanceEl.value = p.distance;
+        blurEl.value     = p.blur;
+        intensityEl.value= p.intensity;
+        generate();
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      if (cssOutput.textContent) DT.copyToClipboard(cssOutput.textContent, this);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      if (cssOutput.textContent) DT.downloadText(cssOutput.textContent, 'neumorphism.css', 'text/css');
+    });
+
+    generate();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Font Pairing Suggester & Previewer — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Preview font pairings for headings and body text using web-safe fonts. Browse 12 curated pairs, customize sizes and spacing, and copy the CSS. Free, browser-based.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/font-pairing-suggester.html">
+  <meta property="og:title" content="Font Pairing Suggester — DevToolbox">
+  <meta property="og:description" content="Browse curated heading/body font pairings, preview layouts, and export CSS. Uses only web-safe system fonts — no Google Fonts.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/font-pairing-suggester.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Font Pairing Suggester",
+    "url": "https://thisdevtool.com/tools/font-pairing-suggester.html",
+    "description": "Preview heading and body font pairings with web-safe fonts. Copy generated CSS. Free, 100% client-side.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are web-safe fonts?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Web-safe fonts are fonts pre-installed on virtually all operating systems, meaning they display consistently without loading any external font files. They include Arial, Georgia, Verdana, Times New Roman, Courier New, Trebuchet MS, and a few others. Using them avoids extra HTTP requests and works even offline."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What makes a good font pairing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Good font pairings create visual contrast while maintaining harmony. A common rule is to pair a serif heading font with a sans-serif body font (or vice versa). Contrast in weight, style, or letterform creates visual hierarchy, while similarity in overall tone keeps the design cohesive. Avoid pairing two very similar fonts."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I set font-family in CSS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use the font-family property with a comma-separated list of fonts and a generic fallback: font-family: Georgia, 'Times New Roman', serif; The browser will try each font in order, falling back to the generic family (serif, sans-serif, monospace) if none are available."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the ideal line-height for body text?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For body text, a line-height between 1.5 and 1.7 is generally most readable. Tighter spacing (1.2–1.4) works for headings where you want a compact, bold appearance. Very long line lengths may need slightly more line-height to guide the reader's eye to the next line."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should headings and body text use the same font family?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Not necessarily. Using the same font for headings and body (monopairing) can work when differentiated by size and weight. However, mixing two complementary font families — typically one serif and one sans-serif — creates stronger visual hierarchy and is the most common professional approach."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .pair-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .pair-card {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .pair-card:hover, .pair-card.active { border-color: var(--accent); }
+    .pair-card.active { background: var(--accent-light); }
+    .pair-card-heading { font-size: 1.3rem; font-weight: 700; line-height: 1.2; margin-bottom: 0.25rem; }
+    .pair-card-body { font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); }
+    .pair-card-label { font-size: 0.75rem; color: var(--accent); font-weight: 600; margin-bottom: 0.4rem; }
+    .pair-card-name { font-size: 0.78rem; color: var(--text-secondary); margin-top: 0.4rem; font-style: italic; }
+    .font-preview-area {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-top: 1rem;
+      min-height: 300px;
+    }
+    .preview-h1 { font-size: 2rem; font-weight: 700; line-height: 1.2; margin-bottom: 0.5rem; }
+    .preview-h2 { font-size: 1.4rem; font-weight: 600; line-height: 1.3; margin-bottom: 0.75rem; color: var(--text-secondary); }
+    .preview-p { font-size: 1rem; line-height: 1.6; margin-bottom: 1rem; }
+    .preview-blockquote {
+      border-left: 3px solid var(--accent);
+      padding-left: 1rem;
+      margin: 1rem 0;
+      font-style: italic;
+      color: var(--text-secondary);
+    }
+    .preview-code {
+      background: var(--bg-secondary);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-family: 'Courier New', monospace;
+      margin-top: 0.75rem;
+    }
+    .controls-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; align-items: flex-end; }
+    .ctrl-group { display: flex; flex-direction: column; gap: 0.3rem; }
+    .ctrl-group label { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); }
+    .ctrl-group input[type="range"] { width: 140px; accent-color: var(--accent); }
+    .ctrl-group select, .ctrl-group input[type="number"] {
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+    .css-output {
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      padding: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      margin-top: 1rem;
+      border: 1px solid var(--border);
+    }
+    .layout-tabs { display: flex; gap: 0.5rem; margin: 1rem 0 0.5rem; flex-wrap: wrap; }
+    .layout-tab {
+      padding: 0.35rem 0.9rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+    .layout-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    @media (max-width: 600px) {
+      .pair-grid { grid-template-columns: 1fr; }
+      .preview-h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/color-converter.html">Color Converter</a>
+        <a href="/tools/color-contrast-checker.html">Contrast Checker</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Font Pairing Suggester</h1>
+          <p class="tool-subtitle">Preview heading and body font combinations using web-safe fonts. Copy the CSS instantly.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="browse">Browse Pairs</button>
+            <button class="option-chip" data-mode="custom">Custom</button>
+            <button class="option-chip" data-mode="layouts">Preview Layouts</button>
+          </div>
+
+          <!-- Browse Mode -->
+          <div id="mode-browse">
+            <p style="margin-top:0.75rem;font-size:0.9rem;color:var(--text-secondary);">Click a pair to preview it below.</p>
+            <div class="pair-grid" id="pairGrid"></div>
+          </div>
+
+          <!-- Custom Mode -->
+          <div id="mode-custom" style="display:none;">
+            <div class="controls-row" style="margin-top:1rem;">
+              <div class="ctrl-group">
+                <label for="headingFont">Heading Font</label>
+                <select id="headingFont"></select>
+              </div>
+              <div class="ctrl-group">
+                <label for="bodyFont">Body Font</label>
+                <select id="bodyFont"></select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Typography Controls (shown in all modes) -->
+          <div class="controls-row" id="typographyControls">
+            <div class="ctrl-group">
+              <label>Heading Size: <span id="hSizeVal">2rem</span></label>
+              <input type="range" id="hSize" min="16" max="56" value="32" step="2">
+            </div>
+            <div class="ctrl-group">
+              <label>Body Size: <span id="bSizeVal">1rem</span></label>
+              <input type="range" id="bSize" min="12" max="24" value="16" step="1">
+            </div>
+            <div class="ctrl-group">
+              <label>Line Height: <span id="lhVal">1.6</span></label>
+              <input type="range" id="lh" min="10" max="25" value="16" step="1">
+            </div>
+            <div class="ctrl-group">
+              <label>Letter Spacing: <span id="lsVal">0em</span></label>
+              <input type="range" id="ls" min="-5" max="20" value="0" step="1">
+            </div>
+          </div>
+
+          <!-- Layout Tabs -->
+          <div id="mode-layouts" style="display:none;">
+            <div class="layout-tabs">
+              <button class="layout-tab active" data-layout="blog">Blog Post</button>
+              <button class="layout-tab" data-layout="landing">Landing Page</button>
+              <button class="layout-tab" data-layout="docs">Documentation</button>
+            </div>
+          </div>
+
+          <!-- Preview Area -->
+          <div class="font-preview-area" id="fontPreview"></div>
+
+          <!-- CSS Output -->
+          <div style="margin-top:1rem;">
+            <div class="pane-label">
+              <span>Generated CSS</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-primary" id="copyCSSBtn">Copy CSS</button>
+                <button class="btn btn-sm btn-secondary" id="downloadCSSBtn">Download</button>
+              </div>
+            </div>
+            <div class="css-output" id="cssOutput"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Select a font pair to begin.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Font Pairing Previewer</h2>
+          <ol>
+            <li><strong>Browse Pairs</strong> — Choose from 12 curated heading and body font combinations with style descriptions.</li>
+            <li><strong>Custom mode</strong> — Pick any two web-safe fonts from the dropdowns to create your own pairing.</li>
+            <li><strong>Adjust controls</strong> — Tune heading size, body size, line height, and letter spacing in real time.</li>
+            <li><strong>Preview Layouts</strong> — See how your pairing looks in a blog post, landing page, or documentation context.</li>
+            <li><strong>Copy CSS</strong> — Get the complete CSS snippet for both fonts and typography settings.</li>
+          </ol>
+
+          <h2>The Principles of Font Pairing</h2>
+          <p>Choosing two fonts that work well together is one of the most impactful decisions in web and graphic design. The right pairing creates clear visual hierarchy, guides the reader through content, and communicates the personality of a brand. Poor pairings — two fonts that are too similar, or that clash in style — undermine credibility and readability.</p>
+
+          <h3>Serif vs. Sans-Serif Contrast</h3>
+          <p>The most reliable pairing strategy is to use a <strong>serif</strong> font for headings and a <strong>sans-serif</strong> font for body text, or vice versa. Serifs (the small decorative strokes at the ends of letters, used in Georgia and Times New Roman) convey tradition, authority, and elegance. Sans-serif fonts (Arial, Verdana, Tahoma) feel modern, clean, and approachable. The contrast between these two styles creates clear visual hierarchy at a glance.</p>
+
+          <h3>Weight and Scale</h3>
+          <p>Even when using a single font family, strong pairings rely on <strong>weight contrast</strong> (bold heading, regular body) and <strong>scale contrast</strong> (large heading, small body). Headings are typically 2–4× the size of body text. Line height for headings is usually tighter (1.1–1.3) than for body text (1.5–1.7) to prevent excessive whitespace in multi-line headings.</p>
+
+          <h3>Web-Safe Font Advantages</h3>
+          <p>This tool uses only system fonts — fonts pre-installed on virtually every Windows, macOS, and Linux device. Using web-safe fonts means:</p>
+          <ul>
+            <li><strong>Zero load time</strong> — No network requests for font files</li>
+            <li><strong>Works offline</strong> — No CDN dependency</li>
+            <li><strong>No layout shift</strong> — Fonts are available before CSS loads</li>
+            <li><strong>Privacy compliant</strong> — No third-party tracking from font CDNs</li>
+          </ul>
+          <p>Explore our <a href="/tools/color-converter.html">Color Converter</a> or <a href="/tools/color-contrast-checker.html">Color Contrast Checker</a> to complete your design system.</p>
+
+          <h3>Letter Spacing and Line Height</h3>
+          <p><strong>Letter spacing (tracking)</strong> controls the space between characters. Slightly increased tracking on uppercase headings (0.05–0.1em) adds an elegant, airy feel. Body text should have minimal tracking (0 or slightly negative). <strong>Line height (leading)</strong> is the vertical space between lines of text. For comfortable reading, use 1.5–1.65 for paragraph text. Headings look best with tighter leading (1.15–1.3).</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What are web-safe fonts?</button>
+            <div class="faq-answer">Web-safe fonts are fonts pre-installed on virtually all operating systems, meaning they display consistently without loading any external font files. They include Arial, Georgia, Verdana, Times New Roman, Courier New, Trebuchet MS, and a few others. Using them avoids extra HTTP requests and works even offline.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What makes a good font pairing?</button>
+            <div class="faq-answer">Good font pairings create visual contrast while maintaining harmony. A common rule is to pair a serif heading font with a sans-serif body font (or vice versa). Contrast in weight, style, or letterform creates visual hierarchy, while similarity in overall tone keeps the design cohesive. Avoid pairing two very similar fonts.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I set font-family in CSS?</button>
+            <div class="faq-answer">Use the font-family property with a comma-separated list of fonts and a generic fallback: font-family: Georgia, 'Times New Roman', serif; The browser will try each font in order, falling back to the generic family (serif, sans-serif, monospace) if none are available.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the ideal line-height for body text?</button>
+            <div class="faq-answer">For body text, a line-height between 1.5 and 1.7 is generally most readable. Tighter spacing (1.2–1.4) works for headings. Very long line lengths may need slightly more line-height to guide the reader's eye to the next line.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Should headings and body text use the same font family?</button>
+            <div class="faq-answer">Not necessarily. Using the same font for headings and body (monopairing) can work when differentiated by size and weight. However, mixing two complementary font families — typically one serif and one sans-serif — creates stronger visual hierarchy and is the most common professional approach.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/color-converter.html">Color Converter</a>
+        <a href="/tools/color-contrast-checker.html">Contrast Checker</a>
+        <a href="/tools/placeholder-image.html">Placeholder Image</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/aspect-ratio-calculator.html">Aspect Ratio</a>
+        <a href="/tools/responsive-tester.html">Responsive Tester</a>
+        <a href="/tools/color-palette-generator.html">Color Palette</a>
+        <a href="/tools/wcag-palette-generator.html">WCAG Palette</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'browse';
+    var currentLayout = 'blog';
+    var activePairIndex = 0;
+
+    var FONTS = [
+      { name: 'Arial', stack: 'Arial, Helvetica, sans-serif', type: 'sans' },
+      { name: 'Georgia', stack: 'Georgia, "Times New Roman", serif', type: 'serif' },
+      { name: 'Verdana', stack: 'Verdana, Geneva, sans-serif', type: 'sans' },
+      { name: 'Times New Roman', stack: '"Times New Roman", Times, serif', type: 'serif' },
+      { name: 'Courier New', stack: '"Courier New", Courier, monospace', type: 'mono' },
+      { name: 'Trebuchet MS', stack: '"Trebuchet MS", Helvetica, sans-serif', type: 'sans' },
+      { name: 'Impact', stack: 'Impact, Charcoal, sans-serif', type: 'sans' },
+      { name: 'Palatino Linotype', stack: '"Palatino Linotype", "Book Antiqua", Palatino, serif', type: 'serif' },
+      { name: 'Lucida Console', stack: '"Lucida Console", Monaco, monospace', type: 'mono' },
+      { name: 'Tahoma', stack: 'Tahoma, Geneva, sans-serif', type: 'sans' },
+      { name: 'Geneva', stack: 'Geneva, Tahoma, sans-serif', type: 'sans' },
+      { name: 'system-ui', stack: 'system-ui, -apple-system, sans-serif', type: 'sans' }
+    ];
+
+    var PAIRS = [
+      { heading: 'Georgia', body: 'Verdana', desc: 'Classic editorial', detail: 'Elegant serif heading with clean sans-serif body. Timeless readability.' },
+      { heading: 'Georgia', body: 'Arial', desc: 'Traditional clarity', detail: 'Formal serif with the most ubiquitous sans-serif. Works everywhere.' },
+      { heading: '"Palatino Linotype"', body: 'Tahoma', desc: 'Literary sophistication', detail: 'Old-style serif heading with a modern compact sans. Feels cultured.' },
+      { heading: 'Impact', body: 'Georgia', desc: 'High contrast impact', detail: 'Condensed display heading with a refined serif body. Bold and authoritative.' },
+      { heading: '"Trebuchet MS"', body: 'Georgia', desc: 'Modern humanist', detail: 'Humanist sans heading pairs with classic serif body. Friendly yet refined.' },
+      { heading: 'Arial', body: 'Georgia', desc: 'Clean inversion', detail: 'Sans-serif header, serif body — reverses convention for a contemporary feel.' },
+      { heading: '"Times New Roman"', body: 'Arial', desc: 'Newspaper classic', detail: 'The definitive newspaper combination. Authoritative and highly readable.' },
+      { heading: 'Verdana', body: 'Verdana', desc: 'Monopair clarity', detail: 'Single family, differentiated by size and weight. Clean and unified.' },
+      { heading: '"Trebuchet MS"', body: 'Verdana', desc: 'Double sans harmony', detail: 'Two complementary sans-serif fonts. Consistent modern tone.' },
+      { heading: 'Georgia', body: '"Trebuchet MS"', desc: 'Refined editorial', detail: 'Serif authority in headings, humanist sans for easy body reading.' },
+      { heading: '"Palatino Linotype"', body: 'Arial', desc: 'Old meets new', detail: 'Renaissance serif meets the digital age sans. Elegant tension.' },
+      { heading: 'system-ui', body: 'Georgia', desc: 'Native digital', detail: 'OS native interface font for headings, classic Georgia for body. Ultra-modern.' }
+    ];
+
+    function getFontStack(name) {
+      var font = FONTS.find(function (f) { return f.name === name || f.stack.indexOf(name) === 0; });
+      return font ? font.stack : name + ', sans-serif';
+    }
+
+    function getDisplayName(stack) {
+      return stack.replace(/"/g, '').split(',')[0].trim();
+    }
+
+    // Populate selects
+    var headingSelect = document.getElementById('headingFont');
+    var bodySelect = document.getElementById('bodyFont');
+    FONTS.forEach(function (f) {
+      var o1 = document.createElement('option');
+      o1.value = f.stack;
+      o1.textContent = f.name;
+      headingSelect.appendChild(o1);
+      var o2 = document.createElement('option');
+      o2.value = f.stack;
+      o2.textContent = f.name;
+      bodySelect.appendChild(o2);
+    });
+    headingSelect.value = FONTS[1].stack; // Georgia
+    bodySelect.value = FONTS[0].stack;   // Arial
+
+    // Build pair grid
+    var pairGrid = document.getElementById('pairGrid');
+    PAIRS.forEach(function (p, i) {
+      var card = document.createElement('div');
+      card.className = 'pair-card' + (i === 0 ? ' active' : '');
+      card.dataset.index = i;
+      var headStack = getFontStack(p.heading.replace(/"/g, ''));
+      card.innerHTML = '<div class="pair-card-label">' + p.desc + '</div>' +
+        '<div class="pair-card-heading" style="font-family:' + p.heading + ',serif;">' + getDisplayName(p.heading) + ' heading</div>' +
+        '<div class="pair-card-body" style="font-family:' + p.body + ',sans-serif;">' + p.detail + '</div>' +
+        '<div class="pair-card-name">' + p.heading.replace(/"/g, '') + ' + ' + p.body.replace(/"/g, '') + '</div>';
+      card.addEventListener('click', function () {
+        document.querySelectorAll('.pair-card').forEach(function (c) { c.classList.remove('active'); });
+        card.classList.add('active');
+        activePairIndex = i;
+        updatePreview();
+      });
+      pairGrid.appendChild(card);
+    });
+
+    function getActiveFonts() {
+      if (currentMode === 'custom') {
+        return {
+          heading: headingSelect.value,
+          body: bodySelect.value
+        };
+      }
+      var p = PAIRS[activePairIndex];
+      return {
+        heading: getFontStack(p.heading.replace(/"/g, '')),
+        body: getFontStack(p.body.replace(/"/g, ''))
+      };
+    }
+
+    var LAYOUT_CONTENT = {
+      blog: {
+        h1: 'The Complete Guide to Typography in Web Design',
+        h2: 'Why font choices define your user experience',
+        p1: 'Typography is the art and technique of arranging type to make written language legible, readable, and visually appealing. The right font pairing communicates personality, establishes hierarchy, and guides readers through your content effortlessly.',
+        p2: 'When choosing fonts for the web, consider legibility at small sizes, readability in long passages, and how the fonts reinforce your brand\'s personality.',
+        quote: '"Good typography is invisible. Bad typography is everywhere." — Massimo Vignelli',
+        code: 'h1 { font-family: heading-font; }\np { font-family: body-font; }'
+      },
+      landing: {
+        h1: 'Build Faster. Ship Smarter.',
+        h2: 'Tools that developers actually use every day',
+        p1: 'DevToolbox gives you instant access to the most useful web development utilities. Format JSON, convert colors, test responsive layouts, and generate placeholder images — all in your browser.',
+        p2: 'No sign-up. No data sent to servers. Everything runs 100% client-side for maximum speed and privacy.',
+        quote: '"The best tool is the one you actually use."',
+        code: 'npm install devtoolbox\n# or just open your browser'
+      },
+      docs: {
+        h1: 'API Reference — Color Utilities',
+        h2: 'Converting between color formats',
+        p1: 'The color conversion module provides functions to convert between HEX, RGB, HSL, HSV, and CMYK color spaces. All functions are pure and accept either string or object representations.',
+        p2: 'Functions throw a TypeError for invalid input. Use the validate() helper to check input before conversion to avoid runtime errors in production.',
+        quote: 'Note: All alpha values are expressed as 0–1, not 0–255.',
+        code: 'colorConvert.hexToRgb(\'#10b981\')\n// Returns: { r: 16, g: 185, b: 129 }'
+      }
+    };
+
+    function updatePreview() {
+      var fonts = getActiveFonts();
+      var hSize = document.getElementById('hSize').value + 'px';
+      var bSize = document.getElementById('bSize').value + 'px';
+      var lhVal = (document.getElementById('lh').value / 10).toFixed(1);
+      var lsVal = (document.getElementById('ls').value / 100).toFixed(2) + 'em';
+
+      var layout = LAYOUT_CONTENT[currentLayout];
+      var preview = document.getElementById('fontPreview');
+      preview.innerHTML =
+        '<div class="preview-h1" style="font-family:' + fonts.heading + ';font-size:' + hSize + ';line-height:1.2;letter-spacing:' + lsVal + ';">' + layout.h1 + '</div>' +
+        '<div class="preview-h2" style="font-family:' + fonts.heading + ';font-size:calc(' + hSize + ' * 0.65);line-height:1.3;">' + layout.h2 + '</div>' +
+        '<p class="preview-p" style="font-family:' + fonts.body + ';font-size:' + bSize + ';line-height:' + lhVal + ';">' + layout.p1 + '</p>' +
+        '<blockquote class="preview-blockquote" style="font-family:' + fonts.body + ';font-size:' + bSize + ';line-height:' + lhVal + ';">' + layout.quote + '</blockquote>' +
+        '<p class="preview-p" style="font-family:' + fonts.body + ';font-size:' + bSize + ';line-height:' + lhVal + ';">' + layout.p2 + '</p>' +
+        '<pre class="preview-code">' + layout.code + '</pre>';
+
+      // CSS output
+      var headingName = getDisplayName(fonts.heading);
+      var bodyName = getDisplayName(fonts.body);
+      var css = '/* Font Pairing: ' + headingName + ' + ' + bodyName + ' */\n\n' +
+        'h1, h2, h3, h4, h5, h6 {\n  font-family: ' + fonts.heading + ';\n  font-size: ' + hSize + ';\n  line-height: 1.2;\n  letter-spacing: ' + lsVal + ';\n}\n\n' +
+        'body, p, li, td {\n  font-family: ' + fonts.body + ';\n  font-size: ' + bSize + ';\n  line-height: ' + lhVal + ';\n}';
+      document.getElementById('cssOutput').textContent = css;
+
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar valid';
+      sb.textContent = 'Pair: ' + headingName + ' + ' + bodyName + ' — Heading ' + hSize + ' / Body ' + bSize;
+      DT.trackTool('font-pairing-suggester');
+    }
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('mode-browse').style.display = currentMode === 'browse' ? '' : 'none';
+        document.getElementById('mode-custom').style.display = currentMode === 'custom' ? '' : 'none';
+        document.getElementById('mode-layouts').style.display = currentMode === 'layouts' ? '' : 'none';
+        updatePreview();
+      });
+    });
+
+    // Layout tabs
+    document.querySelectorAll('.layout-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.layout-tab').forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+        currentLayout = tab.getAttribute('data-layout');
+        updatePreview();
+      });
+    });
+
+    // Range controls
+    ['hSize', 'bSize', 'lh', 'ls'].forEach(function (id) {
+      var el = document.getElementById(id);
+      el.addEventListener('input', function () {
+        var v = parseFloat(el.value);
+        if (id === 'hSize') document.getElementById('hSizeVal').textContent = v + 'px';
+        else if (id === 'bSize') document.getElementById('bSizeVal').textContent = v + 'px';
+        else if (id === 'lh') document.getElementById('lhVal').textContent = (v / 10).toFixed(1);
+        else if (id === 'ls') document.getElementById('lsVal').textContent = (v / 100).toFixed(2) + 'em';
+        updatePreview();
+      });
+    });
+
+    // Custom font selects
+    headingSelect.addEventListener('change', updatePreview);
+    bodySelect.addEventListener('change', updatePreview);
+
+    // Copy/Download CSS
+    document.getElementById('copyCSSBtn').addEventListener('click', function () {
+      DT.copyToClipboard(document.getElementById('cssOutput').textContent, this);
+    });
+    document.getElementById('downloadCSSBtn').addEventListener('click', function () {
+      DT.downloadText(document.getElementById('cssOutput').textContent, 'font-pairing.css', 'text/css');
+    });
+
+    updatePreview();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Visual SVG Path Editor — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Draw and edit SVG paths visually. Click to add points, create bezier curves, edit control handles. Export as SVG path data. Free, 100% browser-based, no signup.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/svg-path-editor.html">
+  <meta property="og:title" content="Visual SVG Path Editor — DevToolbox">
+  <meta property="og:description" content="Draw SVG paths visually with click-to-add points, bezier curves, grid snapping, and presets. Export path data instantly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/svg-path-editor.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Visual SVG Path Editor",
+    "url": "https://thisdevtool.com/tools/svg-path-editor.html",
+    "description": "Draw and edit SVG path data visually in the browser. Supports line, curve, and preset shapes.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is SVG path data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SVG path data is the content of the d attribute on an SVG path element. It uses a series of commands (M for move, L for line, C for cubic bezier, Q for quadratic bezier, A for arc, Z for close path) followed by coordinate values to describe any shape from simple lines to complex illustrations. Path data is the most powerful and flexible SVG element."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the Draw mode work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In Draw mode, click anywhere on the canvas to add anchor points. Each click adds a straight line segment from the previous point. The path data (d attribute) updates in real time as you draw. Double-click or click the Close Path button to close the shape with a Z command. Press Escape to end the path without closing it."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I create bezier curves?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In Draw mode, click and drag instead of just clicking to add a cubic bezier curve point with control handles. The drag direction and distance control the curve's shape. In Edit mode, you can drag the control handle points (shown as small circles) to adjust existing curves."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the preset shapes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Presets mode provides ready-made SVG path data for common shapes: Arrow, Heart, Star (5-point), Checkmark, Wave, Plus/Cross, and Shield. These can be used directly or imported into the editor for further modification."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I use the generated path in my SVG?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Copy the path data (d attribute value) from the output and use it in an SVG path element: <path d='YOUR_PATH_DATA' fill='#color' stroke='#color'/>. You can also copy the full SVG element which wraps the path with a 400x400 viewBox. The generated path is compatible with all SVG editors and browsers."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .editor-wrap { display: grid; grid-template-columns: 1fr 280px; gap: 12px; }
+    @media (max-width: 768px) { .editor-wrap { grid-template-columns: 1fr; } }
+    #pathCanvas { display: block; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); cursor: crosshair; touch-action: none; }
+    .canvas-toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+    .canvas-toolbar label { font-size: 0.8rem; color: var(--muted); }
+    .canvas-toolbar input[type=checkbox] { accent-color: var(--accent); }
+    .canvas-toolbar input[type=color] { width: 28px; height: 28px; padding: 1px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+    .path-panel { display: flex; flex-direction: column; gap: 8px; }
+    .path-panel label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 2px; }
+    .path-panel textarea { font-family: monospace; font-size: 0.8rem; resize: vertical; width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 8px; background: var(--surface); color: var(--text); }
+    .coord-display { font-size: 0.75rem; color: var(--muted); font-family: monospace; }
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .preset-btn { padding: 6px; font-size: 0.8rem; text-align: center; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; background: var(--surface); color: var(--text); transition: border-color .15s, background .15s; }
+    .preset-btn:hover { border-color: var(--accent); background: var(--accent)15; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/svg-optimizer.html">SVG Optimizer</a>
+        <a href="/tools/svg-to-css.html">SVG to CSS</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Visual SVG Path Editor</h1>
+          <p class="tool-subtitle">Draw SVG paths by clicking on the canvas. Add lines, curves, and close shapes. Edit points, import existing path data, or use presets.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="draw">Draw</button>
+            <button class="option-chip" data-mode="edit">Edit Points</button>
+            <button class="option-chip" data-mode="import">Import</button>
+            <button class="option-chip" data-mode="presets">Presets</button>
+          </div>
+
+          <div class="canvas-toolbar">
+            <label><input type="checkbox" id="snapGrid" checked> Snap to grid</label>
+            <label><input type="checkbox" id="showGrid" checked> Show grid</label>
+            <label style="margin-left:8px;">Fill: <input type="color" id="fillColor" value="#10b981"></label>
+            <label>Stroke: <input type="color" id="strokeColor" value="#047857"></label>
+            <label>Stroke width: <input type="range" id="strokeWidth" min="0" max="8" value="2" style="width:60px;accent-color:var(--accent)"> <span id="strokeWidthVal">2</span></label>
+            <span class="coord-display" id="coordDisplay">x: 0, y: 0</span>
+            <button class="btn btn-sm btn-secondary" id="undoBtn">Undo</button>
+            <button class="btn btn-sm btn-secondary" id="clearCanvasBtn">Clear</button>
+            <button class="btn btn-sm btn-secondary" id="closePathBtn">Close Path (Z)</button>
+          </div>
+
+          <div class="editor-wrap">
+            <div>
+              <canvas id="pathCanvas" width="400" height="400"></canvas>
+            </div>
+            <div class="path-panel">
+              <div id="drawInstructions" style="font-size:0.82rem;color:var(--muted);padding:8px;border:1px solid var(--border);border-radius:6px;">
+                <strong>Draw mode:</strong><br>
+                • Click to add line points<br>
+                • Click+drag to add curves<br>
+                • Undo removes last point<br>
+                • Close Path adds Z command<br>
+                • Snap aligns to 10px grid
+              </div>
+              <div id="presetPanel" style="display:none;">
+                <label>Load a preset shape:</label>
+                <div class="preset-grid">
+                  <button class="preset-btn" data-preset="arrow">Arrow</button>
+                  <button class="preset-btn" data-preset="heart">Heart</button>
+                  <button class="preset-btn" data-preset="star">Star</button>
+                  <button class="preset-btn" data-preset="check">Checkmark</button>
+                  <button class="preset-btn" data-preset="wave">Wave</button>
+                  <button class="preset-btn" data-preset="plus">Plus</button>
+                  <button class="preset-btn" data-preset="shield">Shield</button>
+                  <button class="preset-btn" data-preset="diamond">Diamond</button>
+                </div>
+              </div>
+              <div id="importPanel" style="display:none;">
+                <label>Paste path d= value:</label>
+                <textarea id="importInput" rows="6" placeholder="M 50 200 L 200 50 L 350 200 Z" spellcheck="false"></textarea>
+                <button class="btn btn-sm btn-primary" id="importBtn" style="width:100%">Load Path</button>
+              </div>
+              <div>
+                <label>Path data (d attribute):</label>
+                <textarea id="pathOutput" rows="6" readonly spellcheck="false"></textarea>
+              </div>
+              <div class="btn-group">
+                <button class="btn btn-sm btn-primary" id="copyPathBtn">Copy Path</button>
+                <button class="btn btn-sm btn-secondary" id="copySvgBtn">Copy SVG</button>
+                <button class="btn btn-sm btn-secondary" id="downloadSvgBtn">Download</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Click on the canvas to start drawing. Hold Shift while clicking to add a bezier curve point.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the SVG Path Editor</h2>
+          <ol>
+            <li><strong>Draw mode</strong> — click anywhere on the canvas to add anchor points and build a path. Each click extends the path with a line segment.</li>
+            <li><strong>Edit Points mode</strong> — click and drag existing anchor points to reposition them. Bezier control handles can also be dragged.</li>
+            <li><strong>Import mode</strong> — paste existing SVG path d attribute data to load it into the editor for visualization or modification.</li>
+            <li><strong>Presets</strong> — load common shapes (arrow, heart, star, checkmark) as starting points.</li>
+            <li><strong>Export</strong> — copy the path data or the complete SVG element, or download the SVG file.</li>
+          </ol>
+
+          <h2>Understanding SVG Path Commands</h2>
+          <p>SVG path data uses a compact notation to describe shapes using drawing commands followed by coordinate pairs. Understanding the commands helps you read and write path data manually, and also helps debug paths that don't look as expected:</p>
+          <ul>
+            <li><strong>M x y</strong> — Move To: lifts the pen and moves to the specified coordinates without drawing. Every path starts with M. Lowercase m uses relative coordinates.</li>
+            <li><strong>L x y</strong> — Line To: draws a straight line from the current position to (x, y). Lowercase l is relative.</li>
+            <li><strong>H x</strong> — Horizontal Line To: draws a horizontal line to x at the current y position. Lowercase h is relative.</li>
+            <li><strong>V y</strong> — Vertical Line To: draws a vertical line to y at the current x position.</li>
+            <li><strong>C x1 y1 x2 y2 x y</strong> — Cubic Bezier Curve: draws a curve to (x, y) using (x1, y1) as the start control point and (x2, y2) as the end control point.</li>
+            <li><strong>Q x1 y1 x y</strong> — Quadratic Bezier Curve: draws a curve to (x, y) with a single control point at (x1, y1).</li>
+            <li><strong>A rx ry x-rotation large-arc sweep x y</strong> — Arc: draws an elliptical arc. The complex parameter set controls the arc's size, rotation, direction, and endpoint.</li>
+            <li><strong>Z</strong> — Close Path: draws a straight line back to the start of the current path and closes it.</li>
+          </ul>
+
+          <h3>Bezier Curves in SVG</h3>
+          <p>Bezier curves are the foundation of smooth, organic shapes in SVG. A cubic bezier curve (C command) has two control points that act like magnetic handles, pulling the curve towards them without necessarily passing through them. This gives designers fine-grained control over the curve's tension and direction. Most illustration software (Illustrator, Figma, Inkscape) exposes these as "handles" — the colored line extending from an anchor point. Understanding bezier curves helps you comprehend why an exported SVG path has certain characteristics and how to manually edit path data for small adjustments.</p>
+
+          <h3>Grid Snapping</h3>
+          <p>The grid snap feature aligns points to a 10-pixel grid, making it easier to draw symmetrical shapes and align elements to clean coordinate values. Clean coordinates like (50, 100) produce smaller, more readable path data than floating-point values like (49.7, 100.3). For icon design, snapping to a grid is essential for crisp rendering at small sizes. The 400×400 canvas maps to a standard SVG coordinate system, so coordinates can be used directly in an SVG with viewBox="0 0 400 400".</p>
+
+          <h3>Using Paths in Real Projects</h3>
+          <p>Once you have path data you're happy with, there are several ways to use it. You can paste the path d attribute directly into a &lt;path&gt; element in your HTML SVG. You can use the complete SVG export and reference it with an &lt;img&gt; tag or as a CSS background (use our <a href="/tools/svg-to-css.html">SVG to CSS tool</a>). You can also copy the SVG into an illustration tool like Inkscape or Figma for further refinement. Before deploying, run the SVG through our <a href="/tools/svg-optimizer.html">SVG Optimizer</a> to minimize file size.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is SVG path data?</button>
+            <div class="faq-answer">SVG path data is the content of the d attribute on an SVG path element. It uses commands (M for move, L for line, C for cubic bezier, Q for quadratic bezier, A for arc, Z for close) followed by coordinates to describe any shape. Path data is the most powerful and flexible SVG element.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does the Draw mode work?</button>
+            <div class="faq-answer">In Draw mode, click anywhere on the canvas to add anchor points. Each click adds a straight line segment from the previous point. The path data updates in real time. Press the Close Path button or Z to close the shape, or use Undo to remove the last point.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I create bezier curves?</button>
+            <div class="faq-answer">In Draw mode, hold Shift while clicking to insert a curve point. In Edit Points mode, drag the circular control handles (shown as smaller circles connected to anchor points) to adjust bezier curve shapes.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are the preset shapes?</button>
+            <div class="faq-answer">The Presets mode provides ready-made SVG path data for Arrow, Heart, Star, Checkmark, Wave, Plus, Shield, and Diamond. These can be loaded and then edited in the canvas, or copied directly for use in your project.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I use the generated path in my SVG?</button>
+            <div class="faq-answer">Copy the path data (d attribute value) from the output and use it in &lt;path d="YOUR_PATH_DATA" fill="#color"/&gt;. You can also use "Copy SVG" to get a complete SVG element ready to embed or save as a file.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS &amp; Design</h4>
+        <a href="/tools/svg-path-editor.html">SVG Path Editor</a>
+        <a href="/tools/svg-optimizer.html">SVG Optimizer</a>
+        <a href="/tools/svg-to-css.html">SVG to CSS</a>
+        <a href="/tools/tailwind-to-css.html">Tailwind to CSS</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/image-color-picker.html">Color Picker</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var canvas = document.getElementById('pathCanvas');
+      var ctx = canvas.getContext('2d');
+      var pathOutput = document.getElementById('pathOutput');
+      var statusBar = document.getElementById('statusBar');
+      var coordDisplay = document.getElementById('coordDisplay');
+      var currentMode = 'draw';
+
+      // State
+      var points = []; // { x, y, type: 'M'|'L'|'C', cp1, cp2 }
+      var history = [];
+      var dragging = null;
+      var dragOffset = { x: 0, y: 0 };
+      var W = 400, H = 400;
+
+      var PRESETS = {
+        arrow: 'M 50 200 L 300 200 L 250 120 M 300 200 L 250 280',
+        heart: 'M 200 320 C 60 220 60 100 200 140 C 340 100 340 220 200 320 Z',
+        star: 'M 200 40 L 240 150 L 360 150 L 265 220 L 300 340 L 200 270 L 100 340 L 135 220 L 40 150 L 160 150 Z',
+        check: 'M 60 200 L 160 320 L 360 80',
+        wave: 'M 20 200 C 80 120 120 280 200 200 C 280 120 320 280 380 200',
+        plus: 'M 200 60 L 200 340 M 60 200 L 340 200',
+        shield: 'M 200 40 L 340 100 L 340 220 C 340 300 200 360 200 360 C 200 360 60 300 60 220 L 60 100 Z',
+        diamond: 'M 200 40 L 360 200 L 200 360 L 40 200 Z'
+      };
+
+      // Drawing helpers
+      function snapVal(v) {
+        if (!document.getElementById('snapGrid').checked) return v;
+        return Math.round(v / 10) * 10;
+      }
+
+      function getCanvasPos(e) {
+        var rect = canvas.getBoundingClientRect();
+        var scaleX = W / rect.width;
+        var scaleY = H / rect.height;
+        var src = e.touches ? e.touches[0] : e;
+        return {
+          x: snapVal((src.clientX - rect.left) * scaleX),
+          y: snapVal((src.clientY - rect.top) * scaleY)
+        };
+      }
+
+      function buildPathD() {
+        if (points.length === 0) return '';
+        var d = '';
+        points.forEach(function(p, i) {
+          if (p.type === 'M') {
+            d += 'M ' + p.x + ' ' + p.y + ' ';
+          } else if (p.type === 'C' && p.cp1 && p.cp2) {
+            d += 'C ' + p.cp1.x + ' ' + p.cp1.y + ' ' + p.cp2.x + ' ' + p.cp2.y + ' ' + p.x + ' ' + p.y + ' ';
+          } else if (p.type === 'Z') {
+            d += 'Z ';
+          } else {
+            d += 'L ' + p.x + ' ' + p.y + ' ';
+          }
+        });
+        return d.trim();
+      }
+
+      function drawGrid() {
+        if (!document.getElementById('showGrid').checked) return;
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border') || '#e5e7eb';
+        ctx.lineWidth = 0.5;
+        for (var x = 0; x <= W; x += 40) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+        }
+        for (var y = 0; y <= H; y += 40) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+        }
+        // Axis
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, H/2); ctx.lineTo(W, H/2); ctx.stroke();
+      }
+
+      function drawPath() {
+        var fill = document.getElementById('fillColor').value;
+        var stroke = document.getElementById('strokeColor').value;
+        var sw = parseInt(document.getElementById('strokeWidth').value);
+        var d = buildPathD();
+        if (!d) return;
+        var path = new Path2D(d);
+        ctx.fillStyle = fill + '55';
+        ctx.fill(path, 'evenodd');
+        if (sw > 0) {
+          ctx.strokeStyle = stroke;
+          ctx.lineWidth = sw;
+          ctx.lineJoin = 'round';
+          ctx.lineCap = 'round';
+          ctx.stroke(path);
+        }
+      }
+
+      function drawPoints() {
+        points.forEach(function(p, i) {
+          if (p.type === 'Z') return;
+          // Draw control handles for cubic bezier
+          if (p.cp1) {
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1;
+            var prev = points[i-1];
+            if (prev) { ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(p.cp1.x, p.cp1.y); ctx.stroke(); }
+            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.cp2.x, p.cp2.y); ctx.stroke();
+            // cp1 handle
+            ctx.fillStyle = '#60a5fa';
+            ctx.beginPath(); ctx.arc(p.cp1.x, p.cp1.y, 5, 0, Math.PI*2); ctx.fill();
+            // cp2 handle
+            ctx.fillStyle = '#a78bfa';
+            ctx.beginPath(); ctx.arc(p.cp2.x, p.cp2.y, 5, 0, Math.PI*2); ctx.fill();
+          }
+          // Anchor point
+          ctx.fillStyle = p.type === 'M' ? '#10b981' : '#3b82f6';
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI*2);
+          ctx.fill(); ctx.stroke();
+          // Index label
+          ctx.fillStyle = '#fff';
+          ctx.font = '9px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(i, p.x, p.y);
+        });
+      }
+
+      function redraw() {
+        ctx.clearRect(0, 0, W, H);
+        drawGrid();
+        drawPath();
+        if (currentMode === 'draw' || currentMode === 'edit') drawPoints();
+        pathOutput.value = buildPathD();
+      }
+
+      function updateStatus() {
+        var d = buildPathD();
+        if (!d) {
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Click on the canvas to start drawing.';
+        } else {
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = points.length + ' points — ' + d.length + ' chars path data';
+        }
+      }
+
+      // Canvas events
+      var drawState = { active: false, startPos: null };
+
+      canvas.addEventListener('mousemove', function(e) {
+        var pos = getCanvasPos(e);
+        coordDisplay.textContent = 'x: ' + pos.x + ', y: ' + pos.y;
+
+        if (dragging !== null && currentMode === 'edit') {
+          var p = dragging.point;
+          if (dragging.handle === 'main') {
+            var dx = pos.x - p.x, dy = pos.y - p.y;
+            p.x = pos.x; p.y = pos.y;
+            if (p.cp1) { p.cp1.x += dx; p.cp1.y += dy; p.cp2.x += dx; p.cp2.y += dy; }
+          } else if (dragging.handle === 'cp1') {
+            p.cp1.x = pos.x; p.cp1.y = pos.y;
+          } else if (dragging.handle === 'cp2') {
+            p.cp2.x = pos.x; p.cp2.y = pos.y;
+          }
+          redraw(); updateStatus();
+        }
+      });
+
+      canvas.addEventListener('mousedown', function(e) {
+        if (currentMode !== 'draw' && currentMode !== 'edit') return;
+        var pos = getCanvasPos(e);
+
+        if (currentMode === 'edit') {
+          // Find nearest point to drag
+          var HIT = 12;
+          for (var i = 0; i < points.length; i++) {
+            var p = points[i];
+            if (p.type === 'Z') continue;
+            if (Math.abs(pos.x - p.x) < HIT && Math.abs(pos.y - p.y) < HIT) {
+              dragging = { point: p, handle: 'main' }; return;
+            }
+            if (p.cp1 && Math.abs(pos.x - p.cp1.x) < HIT && Math.abs(pos.y - p.cp1.y) < HIT) {
+              dragging = { point: p, handle: 'cp1' }; return;
+            }
+            if (p.cp2 && Math.abs(pos.x - p.cp2.x) < HIT && Math.abs(pos.y - p.cp2.y) < HIT) {
+              dragging = { point: p, handle: 'cp2' }; return;
+            }
+          }
+          return;
+        }
+
+        // Draw mode
+        if (e.shiftKey && points.length > 0) {
+          // Add curve point
+          var prev = points[points.length - 1];
+          history.push(JSON.parse(JSON.stringify(points)));
+          points.push({
+            type: 'C',
+            x: pos.x, y: pos.y,
+            cp1: { x: prev.x + (pos.x - prev.x) * 0.33, y: prev.y + (pos.y - prev.y) * 0.33 },
+            cp2: { x: prev.x + (pos.x - prev.x) * 0.66, y: prev.y + (pos.y - prev.y) * 0.66 }
+          });
+        } else if (points.length === 0) {
+          history.push(JSON.parse(JSON.stringify(points)));
+          points.push({ type: 'M', x: pos.x, y: pos.y });
+        } else {
+          history.push(JSON.parse(JSON.stringify(points)));
+          points.push({ type: 'L', x: pos.x, y: pos.y });
+        }
+        redraw(); updateStatus();
+      });
+
+      canvas.addEventListener('mouseup', function() { dragging = null; });
+
+      // Touch support
+      canvas.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        canvas.dispatchEvent(new MouseEvent('mousedown', {
+          clientX: e.touches[0].clientX, clientY: e.touches[0].clientY, shiftKey: false
+        }));
+      }, { passive: false });
+
+      // Controls
+      document.getElementById('undoBtn').addEventListener('click', function() {
+        if (history.length > 0) { points = history.pop(); redraw(); updateStatus(); }
+      });
+
+      document.getElementById('clearCanvasBtn').addEventListener('click', function() {
+        history.push(JSON.parse(JSON.stringify(points)));
+        points = []; redraw(); updateStatus();
+      });
+
+      document.getElementById('closePathBtn').addEventListener('click', function() {
+        if (points.length > 0) {
+          history.push(JSON.parse(JSON.stringify(points)));
+          points.push({ type: 'Z' });
+          redraw(); updateStatus();
+        }
+      });
+
+      document.querySelectorAll('.option-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          document.getElementById('drawInstructions').style.display = (currentMode === 'draw' || currentMode === 'edit') ? 'block' : 'none';
+          document.getElementById('presetPanel').style.display = currentMode === 'presets' ? 'block' : 'none';
+          document.getElementById('importPanel').style.display = currentMode === 'import' ? 'block' : 'none';
+          if (currentMode === 'edit') {
+            document.getElementById('drawInstructions').innerHTML = '<strong>Edit mode:</strong><br>• Click and drag anchor points<br>• Drag blue/purple handles for bezier curves<br>• Use Undo to revert changes';
+            canvas.style.cursor = 'default';
+          } else {
+            document.getElementById('drawInstructions').innerHTML = '<strong>Draw mode:</strong><br>• Click to add line points<br>• Shift+click to add curves<br>• Undo removes last point<br>• Close Path adds Z command';
+            canvas.style.cursor = 'crosshair';
+          }
+          redraw();
+        });
+      });
+
+      // Presets
+      document.querySelectorAll('.preset-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var key = btn.getAttribute('data-preset');
+          if (PRESETS[key]) {
+            history.push(JSON.parse(JSON.stringify(points)));
+            points = parsePathD(PRESETS[key]);
+            redraw(); updateStatus();
+          }
+        });
+      });
+
+      // Import
+      document.getElementById('importBtn').addEventListener('click', function() {
+        var d = document.getElementById('importInput').value.trim();
+        if (d) {
+          history.push(JSON.parse(JSON.stringify(points)));
+          points = parsePathD(d);
+          redraw(); updateStatus();
+        }
+      });
+
+      function parsePathD(d) {
+        var pts = [];
+        var re = /([MLCQAZHVSThv])\s*([-0-9.,\s]*)/gi;
+        var m;
+        while ((m = re.exec(d)) !== null) {
+          var cmd = m[1].toUpperCase();
+          var args = (m[2].trim().match(/-?[0-9.]+/g) || []).map(Number);
+          if (cmd === 'M' && args.length >= 2) { pts.push({ type: 'M', x: args[0], y: args[1] }); for(var i=2;i<args.length;i+=2) pts.push({type:'L',x:args[i],y:args[i+1]}); }
+          else if (cmd === 'L' && args.length >= 2) { for(var i=0;i<args.length;i+=2) pts.push({type:'L',x:args[i],y:args[i+1]}); }
+          else if (cmd === 'H' && args.length >= 1) { var px=pts.length>0?pts[pts.length-1].x:0; pts.push({type:'L',x:args[0],y:pts.length>0?pts[pts.length-1].y:0}); }
+          else if (cmd === 'V' && args.length >= 1) { pts.push({type:'L',x:pts.length>0?pts[pts.length-1].x:0,y:args[0]}); }
+          else if (cmd === 'C' && args.length >= 6) { for(var i=0;i<args.length;i+=6) pts.push({type:'C',cp1:{x:args[i],y:args[i+1]},cp2:{x:args[i+2],y:args[i+3]},x:args[i+4],y:args[i+5]}); }
+          else if (cmd === 'Z') { pts.push({ type: 'Z' }); }
+        }
+        return pts;
+      }
+
+      // Output & controls
+      [document.getElementById('fillColor'), document.getElementById('strokeColor'),
+       document.getElementById('strokeWidth'), document.getElementById('showGrid'),
+       document.getElementById('snapGrid')].forEach(function(el) {
+        el.addEventListener('input', function() {
+          if (el.id === 'strokeWidth') document.getElementById('strokeWidthVal').textContent = el.value;
+          redraw();
+        });
+      });
+
+      document.getElementById('copyPathBtn').addEventListener('click', function() {
+        var d = buildPathD();
+        if (d) DT.copyToClipboard(d, this);
+      });
+
+      document.getElementById('copySvgBtn').addEventListener('click', function() {
+        var d = buildPathD();
+        if (!d) return;
+        var fill = document.getElementById('fillColor').value;
+        var stroke = document.getElementById('strokeColor').value;
+        var sw = document.getElementById('strokeWidth').value;
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">\n  <path d="' + d + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '"/>\n</svg>';
+        DT.copyToClipboard(svg, this);
+      });
+
+      document.getElementById('downloadSvgBtn').addEventListener('click', function() {
+        var d = buildPathD();
+        if (!d) return;
+        var fill = document.getElementById('fillColor').value;
+        var stroke = document.getElementById('strokeColor').value;
+        var sw = document.getElementById('strokeWidth').value;
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">\n  <path d="' + d + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '"/>\n</svg>';
+        DT.downloadText(svg, 'path.svg', 'image/svg+xml');
+      });
+
+      // Initial draw
+      redraw();
+      DT.trackTool('svg-path-editor');
+    })();
+  </script>
+</body>
+</html>

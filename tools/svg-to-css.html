@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>SVG to CSS Background-Image Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert SVG code to a CSS background-image using data URI, Base64, or URL-encoded format. Live preview, tile controls, copy CSS. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/svg-to-css.html">
+  <meta property="og:title" content="SVG to CSS Background-Image Converter — DevToolbox">
+  <meta property="og:description" content="Convert SVG to CSS background-image. Data URI, Base64, and URL-encoded modes. Live preview included. Free, no server.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/svg-to-css.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SVG to CSS Background-Image Converter",
+    "url": "https://thisdevtool.com/tools/svg-to-css.html",
+    "description": "Convert SVG to CSS background-image with data URI, Base64, or URL-encoded encoding. Live preview included.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Which encoding method should I use for SVG CSS backgrounds?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For most SVGs, URL-encoded data URIs (data:image/svg+xml, with special characters percent-encoded) are the best choice. They are smaller than Base64-encoded versions (Base64 inflates size by ~33%), and they remain in plain text which means gzip compression works efficiently on them. Base64 is useful when the SVG contains special characters that break URL encoding or when embedding in JSON."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why use SVG as a CSS background instead of an img tag?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS background-image SVGs are useful for decorative elements that do not need to be accessible (no alt text needed), for pseudo-elements (::before and ::after) which cannot contain img tags, for pattern backgrounds, and for cases where you want the SVG to be part of the stylesheet rather than the HTML. They are also useful for generating icons as data URIs in CSS custom properties."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I change the color of an SVG used as a CSS background?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Unlike inline SVG or img tags with CSS filters, SVG backgrounds cannot be recolored dynamically using CSS color properties. To change the color, you need to edit the fill or stroke attributes in the SVG source and re-encode it. A common pattern is to generate multiple encoded versions (one per color) and switch between them using CSS custom properties or class overrides."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the size limit for SVG data URIs?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Browsers have a limit on the length of data URIs, but modern browsers (Chrome, Firefox, Safari, Edge) support data URIs of at least 2MB. For practical use, SVG data URIs work well for icons and simple illustrations under 50KB. For large, complex SVGs, it is better to serve them as separate .svg files to take advantage of browser caching."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the SVG need a viewBox to work as a CSS background?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, ideally. Without a viewBox, the SVG will render at its intrinsic width and height, which may not scale correctly when used as a background-image. If your SVG has explicit width and height attributes but no viewBox, this tool will note that. Adding viewBox='0 0 [width] [height]' ensures the SVG scales properly with background-size."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .preview-area { border: 1px solid var(--border); border-radius: 8px; padding: 0; overflow: hidden; }
+    .preview-single { height: 120px; display: flex; align-items: center; justify-content: center; }
+    .preview-tiled { height: 120px; }
+    .preview-label { font-size: 0.75rem; color: var(--muted); padding: 6px 10px; border-top: 1px solid var(--border); background: var(--surface); }
+    .tile-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 8px 0; font-size: 0.875rem; }
+    .tile-controls label { color: var(--muted); }
+    .tile-controls input[type=range] { width: 100px; accent-color: var(--accent); }
+    .tile-controls select { padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text); font-size: 0.875rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/svg-optimizer.html">SVG Optimizer</a>
+        <a href="/tools/svg-path-editor.html">Path Editor</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>SVG to CSS Background-Image Converter</h1>
+          <p class="tool-subtitle">Convert SVG code to a CSS <code>background-image</code> data URI. Choose from Data URI, Base64, or URL-encoded output.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="urlencoded">URL-encoded</button>
+            <button class="option-chip" data-mode="base64">Base64</button>
+            <button class="option-chip" data-mode="inline">Inline (no encode)</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input SVG</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="svgInput" rows="14" placeholder="Paste SVG code here..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>CSS Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy CSS</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download .css</button>
+                </div>
+              </div>
+              <div class="code-output" id="cssOutput" style="min-height:280px;word-break:break-all;"></div>
+            </div>
+          </div>
+
+          <div class="tile-controls">
+            <label>Preview size: <strong id="sizeLabel">40px</strong></label>
+            <input type="range" id="sizeRange" min="16" max="200" value="40">
+            <label>Repeat:</label>
+            <select id="repeatSelect">
+              <option value="no-repeat">no-repeat</option>
+              <option value="repeat">repeat (tile)</option>
+              <option value="repeat-x">repeat-x</option>
+              <option value="repeat-y">repeat-y</option>
+              <option value="space">space</option>
+            </select>
+            <label>Bg color:</label>
+            <input type="color" id="bgColor" value="#ffffff" style="width:32px;height:28px;border:1px solid var(--border);border-radius:4px;padding:1px;cursor:pointer;">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div class="preview-area">
+              <div class="preview-single" id="previewSingle"></div>
+              <div class="preview-label">Single / no-repeat</div>
+            </div>
+            <div class="preview-area">
+              <div class="preview-tiled" id="previewTiled"></div>
+              <div class="preview-label">Tiled preview</div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste SVG code above to generate CSS.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the SVG to CSS Converter</h2>
+          <ol>
+            <li><strong>Paste your SVG</strong> into the input area. Make sure it is valid, well-formed SVG with a viewBox attribute for best scaling.</li>
+            <li><strong>Choose an encoding method</strong> — URL-encoded is recommended for most cases; Base64 for complex SVGs; Inline for minimal encoding.</li>
+            <li><strong>Adjust the preview</strong> — use the size slider and repeat selector to see how the SVG looks as a tiled or single background.</li>
+            <li><strong>Copy or download the CSS</strong> — the output includes the full background-image property and suggested background-size/repeat values.</li>
+          </ol>
+
+          <h2>When to Use SVG as a CSS Background</h2>
+          <p>SVG as a CSS background-image is a powerful technique for several use cases. CSS pseudo-elements (&amp;::before and &amp;::after) cannot contain HTML elements, but they can display background images — making encoded SVG the standard way to add icons or decorative shapes to pseudo-elements. Pattern backgrounds (dots, grids, chevrons, diagonal lines) are commonly implemented as tiled SVG backgrounds because they scale perfectly at any resolution and DPI. CSS custom properties also work well with encoded SVG, allowing you to define an icon once and use it throughout a stylesheet.</p>
+
+          <h3>URL-encoded vs. Base64 — Which Is Better?</h3>
+          <p>Both approaches embed the SVG as a data URI in the form <code>background-image: url("data:image/svg+xml, ...");</code>. The key difference is the encoding:</p>
+          <ul>
+            <li><strong>URL-encoded</strong> — Replaces special characters like &lt; &gt; # { } with percent-encoded equivalents (%3C %3E %23 %7B %7D). The result is longer than the original SVG but shorter than Base64. Gzip compression works very effectively on it because the text remains largely human-readable. Recommended for most SVGs.</li>
+            <li><strong>Base64</strong> — Converts the SVG to a completely ASCII-safe string using 64-character alphabet encoding. Inflates size by approximately 33% compared to the original. Useful when URL encoding breaks (very rare) or when the output needs to be embedded in a format that does not support percent-encoding (e.g., JSON).</li>
+            <li><strong>Inline (unencoded)</strong> — Uses the SVG string with minimal escaping (single quotes replaced). Theoretically the smallest, but not safe for all SVG content and not supported by all browsers consistently. Best for very simple SVGs with no special characters.</li>
+          </ul>
+
+          <h3>Required SVG Attributes</h3>
+          <p>For SVG to work correctly as a CSS background, the SVG element should have:</p>
+          <ul>
+            <li><strong>xmlns attribute</strong> — <code>xmlns="http://www.w3.org/2000/svg"</code> is required for data URIs (the browser cannot infer the namespace from the file extension as it would with a .svg file reference)</li>
+            <li><strong>viewBox</strong> — Required for the SVG to scale with background-size. Without it, the SVG renders at its intrinsic pixel size only.</li>
+            <li><strong>No external references</strong> — SVGs with external file references (other SVGs, fonts, images) will not work in data URIs. All assets must be inline.</li>
+          </ul>
+
+          <h3>Using SVG Backgrounds for Patterns</h3>
+          <p>Tiling SVG backgrounds is an elegant way to create repeating patterns. Common patterns include diagonal hatching (using line elements at 45 degrees), polka dots (using circle elements), grid overlays (using rect or path elements), chevron or zigzag patterns, and herringbone textures. Because SVG is vector-based, these patterns are perfectly crisp on retina/HiDPI displays at any zoom level — something that raster (PNG/JPEG) backgrounds cannot achieve. Use our <a href="/tools/svg-optimizer.html">SVG Optimizer</a> to minimize the SVG before encoding it for the smallest possible CSS output.</p>
+
+          <h3>Browser Support</h3>
+          <p>SVG data URIs as CSS backgrounds are supported in all modern browsers including Chrome, Firefox, Safari, Edge, and Opera. Internet Explorer 9+ supports them but requires Base64 encoding (IE does not support URL-encoded SVG data URIs reliably). If you need IE9 compatibility, always use the Base64 mode. For all other targets, URL-encoded mode is the most efficient choice.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">Which encoding method should I use for SVG CSS backgrounds?</button>
+            <div class="faq-answer">For most SVGs, URL-encoded data URIs are the best choice. They are smaller than Base64-encoded versions (Base64 inflates size by ~33%), and they remain in plain text which means gzip compression works efficiently on them. Base64 is useful when the SVG contains characters that break URL encoding or when embedding in JSON.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why use SVG as a CSS background instead of an img tag?</button>
+            <div class="faq-answer">CSS background-image SVGs are useful for pseudo-elements (::before/::after), decorative backgrounds, pattern tiles, and cases where the SVG should be part of the stylesheet rather than the HTML. They cannot be targeted by CSS filters or JS, unlike inline SVG.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I change the color of an SVG used as a CSS background?</button>
+            <div class="faq-answer">SVG backgrounds cannot be recolored dynamically using CSS color properties. You must edit the fill or stroke attributes in the SVG source and re-encode it. A common pattern is to generate multiple encoded versions and switch between them using CSS custom properties.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the size limit for SVG data URIs?</button>
+            <div class="faq-answer">Modern browsers support data URIs of at least 2MB. For practical use, SVG data URIs work well for icons and simple illustrations under 50KB. For large SVGs, serve them as separate .svg files to take advantage of browser caching.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does the SVG need a viewBox to work as a CSS background?</button>
+            <div class="faq-answer">Yes, ideally. Without a viewBox, the SVG will render at its intrinsic width and height and may not scale correctly with background-size. Adding viewBox="0 0 [width] [height]" ensures the SVG scales properly.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS &amp; Design</h4>
+        <a href="/tools/svg-to-css.html">SVG to CSS</a>
+        <a href="/tools/svg-optimizer.html">SVG Optimizer</a>
+        <a href="/tools/svg-path-editor.html">SVG Path Editor</a>
+        <a href="/tools/tailwind-to-css.html">Tailwind to CSS</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/image-color-picker.html">Color Picker</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('svgInput');
+      var cssOutput = document.getElementById('cssOutput');
+      var statusBar = document.getElementById('statusBar');
+      var previewSingle = document.getElementById('previewSingle');
+      var previewTiled = document.getElementById('previewTiled');
+      var sizeRange = document.getElementById('sizeRange');
+      var sizeLabel = document.getElementById('sizeLabel');
+      var repeatSelect = document.getElementById('repeatSelect');
+      var bgColor = document.getElementById('bgColor');
+      var currentMode = 'urlencoded';
+      var currentDataUri = '';
+
+      var EXAMPLE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="#10b981" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>';
+
+      function encodeSVG(svg) {
+        if (currentMode === 'base64') {
+          try { return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg))); }
+          catch(e) { return 'data:image/svg+xml;base64,' + btoa(svg); }
+        } else if (currentMode === 'inline') {
+          var enc = svg.replace(/"/g, "'").replace(/\n/g, ' ').replace(/\s{2,}/g, ' ').trim();
+          return 'data:image/svg+xml,' + enc;
+        } else {
+          // URL-encoded
+          var enc = encodeURIComponent(svg)
+            .replace(/%20/g, ' ')
+            .replace(/%3D/g, '=')
+            .replace(/%3A/g, ':')
+            .replace(/%2F/g, '/')
+            .replace(/%22/g, "'");
+          return 'data:image/svg+xml,' + enc;
+        }
+      }
+
+      function extractDimensions(svg) {
+        var wm = svg.match(/\bwidth=["']([0-9.]+)["']/);
+        var hm = svg.match(/\bheight=["']([0-9.]+)["']/);
+        var vm = svg.match(/viewBox=["']([^"']+)["']/);
+        if (vm) {
+          var parts = vm[1].split(/[\s,]+/);
+          return { w: parts[2] || (wm ? wm[1] : '24'), h: parts[3] || (hm ? hm[1] : '24') };
+        }
+        return { w: wm ? wm[1] : '24', h: hm ? hm[1] : '24' };
+      }
+
+      function updatePreviews(dataUri) {
+        var size = sizeRange.value + 'px';
+        var repeat = repeatSelect.value;
+        var bg = bgColor.value;
+
+        previewSingle.style.backgroundImage = 'url("' + dataUri + '")';
+        previewSingle.style.backgroundSize = size + ' ' + size;
+        previewSingle.style.backgroundRepeat = 'no-repeat';
+        previewSingle.style.backgroundPosition = 'center';
+        previewSingle.style.backgroundColor = bg;
+
+        previewTiled.style.backgroundImage = 'url("' + dataUri + '")';
+        previewTiled.style.backgroundSize = size + ' ' + size;
+        previewTiled.style.backgroundRepeat = repeat;
+        previewTiled.style.backgroundColor = bg;
+      }
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          cssOutput.textContent = '';
+          currentDataUri = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste SVG code above to generate CSS.';
+          previewSingle.style.backgroundImage = 'none';
+          previewTiled.style.backgroundImage = 'none';
+          return;
+        }
+
+        // Ensure xmlns is present
+        if (!raw.includes('xmlns=')) {
+          raw = raw.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+        }
+
+        var dataUri = encodeSVG(raw);
+        currentDataUri = dataUri;
+        var dims = extractDimensions(raw);
+        var hasViewBox = raw.includes('viewBox');
+        var size = sizeRange.value + 'px';
+        var repeat = repeatSelect.value;
+
+        var css = '.icon {\n  background-image: url("' + dataUri + '");\n  background-size: ' + size + ' ' + size + ';\n  background-repeat: ' + repeat + ';\n  background-position: center;\n  width: ' + dims.w + 'px;\n  height: ' + dims.h + 'px;\n}';
+
+        if (!hasViewBox) {
+          css = '/* Note: Add viewBox="0 0 ' + dims.w + ' ' + dims.h + '" to your SVG for proper scaling */\n' + css;
+        }
+
+        cssOutput.textContent = css;
+
+        var origSize = new Blob([raw]).size;
+        var encodedSize = new Blob([dataUri]).size;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Encoded: ' + (DT.formatBytes ? DT.formatBytes(origSize) : origSize+'B') + ' SVG → ' + (DT.formatBytes ? DT.formatBytes(encodedSize) : encodedSize+'B') + ' data URI (' + currentMode + ')';
+
+        updatePreviews(dataUri);
+        DT.trackTool('svg-to-css');
+      }
+
+      var debouncedProcess = DT.debounce(process, 200);
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      sizeRange.addEventListener('input', function() {
+        sizeLabel.textContent = this.value + 'px';
+        if (currentDataUri) updatePreviews(currentDataUri);
+        if (input.value.trim()) {
+          var size = this.value + 'px';
+          var css = cssOutput.textContent;
+          css = css.replace(/background-size: \d+px \d+px/, 'background-size: ' + size + ' ' + size);
+          css = css.replace(/width: \d+px/, 'width: ' + size);
+          css = css.replace(/height: \d+px/, 'height: ' + size);
+          cssOutput.textContent = css;
+        }
+      });
+
+      repeatSelect.addEventListener('change', function() {
+        if (currentDataUri) updatePreviews(currentDataUri);
+        if (input.value.trim()) {
+          var css = cssOutput.textContent;
+          css = css.replace(/background-repeat: [^;]+/, 'background-repeat: ' + this.value);
+          cssOutput.textContent = css;
+        }
+      });
+
+      bgColor.addEventListener('input', function() {
+        if (currentDataUri) updatePreviews(currentDataUri);
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function() {
+        var text = cssOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function() {
+        var text = cssOutput.textContent;
+        if (text) DT.downloadText(text, 'svg-background.css', 'text/css');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function() {
+        input.value = ''; process(); input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function() {
+        input.value = EXAMPLE_SVG; process();
+      });
+
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var s = this.selectionStart;
+          this.value = this.value.substring(0, s) + '  ' + this.value.substring(this.selectionEnd);
+          this.selectionStart = this.selectionEnd = s + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

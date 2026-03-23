@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Specificity Calculator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Calculate CSS selector specificity as (a, b, c) scores. Visualize with color-coded bars, compare selectors, and learn which rule wins. Free, instant, in-browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-specificity.html">
+  <meta property="og:title" content="CSS Specificity Calculator — DevToolbox">
+  <meta property="og:description" content="Free CSS specificity calculator with visual bar chart, comparison, and plain-English explanations.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-specificity.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Specificity Calculator",
+    "url": "https://thisdevtool.com/tools/css-specificity.html",
+    "description": "Calculate CSS selector specificity scores (a,b,c) with visual bars and comparison mode.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How is CSS specificity calculated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS specificity is calculated as three numbers (a, b, c): a counts inline styles (always 1 for inline), b counts ID selectors (#id), and c counts class selectors (.class), attribute selectors ([attr]), and pseudo-classes (:hover), while element selectors (div, p) and pseudo-elements (::before) also add to c as a separate sub-count. The universal selector (*) and combinators (+, >, ~) contribute 0 to any category."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does !important override specificity?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. !important overrides all specificity calculations. When two competing declarations both use !important, specificity and source order rules apply between them. Best practice is to avoid !important in component CSS and instead increase specificity through better selector structure."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the specificity of :not(), :is(), and :where()?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": ":not() itself has no specificity, but its argument contributes its specificity to the overall score. :is() takes the highest specificity of any selector in its list. :where() always has zero specificity regardless of its contents — it is the low-specificity alternative to :is()."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which has higher specificity: a class or an element?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A class selector (.example) always has higher specificity than an element selector (div). A single class produces a score of (0,1,0) while a single element produces (0,0,1). You would need 10 element selectors to equal one class — but in practice browsers do not carry over: one class always beats any number of elements."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the source order matter when specificity is equal?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. When two rules have exactly equal specificity, the one that appears later in the stylesheet wins. This is the cascade. Source order is the tiebreaker after specificity, origin (browser default vs. author vs. user), and !important are all considered."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .specificity-result {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.75rem;
+      background: var(--bg-secondary);
+    }
+    .spec-selector {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-all;
+    }
+    .spec-score {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .spec-badge {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      letter-spacing: 0.05em;
+    }
+    .spec-bars { display: flex; gap: 4px; align-items: flex-end; height: 40px; flex: 1; min-width: 120px; }
+    .spec-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .spec-bar {
+      width: 28px;
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s;
+      min-height: 4px;
+    }
+    .spec-bar.id    { background: #ef4444; }
+    .spec-bar.cls   { background: #22c55e; }
+    .spec-bar.elem  { background: #3b82f6; }
+    .spec-bar-label { font-size: 0.7rem; color: var(--text-secondary); }
+    .spec-parts { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; line-height: 1.5; }
+    .winner-badge {
+      display: inline-block;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      background: var(--accent-light);
+      color: var(--success);
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-left: 0.5rem;
+    }
+    .quiz-section { padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius); margin-top: 1rem; }
+    .quiz-options { display: flex; gap: 1rem; margin-top: 0.5rem; flex-wrap: wrap; }
+    .legend { display: flex; gap: 1rem; font-size: 0.8rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 0.3rem; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-unit-converter.html">CSS Units</a>
+        <a href="/tools/css-easing-visualizer.html">Easing</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Specificity Calculator</h1>
+          <p class="tool-subtitle">Calculate (a, b, c) specificity scores, compare selectors, and learn which rule wins.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="batch">Batch</button>
+            <button class="option-chip" data-mode="compare">Compare</button>
+            <button class="option-chip" data-mode="quiz">Quiz</button>
+          </div>
+
+          <!-- Batch Mode -->
+          <div id="batchMode">
+            <div class="pane-label">
+              <span>CSS Selectors (one per line)</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+            </div>
+            <textarea id="selectorInput" rows="6" placeholder="Enter CSS selectors, one per line:&#10;&#10;#header .nav a:hover&#10;.container > p&#10;div.active&#10;*&#10;[data-active]" spellcheck="false"></textarea>
+
+            <div class="legend" id="legend" style="margin-top:0.75rem;">
+              <span class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span>IDs (b)</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#22c55e;"></span>Classes / Attrs / Pseudo-classes (c)</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span>Elements / Pseudo-elements (d)</span>
+            </div>
+
+            <div id="resultsContainer"></div>
+          </div>
+
+          <!-- Compare Mode -->
+          <div id="compareMode" style="display:none;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+              <div>
+                <label style="font-size:0.85rem;color:var(--text-secondary);">Selector A</label>
+                <input type="text" id="selectorA" placeholder="#nav .item a" style="width:100%;margin-top:0.25rem;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);color:var(--text);">
+              </div>
+              <div>
+                <label style="font-size:0.85rem;color:var(--text-secondary);">Selector B</label>
+                <input type="text" id="selectorB" placeholder=".nav a.active" style="width:100%;margin-top:0.25rem;padding:0.5rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-card);color:var(--text);">
+              </div>
+            </div>
+            <div id="compareResult" style="margin-top:1rem;"></div>
+          </div>
+
+          <!-- Quiz Mode -->
+          <div id="quizMode" style="display:none;">
+            <div class="quiz-section">
+              <p style="font-weight:600;" id="quizQuestion">Which selector has higher specificity?</p>
+              <div class="quiz-options">
+                <button class="btn btn-secondary" id="quizOptA" style="font-family:var(--font-mono);"></button>
+                <button class="btn btn-secondary" id="quizOptB" style="font-family:var(--font-mono);"></button>
+              </div>
+              <div id="quizFeedback" style="margin-top:0.75rem;font-size:0.9rem;"></div>
+              <button class="btn btn-sm btn-primary" id="nextQuizBtn" style="margin-top:0.75rem;">Next Question</button>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter CSS selectors above to calculate specificity.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the CSS Specificity Calculator</h2>
+          <ol>
+            <li><strong>Batch mode</strong> — paste one or more CSS selectors (one per line) to calculate and rank all of them at once.</li>
+            <li><strong>Compare mode</strong> — enter two selectors side by side to see which one wins and why.</li>
+            <li><strong>Quiz mode</strong> — test your knowledge by guessing which of two selectors has higher specificity.</li>
+            <li><strong>Read the bars</strong> — red bars show ID count, green bars show class/attribute/pseudo-class count, blue bars show element/pseudo-element count.</li>
+          </ol>
+
+          <h2>How CSS Specificity Works</h2>
+          <p>Specificity is the algorithm CSS uses to determine which rule applies when multiple declarations target the same element and property. It is calculated as a three-number score (a, b, c) — sometimes written (0, 0, 0) or as three digits separated by commas. A higher leftmost number always wins, regardless of how large the rightmost numbers are.</p>
+          <p>The three columns represent: <strong>(a) inline styles</strong> — applied via the <code>style</code> attribute, always the most specific; <strong>(b) ID selectors</strong> — selectors using <code>#id</code>; <strong>(c) class, attribute, and pseudo-class selectors</strong> — <code>.class</code>, <code>[attr]</code>, <code>:hover</code>; and within column c there is an additional sub-count for <strong>element selectors and pseudo-elements</strong> (<code>div</code>, <code>::before</code>).</p>
+
+          <h3>Specificity Scoring Table</h3>
+          <ul>
+            <li><strong>Inline style</strong> (style="…") — (1, 0, 0, 0)</li>
+            <li><strong>ID selector</strong> (#id) — (0, 1, 0, 0)</li>
+            <li><strong>Class selector</strong> (.class) — (0, 0, 1, 0)</li>
+            <li><strong>Attribute selector</strong> ([href], [type="text"]) — (0, 0, 1, 0)</li>
+            <li><strong>Pseudo-class</strong> (:hover, :first-child, :not(x)) — (0, 0, 1, 0)</li>
+            <li><strong>Element selector</strong> (div, p, a) — (0, 0, 0, 1)</li>
+            <li><strong>Pseudo-element</strong> (::before, ::after, ::first-line) — (0, 0, 0, 1)</li>
+            <li><strong>Universal selector</strong> (*) — (0, 0, 0, 0)</li>
+            <li><strong>Combinators</strong> (+, >, ~, space) — (0, 0, 0, 0)</li>
+          </ul>
+
+          <h3>Special Cases</h3>
+          <p>Several modern CSS selectors have non-obvious specificity behaviors. <code>:not()</code> has no specificity of its own, but its argument contributes. <code>:is()</code> takes the highest specificity of all selectors inside it — so <code>:is(#id, .class)</code> has the specificity of <code>#id</code>. <code>:where()</code> always contributes zero specificity, making it useful for low-specificity utility selectors that are easy to override. CSS layers (<code>@layer</code>) interact with specificity in a layered cascade that is separate from selector specificity.</p>
+
+          <h3>Common Specificity Mistakes</h3>
+          <ul>
+            <li>Using <code>#id</code> in component CSS makes it nearly impossible to override without another ID or <code>!important</code></li>
+            <li>Deeply nesting selectors (<code>.page .content .section .title</code>) creates unnecessarily high specificity</li>
+            <li>Overusing <code>!important</code> to "fix" specificity issues creates a maintenance nightmare</li>
+            <li>Assuming more element selectors will beat a class — they never will (1000 elements = score of 1000 in column c, but one class also scores 1 in column b which is higher)</li>
+          </ul>
+
+          <h3>Best Practices for Managing Specificity</h3>
+          <p>Modern CSS methodologies like BEM (Block Element Modifier), ITCSS, and utility-first frameworks like Tailwind are largely designed to control specificity. BEM keeps all component styles at a single-class specificity (0, 0, 1, 0), making them easy to override. ITCSS layers styles from least specific (elements) to most specific (utilities, overrides). CSS custom properties (variables) are resolved before the cascade, so they are useful for theming without specificity conflicts. For deeper learning, also explore the <a href="/tools/css-unit-converter.html">CSS Unit Converter</a> and <a href="/tools/css-easing-visualizer.html">Easing Editor</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">How is CSS specificity calculated?</button>
+            <div class="faq-answer">CSS specificity is calculated as three numbers (a, b, c): a counts inline styles, b counts ID selectors (#id), and c counts class selectors (.class), attribute selectors ([attr]), pseudo-classes (:hover), element selectors (div, p), and pseudo-elements (::before). The universal selector (*) and combinators contribute 0.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does !important override specificity?</button>
+            <div class="faq-answer">Yes. !important overrides all specificity calculations. When two competing declarations both use !important, specificity and source order rules apply between them. Best practice is to avoid !important in component CSS and instead increase specificity through better selector structure.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the specificity of :not(), :is(), and :where()?</button>
+            <div class="faq-answer">:not() itself has no specificity, but its argument contributes its specificity to the overall score. :is() takes the highest specificity of any selector in its list. :where() always has zero specificity regardless of its contents — it is the low-specificity alternative to :is().</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Which has higher specificity: a class or an element?</button>
+            <div class="faq-answer">A class selector (.example) always has higher specificity than an element selector (div). A single class produces a score of (0,1,0) while a single element produces (0,0,1). You would need 10 element selectors to equal one class in the same column — but in practice one class always beats any number of elements because they are in different columns.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does the source order matter when specificity is equal?</button>
+            <div class="faq-answer">Yes. When two rules have exactly equal specificity, the one that appears later in the stylesheet wins. This is the cascade. Source order is the tiebreaker after specificity, origin (browser default vs. author vs. user), and !important are all considered.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS & Design</h4>
+        <a href="/tools/css-glassmorphism.html">Glassmorphism</a>
+        <a href="/tools/css-neumorphism.html">Neumorphism</a>
+        <a href="/tools/css-easing-visualizer.html">Easing Curves</a>
+        <a href="/tools/css-specificity.html">Specificity</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-unit-converter.html">CSS Units</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'batch';
+
+    var QUIZ_PAIRS = [
+      ['#nav a', '.nav a.active'],
+      ['div.container p', '.container > p'],
+      ['#main #content h1', '.page .title'],
+      ['a:hover', 'a.active'],
+      ['ul li:first-child', '#list li'],
+      ['.btn.primary', '#submit'],
+      ['[type="text"]', 'input.text-field'],
+      ['::before', ':hover'],
+      ['body #content .sidebar', '.sidebar.visible'],
+      ['.a .b .c .d', '#item']
+    ];
+    var quizIndex = 0;
+
+    function calcSpecificity(selector) {
+      var s = selector.trim();
+      // Remove strings inside brackets to avoid false matches
+      s = s.replace(/\[([^\]]*)\]/g, function(m) {
+        // count the attribute selector as 1 class-level
+        return '[X]';
+      });
+
+      var ids    = (s.match(/#[a-zA-Z][\w-]*/g) || []).length;
+      // Remove IDs before counting classes to avoid double counting
+      var noIds  = s.replace(/#[a-zA-Z][\w-]*/g, '');
+      var classes= (noIds.match(/\.[a-zA-Z][\w-]*/g) || []).length;
+      var attrs  = (s.match(/\[X\]/g) || []).length;
+      // Pseudo-classes (not :not, :is, :where, :has arguments)
+      var pseudoClasses = (noIds.match(/:(?!:)[a-zA-Z][\w-]*/g) || []).filter(function(p) {
+        return !/^:(not|is|where|has|matches)/.test(p);
+      }).length;
+      var pseudoElements = (s.match(/::[a-zA-Z][\w-]*/g) || []).length;
+      var noSpecial = noIds
+        .replace(/\.[a-zA-Z][\w-]*/g, '')
+        .replace(/\[X\]/g, '')
+        .replace(/:[a-zA-Z][\w-]*/g, '')
+        .replace(/[+>~\s]/g, ' ');
+      var elements = (noSpecial.match(/[a-zA-Z][\w-]*/g) || []).filter(function(e) {
+        return !['and','not','is','where','has','nth','child','type','first','last','only','of','an','odd','even'].includes(e.toLowerCase());
+      }).length;
+
+      var b = ids;
+      var c = classes + attrs + pseudoClasses;
+      var d = elements + pseudoElements;
+      return { a: 0, b: b, c: c, d: d, total: b*1000000 + c*1000 + d };
+    }
+
+    function explainSelector(selector, spec) {
+      var parts = [];
+      if (spec.b > 0) parts.push(spec.b + ' ID selector' + (spec.b > 1 ? 's' : ''));
+      if (spec.c > 0) parts.push(spec.c + ' class/attr/pseudo-class');
+      if (spec.d > 0) parts.push(spec.d + ' element/pseudo-element');
+      if (parts.length === 0) parts.push('no specificity (universal or combinator only)');
+      return parts.join(', ');
+    }
+
+    function renderResult(selector, spec, isWinner) {
+      var MAX = 15;
+      var bH  = Math.min(36, (spec.b / Math.max(1, MAX)) * 36);
+      var cH  = Math.min(36, (spec.c / Math.max(1, MAX)) * 36);
+      var dH  = Math.min(36, (spec.d / Math.max(1, MAX)) * 36);
+      // Ensure bars with count > 0 always have minimum visible height
+      if (spec.b > 0 && bH < 6) bH = 6;
+      if (spec.c > 0 && cH < 6) cH = 6;
+      if (spec.d > 0 && dH < 6) dH = 6;
+
+      var html = '<div class="specificity-result">';
+      html += '<div class="spec-selector">' + escHtml(selector) + (isWinner ? '<span class="winner-badge">WINS</span>' : '') + '</div>';
+      html += '<div class="spec-score">';
+      html += '<span class="spec-badge">(0, ' + spec.b + ', ' + spec.c + ', ' + spec.d + ')</span>';
+      html += '<div class="spec-bars">';
+      html += '<div class="spec-bar-wrap"><div class="spec-bar id" style="height:' + Math.max(4, bH) + 'px;opacity:' + (spec.b > 0 ? 1 : 0.15) + ';"></div><span class="spec-bar-label">b=' + spec.b + '</span></div>';
+      html += '<div class="spec-bar-wrap"><div class="spec-bar cls" style="height:' + Math.max(4, cH) + 'px;opacity:' + (spec.c > 0 ? 1 : 0.15) + ';"></div><span class="spec-bar-label">c=' + spec.c + '</span></div>';
+      html += '<div class="spec-bar-wrap"><div class="spec-bar elem" style="height:' + Math.max(4, dH) + 'px;opacity:' + (spec.d > 0 ? 1 : 0.15) + ';"></div><span class="spec-bar-label">d=' + spec.d + '</span></div>';
+      html += '</div>';
+      html += '</div>';
+      html += '<div class="spec-parts">' + explainSelector(selector, spec) + '</div>';
+      html += '</div>';
+      return html;
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function processBatch() {
+      var lines = document.getElementById('selectorInput').value.split('\n')
+        .map(function(l) { return l.trim(); })
+        .filter(function(l) { return l.length > 0; });
+
+      var container = document.getElementById('resultsContainer');
+      var statusBar = document.getElementById('statusBar');
+
+      if (lines.length === 0) {
+        container.innerHTML = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter CSS selectors above to calculate specificity.';
+        return;
+      }
+
+      var results = lines.map(function(sel) {
+        return { sel: sel, spec: calcSpecificity(sel) };
+      });
+
+      var maxTotal = Math.max.apply(null, results.map(function(r) { return r.spec.total; }));
+
+      container.innerHTML = results.map(function(r) {
+        return renderResult(r.sel, r.spec, results.length > 1 && r.spec.total === maxTotal);
+      }).join('');
+
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = results.length + ' selector' + (results.length > 1 ? 's' : '') + ' calculated.';
+      DT.trackTool('css-specificity');
+    }
+
+    function processCompare() {
+      var a = document.getElementById('selectorA').value.trim();
+      var b = document.getElementById('selectorB').value.trim();
+      var container = document.getElementById('compareResult');
+      var statusBar = document.getElementById('statusBar');
+
+      if (!a || !b) {
+        container.innerHTML = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter both selectors to compare.';
+        return;
+      }
+
+      var specA = calcSpecificity(a);
+      var specB = calcSpecificity(b);
+      var winner = specA.total > specB.total ? 'a' : specB.total > specA.total ? 'b' : 'tie';
+
+      var html = renderResult(a, specA, winner === 'a');
+      html += renderResult(b, specB, winner === 'b');
+      if (winner === 'tie') {
+        html += '<div class="status-bar info" style="margin-top:0.5rem;">Equal specificity — source order decides the winner.</div>';
+      }
+      container.innerHTML = html;
+
+      if (winner === 'tie') {
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Tie! Both selectors have equal specificity — the later rule in the stylesheet wins.';
+      } else {
+        var w = winner === 'a' ? a : b;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = '"' + w + '" wins.';
+      }
+      DT.trackTool('css-specificity');
+    }
+
+    // Quiz
+    function loadQuiz() {
+      var pair = QUIZ_PAIRS[quizIndex % QUIZ_PAIRS.length];
+      document.getElementById('quizQuestion').textContent = 'Which selector has higher specificity?';
+      document.getElementById('quizOptA').textContent = pair[0];
+      document.getElementById('quizOptB').textContent = pair[1];
+      document.getElementById('quizFeedback').innerHTML = '';
+      document.getElementById('quizOptA').disabled = false;
+      document.getElementById('quizOptB').disabled = false;
+    }
+
+    function handleQuizAnswer(chosen) {
+      var pair = QUIZ_PAIRS[quizIndex % QUIZ_PAIRS.length];
+      var specA = calcSpecificity(pair[0]);
+      var specB = calcSpecificity(pair[1]);
+      var correct;
+      if (specA.total === specB.total) correct = null;
+      else correct = specA.total > specB.total ? 0 : 1;
+
+      document.getElementById('quizOptA').disabled = true;
+      document.getElementById('quizOptB').disabled = true;
+
+      var fb = document.getElementById('quizFeedback');
+      if (correct === null) {
+        fb.innerHTML = '<span style="color:var(--warning);">It\'s a tie! Both have equal specificity.</span>';
+      } else if (chosen === correct) {
+        fb.innerHTML = '<span style="color:var(--success);">Correct! ' + pair[correct] + ' wins with (0, ' + (correct===0?specA.b:specB.b) + ', ' + (correct===0?specA.c:specB.c) + ', ' + (correct===0?specA.d:specB.d) + ')</span>';
+      } else {
+        fb.innerHTML = '<span style="color:var(--error);">Not quite! ' + pair[correct] + ' wins with (0, ' + (correct===0?specA.b:specB.b) + ', ' + (correct===0?specA.c:specB.c) + ', ' + (correct===0?specA.d:specB.d) + ') vs (0, ' + (correct===1?specA.b:specB.b) + ', ' + (correct===1?specA.c:specB.c) + ', ' + (correct===1?specA.d:specB.d) + ')</span>';
+      }
+    }
+
+    document.getElementById('quizOptA').addEventListener('click', function() { handleQuizAnswer(0); });
+    document.getElementById('quizOptB').addEventListener('click', function() { handleQuizAnswer(1); });
+    document.getElementById('nextQuizBtn').addEventListener('click', function() { quizIndex++; loadQuiz(); });
+
+    // Mode switching
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        document.getElementById('batchMode').style.display   = currentMode === 'batch'   ? '' : 'none';
+        document.getElementById('compareMode').style.display = currentMode === 'compare' ? '' : 'none';
+        document.getElementById('quizMode').style.display    = currentMode === 'quiz'    ? '' : 'none';
+        if (currentMode === 'quiz') loadQuiz();
+        var statusBar = document.getElementById('statusBar');
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter CSS selectors above to calculate specificity.';
+      });
+    });
+
+    var debouncedBatch = DT.debounce(processBatch, 200);
+    document.getElementById('selectorInput').addEventListener('input', debouncedBatch);
+
+    var debouncedCompare = DT.debounce(processCompare, 200);
+    document.getElementById('selectorA').addEventListener('input', debouncedCompare);
+    document.getElementById('selectorB').addEventListener('input', debouncedCompare);
+
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      document.getElementById('selectorInput').value = [
+        '#header .nav a:hover',
+        '.container > p.intro',
+        'div#main article h2',
+        '*',
+        '[data-active="true"]',
+        'a:not(.disabled)',
+        'body'
+      ].join('\n');
+      processBatch();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      document.getElementById('selectorInput').value = '';
+      document.getElementById('resultsContainer').innerHTML = '';
+      document.getElementById('statusBar').textContent = 'Enter CSS selectors above to calculate specificity.';
+    });
+
+    loadQuiz();
+  })();
+  </script>
+</body>
+</html>

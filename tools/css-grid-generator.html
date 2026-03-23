@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Grid Generator — Free Visual Grid Builder | DevToolbox</title>
+  <meta name="description" content="Build CSS Grid layouts visually. Set columns, rows, gaps, and templates interactively. Get instant CSS code output. Free, no signup, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-grid-generator.html">
+  <meta property="og:title" content="CSS Grid Generator — DevToolbox">
+  <meta property="og:description" content="Build CSS Grid layouts visually with live preview and instant code output. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-grid-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Grid Generator",
+    "url": "https://thisdevtool.com/tools/css-grid-generator.html",
+    "description": "Build CSS Grid layouts visually with live preview and instant CSS code output.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is CSS Grid?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS Grid is a two-dimensional layout system built into browsers. Unlike Flexbox (which is one-dimensional), CSS Grid lets you control both rows and columns simultaneously, making it ideal for complex page layouts, card grids, and dashboard designs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between auto-fill and auto-fit?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Both auto-fill and auto-fit create as many columns as will fit. The difference appears when there are fewer items than columns: auto-fill keeps the empty column tracks (reserving space), while auto-fit collapses them to zero width so items can expand to fill the container."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I make a CSS Grid column span multiple columns?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use grid-column: span N on a grid item, where N is the number of columns to span. For example, grid-column: span 2 makes the item take up two column tracks. You can also use grid-column: 1 / 3 to explicitly set start and end lines."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is fr in CSS Grid?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The fr unit represents a fraction of the available space in the grid container. For example, grid-template-columns: 1fr 2fr creates two columns where the second is twice as wide as the first. It distributes remaining space after fixed-size columns are accounted for."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this CSS Grid code compatible with all browsers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS Grid is supported in all modern browsers (Chrome, Firefox, Safari, Edge) and has over 97% global browser support. The generated code does not include vendor prefixes because they are no longer needed. If you need to support IE 11, you would need to add the -ms- prefix variants manually."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .grid-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .grid-controls label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+    .grid-controls input[type="range"] { width: 100%; }
+    .grid-controls input[type="text"] { width: 100%; padding: 0.35rem 0.5rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-input, var(--bg-secondary)); color: var(--text); font-size: 0.9rem; }
+    .grid-preview { min-height: 200px; border: 2px dashed var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; overflow: auto; }
+    .grid-preview-inner { display: grid; width: 100%; min-height: 160px; }
+    .grid-cell { background: var(--accent, #10b981); color: #fff; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; min-height: 50px; cursor: pointer; transition: opacity 0.15s; user-select: none; }
+    .grid-cell:hover { opacity: 0.85; }
+    .grid-cell.spanned { background: #6366f1; }
+    .range-row { display: flex; align-items: center; gap: 0.5rem; }
+    .range-row .range-val { font-size: 0.8rem; color: var(--text-muted); min-width: 2.5rem; text-align: right; }
+    @media (max-width: 600px) { .grid-controls { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-flexbox-generator.html">Flexbox</a>
+        <a href="/tools/css-gradient-generator.html">Gradients</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Grid Generator</h1>
+          <p class="tool-subtitle">Build CSS Grid layouts visually. Adjust columns, rows, and gaps — then copy the generated CSS.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="explicit">Explicit Grid</button>
+            <button class="option-chip" data-mode="autofill">Auto-fill</button>
+            <button class="option-chip" data-mode="autofit">Auto-fit</button>
+            <button class="option-chip" data-mode="named">Named Lines</button>
+          </div>
+
+          <div class="grid-controls" id="gridControls">
+            <label>
+              Columns
+              <div class="range-row">
+                <input type="range" id="colCount" min="1" max="12" value="3">
+                <span class="range-val" id="colCountVal">3</span>
+              </div>
+            </label>
+            <label>
+              Rows
+              <div class="range-row">
+                <input type="range" id="rowCount" min="1" max="8" value="2">
+                <span class="range-val" id="rowCountVal">2</span>
+              </div>
+            </label>
+            <label>
+              Column Gap (px)
+              <div class="range-row">
+                <input type="range" id="colGap" min="0" max="64" value="16">
+                <span class="range-val" id="colGapVal">16px</span>
+              </div>
+            </label>
+            <label>
+              Row Gap (px)
+              <div class="range-row">
+                <input type="range" id="rowGap" min="0" max="64" value="16">
+                <span class="range-val" id="rowGapVal">16px</span>
+              </div>
+            </label>
+            <label id="colTemplateLabel">
+              grid-template-columns
+              <input type="text" id="colTemplate" value="repeat(3, 1fr)" spellcheck="false">
+            </label>
+            <label id="rowTemplateLabel">
+              grid-template-rows
+              <input type="text" id="rowTemplate" value="auto" spellcheck="false">
+            </label>
+            <label id="minColSizeLabel" style="display:none;">
+              Min Column Size (px)
+              <div class="range-row">
+                <input type="range" id="minColSize" min="80" max="400" value="150">
+                <span class="range-val" id="minColSizeVal">150px</span>
+              </div>
+            </label>
+          </div>
+
+          <div class="grid-preview">
+            <div class="grid-preview-inner" id="gridPreview"></div>
+          </div>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-top:-0.5rem;margin-bottom:0.75rem;">Click a cell to toggle column span. Blue = spanned.</p>
+
+          <div class="pane-label">
+            <span>Generated CSS</span>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Reset</button>
+            </div>
+          </div>
+          <div class="code-output" id="cssOutput" style="min-height:120px;"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Adjust the controls above to build your grid layout.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the CSS Grid Generator</h2>
+          <ol>
+            <li><strong>Choose a grid mode</strong> — Explicit Grid for fixed tracks, Auto-fill or Auto-fit for responsive layouts, Named Lines for semantic grids.</li>
+            <li><strong>Adjust the sliders</strong> — set the number of columns and rows, then tweak the gaps.</li>
+            <li><strong>Edit templates</strong> — type custom values like <code>1fr 2fr 1fr</code> or <code>200px auto</code> directly into the template inputs.</li>
+            <li><strong>Click cells</strong> to toggle a column span. Spanned cells (shown in purple) get <code>grid-column: span 2</code>.</li>
+            <li><strong>Copy or download</strong> the generated CSS and paste it into your project.</li>
+          </ol>
+
+          <h2>Understanding CSS Grid Layout</h2>
+          <p>CSS Grid is the most powerful layout tool in modern CSS. It lets you divide a container into rows and columns at the same time — something that was impossible without hacks before Grid arrived. Unlike Flexbox, which is one-dimensional (either row or column), CSS Grid is two-dimensional, making it perfect for full page layouts, card grids, and dashboard interfaces.</p>
+
+          <h3>The Core Properties</h3>
+          <ul>
+            <li><strong>display: grid</strong> — activates grid layout on the container element</li>
+            <li><strong>grid-template-columns</strong> — defines the width of each column track</li>
+            <li><strong>grid-template-rows</strong> — defines the height of each row track</li>
+            <li><strong>gap</strong> (or <code>column-gap</code> / <code>row-gap</code>) — space between tracks</li>
+            <li><strong>grid-column</strong> / <strong>grid-row</strong> — place items across multiple tracks</li>
+          </ul>
+
+          <h3>The fr Unit and repeat()</h3>
+          <p>The <code>fr</code> unit is unique to CSS Grid. It represents a fraction of the free space in the container. <code>repeat(3, 1fr)</code> creates three equal columns. <code>1fr 2fr</code> creates two columns where the second is twice the width of the first. Combined with <code>minmax()</code>, you can build columns that have a minimum size but grow to fill available space: <code>repeat(auto-fill, minmax(200px, 1fr))</code> is a classic responsive grid pattern that requires no media queries.</p>
+
+          <h3>Auto-fill vs Auto-fit</h3>
+          <p>Both modes use <code>repeat()</code> with either <code>auto-fill</code> or <code>auto-fit</code> as the track count. They behave identically when the grid is full. The difference only appears when there are fewer items than columns that would fit. <strong>Auto-fill</strong> keeps empty column tracks, preserving the grid structure. <strong>Auto-fit</strong> collapses empty tracks so the remaining items expand to fill the space. For most responsive card grids, <code>auto-fit</code> produces the more intuitive result where items stretch to fill the row.</p>
+
+          <h3>Named Grid Lines</h3>
+          <p>In complex layouts, you can name grid lines inside the template definitions for more readable placement rules. Instead of <code>grid-column: 1 / 3</code>, you can write <code>grid-column: sidebar-start / content-end</code>. This makes large layout files easier to maintain and the intent of each placement immediately clear. The Named Lines mode in this generator adds semantic line names like <code>[header-start]</code> and <code>[header-end]</code> to your template columns.</p>
+
+          <h3>Grid vs Flexbox: When to Use Each</h3>
+          <p>A common question is when to use Grid versus Flexbox. The answer is not either/or — they are designed to complement each other. Use <strong>CSS Grid</strong> for two-dimensional layouts where you need to control both rows and columns: page layouts, image galleries, pricing tables, and dashboard widgets. Use <strong>Flexbox</strong> for one-dimensional layouts: navigation bars, button groups, form rows, and centering single items. In practice, many components use both — a Grid for the page shell and Flexbox inside individual cards and nav elements.</p>
+
+          <h3>Browser Support and Fallbacks</h3>
+          <p>CSS Grid has over 97% global browser support and is fully supported in all evergreen browsers. You do not need vendor prefixes for any of the properties generated by this tool. If you must support Internet Explorer 11, you will need to use the older <code>-ms-grid</code> syntax, which has a different property set and does not support <code>fr</code> units or <code>auto-fill</code>. For most projects in 2024 and beyond, IE 11 support is no longer required. Need to test how grid items stretch and align? Try the <a href="/tools/css-flexbox-generator.html">Flexbox Playground</a> for one-dimensional alignment experiments.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is CSS Grid?</button>
+            <div class="faq-answer">CSS Grid is a two-dimensional layout system built into browsers. Unlike Flexbox (which is one-dimensional), CSS Grid lets you control both rows and columns simultaneously, making it ideal for complex page layouts, card grids, and dashboard designs.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between auto-fill and auto-fit?</button>
+            <div class="faq-answer">Both auto-fill and auto-fit create as many columns as will fit. The difference appears when there are fewer items than columns: auto-fill keeps the empty column tracks (reserving space), while auto-fit collapses them to zero width so items can expand to fill the container.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I make a CSS Grid column span multiple columns?</button>
+            <div class="faq-answer">Use grid-column: span N on a grid item, where N is the number of columns to span. For example, grid-column: span 2 makes the item take up two column tracks. You can also use grid-column: 1 / 3 to explicitly set start and end lines.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is fr in CSS Grid?</button>
+            <div class="faq-answer">The fr unit represents a fraction of the available space in the grid container. For example, grid-template-columns: 1fr 2fr creates two columns where the second is twice as wide as the first. It distributes remaining space after fixed-size columns are accounted for.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is this CSS Grid code compatible with all browsers?</button>
+            <div class="faq-answer">CSS Grid is supported in all modern browsers (Chrome, Firefox, Safari, Edge) and has over 97% global browser support. The generated code does not include vendor prefixes because they are no longer needed. If you need to support IE 11, you would need to add the -ms- prefix variants manually.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS Tools</h4>
+        <a href="/tools/css-grid-generator.html">Grid Generator</a>
+        <a href="/tools/css-flexbox-generator.html">Flexbox Playground</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+        <a href="/tools/css-gradient-generator.html">Gradient Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-text-shadow.html">Text Shadow</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var mode = 'explicit';
+      var spannedCells = {};
+
+      var colCount = document.getElementById('colCount');
+      var rowCount = document.getElementById('rowCount');
+      var colGap = document.getElementById('colGap');
+      var rowGap = document.getElementById('rowGap');
+      var colTemplate = document.getElementById('colTemplate');
+      var rowTemplate = document.getElementById('rowTemplate');
+      var minColSize = document.getElementById('minColSize');
+      var gridPreview = document.getElementById('gridPreview');
+      var cssOutput = document.getElementById('cssOutput');
+      var statusBar = document.getElementById('statusBar');
+
+      function syncVal(input, display, suffix) {
+        display.textContent = input.value + (suffix || '');
+      }
+
+      colCount.addEventListener('input', function () {
+        syncVal(this, document.getElementById('colCountVal'));
+        if (mode === 'explicit') colTemplate.value = 'repeat(' + this.value + ', 1fr)';
+        update();
+      });
+      rowCount.addEventListener('input', function () {
+        syncVal(this, document.getElementById('rowCountVal'));
+        update();
+      });
+      colGap.addEventListener('input', function () { syncVal(this, document.getElementById('colGapVal'), 'px'); update(); });
+      rowGap.addEventListener('input', function () { syncVal(this, document.getElementById('rowGapVal'), 'px'); update(); });
+      colTemplate.addEventListener('input', DT.debounce(update, 200));
+      rowTemplate.addEventListener('input', DT.debounce(update, 200));
+      minColSize.addEventListener('input', function () {
+        syncVal(this, document.getElementById('minColSizeVal'), 'px');
+        update();
+      });
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          mode = chip.getAttribute('data-mode');
+          spannedCells = {};
+          applyMode();
+          update();
+        });
+      });
+
+      function applyMode() {
+        var minColLabel = document.getElementById('minColSizeLabel');
+        var colTplLabel = document.getElementById('colTemplateLabel');
+        var rowTplLabel = document.getElementById('rowTemplateLabel');
+        if (mode === 'autofill' || mode === 'autofit') {
+          minColLabel.style.display = '';
+          colTplLabel.style.display = 'none';
+        } else {
+          minColLabel.style.display = 'none';
+          colTplLabel.style.display = '';
+        }
+        if (mode === 'explicit') {
+          colTemplate.value = 'repeat(' + colCount.value + ', 1fr)';
+        } else if (mode === 'named') {
+          colTemplate.value = '[sidebar-start] 200px [sidebar-end content-start] 1fr [content-end]';
+          rowTemplate.value = '[header-start] auto [header-end main-start] 1fr [main-end]';
+        }
+      }
+
+      function buildCSS() {
+        var cols, rows;
+        var cg = colGap.value + 'px';
+        var rg = rowGap.value + 'px';
+        if (mode === 'autofill') {
+          cols = 'repeat(auto-fill, minmax(' + minColSize.value + 'px, 1fr))';
+        } else if (mode === 'autofit') {
+          cols = 'repeat(auto-fit, minmax(' + minColSize.value + 'px, 1fr))';
+        } else {
+          cols = colTemplate.value || 'repeat(' + colCount.value + ', 1fr)';
+        }
+        rows = rowTemplate.value || 'auto';
+
+        var lines = ['.grid-container {'];
+        lines.push('  display: grid;');
+        lines.push('  grid-template-columns: ' + cols + ';');
+        if (rows !== 'auto') lines.push('  grid-template-rows: ' + rows + ';');
+        if (cg === rg) {
+          lines.push('  gap: ' + cg + ';');
+        } else {
+          lines.push('  column-gap: ' + cg + ';');
+          lines.push('  row-gap: ' + rg + ';');
+        }
+        lines.push('}');
+
+        var hasSpans = Object.keys(spannedCells).length > 0;
+        if (hasSpans) {
+          lines.push('');
+          Object.keys(spannedCells).forEach(function (idx) {
+            lines.push('.grid-item:nth-child(' + (parseInt(idx) + 1) + ') {');
+            lines.push('  grid-column: span 2;');
+            lines.push('}');
+          });
+        }
+
+        return lines.join('\n');
+      }
+
+      function renderPreview() {
+        var cols = parseInt(colCount.value);
+        var rows = parseInt(rowCount.value);
+        var total = cols * rows;
+        var cg = colGap.value + 'px';
+        var rg = rowGap.value + 'px';
+        var tplCols;
+        if (mode === 'autofill') {
+          tplCols = 'repeat(auto-fill, minmax(' + minColSize.value + 'px, 1fr))';
+        } else if (mode === 'autofit') {
+          tplCols = 'repeat(auto-fit, minmax(' + minColSize.value + 'px, 1fr))';
+        } else {
+          tplCols = colTemplate.value || 'repeat(' + cols + ', 1fr)';
+        }
+        gridPreview.style.gridTemplateColumns = tplCols;
+        gridPreview.style.gridTemplateRows = rowTemplate.value || 'auto';
+        gridPreview.style.columnGap = cg;
+        gridPreview.style.rowGap = rg;
+
+        gridPreview.innerHTML = '';
+        for (var i = 0; i < total; i++) {
+          var cell = document.createElement('div');
+          cell.className = 'grid-cell' + (spannedCells[i] ? ' spanned' : '');
+          cell.textContent = i + 1;
+          if (spannedCells[i]) cell.style.gridColumn = 'span 2';
+          (function (idx) {
+            cell.addEventListener('click', function () {
+              if (spannedCells[idx]) { delete spannedCells[idx]; } else { spannedCells[idx] = true; }
+              update();
+            });
+          })(i);
+          gridPreview.appendChild(cell);
+        }
+      }
+
+      function update() {
+        renderPreview();
+        var css = buildCSS();
+        cssOutput.textContent = css;
+        var cellCount = parseInt(colCount.value) * parseInt(rowCount.value);
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = colCount.value + ' columns × ' + rowCount.value + ' rows — ' + cellCount + ' cells — ' + Object.keys(spannedCells).length + ' spans';
+        DT.trackTool('css-grid-generator');
+      }
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = cssOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = cssOutput.textContent;
+        if (text) DT.downloadText(text, 'grid.css', 'text/css');
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        colCount.value = 3; document.getElementById('colCountVal').textContent = '3';
+        rowCount.value = 3; document.getElementById('rowCountVal').textContent = '3';
+        colGap.value = 16; document.getElementById('colGapVal').textContent = '16px';
+        rowGap.value = 16; document.getElementById('rowGapVal').textContent = '16px';
+        colTemplate.value = '1fr 2fr 1fr';
+        rowTemplate.value = 'auto 1fr auto';
+        mode = 'explicit';
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        document.querySelector('[data-mode="explicit"]').classList.add('active');
+        spannedCells = {};
+        applyMode();
+        update();
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        colCount.value = 3; document.getElementById('colCountVal').textContent = '3';
+        rowCount.value = 2; document.getElementById('rowCountVal').textContent = '2';
+        colGap.value = 16; document.getElementById('colGapVal').textContent = '16px';
+        rowGap.value = 16; document.getElementById('rowGapVal').textContent = '16px';
+        colTemplate.value = 'repeat(3, 1fr)';
+        rowTemplate.value = 'auto';
+        spannedCells = {};
+        update();
+      });
+
+      applyMode();
+      update();
+    })();
+  </script>
+</body>
+</html>

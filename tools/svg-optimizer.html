@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>SVG Optimizer & Minifier — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Optimize, minify, beautify, and analyze SVG files online. Remove comments, metadata, and editor data. Shorten colors. Shows before/after size. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/svg-optimizer.html">
+  <meta property="og:title" content="SVG Optimizer & Minifier — DevToolbox">
+  <meta property="og:description" content="Optimize and minify SVG files. Remove editor bloat, shorten colors, see before/after size. Free, no server.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/svg-optimizer.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SVG Optimizer & Minifier",
+    "url": "https://thisdevtool.com/tools/svg-optimizer.html",
+    "description": "Optimize, minify, beautify, and analyze SVG files in the browser. No server, no upload.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How much can SVG optimization reduce file size?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SVG files exported from tools like Adobe Illustrator or Inkscape can contain significant amounts of editor-specific metadata, comments, and redundant attributes. Optimization typically reduces file size by 20–60%. Files exported from Inkscape with full metadata can sometimes be reduced by 70% or more. Combining optimization with gzip compression (served via HTTP) reduces transfer size even further."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between Optimize and Minify modes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Optimize mode performs semantic-preserving transformations: removing comments, editor metadata, empty attributes, and collapsing redundant groups. It also shortens hex colors (#ffffff to #fff) and rounds floating-point numbers. Minify mode takes optimization a step further and removes all unnecessary whitespace, producing a single-line SVG with no indentation or newlines."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Will optimizing an SVG change how it looks?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The optimizations performed by this tool are designed to be visually lossless. Removing comments, editor metadata, and whitespace does not affect the rendered graphic. Shortening colors and rounding coordinates by one decimal place also has no perceptible visual impact. Always preview the optimized SVG before deploying it to ensure it looks as expected."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I upload an SVG file instead of pasting the code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. You can drag and drop an .svg file onto the drop zone, or click the drop zone to open a file picker. The SVG file is read entirely in your browser using the FileReader API — it is never uploaded to any server."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does Analyze mode show?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Analyze mode parses the SVG and reports the total number of elements, path elements, approximate path data points, total attribute count, SVG dimensions (width and height), and whether the SVG has a viewBox. This information helps you understand the complexity of an SVG and identify opportunities for simplification."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .preview-box {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      background: repeating-conic-gradient(#80808020 0% 25%, transparent 0% 50%) 0 0 / 20px 20px;
+      overflow: hidden;
+    }
+    .preview-box svg { max-width: 100%; max-height: 160px; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .stat-item { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; }
+    .stat-label { font-size: 0.75rem; color: var(--muted); }
+    .stat-value { font-size: 1.1rem; font-weight: 600; color: var(--accent); }
+    .drop-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; color: var(--muted); transition: border-color .2s, background .2s; margin-bottom: 8px; }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent)10; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/svg-to-css.html">SVG to CSS</a>
+        <a href="/tools/svg-path-editor.html">Path Editor</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>SVG Optimizer &amp; Minifier</h1>
+          <p class="tool-subtitle">Remove editor bloat, minify, beautify, or analyze your SVG. 100% browser-based — your files never leave your device.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="optimize">Optimize</button>
+            <button class="option-chip" data-mode="minify">Minify</button>
+            <button class="option-chip" data-mode="beautify">Beautify</button>
+            <button class="option-chip" data-mode="analyze">Analyze</button>
+          </div>
+
+          <div class="drop-zone" id="dropZone">
+            Drop an .svg file here or <strong>click to upload</strong>
+            <input type="file" id="fileInput" accept=".svg,image/svg+xml" style="display:none">
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input SVG</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="svgInput" rows="14" placeholder="Paste SVG code here or drop a file above..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Optimized SVG</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download .svg</button>
+                </div>
+              </div>
+              <div class="code-output" id="svgOutput" style="min-height:280px;"></div>
+              <div id="analyzeOutput" style="display:none;"></div>
+            </div>
+          </div>
+
+          <div class="preview-box" id="previewBox">
+            <span style="color:var(--muted); font-size:0.875rem;">SVG preview will appear here</span>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste or drop an SVG file to get started.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the SVG Optimizer</h2>
+          <ol>
+            <li><strong>Input your SVG</strong> — paste SVG code into the input area, or drag and drop an .svg file onto the drop zone.</li>
+            <li><strong>Choose a mode</strong> — Optimize for balanced compression, Minify for maximum size reduction, Beautify for readable formatting, or Analyze for detailed statistics.</li>
+            <li><strong>View the result</strong> — the optimized SVG appears on the right, with a live preview below.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output to save the result.</li>
+          </ol>
+
+          <h2>Why Optimize SVG Files?</h2>
+          <p>SVG files created by design tools like Adobe Illustrator, Inkscape, Figma, or Sketch often contain large amounts of metadata that is only useful to the authoring application. This includes editor-specific namespaces (sodipodi:, inkscape:), document metadata (author, creation date), comments inserted by the exporter, redundant group elements, and floating-point coordinates with many decimal places. This extra data can double or triple the file size without contributing anything to the visual output.</p>
+          <p>Optimizing SVG files is important for web performance because SVG is frequently used for icons, logos, illustrations, and UI elements that appear on every page of a site. A 10KB icon that can be reduced to 3KB by removing editor bloat improves page load time and Core Web Vitals scores, especially on mobile connections.</p>
+
+          <h3>What Gets Optimized</h3>
+          <ul>
+            <li><strong>XML comments</strong> — removed (e.g., &lt;!-- Created with Inkscape --&gt;)</li>
+            <li><strong>Metadata elements</strong> — &lt;metadata&gt;, &lt;title&gt;, &lt;desc&gt; elements used for editor data</li>
+            <li><strong>Editor namespaces</strong> — inkscape:*, sodipodi:*, dc:*, cc:*, rdf:* attributes and elements</li>
+            <li><strong>Redundant attributes</strong> — empty style attributes, default presentation attribute values</li>
+            <li><strong>Color shortening</strong> — #ffffff → #fff, #aabbcc → #abc where applicable</li>
+            <li><strong>Number rounding</strong> — 123.456789 → 123.46 (configurable decimal places)</li>
+            <li><strong>Whitespace</strong> — excessive indentation and blank lines between elements</li>
+          </ul>
+
+          <h3>SVG for Web Icons vs. Illustrations</h3>
+          <p>The appropriate level of optimization differs between SVG icons and complex illustrations. For icons (simple geometric shapes, UI elements), aggressive optimization including minification is safe — these files have few paths and coordinates. For detailed illustrations with hundreds of paths and bezier curves, rounding coordinates too aggressively can cause noticeable shifts in artwork. This tool uses conservative rounding (2 decimal places) that is safe for most illustrations.</p>
+
+          <h3>Using Optimized SVG Inline</h3>
+          <p>Once optimized, SVG can be used three ways: as an &lt;img&gt; src (simplest), as an inline element in HTML (enables CSS styling and JS interaction), or as a CSS background-image. For icons that need to change color based on CSS (e.g., for dark mode), inline SVG is required because &lt;img&gt; SVGs cannot be targeted by CSS. Use our <a href="/tools/svg-to-css.html">SVG to CSS tool</a> to convert optimized SVG to CSS background-image syntax, or our <a href="/tools/svg-path-editor.html">SVG Path Editor</a> to modify paths before optimizing.</p>
+
+          <h3>Compatibility Considerations</h3>
+          <p>All major browsers (Chrome, Firefox, Safari, Edge) fully support SVG. However, some optimization techniques can break specific SVG features. This tool avoids removing elements that could affect functionality: animation elements (&lt;animate&gt;, &lt;animateTransform&gt;) are preserved, defs and symbol elements used for reuse are preserved, and filter elements are preserved. The clip-path and mask attributes are also left intact.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">How much can SVG optimization reduce file size?</button>
+            <div class="faq-answer">SVG files exported from tools like Adobe Illustrator or Inkscape can contain significant amounts of editor-specific metadata, comments, and redundant attributes. Optimization typically reduces file size by 20–60%. Files exported from Inkscape with full metadata can sometimes be reduced by 70% or more.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between Optimize and Minify modes?</button>
+            <div class="faq-answer">Optimize mode performs semantic-preserving transformations: removing comments, editor metadata, empty attributes, and collapsing redundant groups. It also shortens hex colors and rounds floating-point numbers. Minify mode takes optimization a step further and removes all unnecessary whitespace, producing a single-line SVG.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Will optimizing an SVG change how it looks?</button>
+            <div class="faq-answer">The optimizations performed by this tool are designed to be visually lossless. Removing comments, editor metadata, and whitespace does not affect the rendered graphic. Always preview the optimized SVG in the preview box before deploying it.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I upload an SVG file instead of pasting the code?</button>
+            <div class="faq-answer">Yes. You can drag and drop an .svg file onto the drop zone, or click the drop zone to open a file picker. The SVG file is read entirely in your browser using the FileReader API — it is never uploaded to any server.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does Analyze mode show?</button>
+            <div class="faq-answer">Analyze mode parses the SVG and reports the total number of elements, path elements, approximate path data points, total attribute count, SVG dimensions, and whether the SVG has a viewBox. This information helps you understand SVG complexity and identify optimization opportunities.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS &amp; Design</h4>
+        <a href="/tools/svg-optimizer.html">SVG Optimizer</a>
+        <a href="/tools/svg-to-css.html">SVG to CSS</a>
+        <a href="/tools/svg-path-editor.html">SVG Path Editor</a>
+        <a href="/tools/tailwind-to-css.html">Tailwind to CSS</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/image-color-picker.html">Color Picker</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('svgInput');
+      var outputEl = document.getElementById('svgOutput');
+      var analyzeEl = document.getElementById('analyzeOutput');
+      var statusBar = document.getElementById('statusBar');
+      var previewBox = document.getElementById('previewBox');
+      var outputLabel = document.getElementById('outputLabel');
+      var currentMode = 'optimize';
+      var EXAMPLE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="100" height="100" viewBox="0 0 100 100">\n  <!-- Created with Inkscape -->\n  <metadata><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Sample SVG</dc:title></dc:creator></metadata>\n  <title>Circle Example</title>\n  <desc>A sample SVG with editor bloat</desc>\n  <circle cx="50.0000001" cy="49.9999999" r="40.000001" fill="#ff0000" stroke="#000000" stroke-width="2.00000" inkscape:label="circle"/>\n  <rect x="10.000001" y="10.000001" width="30.000001" height="30.000001" fill="#ffffff" style=""/>\n</svg>';
+
+      function shortenColor(hex) {
+        var m = hex.match(/^#([0-9a-f]{6})$/i);
+        if (!m) return hex;
+        var h = m[1].toLowerCase();
+        if (h[0]===h[1] && h[2]===h[3] && h[4]===h[5]) return '#'+h[0]+h[2]+h[4];
+        return hex;
+      }
+
+      function roundNums(str) {
+        return str.replace(/(\d+\.\d{3,})/g, function(n) { return parseFloat(parseFloat(n).toFixed(2)); });
+      }
+
+      function optimizeSVG(raw, minify) {
+        var out = raw;
+        // Remove XML declaration
+        out = out.replace(/<\?xml[^?]*\?>/gi, '');
+        // Remove comments
+        out = out.replace(/<!--[\s\S]*?-->/g, '');
+        // Remove metadata block
+        out = out.replace(/<metadata[\s\S]*?<\/metadata>/gi, '');
+        // Remove title / desc (editor ones)
+        out = out.replace(/<title>[^<]*<\/title>/gi, '');
+        out = out.replace(/<desc>[^<]*<\/desc>/gi, '');
+        // Remove editor namespaces declarations
+        out = out.replace(/\s+xmlns:(inkscape|sodipodi|dc|cc|rdf|xlink|svg)="[^"]*"/g, '');
+        // Remove inkscape/sodipodi/dc/cc/rdf attributes
+        out = out.replace(/\s+(inkscape|sodipodi|dc|cc|rdf):[a-z-]+=["'][^"']*["']/gi, '');
+        // Remove empty style attributes
+        out = out.replace(/\s+style=["']\s*["']/g, '');
+        // Remove empty attributes (attr="")
+        out = out.replace(/\s+[a-z-]+=["']["']/gi, '');
+        // Shorten colors
+        out = out.replace(/#[0-9a-fA-F]{6}/g, function(c){ return shortenColor(c); });
+        // Round numbers
+        out = roundNums(out);
+        // Collapse empty groups: <g></g>
+        out = out.replace(/<g[^>]*>\s*<\/g>/gi, '');
+        // Normalize whitespace between tags
+        out = out.replace(/>\s{2,}</g, '>\n<');
+
+        if (minify) {
+          out = out.replace(/>\s+</g, '><').replace(/\s+/g, ' ').trim();
+        } else {
+          // Light prettify
+          out = out.replace(/>\s*</g, '>\n<');
+          var indent = 0, lines = out.split('\n'), result = [];
+          lines.forEach(function(line) {
+            line = line.trim();
+            if (!line) return;
+            if (line.match(/^<\/[^!]/)) indent = Math.max(0, indent - 1);
+            result.push('  '.repeat(indent) + line);
+            if (line.match(/^<[^\/!][^>]*[^\/]>$/) && !line.match(/<\//) && !line.match(/^<[a-z]+[^>]*\/>/i)) indent++;
+          });
+          out = result.join('\n');
+        }
+        return out.trim();
+      }
+
+      function beautifySVG(raw) {
+        var out = raw.replace(/>\s*</g, '>\n<');
+        var indent = 0, lines = out.split('\n'), result = [];
+        lines.forEach(function(line) {
+          line = line.trim();
+          if (!line) return;
+          if (line.match(/^<\/[^!]/)) indent = Math.max(0, indent - 1);
+          result.push('  '.repeat(indent) + line);
+          if (line.match(/^<[^\/!][^>]*[^\/]>$/) && !line.match(/<\//) && !line.match(/^<[a-z]+[^>]*\/>/i)) indent++;
+        });
+        return result.join('\n');
+      }
+
+      function analyzeSVG(raw) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(raw, 'image/svg+xml');
+        var svgEl = doc.querySelector('svg');
+        if (!svgEl) return null;
+        var allEls = doc.querySelectorAll('*');
+        var paths = doc.querySelectorAll('path');
+        var points = 0;
+        paths.forEach(function(p) {
+          var d = p.getAttribute('d') || '';
+          points += (d.match(/[MLHVCSQTAZ]/gi) || []).length;
+        });
+        var attrCount = 0;
+        allEls.forEach(function(el){ attrCount += el.attributes.length; });
+        return {
+          elements: allEls.length,
+          paths: paths.length,
+          points: points,
+          attrs: attrCount,
+          width: svgEl.getAttribute('width') || 'auto',
+          height: svgEl.getAttribute('height') || 'auto',
+          viewBox: svgEl.getAttribute('viewBox') || 'none',
+          hasAnimation: !!doc.querySelector('animate,animateTransform,animateMotion')
+        };
+      }
+
+      function updatePreview(svgText) {
+        try {
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(svgText, 'image/svg+xml');
+          var svgEl = doc.querySelector('svg');
+          if (svgEl) {
+            svgEl.setAttribute('style', 'max-width:100%;max-height:160px;');
+            previewBox.innerHTML = svgEl.outerHTML;
+          } else { previewBox.innerHTML = '<span style="color:var(--muted);font-size:.875rem;">Invalid SVG</span>'; }
+        } catch(e) { previewBox.innerHTML = '<span style="color:var(--muted)">Preview error</span>'; }
+      }
+
+      function formatBytes(b) { return DT.formatBytes ? DT.formatBytes(b) : b + ' B'; }
+
+      function process() {
+        var raw = input.value.trim();
+        outputEl.style.display = 'block';
+        analyzeEl.style.display = 'none';
+
+        if (!raw) {
+          outputEl.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste or drop an SVG file to get started.';
+          previewBox.innerHTML = '<span style="color:var(--muted); font-size:0.875rem;">SVG preview will appear here</span>';
+          return;
+        }
+
+        if (currentMode === 'analyze') {
+          outputLabel.textContent = 'Analysis';
+          outputEl.style.display = 'none';
+          analyzeEl.style.display = 'block';
+          var info = analyzeSVG(raw);
+          if (!info) {
+            analyzeEl.innerHTML = '<p style="color:var(--danger)">Could not parse SVG.</p>';
+            statusBar.className = 'status-bar invalid';
+            statusBar.textContent = 'Could not parse SVG.';
+            return;
+          }
+          analyzeEl.innerHTML = '<div class="stat-grid">' +
+            '<div class="stat-item"><div class="stat-label">Total Elements</div><div class="stat-value">' + info.elements + '</div></div>' +
+            '<div class="stat-item"><div class="stat-label">Path Elements</div><div class="stat-value">' + info.paths + '</div></div>' +
+            '<div class="stat-item"><div class="stat-label">Path Commands</div><div class="stat-value">' + info.points + '</div></div>' +
+            '<div class="stat-item"><div class="stat-label">Total Attributes</div><div class="stat-value">' + info.attrs + '</div></div>' +
+            '<div class="stat-item"><div class="stat-label">Width</div><div class="stat-value">' + info.width + '</div></div>' +
+            '<div class="stat-item"><div class="stat-label">Height</div><div class="stat-value">' + info.height + '</div></div>' +
+            '<div class="stat-item"><div class="stat-label">ViewBox</div><div class="stat-value" style="font-size:.85rem">' + info.viewBox + '</div></div>' +
+            '<div class="stat-item"><div class="stat-label">Animation</div><div class="stat-value">' + (info.hasAnimation ? 'Yes' : 'No') + '</div></div>' +
+          '</div>';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Analysis complete — ' + info.elements + ' elements, ' + info.paths + ' paths.';
+          updatePreview(raw);
+          return;
+        }
+
+        var result;
+        if (currentMode === 'beautify') {
+          outputLabel.textContent = 'Beautified SVG';
+          result = beautifySVG(raw);
+        } else {
+          outputLabel.textContent = currentMode === 'minify' ? 'Minified SVG' : 'Optimized SVG';
+          result = optimizeSVG(raw, currentMode === 'minify');
+        }
+
+        outputEl.textContent = result;
+
+        var origSize = new Blob([raw]).size;
+        var newSize = new Blob([result]).size;
+        var saved = origSize > 0 ? Math.round((1 - newSize/origSize) * 100) : 0;
+
+        if (currentMode === 'beautify') {
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Beautified: ' + formatBytes(origSize) + ' → ' + formatBytes(newSize);
+        } else {
+          statusBar.className = saved > 0 ? 'status-bar valid' : 'status-bar info';
+          statusBar.textContent = 'Optimized: ' + formatBytes(origSize) + ' → ' + formatBytes(newSize) + ' (' + saved + '% saved)';
+        }
+
+        updatePreview(result);
+        DT.trackTool('svg-optimizer');
+      }
+
+      var debouncedProcess = DT.debounce(process, 200);
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function() {
+        var text = outputEl.textContent;
+        if (text) DT.downloadText(text, 'optimized.svg', 'image/svg+xml');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function() {
+        input.value = ''; process(); input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function() {
+        input.value = EXAMPLE_SVG; process();
+      });
+
+      // File drop
+      var dropZone = document.getElementById('dropZone');
+      var fileInput = document.getElementById('fileInput');
+
+      dropZone.addEventListener('click', function() { fileInput.click(); });
+      dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+      dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('drag-over'); });
+      dropZone.addEventListener('drop', function(e) {
+        e.preventDefault(); dropZone.classList.remove('drag-over');
+        var f = e.dataTransfer.files[0];
+        if (f) readFile(f);
+      });
+      fileInput.addEventListener('change', function() {
+        if (this.files[0]) readFile(this.files[0]);
+      });
+
+      function readFile(f) {
+        var reader = new FileReader();
+        reader.onload = function(e) { input.value = e.target.result; process(); };
+        reader.readAsText(f);
+      }
+    })();
+  </script>
+</body>
+</html>

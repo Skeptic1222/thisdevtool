@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Cubic Bezier Easing Editor — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Visually edit cubic-bezier() curves for CSS animations. Drag control points, compare easings, and preview animated motion. Copy ready-to-use CSS timing functions.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-easing-visualizer.html">
+  <meta property="og:title" content="CSS Cubic Bezier Editor — DevToolbox">
+  <meta property="og:description" content="Interactive cubic-bezier curve editor with live animation preview. Compare CSS easing functions visually.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-easing-visualizer.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Cubic Bezier Easing Editor",
+    "url": "https://thisdevtool.com/tools/css-easing-visualizer.html",
+    "description": "Visually edit cubic-bezier curves, compare CSS easing functions, and preview animations.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is cubic-bezier() in CSS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "cubic-bezier() is a CSS timing function that defines the speed curve of an animation or transition. It takes four values — x1, y1, x2, y2 — representing the control points of a bezier curve between (0,0) and (1,1). The x axis represents time and the y axis represents progress/value."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the default CSS easing functions?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS has five named easing functions: ease (cubic-bezier(0.25,0.1,0.25,1)), ease-in (cubic-bezier(0.42,0,1,1)), ease-out (cubic-bezier(0,0,0.58,1)), ease-in-out (cubic-bezier(0.42,0,0.58,1)), and linear (cubic-bezier(0,0,1,1))."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can the y values of cubic-bezier exceed 0 to 1?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The y1 and y2 control points can go outside the 0–1 range to create overshoot effects (like a spring or bounce). Values below 0 or above 1 cause the animated property to temporarily go beyond its start or end value. However, the x1 and x2 values must stay within 0–1."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I create a bounce effect with cubic-bezier?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A simple bounce can be approximated with cubic-bezier(0.34, 1.56, 0.64, 1) — the y1 value of 1.56 causes the element to overshoot its target before settling back. For a true multi-bounce effect, you need to use CSS animations with multiple keyframes instead of a single transition."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between transition-timing-function and animation-timing-function?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Both properties accept the same cubic-bezier() values. transition-timing-function applies to CSS transitions (property changes triggered by state changes like :hover). animation-timing-function applies to @keyframes animations and applies per keyframe segment, not to the whole animation duration."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .easing-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 700px) { .easing-layout { grid-template-columns: 1fr; } }
+
+    #bezierCanvas {
+      display: block;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .easing-controls { display: flex; flex-direction: column; gap: 1rem; }
+    .coord-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .coord-inputs label { font-size: 0.8rem; color: var(--text-secondary); }
+    .coord-inputs input[type="number"] {
+      width: 100%; padding: 0.4rem 0.5rem;
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: var(--bg-card); color: var(--text);
+      font-size: 0.9rem;
+    }
+    .anim-preview-track {
+      position: relative;
+      height: 56px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .anim-ball {
+      position: absolute;
+      width: 40px; height: 40px;
+      background: var(--accent);
+      border-radius: 50%;
+      top: 50%; left: 8px;
+      transform: translateY(-50%);
+      will-change: left;
+    }
+    .duration-row { display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem; }
+    .named-presets { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .named-presets button { font-size: 0.78rem; }
+    .value-display {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent);
+      padding: 0.5rem;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-glassmorphism.html">Glassmorphism</a>
+        <a href="/tools/css-specificity.html">Specificity</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Cubic Bezier Easing Editor</h1>
+          <p class="tool-subtitle">Drag control points on the curve canvas or type values. Preview your easing with a live animation.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="custom">Custom</button>
+            <button class="option-chip" data-mode="named">CSS Named</button>
+            <button class="option-chip" data-mode="presets">Presets</button>
+          </div>
+
+          <!-- CSS Named Easings (hidden until named tab) -->
+          <div id="namedPanel" style="display:none;margin-bottom:0.75rem;">
+            <div class="named-presets">
+              <button class="btn btn-sm btn-secondary" data-curve="0.25,0.1,0.25,1">ease</button>
+              <button class="btn btn-sm btn-secondary" data-curve="0.42,0,1,1">ease-in</button>
+              <button class="btn btn-sm btn-secondary" data-curve="0,0,0.58,1">ease-out</button>
+              <button class="btn btn-sm btn-secondary" data-curve="0.42,0,0.58,1">ease-in-out</button>
+              <button class="btn btn-sm btn-secondary" data-curve="0,0,1,1">linear</button>
+            </div>
+          </div>
+          <div id="presetsPanel" style="display:none;margin-bottom:0.75rem;">
+            <div class="named-presets">
+              <button class="btn btn-sm btn-secondary" data-curve="0.34,1.56,0.64,1">Spring</button>
+              <button class="btn btn-sm btn-secondary" data-curve="0.68,-0.55,0.265,1.55">Elastic</button>
+              <button class="btn btn-sm btn-secondary" data-curve="0.19,1,0.22,1">Snap</button>
+              <button class="btn btn-sm btn-secondary" data-curve="0.25,0.46,0.45,0.94">Smooth</button>
+              <button class="btn btn-sm btn-secondary" data-curve="0.87,0,0.13,1">Bounce</button>
+            </div>
+          </div>
+
+          <div class="easing-layout">
+            <!-- Canvas -->
+            <div>
+              <canvas id="bezierCanvas" width="240" height="240"></canvas>
+              <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.4rem;text-align:center;">Drag the colored dots to edit the curve</p>
+            </div>
+
+            <!-- Controls -->
+            <div class="easing-controls">
+              <div class="coord-inputs">
+                <div>
+                  <label>X1 (0–1)</label>
+                  <input type="number" id="x1" min="0" max="1" step="0.01" value="0.25">
+                </div>
+                <div>
+                  <label>Y1 (any)</label>
+                  <input type="number" id="y1" min="-1" max="2" step="0.01" value="0.1">
+                </div>
+                <div>
+                  <label>X2 (0–1)</label>
+                  <input type="number" id="x2" min="0" max="1" step="0.01" value="0.25">
+                </div>
+                <div>
+                  <label>Y2 (any)</label>
+                  <input type="number" id="y2" min="-1" max="2" step="0.01" value="1">
+                </div>
+              </div>
+
+              <div class="value-display" id="valueDisplay">cubic-bezier(0.25, 0.1, 0.25, 1)</div>
+
+              <div>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.4rem;">Animation Preview</p>
+                <div class="anim-preview-track">
+                  <div class="anim-ball" id="animBall"></div>
+                </div>
+              </div>
+
+              <div class="duration-row">
+                <label style="white-space:nowrap;">Duration: <strong id="durationVal">600ms</strong></label>
+                <input type="range" class="slider-input" id="durationSlider" min="200" max="3000" step="100" value="600" style="flex:1;">
+              </div>
+
+              <div class="btn-group">
+                <button class="btn btn-sm btn-primary" id="playBtn">Play</button>
+                <button class="btn btn-sm btn-secondary" id="copyBtn">Copy Value</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Drag the control points on the canvas, or enter values in the fields above.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Cubic Bezier Editor</h2>
+          <ol>
+            <li><strong>Drag the colored dots</strong> on the canvas — green dot controls P1 (x1, y1) and orange dot controls P2 (x2, y2).</li>
+            <li><strong>Type values directly</strong> in the coordinate inputs for precision. X values must be 0–1; Y values can exceed this range for overshoot effects.</li>
+            <li><strong>Use presets</strong> — select the CSS Named or Presets tab to quickly load standard or popular custom curves.</li>
+            <li><strong>Play the animation</strong> — click Play to see a ball slide across the track using your current easing.</li>
+            <li><strong>Copy the value</strong> — click Copy Value to grab the cubic-bezier() CSS string.</li>
+          </ol>
+
+          <h2>Understanding Cubic Bezier Curves</h2>
+          <p>In CSS, timing functions describe how a transition or animation progresses over time. A cubic bezier curve is defined by four control points: the fixed start (0, 0) and end (1, 1), plus two user-defined intermediate points P1 (x1, y1) and P2 (x2, y2). The horizontal axis (x) represents elapsed time as a fraction from 0 to 1, and the vertical axis (y) represents the animated value's progress from start to end.</p>
+          <p>By moving the control points, you change the shape of the S-curve and thus the speed profile of the animation. A point pulled toward the top-left creates a fast start. A point pulled toward the bottom-right creates a slow start and fast end. Points with Y values outside 0–1 create overshoot, where the property temporarily exceeds its target value — perfect for spring and elastic effects.</p>
+
+          <h3>CSS Named Easing Functions</h3>
+          <ul>
+            <li><strong>ease</strong> <code>cubic-bezier(0.25, 0.1, 0.25, 1)</code> — starts and ends slowly, fastest in the middle. The browser default.</li>
+            <li><strong>ease-in</strong> <code>cubic-bezier(0.42, 0, 1, 1)</code> — starts slowly, ends quickly. Good for elements exiting the screen.</li>
+            <li><strong>ease-out</strong> <code>cubic-bezier(0, 0, 0.58, 1)</code> — starts quickly, ends slowly. Most natural for entering elements.</li>
+            <li><strong>ease-in-out</strong> <code>cubic-bezier(0.42, 0, 0.58, 1)</code> — slow start, fast middle, slow end. Polished and symmetrical.</li>
+            <li><strong>linear</strong> <code>cubic-bezier(0, 0, 1, 1)</code> — constant speed. Good for infinite rotations and progress bars.</li>
+          </ul>
+
+          <h3>Custom Preset Curves</h3>
+          <ul>
+            <li><strong>Spring</strong> <code>cubic-bezier(0.34, 1.56, 0.64, 1)</code> — slight overshoot at the end, like a spring settling.</li>
+            <li><strong>Elastic</strong> <code>cubic-bezier(0.68, -0.55, 0.265, 1.55)</code> — overshoots both start and end for a playful elastic feel.</li>
+            <li><strong>Snap</strong> <code>cubic-bezier(0.19, 1, 0.22, 1)</code> — very slow start, then rockets to the end. Feels snappy and satisfying.</li>
+            <li><strong>Smooth</strong> <code>cubic-bezier(0.25, 0.46, 0.45, 0.94)</code> — a refined ease-out for UI elements in design systems.</li>
+            <li><strong>Bounce</strong> <code>cubic-bezier(0.87, 0, 0.13, 1)</code> — dramatic slow start and slow end with a very fast middle.</li>
+          </ul>
+
+          <h3>transition-timing-function vs. animation-timing-function</h3>
+          <p>Both accept the same cubic-bezier values, but they work differently. <code>transition-timing-function</code> applies to a CSS transition and governs the entire transition from start to end. <code>animation-timing-function</code> in @keyframes applies per-keyframe segment — if you have keyframes at 0%, 50%, and 100%, the easing applies separately to the 0→50% segment and the 50→100% segment. This allows complex multi-step easing by composing simpler curves.</p>
+
+          <h3>When to Use Which Easing</h3>
+          <p>The Material Design and Apple HIG guidelines offer useful guidance: use <strong>ease-out</strong> for elements entering the viewport (they decelerate as if stopping naturally), use <strong>ease-in</strong> for elements leaving the viewport (they accelerate away), use <strong>ease-in-out</strong> for elements moving within the viewport (symmetric start/end deceleration), and use <strong>linear</strong> for continuous looping animations. For micro-interactions like button presses and toggles, spring or elastic easings add personality. For productivity and utility interfaces like DevToolbox, subtle easings are preferable to prevent distraction. See all CSS tools at <a href="/">DevToolbox</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is cubic-bezier() in CSS?</button>
+            <div class="faq-answer">cubic-bezier() is a CSS timing function that defines the speed curve of an animation or transition. It takes four values — x1, y1, x2, y2 — representing the control points of a bezier curve between (0,0) and (1,1). The x axis represents time and the y axis represents progress/value.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are the default CSS easing functions?</button>
+            <div class="faq-answer">CSS has five named easing functions: ease (cubic-bezier(0.25,0.1,0.25,1)), ease-in (cubic-bezier(0.42,0,1,1)), ease-out (cubic-bezier(0,0,0.58,1)), ease-in-out (cubic-bezier(0.42,0,0.58,1)), and linear (cubic-bezier(0,0,1,1)).</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can the y values of cubic-bezier exceed 0 to 1?</button>
+            <div class="faq-answer">Yes. The y1 and y2 control points can go outside the 0–1 range to create overshoot effects (like a spring or bounce). Values below 0 or above 1 cause the animated property to temporarily go beyond its start or end value. However, the x1 and x2 values must stay within 0–1.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I create a bounce effect with cubic-bezier?</button>
+            <div class="faq-answer">A simple bounce can be approximated with cubic-bezier(0.34, 1.56, 0.64, 1) — the y1 value of 1.56 causes the element to overshoot its target before settling back. For a true multi-bounce effect, you need to use CSS animations with multiple keyframes instead of a single transition.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between transition-timing-function and animation-timing-function?</button>
+            <div class="faq-answer">Both properties accept the same cubic-bezier() values. transition-timing-function applies to CSS transitions (property changes triggered by state changes like :hover). animation-timing-function applies to @keyframes animations and applies per keyframe segment, not to the whole animation duration.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS & Design</h4>
+        <a href="/tools/css-glassmorphism.html">Glassmorphism</a>
+        <a href="/tools/css-neumorphism.html">Neumorphism</a>
+        <a href="/tools/css-easing-visualizer.html">Easing Curves</a>
+        <a href="/tools/css-specificity.html">Specificity</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-unit-converter.html">CSS Units</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    var canvas   = document.getElementById('bezierCanvas');
+    var ctx      = canvas.getContext('2d');
+    var x1El     = document.getElementById('x1');
+    var y1El     = document.getElementById('y1');
+    var x2El     = document.getElementById('x2');
+    var y2El     = document.getElementById('y2');
+    var display  = document.getElementById('valueDisplay');
+    var statusBar= document.getElementById('statusBar');
+    var animBall = document.getElementById('animBall');
+    var durationSlider = document.getElementById('durationSlider');
+    var durationVal    = document.getElementById('durationVal');
+
+    var PAD = 28, W = canvas.width - PAD*2, H = canvas.height - PAD*2;
+    var dragging = null;
+
+    function getVals() {
+      return {
+        x1: parseFloat(x1El.value)||0,
+        y1: parseFloat(y1El.value)||0,
+        x2: parseFloat(x2El.value)||1,
+        y2: parseFloat(y2El.value)||1
+      };
+    }
+
+    function valToCanvas(vx, vy) {
+      return { x: PAD + vx*W, y: PAD + (1-vy)*H };
+    }
+    function canvasToVal(cx, cy) {
+      return { x: (cx - PAD)/W, y: 1 - (cy - PAD)/H };
+    }
+
+    function drawCanvas() {
+      var v   = getVals();
+      var p0  = valToCanvas(0, 0);
+      var p1  = valToCanvas(v.x1, v.y1);
+      var p2  = valToCanvas(v.x2, v.y2);
+      var p3  = valToCanvas(1, 1);
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var lineColor  = isDark ? '#475569' : '#cbd5e1';
+      var curveColor = '#10b981';
+      var bg         = isDark ? '#1e293b' : '#f8f9fa';
+      var textColor  = isDark ? '#94a3b8' : '#6c757d';
+
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      canvas.style.background = bg;
+
+      // Grid
+      ctx.strokeStyle = lineColor;
+      ctx.lineWidth = 0.5;
+      [0.25,0.5,0.75].forEach(function(t) {
+        ctx.beginPath(); ctx.moveTo(PAD + t*W, PAD); ctx.lineTo(PAD + t*W, PAD+H); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(PAD, PAD + t*H); ctx.lineTo(PAD+W, PAD + t*H); ctx.stroke();
+      });
+
+      // Border
+      ctx.strokeStyle = lineColor; ctx.lineWidth = 1;
+      ctx.strokeRect(PAD, PAD, W, H);
+
+      // Axis labels
+      ctx.fillStyle = textColor; ctx.font = '10px system-ui'; ctx.textAlign = 'center';
+      ctx.fillText('time', PAD + W/2, canvas.height - 4);
+      ctx.save(); ctx.translate(10, PAD + H/2); ctx.rotate(-Math.PI/2);
+      ctx.fillText('value', 0, 0); ctx.restore();
+
+      // Control arms
+      ctx.strokeStyle = isDark ? '#475569' : '#94a3b8';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4,3]);
+      ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p3.x, p3.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Bezier curve
+      ctx.beginPath();
+      ctx.moveTo(p0.x, p0.y);
+      ctx.bezierCurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+      ctx.strokeStyle = curveColor; ctx.lineWidth = 2.5; ctx.stroke();
+
+      // Anchor points
+      [[p0,'#64748b'],[p3,'#64748b']].forEach(function(item) {
+        ctx.beginPath(); ctx.arc(item[0].x, item[0].y, 5, 0, Math.PI*2);
+        ctx.fillStyle = item[1]; ctx.fill();
+      });
+
+      // Draggable points
+      [['#22c55e', p1],['#f97316', p2]].forEach(function(item) {
+        ctx.beginPath(); ctx.arc(item[1].x, item[1].y, 7, 0, Math.PI*2);
+        ctx.fillStyle = item[0]; ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+      });
+
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      var v = getVals();
+      var str = 'cubic-bezier(' + v.x1 + ', ' + v.y1 + ', ' + v.x2 + ', ' + v.y2 + ')';
+      display.textContent = str;
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = str;
+    }
+
+    function getMousePos(e) {
+      var rect = canvas.getBoundingClientRect();
+      var scaleX = canvas.width / rect.width;
+      var scaleY = canvas.height / rect.height;
+      var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+
+    function hitTest(pos, cx, cy, r) {
+      return Math.sqrt(Math.pow(pos.x-cx,2)+Math.pow(pos.y-cy,2)) < r;
+    }
+
+    function startDrag(e) {
+      e.preventDefault();
+      var pos = getMousePos(e);
+      var v  = getVals();
+      var p1 = valToCanvas(v.x1, v.y1);
+      var p2 = valToCanvas(v.x2, v.y2);
+      if (hitTest(pos, p1.x, p1.y, 12)) dragging = 'p1';
+      else if (hitTest(pos, p2.x, p2.y, 12)) dragging = 'p2';
+    }
+
+    function moveDrag(e) {
+      if (!dragging) return;
+      e.preventDefault();
+      var pos = getMousePos(e);
+      var val = canvasToVal(pos.x, pos.y);
+      var clampedX = Math.max(0, Math.min(1, val.x));
+      var clampedY = Math.max(-1, Math.min(2, val.y));
+      if (dragging === 'p1') {
+        x1El.value = clampedX.toFixed(2);
+        y1El.value = clampedY.toFixed(2);
+      } else {
+        x2El.value = clampedX.toFixed(2);
+        y2El.value = clampedY.toFixed(2);
+      }
+      drawCanvas();
+    }
+
+    function endDrag() { dragging = null; DT.trackTool('css-easing-visualizer'); }
+
+    canvas.addEventListener('mousedown', startDrag);
+    canvas.addEventListener('mousemove', moveDrag);
+    canvas.addEventListener('mouseup', endDrag);
+    canvas.addEventListener('touchstart', startDrag, { passive: false });
+    canvas.addEventListener('touchmove', moveDrag, { passive: false });
+    canvas.addEventListener('touchend', endDrag);
+
+    [x1El, y1El, x2El, y2El].forEach(function(el) {
+      el.addEventListener('input', drawCanvas);
+    });
+
+    durationSlider.addEventListener('input', function() {
+      durationVal.textContent = durationSlider.value + 'ms';
+    });
+
+    var animating = false;
+    document.getElementById('playBtn').addEventListener('click', function() {
+      if (animating) return;
+      var v = getVals();
+      var dur = parseInt(durationSlider.value);
+      var str = 'cubic-bezier(' + v.x1 + ', ' + v.y1 + ', ' + v.x2 + ', ' + v.y2 + ')';
+      var track = animBall.parentElement;
+      var maxLeft = track.offsetWidth - animBall.offsetWidth - 8;
+      animating = true;
+      animBall.style.transition = 'none';
+      animBall.style.left = '8px';
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          animBall.style.transition = 'left ' + dur + 'ms ' + str;
+          animBall.style.left = maxLeft + 'px';
+          setTimeout(function() {
+            animBall.style.transition = 'left ' + dur + 'ms ' + str;
+            animBall.style.left = '8px';
+            setTimeout(function() { animating = false; }, dur + 50);
+          }, dur + 50);
+        });
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var v = getVals();
+      var str = 'cubic-bezier(' + v.x1 + ', ' + v.y1 + ', ' + v.x2 + ', ' + v.y2 + ')';
+      DT.copyToClipboard(str, this);
+    });
+
+    function loadCurve(str) {
+      var parts = str.split(',').map(function(s) { return parseFloat(s.trim()); });
+      if (parts.length === 4) {
+        x1El.value = parts[0]; y1El.value = parts[1];
+        x2El.value = parts[2]; y2El.value = parts[3];
+        drawCanvas();
+      }
+    }
+
+    document.querySelectorAll('[data-curve]').forEach(function(btn) {
+      btn.addEventListener('click', function() { loadCurve(btn.dataset.curve); });
+    });
+
+    var modeButtons = document.querySelectorAll('.option-chip');
+    var namedPanel   = document.getElementById('namedPanel');
+    var presetsPanel = document.getElementById('presetsPanel');
+    modeButtons.forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        modeButtons.forEach(function(c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        namedPanel.style.display   = chip.dataset.mode === 'named'   ? '' : 'none';
+        presetsPanel.style.display = chip.dataset.mode === 'presets' ? '' : 'none';
+      });
+    });
+
+    drawCanvas();
+    // Redraw on theme change
+    var observer = new MutationObserver(drawCanvas);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  })();
+  </script>
+</body>
+</html>

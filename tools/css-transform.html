@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Transform Playground — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Visually build CSS transforms: translate, rotate, scale, skew, and 3D perspective. See live preview and copy the generated CSS instantly.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-transform.html">
+  <meta property="og:title" content="CSS Transform Playground — DevToolbox">
+  <meta property="og:description" content="Free online CSS transform builder with live preview. Translate, rotate, scale, skew, and 3D transforms with copy-ready CSS output.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-transform.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Transform Playground",
+    "url": "https://thisdevtool.com/tools/css-transform.html",
+    "description": "Visually build CSS transforms with live preview. Supports translate, rotate, scale, skew, and 3D transforms.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is CSS transform?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS transform is a property that lets you visually manipulate an element in two or three dimensional space. It can translate (move), rotate, scale (resize), and skew elements without affecting document layout flow. Transforms are GPU-accelerated and are ideal for animations."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between translateX and left in CSS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Using translateX moves an element visually without affecting layout, whereas changing the left property (with position) reflows the layout. Translate is GPU-accelerated and does not trigger layout recalculations, making it far better for smooth animations."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is transform-origin?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Transform-origin defines the pivot point for transforms. By default it is the center (50% 50%) of the element. Changing it to top-left makes rotations pivot from the top-left corner. It accepts keywords (top, bottom, left, right, center) and coordinate values."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is perspective in 3D CSS transforms?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Perspective defines how far the viewer is from the z=0 plane, creating a vanishing point for 3D transforms. A lower perspective value (e.g., 200px) creates a more dramatic 3D effect, while a higher value (e.g., 1000px) looks flatter and more subtle."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I combine multiple CSS transforms?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The CSS transform property accepts a space-separated list of transform functions applied in order from left to right. For example: transform: translateX(50px) rotate(45deg) scale(1.2). The order matters because transforms are applied sequentially in the local coordinate system."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .transform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .transform-row { display: flex; flex-direction: column; gap: 0.3rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; }
+    .transform-row label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: flex; justify-content: space-between; }
+    .transform-row label span { color: var(--accent); font-weight: 700; }
+    .transform-row input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .preview-stage { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; align-items: center; }
+    .preview-scene { width: 260px; height: 200px; display: flex; align-items: center; justify-content: center; background: repeating-linear-gradient(45deg, var(--border) 0, var(--border) 1px, transparent 0, transparent 50%) 0 0 / 20px 20px; border-radius: var(--radius); overflow: visible; }
+    #transformPreview { width: 80px; height: 80px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #fff; }
+    .origin-grid { display: grid; grid-template-columns: repeat(3, 30px); gap: 4px; }
+    .origin-btn { width: 30px; height: 30px; border: 2px solid var(--border); border-radius: 4px; background: var(--bg-card); cursor: pointer; transition: all 0.15s; }
+    .origin-btn.active, .origin-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+    .origin-section { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .origin-section label { font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; }
+    .css-output-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); word-break: break-all; min-height: 3rem; }
+    .reset-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    @media (max-width: 500px) { .transform-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-border-radius.html">Border Radius</a>
+        <a href="/tools/css-animation-generator.html">Animation</a>
+        <a href="/tools/css-filter-playground.html">Filters</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Transform Playground</h1>
+          <p class="tool-subtitle">Build CSS transforms visually with live preview. Translate, rotate, scale, skew, and 3D effects.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="2d">2D Transforms</button>
+            <button class="option-chip" data-mode="3d">3D Transforms</button>
+            <button class="option-chip" data-mode="presets">Presets</button>
+          </div>
+
+          <!-- 2D Controls -->
+          <div id="controls2d">
+            <div class="transform-grid">
+              <div class="transform-row">
+                <label>Translate X <span id="txVal">0px</span></label>
+                <input type="range" id="txSlider" min="-200" max="200" value="0">
+              </div>
+              <div class="transform-row">
+                <label>Translate Y <span id="tyVal">0px</span></label>
+                <input type="range" id="tySlider" min="-200" max="200" value="0">
+              </div>
+              <div class="transform-row">
+                <label>Rotate <span id="rVal">0deg</span></label>
+                <input type="range" id="rSlider" min="-180" max="180" value="0">
+              </div>
+              <div class="transform-row">
+                <label>Scale X <span id="sxVal">1</span></label>
+                <input type="range" id="sxSlider" min="10" max="300" value="100">
+              </div>
+              <div class="transform-row">
+                <label>Scale Y <span id="syVal">1</span></label>
+                <input type="range" id="sySlider" min="10" max="300" value="100">
+              </div>
+              <div class="transform-row">
+                <label>Skew X <span id="skxVal">0deg</span></label>
+                <input type="range" id="skxSlider" min="-60" max="60" value="0">
+              </div>
+              <div class="transform-row">
+                <label>Skew Y <span id="skyVal">0deg</span></label>
+                <input type="range" id="skySlider" min="-60" max="60" value="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- 3D Controls -->
+          <div id="controls3d" style="display:none;">
+            <div class="transform-grid">
+              <div class="transform-row">
+                <label>Rotate X <span id="rxVal">0deg</span></label>
+                <input type="range" id="rxSlider" min="-180" max="180" value="0">
+              </div>
+              <div class="transform-row">
+                <label>Rotate Y <span id="ryVal">0deg</span></label>
+                <input type="range" id="rySlider" min="-180" max="180" value="0">
+              </div>
+              <div class="transform-row">
+                <label>Rotate Z <span id="rzVal">0deg</span></label>
+                <input type="range" id="rzSlider" min="-180" max="180" value="0">
+              </div>
+              <div class="transform-row">
+                <label>Translate Z <span id="tzVal">0px</span></label>
+                <input type="range" id="tzSlider" min="-200" max="200" value="0">
+              </div>
+              <div class="transform-row">
+                <label>Perspective <span id="persVal">500px</span></label>
+                <input type="range" id="persSlider" min="100" max="2000" value="500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Presets -->
+          <div id="controlsPresets" style="display:none;">
+            <div class="option-chips" style="flex-wrap:wrap;">
+              <button class="option-chip preset-btn" data-preset="flip-h">Flip Horizontal</button>
+              <button class="option-chip preset-btn" data-preset="flip-v">Flip Vertical</button>
+              <button class="option-chip preset-btn" data-preset="rotate45">Rotate 45°</button>
+              <button class="option-chip preset-btn" data-preset="scale-up">Scale Up</button>
+              <button class="option-chip preset-btn" data-preset="skew">Skew</button>
+              <button class="option-chip preset-btn" data-preset="perspective-tilt">3D Tilt</button>
+              <button class="option-chip preset-btn" data-preset="vanishing">Vanishing Point</button>
+            </div>
+          </div>
+
+          <!-- Preview & Origin -->
+          <div class="preview-stage">
+            <div style="display:flex;gap:2rem;align-items:center;flex-wrap:wrap;justify-content:center;">
+              <div class="preview-scene" id="previewScene">
+                <div id="transformPreview">CSS</div>
+              </div>
+              <div class="origin-section">
+                <label>Transform Origin</label>
+                <div class="origin-grid" id="originGrid">
+                  <button class="origin-btn" data-origin="top left"></button>
+                  <button class="origin-btn" data-origin="top center"></button>
+                  <button class="origin-btn" data-origin="top right"></button>
+                  <button class="origin-btn" data-origin="center left"></button>
+                  <button class="origin-btn active" data-origin="center center"></button>
+                  <button class="origin-btn" data-origin="center right"></button>
+                  <button class="origin-btn" data-origin="bottom left"></button>
+                  <button class="origin-btn" data-origin="bottom center"></button>
+                  <button class="origin-btn" data-origin="bottom right"></button>
+                </div>
+                <span style="font-size:0.75rem;color:var(--text-secondary);" id="originLabel">center center</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="reset-row">
+            <button class="btn btn-sm btn-secondary" id="resetBtn">Reset All</button>
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+          </div>
+
+          <div class="pane-label" style="margin-top:1rem;">
+            <span>Generated CSS</span>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+            </div>
+          </div>
+          <div class="css-output-box" id="cssOutput">transform: none;</div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Adjust the sliders to build your CSS transform.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the CSS Transform Playground</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — 2D for standard transforms, 3D for perspective-based rotations, or Presets for quick starting points.</li>
+            <li><strong>Drag the sliders</strong> — Each slider controls one transform function. The preview updates in real time.</li>
+            <li><strong>Set transform-origin</strong> — Click one of the 9 origin points to change the pivot point for rotations and scales.</li>
+            <li><strong>Copy the CSS</strong> — Click Copy to get the transform property, ready to paste into your stylesheet.</li>
+          </ol>
+
+          <h2>Understanding CSS Transforms</h2>
+          <p>The CSS <code>transform</code> property moves, rotates, scales, or distorts elements in 2D or 3D space. Unlike changing <code>position</code> or <code>margin</code>, transforms do not affect document flow — surrounding elements are not pushed or pulled. They are composited on the GPU, making them ideal for smooth 60fps animations and interactive hover effects.</p>
+
+          <h3>The Transform Functions</h3>
+          <ul>
+            <li><strong>translate(x, y)</strong> — Moves an element from its current position. Use translateX, translateY, or translate shorthand. Accepts px or %.</li>
+            <li><strong>rotate(angle)</strong> — Rotates an element clockwise (positive) or counter-clockwise (negative). Accepts deg, rad, or turn.</li>
+            <li><strong>scale(x, y)</strong> — Resizes an element. A value of 2 doubles the size; 0.5 halves it. Scale does not change the element's layout footprint.</li>
+            <li><strong>skew(x, y)</strong> — Tilts an element along the X or Y axis. Creates a shear-like distortion useful for ribbon effects and italicized shapes.</li>
+            <li><strong>rotateX/Y/Z</strong> — 3D rotations around each axis. Requires a perspective value on the parent to look three-dimensional.</li>
+            <li><strong>perspective</strong> — Sets the distance between the viewer and the z=0 plane. Lower values = more dramatic 3D; higher = subtler.</li>
+          </ul>
+
+          <h3>Transform Order Matters</h3>
+          <p>When chaining multiple transforms, order matters. <code>translate(50px) rotate(45deg)</code> is not the same as <code>rotate(45deg) translate(50px)</code>. Each transform is applied in the current local coordinate system, which changes after each function. As a rule of thumb: apply translate last if you want to move in screen coordinates, or first if you want to move relative to the rotated axes.</p>
+
+          <h3>Transform-Origin</h3>
+          <p>The transform-origin property sets the pivot point for rotations and the anchor for scales. By default it is <code>50% 50%</code> (center). Rotating with origin <code>top left</code> creates a hinge effect, like opening a book. Setting origin to <code>bottom center</code> on a scale animation creates a pop-from-the-ground effect. This playground lets you choose from all 9 named positions interactively.</p>
+
+          <h3>Performance Best Practices</h3>
+          <p>For animations, use <code>transform</code> and <code>opacity</code> — these are the only two properties that browsers can animate entirely on the GPU compositor thread without triggering layout or paint. Avoid animating <code>width</code>, <code>height</code>, <code>top</code>, <code>left</code>, or <code>margin</code> as these trigger layout recalculations (reflow). Add <code>will-change: transform</code> to elements you know will animate, so the browser promotes them to their own layer ahead of time. For more CSS tooling, try the <a href="/tools/css-animation-generator.html">CSS Animation Generator</a> or the <a href="/tools/css-border-radius.html">Border Radius Generator</a>.</p>
+
+          <h3>3D Transforms and Perspective</h3>
+          <p>3D transforms require a perspective context. You can set perspective on the parent with <code>perspective: 500px</code>, or use the <code>perspective()</code> transform function inline. The lower the value, the more dramatic the vanishing point. For card flip effects, apply <code>transform-style: preserve-3d</code> to the container so child elements share the same 3D space. Combine rotateX and rotateY for interactive tilt effects that respond to mouse position.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is CSS transform?</button>
+            <div class="faq-answer">CSS transform is a property that lets you visually manipulate an element in two or three dimensional space. It can translate (move), rotate, scale (resize), and skew elements without affecting document layout flow. Transforms are GPU-accelerated and ideal for animations.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between translateX and left in CSS?</button>
+            <div class="faq-answer">Using translateX moves an element visually without affecting layout, whereas changing the left property reflows the layout. Translate is GPU-accelerated and does not trigger layout recalculations, making it far better for smooth animations.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is transform-origin?</button>
+            <div class="faq-answer">Transform-origin defines the pivot point for transforms. By default it is the center (50% 50%) of the element. Changing it to top-left makes rotations pivot from the corner. It accepts keywords (top, bottom, left, right, center) and coordinate values.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is perspective in 3D CSS transforms?</button>
+            <div class="faq-answer">Perspective defines how far the viewer is from the z=0 plane, creating a vanishing point for 3D transforms. A lower perspective value (e.g., 200px) creates a more dramatic 3D effect, while a higher value (e.g., 1000px) looks flatter and more subtle.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I combine multiple CSS transforms?</button>
+            <div class="faq-answer">Yes. The CSS transform property accepts a space-separated list of transform functions applied in order. For example: <code>transform: translateX(50px) rotate(45deg) scale(1.2)</code>. The order matters because transforms are applied sequentially in the local coordinate system.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS & Design</h4>
+        <a href="/tools/css-border-radius.html">Border Radius</a>
+        <a href="/tools/css-transform.html">CSS Transform</a>
+        <a href="/tools/css-animation-generator.html">Animation Generator</a>
+        <a href="/tools/css-filter-playground.html">Filter Effects</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-clip-path.html">Clip Path Editor</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var currentMode = '2d';
+      var originVal = 'center center';
+
+      var state = {
+        tx: 0, ty: 0, r: 0, sx: 1, sy: 1, skx: 0, sky: 0,
+        rx: 0, ry: 0, rz: 0, tz: 0, pers: 500
+      };
+
+      var previewEl = document.getElementById('transformPreview');
+      var sceneEl = document.getElementById('previewScene');
+      var cssOutput = document.getElementById('cssOutput');
+      var statusBar = document.getElementById('statusBar');
+
+      var presets = {
+        'flip-h': { sx: -1, sy: 1, tx: 0, ty: 0, r: 0, skx: 0, sky: 0 },
+        'flip-v': { sx: 1, sy: -1, tx: 0, ty: 0, r: 0, skx: 0, sky: 0 },
+        'rotate45': { r: 45, tx: 0, ty: 0, sx: 1, sy: 1, skx: 0, sky: 0 },
+        'scale-up': { sx: 1.5, sy: 1.5, tx: 0, ty: 0, r: 0, skx: 0, sky: 0 },
+        'skew': { skx: 20, sky: 0, tx: 0, ty: 0, r: 0, sx: 1, sy: 1 },
+        'perspective-tilt': { rx: 30, ry: 20, rz: 0, tz: 0, pers: 500 },
+        'vanishing': { rx: 60, ry: 0, rz: 0, tz: -100, pers: 300 }
+      };
+
+      function build2dTransform() {
+        var parts = [];
+        if (state.tx !== 0 || state.ty !== 0) parts.push('translate(' + state.tx + 'px, ' + state.ty + 'px)');
+        if (state.r !== 0) parts.push('rotate(' + state.r + 'deg)');
+        if (state.sx !== 1 || state.sy !== 1) parts.push('scale(' + state.sx + ', ' + state.sy + ')');
+        if (state.skx !== 0 || state.sky !== 0) parts.push('skew(' + state.skx + 'deg, ' + state.sky + 'deg)');
+        return parts.length ? parts.join(' ') : 'none';
+      }
+
+      function build3dTransform() {
+        var parts = [];
+        if (state.rx !== 0) parts.push('rotateX(' + state.rx + 'deg)');
+        if (state.ry !== 0) parts.push('rotateY(' + state.ry + 'deg)');
+        if (state.rz !== 0) parts.push('rotateZ(' + state.rz + 'deg)');
+        if (state.tz !== 0) parts.push('translateZ(' + state.tz + 'px)');
+        return parts.length ? parts.join(' ') : 'none';
+      }
+
+      function update() {
+        var transformVal, cssLines;
+        if (currentMode === '3d') {
+          transformVal = build3dTransform();
+          sceneEl.style.perspective = state.pers + 'px';
+          cssLines = 'perspective: ' + state.pers + 'px; /* on parent */\ntransform: ' + transformVal + ';\ntransform-origin: ' + originVal + ';';
+        } else {
+          transformVal = build2dTransform();
+          sceneEl.style.perspective = '';
+          cssLines = 'transform: ' + transformVal + ';\ntransform-origin: ' + originVal + ';';
+        }
+        previewEl.style.transform = transformVal;
+        previewEl.style.transformOrigin = originVal;
+        cssOutput.textContent = cssLines;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'CSS generated. Click Copy to use it.';
+        DT.trackTool('css-transform');
+      }
+
+      function bindSlider(id, key, displayId, formatter) {
+        var sl = document.getElementById(id);
+        var dv = document.getElementById(displayId);
+        sl.addEventListener('input', function() {
+          state[key] = formatter(parseFloat(sl.value));
+          dv.textContent = state[key] + (key === 'sx' || key === 'sy' ? '' : (key === 'pers' ? 'px' : (key.startsWith('sk') || key.startsWith('r') ? 'deg' : 'px')));
+          update();
+        });
+      }
+
+      bindSlider('txSlider', 'tx', 'txVal', function(v) { return v; });
+      bindSlider('tySlider', 'ty', 'tyVal', function(v) { return v; });
+      bindSlider('rSlider', 'r', 'rVal', function(v) { return v; });
+      bindSlider('sxSlider', 'sx', 'sxVal', function(v) { return Math.round(v) / 100; });
+      bindSlider('sySlider', 'sy', 'syVal', function(v) { return Math.round(v) / 100; });
+      bindSlider('skxSlider', 'skx', 'skxVal', function(v) { return v; });
+      bindSlider('skySlider', 'sky', 'skyVal', function(v) { return v; });
+      bindSlider('rxSlider', 'rx', 'rxVal', function(v) { return v; });
+      bindSlider('rySlider', 'ry', 'ryVal', function(v) { return v; });
+      bindSlider('rzSlider', 'rz', 'rzVal', function(v) { return v; });
+      bindSlider('tzSlider', 'tz', 'tzVal', function(v) { return v; });
+      bindSlider('persSlider', 'pers', 'persVal', function(v) { return Math.round(v); });
+
+      // Mode chips
+      document.querySelectorAll('.option-chip[data-mode]').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('.option-chip[data-mode]').forEach(function(c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          document.getElementById('controls2d').style.display = currentMode === '2d' ? '' : 'none';
+          document.getElementById('controls3d').style.display = currentMode === '3d' ? '' : 'none';
+          document.getElementById('controlsPresets').style.display = currentMode === 'presets' ? '' : 'none';
+          update();
+        });
+      });
+
+      // Preset buttons
+      document.querySelectorAll('.preset-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var p = presets[btn.getAttribute('data-preset')];
+          if (!p) return;
+          if (p.rx !== undefined) {
+            Object.assign(state, p);
+            ['rx','ry','rz','tz'].forEach(function(k) {
+              var sl = document.getElementById(k + 'Slider');
+              if (sl) { sl.value = state[k]; document.getElementById(k + 'Val').textContent = state[k] + 'deg'; }
+            });
+            document.getElementById('persSlider').value = state.pers;
+            document.getElementById('persVal').textContent = state.pers + 'px';
+            currentMode = '3d';
+            document.querySelectorAll('.option-chip[data-mode]').forEach(function(c) { c.classList.remove('active'); });
+            document.querySelector('.option-chip[data-mode="3d"]').classList.add('active');
+            document.getElementById('controls2d').style.display = 'none';
+            document.getElementById('controls3d').style.display = '';
+            document.getElementById('controlsPresets').style.display = 'none';
+          } else {
+            Object.assign(state, p);
+            var map = { tx:'txSlider', ty:'tySlider', r:'rSlider', skx:'skxSlider', sky:'skySlider' };
+            for (var k in map) { var sl = document.getElementById(map[k]); if(sl) sl.value = state[k]; }
+            document.getElementById('sxSlider').value = Math.round(state.sx * 100);
+            document.getElementById('sySlider').value = Math.round(state.sy * 100);
+            document.getElementById('txVal').textContent = state.tx + 'px';
+            document.getElementById('tyVal').textContent = state.ty + 'px';
+            document.getElementById('rVal').textContent = state.r + 'deg';
+            document.getElementById('sxVal').textContent = state.sx;
+            document.getElementById('syVal').textContent = state.sy;
+            document.getElementById('skxVal').textContent = state.skx + 'deg';
+            document.getElementById('skyVal').textContent = state.sky + 'deg';
+          }
+          update();
+        });
+      });
+
+      // Origin grid
+      document.querySelectorAll('.origin-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.origin-btn').forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          originVal = btn.getAttribute('data-origin');
+          document.getElementById('originLabel').textContent = originVal;
+          update();
+        });
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', function() {
+        state = { tx:0, ty:0, r:0, sx:1, sy:1, skx:0, sky:0, rx:0, ry:0, rz:0, tz:0, pers:500 };
+        ['txSlider','tySlider','rSlider','skxSlider','skySlider','rxSlider','rySlider','rzSlider','tzSlider'].forEach(function(id) {
+          var el = document.getElementById(id); if(el) el.value = 0;
+        });
+        document.getElementById('sxSlider').value = 100;
+        document.getElementById('sySlider').value = 100;
+        document.getElementById('persSlider').value = 500;
+        ['txVal','tyVal','tzVal'].forEach(function(id){ document.getElementById(id).textContent = '0px'; });
+        ['rVal','skxVal','skyVal','rxVal','ryVal','rzVal'].forEach(function(id){ document.getElementById(id).textContent = '0deg'; });
+        document.getElementById('sxVal').textContent = '1';
+        document.getElementById('syVal').textContent = '1';
+        document.getElementById('persVal').textContent = '500px';
+        update();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function() {
+        state.tx = 20; state.ty = -10; state.r = 15; state.sx = 1.2; state.sy = 1.2; state.skx = 0; state.sky = 0;
+        document.getElementById('txSlider').value = 20; document.getElementById('txVal').textContent = '20px';
+        document.getElementById('tySlider').value = -10; document.getElementById('tyVal').textContent = '-10px';
+        document.getElementById('rSlider').value = 15; document.getElementById('rVal').textContent = '15deg';
+        document.getElementById('sxSlider').value = 120; document.getElementById('sxVal').textContent = '1.2';
+        document.getElementById('sySlider').value = 120; document.getElementById('syVal').textContent = '1.2';
+        update();
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function() {
+        DT.copyToClipboard(cssOutput.textContent, this);
+      });
+      document.getElementById('downloadBtn').addEventListener('click', function() {
+        DT.downloadText(cssOutput.textContent, 'transform.css', 'text/css');
+      });
+
+      update();
+    })();
+  </script>
+</body>
+</html>

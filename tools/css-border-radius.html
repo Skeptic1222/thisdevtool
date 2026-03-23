@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Border Radius Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate CSS border-radius values visually. Control each corner independently, create blob shapes, circles, pills, and more. Copy the CSS instantly.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-border-radius.html">
+  <meta property="og:title" content="CSS Border Radius Generator — DevToolbox">
+  <meta property="og:description" content="Free online border-radius editor. Set per-corner radii, create blob shapes, and copy the generated CSS. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-border-radius.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Border Radius Generator",
+    "url": "https://thisdevtool.com/tools/css-border-radius.html",
+    "description": "Generate CSS border-radius values visually with per-corner controls, presets, and blob shapes.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is CSS border-radius?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS border-radius is a shorthand property that sets the rounding of the corners of an element's border box. You can control all four corners together or individually. A value of 50% on a square element creates a circle."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I create a circle with border-radius?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Set border-radius to 50% on an element that has equal width and height. For example: width: 100px; height: 100px; border-radius: 50%; This makes all four corners round enough to form a perfect circle."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the slash syntax mean in border-radius?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The slash syntax in border-radius (e.g., 40% 60% / 60% 40%) lets you set different horizontal and vertical radii per corner. The values before the slash are horizontal radii and the values after are vertical radii. This allows you to create elliptical corners and organic blob shapes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I mix px and % values in border-radius?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. You can mix pixel and percentage values in border-radius. Percentage values are calculated relative to the element's width (for horizontal radius) and height (for vertical radius). Pixel values are fixed regardless of the element's size."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between Simple and Advanced border-radius modes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Simple mode controls each corner with a single radius value, producing symmetrical rounded corners. Advanced mode lets you specify separate horizontal and vertical radii for each corner using the CSS slash syntax, enabling elliptical corners and irregular blob shapes."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .radius-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .corner-control { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem; }
+    .corner-control label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .corner-value { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-left: 0.5rem; }
+    .corner-inputs { display: flex; flex-direction: column; gap: 0.4rem; }
+    .corner-inputs input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .corner-inputs input[type="number"] { width: 70px; padding: 0.2rem 0.4rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-card); color: var(--text); font-size: 0.85rem; }
+    .corner-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); }
+    .preview-area { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; align-items: center; }
+    .preview-box-wrap { width: 100%; display: flex; justify-content: center; align-items: center; min-height: 200px; }
+    #previewBox { width: 160px; height: 160px; background: var(--accent); transition: border-radius 0.15s; }
+    .size-row { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; justify-content: center; }
+    .size-row label { font-size: 0.85rem; color: var(--text-secondary); }
+    .size-row input[type="range"] { width: 100px; accent-color: var(--accent); }
+    .size-row input[type="color"] { width: 40px; height: 28px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; padding: 0; }
+    .css-output-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent); word-break: break-all; min-height: 2.5rem; }
+    @media (max-width: 480px) { .radius-controls { grid-template-columns: 1fr 1fr; gap: 0.5rem; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-transform.html">Transform</a>
+        <a href="/tools/css-clip-path.html">Clip Path</a>
+        <a href="/tools/css-filter-playground.html">Filters</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Border Radius Generator</h1>
+          <p class="tool-subtitle">Control each corner independently. Create circles, pills, blobs, and organic shapes visually.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="simple">Simple</button>
+            <button class="option-chip" data-mode="advanced">Advanced (8 values)</button>
+            <button class="option-chip" data-mode="presets">Presets</button>
+          </div>
+
+          <div id="simpleMode">
+            <div class="radius-controls" id="cornerControls">
+              <!-- Top-Left -->
+              <div class="corner-control">
+                <label>Top-Left <span class="corner-value" id="tlVal">20px</span></label>
+                <div class="corner-inputs">
+                  <input type="range" id="tlSlider" min="0" max="200" value="20">
+                  <div class="corner-row">
+                    <input type="number" id="tlNum" min="0" max="500" value="20">
+                    <select id="tlUnit" style="padding:0.2rem;border:1px solid var(--border);border-radius:4px;background:var(--bg-card);color:var(--text);font-size:0.8rem;">
+                      <option value="px">px</option>
+                      <option value="%">%</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <!-- Top-Right -->
+              <div class="corner-control">
+                <label>Top-Right <span class="corner-value" id="trVal">20px</span></label>
+                <div class="corner-inputs">
+                  <input type="range" id="trSlider" min="0" max="200" value="20">
+                  <div class="corner-row">
+                    <input type="number" id="trNum" min="0" max="500" value="20">
+                    <select id="trUnit" style="padding:0.2rem;border:1px solid var(--border);border-radius:4px;background:var(--bg-card);color:var(--text);font-size:0.8rem;">
+                      <option value="px">px</option>
+                      <option value="%">%</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <!-- Bottom-Right -->
+              <div class="corner-control">
+                <label>Bottom-Right <span class="corner-value" id="brVal">20px</span></label>
+                <div class="corner-inputs">
+                  <input type="range" id="brSlider" min="0" max="200" value="20">
+                  <div class="corner-row">
+                    <input type="number" id="brNum" min="0" max="500" value="20">
+                    <select id="brUnit" style="padding:0.2rem;border:1px solid var(--border);border-radius:4px;background:var(--bg-card);color:var(--text);font-size:0.8rem;">
+                      <option value="px">px</option>
+                      <option value="%">%</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <!-- Bottom-Left -->
+              <div class="corner-control">
+                <label>Bottom-Left <span class="corner-value" id="blVal">20px</span></label>
+                <div class="corner-inputs">
+                  <input type="range" id="blSlider" min="0" max="200" value="20">
+                  <div class="corner-row">
+                    <input type="number" id="blNum" min="0" max="500" value="20">
+                    <select id="blUnit" style="padding:0.2rem;border:1px solid var(--border);border-radius:4px;background:var(--bg-card);color:var(--text);font-size:0.8rem;">
+                      <option value="px">px</option>
+                      <option value="%">%</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advanced sliders (hidden by default) -->
+          <div id="advancedMode" style="display:none;">
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.75rem;">Each corner: <code>horizontal / vertical</code> radius. Enables blob shapes.</p>
+            <div class="radius-controls" style="grid-template-columns:1fr 1fr;">
+              <div class="corner-control">
+                <label>Top-Left H <span class="corner-value" id="tlhVal">40%</span></label>
+                <input type="range" id="tlhSlider" min="0" max="100" value="40" style="width:100%;accent-color:var(--accent);">
+              </div>
+              <div class="corner-control">
+                <label>Top-Left V <span class="corner-value" id="tlvVal">60%</span></label>
+                <input type="range" id="tlvSlider" min="0" max="100" value="60" style="width:100%;accent-color:var(--accent);">
+              </div>
+              <div class="corner-control">
+                <label>Top-Right H <span class="corner-value" id="trhVal">60%</span></label>
+                <input type="range" id="trhSlider" min="0" max="100" value="60" style="width:100%;accent-color:var(--accent);">
+              </div>
+              <div class="corner-control">
+                <label>Top-Right V <span class="corner-value" id="trvVal">40%</span></label>
+                <input type="range" id="trvSlider" min="0" max="100" value="40" style="width:100%;accent-color:var(--accent);">
+              </div>
+              <div class="corner-control">
+                <label>Bottom-Right H <span class="corner-value" id="brhVal">40%</span></label>
+                <input type="range" id="brhSlider" min="0" max="100" value="40" style="width:100%;accent-color:var(--accent);">
+              </div>
+              <div class="corner-control">
+                <label>Bottom-Right V <span class="corner-value" id="brvVal">60%</span></label>
+                <input type="range" id="brvSlider" min="0" max="100" value="60" style="width:100%;accent-color:var(--accent);">
+              </div>
+              <div class="corner-control">
+                <label>Bottom-Left H <span class="corner-value" id="blhVal">60%</span></label>
+                <input type="range" id="blhSlider" min="0" max="100" value="60" style="width:100%;accent-color:var(--accent);">
+              </div>
+              <div class="corner-control">
+                <label>Bottom-Left V <span class="corner-value" id="blvVal">40%</span></label>
+                <input type="range" id="blvSlider" min="0" max="100" value="40" style="width:100%;accent-color:var(--accent);">
+              </div>
+            </div>
+          </div>
+
+          <!-- Presets -->
+          <div id="presetsMode" style="display:none;">
+            <div class="option-chips" style="flex-wrap:wrap;">
+              <button class="option-chip preset-btn" data-preset="circle">Circle</button>
+              <button class="option-chip preset-btn" data-preset="pill">Pill</button>
+              <button class="option-chip preset-btn" data-preset="leaf">Leaf</button>
+              <button class="option-chip preset-btn" data-preset="blob">Blob</button>
+              <button class="option-chip preset-btn" data-preset="egg">Egg</button>
+              <button class="option-chip preset-btn" data-preset="squircle">Squircle</button>
+              <button class="option-chip preset-btn" data-preset="rounded">Rounded</button>
+              <button class="option-chip preset-btn" data-preset="sharp">Sharp</button>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-area">
+            <div class="size-row">
+              <label>Width: <span id="wVal">160px</span> <input type="range" id="widthSlider" min="60" max="300" value="160"></label>
+              <label>Height: <span id="hVal">160px</span> <input type="range" id="heightSlider" min="60" max="300" value="160"></label>
+              <label>Color: <input type="color" id="colorPicker" value="#10b981"></label>
+            </div>
+            <div class="preview-box-wrap">
+              <div id="previewBox"></div>
+            </div>
+          </div>
+
+          <!-- CSS Output -->
+          <div class="pane-label" style="margin-top:1rem;">
+            <span>Generated CSS</span>
+            <div class="btn-group" style="margin:0;">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+            </div>
+          </div>
+          <div class="css-output-box" id="cssOutput">border-radius: 20px;</div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Adjust sliders to generate your border-radius CSS.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Border Radius Generator</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — Simple for uniform rounded corners, Advanced for blob shapes with 8 independent values, or Presets for common shapes.</li>
+            <li><strong>Adjust sliders</strong> — Drag the sliders to set the radius for each corner. You can also type a number directly.</li>
+            <li><strong>Change units</strong> — Switch between px and % per corner. Percentage values scale with the element's dimensions.</li>
+            <li><strong>Preview live</strong> — The preview box updates instantly. Resize it and change its color to see how your shape looks.</li>
+            <li><strong>Copy the CSS</strong> — Click Copy to grab the border-radius declaration, or Download to save as a .css file.</li>
+          </ol>
+
+          <h2>Understanding CSS border-radius</h2>
+          <p>The <code>border-radius</code> property is one of CSS's most versatile tools for creating smooth, organic shapes. At its simplest, a single value rounds all four corners equally. But with individual corner control and the advanced slash syntax, you can create everything from simple rounded buttons to complex blob shapes.</p>
+
+          <h3>Simple vs. Advanced Mode</h3>
+          <p>Simple mode gives you one radius per corner, producing symmetrical ellipses at each corner. Advanced mode unlocks the CSS slash syntax — for example, <code>border-radius: 40% 60% 70% 30% / 30% 70% 60% 40%</code>. The values before the slash are horizontal radii and the values after are vertical radii. By mixing these values you can sculpt asymmetric, organic blob forms that are entirely CSS-based with zero images.</p>
+
+          <h3>Common Shapes and When to Use Them</h3>
+          <ul>
+            <li><strong>Circle (50%)</strong> — Profile pictures, avatars, icon containers, status indicators</li>
+            <li><strong>Pill (999px)</strong> — Tags, badges, status chips, toggle switches, CTA buttons</li>
+            <li><strong>Squircle (~25%)</strong> — App icons, iOS-style containers, modern card corners</li>
+            <li><strong>Blob</strong> — Hero section decorations, background shapes, illustration elements</li>
+            <li><strong>Leaf</strong> — Decorative dividers, nature-themed UI elements, asymmetric cards</li>
+            <li><strong>Egg</strong> — Speech bubbles, food-themed apps, playful illustration cutouts</li>
+          </ul>
+
+          <h3>Performance Considerations</h3>
+          <p>CSS border-radius is GPU-accelerated in all modern browsers and has no meaningful performance cost. However, very high border-radius values on elements with complex backgrounds or box-shadows can occasionally trigger paint layers. For best performance, use <code>will-change: transform</code> on elements that animate their border-radius. Blob shapes are far more performant than SVG clip-paths for simple shapes, since the browser computes them natively without parsing SVG.</p>
+
+          <h3>Percentage vs. Pixel Values</h3>
+          <p>When using percentage values, the horizontal radius is calculated as a percentage of the element's width, and the vertical radius as a percentage of its height. This means a 50% radius always produces a circle (on a square element) regardless of the element's actual size — it scales perfectly. Pixel values, on the other hand, remain fixed. A <code>border-radius: 8px</code> button looks the same at any size, which is useful for design system consistency. For responsive blobs and organic shapes, percentages are preferred.</p>
+
+          <h3>CSS Custom Properties Integration</h3>
+          <p>You can combine border-radius with CSS custom properties for theme-consistent rounding: <code>--radius-sm: 4px; --radius-md: 8px; --radius-lg: 16px; --radius-full: 9999px;</code>. Many design systems (Tailwind, Material, etc.) follow this pattern. The generator outputs a ready-to-use <code>border-radius</code> declaration you can paste directly into your CSS or convert to a custom property. For more CSS generation, try the <a href="/tools/css-transform.html">CSS Transform Playground</a> or the <a href="/tools/css-animation-generator.html">CSS Animation Generator</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is CSS border-radius?</button>
+            <div class="faq-answer">CSS border-radius is a shorthand property that sets the rounding of the corners of an element's border box. You can control all four corners together or individually. A value of 50% on a square element creates a circle.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I create a circle with border-radius?</button>
+            <div class="faq-answer">Set border-radius to 50% on an element that has equal width and height. For example: <code>width: 100px; height: 100px; border-radius: 50%;</code> This makes all four corners round enough to form a perfect circle.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does the slash syntax mean in border-radius?</button>
+            <div class="faq-answer">The slash syntax (e.g., <code>40% 60% / 60% 40%</code>) lets you set different horizontal and vertical radii per corner. The values before the slash are horizontal radii and the values after are vertical radii. This allows you to create elliptical corners and organic blob shapes.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I mix px and % values in border-radius?</button>
+            <div class="faq-answer">Yes. You can mix pixel and percentage values in border-radius. Percentage values are calculated relative to the element's width (for horizontal radius) and height (for vertical radius). Pixel values are fixed regardless of the element's size.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between Simple and Advanced border-radius modes?</button>
+            <div class="faq-answer">Simple mode controls each corner with a single radius value, producing symmetrical rounded corners. Advanced mode lets you specify separate horizontal and vertical radii for each corner using the CSS slash syntax, enabling elliptical corners and irregular blob shapes.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CSS & Design</h4>
+        <a href="/tools/css-border-radius.html">Border Radius</a>
+        <a href="/tools/css-transform.html">CSS Transform</a>
+        <a href="/tools/css-animation-generator.html">Animation Generator</a>
+        <a href="/tools/css-filter-playground.html">Filter Effects</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/css-clip-path.html">Clip Path Editor</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/color-palette.html">Color Palette</a>
+        <a href="/tools/css-box-shadow.html">Box Shadow</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var currentMode = 'simple';
+      var previewBox = document.getElementById('previewBox');
+      var cssOutput = document.getElementById('cssOutput');
+      var statusBar = document.getElementById('statusBar');
+
+      // Simple mode state
+      var corners = {
+        tl: { val: 20, unit: 'px' },
+        tr: { val: 20, unit: 'px' },
+        br: { val: 20, unit: 'px' },
+        bl: { val: 20, unit: 'px' }
+      };
+
+      // Advanced mode state
+      var adv = { tlh: 40, tlv: 60, trh: 60, trv: 40, brh: 40, brv: 60, blh: 60, blv: 40 };
+
+      var presets = {
+        circle: { mode: 'simple', values: [50, 50, 50, 50], units: ['%','%','%','%'] },
+        pill: { mode: 'simple', values: [999, 999, 999, 999], units: ['px','px','px','px'] },
+        leaf: { mode: 'adv', tlh: 0, tlv: 0, trh: 100, trv: 0, brh: 0, brv: 100, blh: 0, blv: 0 },
+        blob: { mode: 'adv', tlh: 40, tlv: 60, trh: 60, trv: 40, brh: 40, brv: 60, blh: 60, blv: 40 },
+        egg: { mode: 'adv', tlh: 50, tlv: 40, trh: 50, trv: 40, brh: 50, brv: 60, blh: 50, blv: 60 },
+        squircle: { mode: 'simple', values: [25, 25, 25, 25], units: ['%','%','%','%'] },
+        rounded: { mode: 'simple', values: [12, 12, 12, 12], units: ['px','px','px','px'] },
+        sharp: { mode: 'simple', values: [0, 0, 0, 0], units: ['px','px','px','px'] }
+      };
+
+      function getSimpleCSS() {
+        var tl = corners.tl.val + corners.tl.unit;
+        var tr = corners.tr.val + corners.tr.unit;
+        var br = corners.br.val + corners.br.unit;
+        var bl = corners.bl.val + corners.bl.unit;
+        if (tl === tr && tr === br && br === bl) return 'border-radius: ' + tl + ';';
+        if (tl === br && tr === bl) return 'border-radius: ' + tl + ' ' + tr + ';';
+        return 'border-radius: ' + tl + ' ' + tr + ' ' + br + ' ' + bl + ';';
+      }
+
+      function getAdvancedCSS() {
+        return 'border-radius: ' + adv.tlh + '% ' + adv.trh + '% ' + adv.brh + '% ' + adv.blh + '% / ' + adv.tlv + '% ' + adv.trv + '% ' + adv.brv + '% ' + adv.blv + '%;';
+      }
+
+      function getCurrentCSS() {
+        return currentMode === 'advanced' ? getAdvancedCSS() : getSimpleCSS();
+      }
+
+      function update() {
+        var css = getCurrentCSS();
+        var raw = css.replace('border-radius: ', '').replace(';', '');
+        previewBox.style.borderRadius = raw;
+        cssOutput.textContent = css;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'CSS generated. Click Copy to use it.';
+        DT.trackTool('css-border-radius');
+      }
+
+      function bindCorner(id, sliderEl, numEl, unitEl, valSpan) {
+        function syncFromSlider() {
+          corners[id].val = parseInt(sliderEl.value);
+          numEl.value = corners[id].val;
+          valSpan.textContent = corners[id].val + corners[id].unit;
+          update();
+        }
+        function syncFromNum() {
+          corners[id].val = Math.max(0, parseInt(numEl.value) || 0);
+          sliderEl.value = Math.min(200, corners[id].val);
+          valSpan.textContent = corners[id].val + corners[id].unit;
+          update();
+        }
+        function syncUnit() {
+          corners[id].unit = unitEl.value;
+          sliderEl.max = unitEl.value === '%' ? 100 : 200;
+          if (unitEl.value === '%') corners[id].val = Math.min(corners[id].val, 100);
+          sliderEl.value = corners[id].val;
+          valSpan.textContent = corners[id].val + corners[id].unit;
+          update();
+        }
+        sliderEl.addEventListener('input', syncFromSlider);
+        numEl.addEventListener('input', syncFromNum);
+        unitEl.addEventListener('change', syncUnit);
+      }
+
+      bindCorner('tl', document.getElementById('tlSlider'), document.getElementById('tlNum'), document.getElementById('tlUnit'), document.getElementById('tlVal'));
+      bindCorner('tr', document.getElementById('trSlider'), document.getElementById('trNum'), document.getElementById('trUnit'), document.getElementById('trVal'));
+      bindCorner('br', document.getElementById('brSlider'), document.getElementById('brNum'), document.getElementById('brUnit'), document.getElementById('brVal'));
+      bindCorner('bl', document.getElementById('blSlider'), document.getElementById('blNum'), document.getElementById('blUnit'), document.getElementById('blVal'));
+
+      // Advanced sliders
+      ['tlh','tlv','trh','trv','brh','brv','blh','blv'].forEach(function(k) {
+        var sl = document.getElementById(k + 'Slider');
+        var vl = document.getElementById(k + 'Val');
+        sl.addEventListener('input', function() {
+          adv[k] = parseInt(sl.value);
+          vl.textContent = adv[k] + '%';
+          update();
+        });
+      });
+
+      // Mode chips
+      document.querySelectorAll('.option-chip[data-mode]').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.querySelectorAll('.option-chip[data-mode]').forEach(function(c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          document.getElementById('simpleMode').style.display = (currentMode === 'simple') ? '' : 'none';
+          document.getElementById('advancedMode').style.display = (currentMode === 'advanced') ? '' : 'none';
+          document.getElementById('presetsMode').style.display = (currentMode === 'presets') ? '' : 'none';
+          update();
+        });
+      });
+
+      // Preset buttons
+      document.querySelectorAll('.preset-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var p = presets[btn.getAttribute('data-preset')];
+          if (!p) return;
+          if (p.mode === 'simple') {
+            ['tl','tr','br','bl'].forEach(function(c, i) {
+              corners[c].val = p.values[i];
+              corners[c].unit = p.units[i];
+              document.getElementById(c + 'Slider').value = Math.min(200, p.values[i]);
+              document.getElementById(c + 'Num').value = p.values[i];
+              document.getElementById(c + 'Unit').value = p.units[i];
+              document.getElementById(c + 'Val').textContent = p.values[i] + p.units[i];
+            });
+            currentMode = 'simple';
+          } else {
+            Object.assign(adv, { tlh: p.tlh, tlv: p.tlv, trh: p.trh, trv: p.trv, brh: p.brh, brv: p.brv, blh: p.blh, blv: p.blv });
+            ['tlh','tlv','trh','trv','brh','brv','blh','blv'].forEach(function(k) {
+              document.getElementById(k + 'Slider').value = adv[k];
+              document.getElementById(k + 'Val').textContent = adv[k] + '%';
+            });
+            currentMode = 'advanced';
+          }
+          update();
+        });
+      });
+
+      // Preview size & color
+      document.getElementById('widthSlider').addEventListener('input', function() {
+        previewBox.style.width = this.value + 'px';
+        document.getElementById('wVal').textContent = this.value + 'px';
+      });
+      document.getElementById('heightSlider').addEventListener('input', function() {
+        previewBox.style.height = this.value + 'px';
+        document.getElementById('hVal').textContent = this.value + 'px';
+      });
+      document.getElementById('colorPicker').addEventListener('input', function() {
+        previewBox.style.background = this.value;
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function() {
+        DT.copyToClipboard(cssOutput.textContent, this);
+      });
+      document.getElementById('downloadBtn').addEventListener('click', function() {
+        DT.downloadText(cssOutput.textContent, 'border-radius.css', 'text/css');
+      });
+
+      // Init
+      previewBox.style.width = '160px';
+      previewBox.style.height = '160px';
+      previewBox.style.background = '#10b981';
+      update();
+    })();
+  </script>
+</body>
+</html>
