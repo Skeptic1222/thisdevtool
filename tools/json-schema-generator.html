@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JSON Schema Generator — Infer Schema from Data | DevToolbox</title>
+  <meta name="description" content="Generate JSON Schema (Draft-07 or Draft-04) from any JSON data instantly. Free online schema inferencer with required fields detection. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/json-schema-generator.html">
+  <meta property="og:title" content="JSON Schema Generator — DevToolbox">
+  <meta property="og:description" content="Free online JSON Schema generator. Paste JSON data to automatically infer Draft-07 or Draft-04 schemas with type constraints and required fields.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/json-schema-generator.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON Schema Generator",
+    "url": "https://thisdevtool.com/tools/json-schema-generator.html",
+    "description": "Generate JSON Schema from JSON data. Infer Draft-07 or Draft-04 schemas automatically. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is JSON Schema?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JSON Schema is a vocabulary for annotating and validating JSON documents. It describes the structure of JSON data — what properties are required, what types are allowed, and what constraints apply. JSON Schema is used for API validation, form generation, documentation, and data contracts."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between Draft-07 and Draft-04?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Draft-07 is the most widely supported modern version and adds features like if/then/else conditionals, readOnly/writeOnly, and $comment. Draft-04 is the older baseline used by many legacy validators. Both are supported by popular libraries like Ajv. Use Draft-07 for new projects and Draft-04 for compatibility with older tooling."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my JSON data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This JSON Schema generator runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the generator detect required fields?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The generator marks all non-null fields present in the sample JSON as required. In 'Required All' mode, every property that appears in the sample is added to the required array. Fields with null values are still included in properties but are given an anyOf type to allow null. You can manually edit the generated schema to adjust which fields are truly required."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use the generated schema for API validation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The generated schema is a starting point for API validation. Use it with validators like Ajv (JavaScript), jsonschema (Python), or json-schema-validator (Java). Review and refine the schema — the generator infers types from a single sample, so it may not capture all edge cases like optional fields, enum values, or string format constraints."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/json-to-rust.html">JSON to Rust</a>
+        <a href="/tools/json-path-evaluator.html">JSONPath</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>JSON Schema Generator</h1>
+          <p class="tool-subtitle">Paste JSON data to automatically infer a JSON Schema. Supports Draft-07 and Draft-04. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="draft07">Draft-07</button>
+            <button class="option-chip" data-mode="draft04">Draft-04</button>
+            <button class="option-chip" data-mode="required-all">Required All</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>JSON Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="jsonInput" rows="16" placeholder='Paste your JSON data here...
+
+Example:
+{
+  "id": 1,
+  "name": "Alice",
+  "email": "alice@example.com",
+  "active": true
+}' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>JSON Schema Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download schema.json</button>
+                </div>
+              </div>
+              <div class="code-output" id="schemaOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste JSON above to generate a schema.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the JSON Schema Generator</h2>
+          <ol>
+            <li><strong>Paste your JSON data</strong> — any valid JSON object or array of objects.</li>
+            <li><strong>Choose a draft version</strong> — Draft-07 (recommended for new projects) or Draft-04 (for older tooling compatibility).</li>
+            <li><strong>Use "Required All"</strong> to mark every property as required, or leave it off for a more permissive schema.</li>
+            <li><strong>Copy or download</strong> the generated schema for use in API validators, documentation, or code generation tools.</li>
+          </ol>
+
+          <h2>What is JSON Schema?</h2>
+          <p>JSON Schema is a specification for describing the structure and constraints of JSON data. It defines what properties an object must have, what types are allowed for each property, and additional constraints like minimum/maximum values, string patterns, and array lengths. JSON Schema is widely used for API request/response validation, auto-generating forms from data models, API documentation (OpenAPI uses JSON Schema internally), and enforcing data contracts between services.</p>
+
+          <h3>Draft-07 vs. Draft-04</h3>
+          <p>The most common versions of JSON Schema in production are Draft-07 and Draft-04. Draft-04 is the older baseline, supported by virtually every validator. Draft-07 adds useful features including <code>if/then/else</code> for conditional validation, <code>readOnly</code> and <code>writeOnly</code> keywords for documenting API behavior, <code>$comment</code> for schema documentation, and <code>contains</code> for arrays. The generated <code>$schema</code> URI changes between versions, which tells validators which rules to apply.</p>
+
+          <h3>How Schema Inference Works</h3>
+          <p>This generator performs a recursive traversal of your JSON data. For each value it encounters, it detects the JSON Schema type — <code>string</code>, <code>number</code>, <code>integer</code>, <code>boolean</code>, <code>null</code>, <code>array</code>, or <code>object</code>. For numbers, it checks whether the value is an integer or a floating-point number and uses the more specific <code>integer</code> type when appropriate. For arrays, it examines the first element to determine the <code>items</code> schema. For objects, it recursively generates a <code>properties</code> block.</p>
+
+          <h3>Refining the Generated Schema</h3>
+          <p>The generated schema is based on a single sample, which means it may not capture all real-world variation. After generating, review and refine it by adding <code>enum</code> constraints for fields with a fixed set of values, <code>format</code> annotations for strings that represent dates, emails, or URIs, <code>minimum</code> and <code>maximum</code> for numeric ranges, <code>minLength</code> and <code>maxLength</code> for strings, and <code>pattern</code> for string format validation using regular expressions. These additions make the schema more precise and useful as a validation contract.</p>
+
+          <h3>Using the Schema with Validators</h3>
+          <p>Once you have a schema, you can validate JSON documents against it using <strong>Ajv</strong> (JavaScript/Node.js — the most popular validator), <strong>jsonschema</strong> (Python), <strong>json-schema-validator</strong> (Java), or <strong>JsonSchema.Net</strong> (.NET). For API development, OpenAPI 3.x schemas use a superset of JSON Schema Draft-07, so generated schemas can often be used directly in Swagger/OpenAPI specifications. Validate your schema itself using the JSON Schema meta-schema to catch errors before deployment.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is JSON Schema?</button>
+            <div class="faq-answer">JSON Schema is a vocabulary for annotating and validating JSON documents. It describes the structure of JSON data — what properties are required, what types are allowed, and what constraints apply. JSON Schema is used for API validation, form generation, documentation, and data contracts.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between Draft-07 and Draft-04?</button>
+            <div class="faq-answer">Draft-07 is the most widely supported modern version and adds features like if/then/else conditionals, readOnly/writeOnly, and $comment. Draft-04 is the older baseline used by many legacy validators. Both are supported by popular libraries like Ajv. Use Draft-07 for new projects and Draft-04 for compatibility with older tooling.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my JSON data sent to a server?</button>
+            <div class="faq-answer">No. This JSON Schema generator runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the generator detect required fields?</button>
+            <div class="faq-answer">The generator marks all non-null fields present in the sample JSON as required. In "Required All" mode, every property that appears in the sample is added to the required array. Fields with null values are still included in properties but are given an anyOf type to allow null. You can manually edit the generated schema to adjust which fields are truly required.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use the generated schema for API validation?</button>
+            <div class="faq-answer">Yes. The generated schema is a starting point for API validation. Use it with validators like Ajv (JavaScript), jsonschema (Python), or json-schema-validator (Java). Review and refine the schema — the generator infers types from a single sample, so it may not capture all edge cases like optional fields, enum values, or string format constraints.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>JSON Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/json-to-rust.html">JSON to Rust</a>
+        <a href="/tools/json-path-evaluator.html">JSONPath Evaluator</a>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/xml-json.html">XML &harr; JSON</a>
+        <a href="/tools/toml-json.html">TOML &harr; JSON</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('jsonInput');
+      var output = document.getElementById('schemaOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'draft07';
+
+      function inferSchema(val, requireAll) {
+        if (val === null) return { type: ['string', 'number', 'boolean', 'null'] };
+        if (typeof val === 'boolean') return { type: 'boolean' };
+        if (typeof val === 'number') {
+          return Number.isInteger(val) ? { type: 'integer' } : { type: 'number' };
+        }
+        if (typeof val === 'string') return { type: 'string' };
+        if (Array.isArray(val)) {
+          var schema = { type: 'array' };
+          if (val.length > 0) {
+            schema.items = inferSchema(val[0], requireAll);
+          }
+          return schema;
+        }
+        if (typeof val === 'object') {
+          var schema = { type: 'object', properties: {} };
+          var required = [];
+          var keys = Object.keys(val);
+          for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var childSchema = inferSchema(val[key], requireAll);
+            if (val[key] === null) {
+              schema.properties[key] = { anyOf: [childSchema, { type: 'null' }] };
+            } else {
+              schema.properties[key] = childSchema;
+              if (requireAll) required.push(key);
+            }
+          }
+          if (required.length > 0) schema.required = required;
+          return schema;
+        }
+        return {};
+      }
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste JSON above to generate a schema.';
+          return;
+        }
+
+        try {
+          var parsed = JSON.parse(raw);
+          var requireAll = currentMode === 'required-all';
+          var draft = currentMode === 'draft04' ? 'draft-04' : 'draft-07';
+          var schemaUri = currentMode === 'draft04'
+            ? 'http://json-schema.org/draft-04/schema#'
+            : 'http://json-schema.org/draft-07/schema#';
+
+          // If root is array, infer from first element
+          var rootVal = Array.isArray(parsed) ? (parsed.length > 0 ? parsed[0] : {}) : parsed;
+          var inferred = inferSchema(rootVal, requireAll);
+
+          var fullSchema = Object.assign({ '$schema': schemaUri }, inferred);
+          if (Array.isArray(parsed)) {
+            fullSchema = {
+              '$schema': schemaUri,
+              type: 'array',
+              items: inferred
+            };
+          }
+
+          var schemaStr = JSON.stringify(fullSchema, null, 2);
+          output.textContent = schemaStr;
+
+          var propCount = inferred.properties ? Object.keys(inferred.properties).length : 0;
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Generated JSON Schema (' + draft + ') — ' + propCount + ' top-level propert' + (propCount !== 1 ? 'ies' : 'y') + '.';
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid JSON: ' + e.message;
+        }
+
+        DT.trackTool('json-schema-generator');
+      }
+
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.downloadText(text, 'schema.json', 'application/json');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = JSON.stringify({
+          "id": 1,
+          "name": "Alice Smith",
+          "email": "alice@example.com",
+          "age": 30,
+          "active": true,
+          "score": 9.5,
+          "tags": ["admin", "user"],
+          "address": {
+            "street": "123 Main St",
+            "city": "Springfield",
+            "zip": "12345"
+          },
+          "metadata": null
+        }, null, 2);
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

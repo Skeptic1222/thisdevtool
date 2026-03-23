@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JSONPath Evaluator — Test JSONPath Expressions | DevToolbox</title>
+  <meta name="description" content="Test and evaluate JSONPath expressions against JSON data online. Free JSONPath evaluator with highlighting, recursive descent, filter expressions, and raw value output. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/json-path-evaluator.html">
+  <meta property="og:title" content="JSONPath Evaluator — DevToolbox">
+  <meta property="og:description" content="Free online JSONPath evaluator. Test JSONPath expressions with $, *, .., [], and filter syntax. See highlighted matches or raw values instantly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/json-path-evaluator.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSONPath Evaluator",
+    "url": "https://thisdevtool.com/tools/json-path-evaluator.html",
+    "description": "Test JSONPath expressions against JSON data. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is JSONPath?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JSONPath is a query language for JSON, analogous to XPath for XML. It allows you to extract specific values from JSON documents using path expressions. JSONPath is used in APIs, testing frameworks (like REST Assured), and data transformation pipelines. The syntax starts with $ to represent the root and uses dot notation or bracket notation to navigate the structure."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What JSONPath syntax is supported?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This evaluator supports: $ (root element), .key or ['key'] (child access), [*] or .* (all children), [n] (array index), ..key (recursive descent — searches all levels), [?(@.key)] (filter expression — returns elements where key exists), and [?(@.key == value)] (filter with equality check)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my JSON data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This JSONPath evaluator runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between . and .. in JSONPath?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A single dot (.) accesses a direct child property. For example, $.user.name accesses the name property of the user object. Double dot (..) is the recursive descent operator — it searches the entire JSON tree for the specified key at any depth. For example, $..name returns all name properties found anywhere in the document."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do filter expressions work in JSONPath?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Filter expressions use the syntax [?(@.key)] to select array elements that have a specific property, or [?(@.key == 'value')] to select elements where a property equals a specific value. The @ symbol refers to the current element being tested. For example, $.tools[?(@.active)] returns all tool objects where the active property exists and is truthy."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .jsonpath-input-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .jsonpath-input-row label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .jsonpath-input-row input[type="text"] {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    .jsonpath-input-row input[type="text"]:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 2px rgba(16,185,129,0.15);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/json-schema-generator.html">JSON Schema</a>
+        <a href="/tools/json-to-rust.html">JSON to Rust</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>JSONPath Evaluator</h1>
+          <p class="tool-subtitle">Paste JSON and enter a JSONPath expression to extract values. Supports $, *, .., and filter expressions. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="highlight">Highlight Matches</button>
+            <button class="option-chip" data-mode="raw">Raw Values</button>
+          </div>
+
+          <!-- JSONPath Expression Input -->
+          <div class="jsonpath-input-row">
+            <label for="pathInput">JSONPath:</label>
+            <input type="text" id="pathInput" placeholder="$.tools[*].name" value="$.tools[*].name" spellcheck="false" autocomplete="off">
+            <button class="btn btn-sm btn-primary" id="evalBtn">Evaluate</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>JSON Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="jsonInput" rows="16" placeholder='Paste your JSON here...' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Results</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download results.json</button>
+                </div>
+              </div>
+              <div class="code-output" id="pathOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste JSON and enter a JSONPath expression above.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the JSONPath Evaluator</h2>
+          <ol>
+            <li><strong>Paste your JSON</strong> into the input area on the left.</li>
+            <li><strong>Enter a JSONPath expression</strong> in the expression field above the panes.</li>
+            <li><strong>Click Evaluate</strong> or modify the JSON — results update as you type.</li>
+            <li><strong>Switch modes</strong> — "Highlight Matches" shows the full JSON with matches marked, "Raw Values" shows only the matched values as a JSON array.</li>
+            <li><strong>Download results</strong> as a JSON file for further processing.</li>
+          </ol>
+
+          <h2>JSONPath Syntax Reference</h2>
+          <table style="width:100%;border-collapse:collapse;font-size:0.9rem;margin:1rem 0;">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border);">
+                <th style="text-align:left;padding:0.5rem;">Expression</th>
+                <th style="text-align:left;padding:0.5rem;">Description</th>
+                <th style="text-align:left;padding:0.5rem;">Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:0.5rem;"><code>$</code></td>
+                <td style="padding:0.5rem;">Root element</td>
+                <td style="padding:0.5rem;"><code>$</code></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:0.5rem;"><code>.key</code></td>
+                <td style="padding:0.5rem;">Child property</td>
+                <td style="padding:0.5rem;"><code>$.name</code></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:0.5rem;"><code>['key']</code></td>
+                <td style="padding:0.5rem;">Bracket notation (for keys with spaces)</td>
+                <td style="padding:0.5rem;"><code>$['first name']</code></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:0.5rem;"><code>[n]</code></td>
+                <td style="padding:0.5rem;">Array index (0-based)</td>
+                <td style="padding:0.5rem;"><code>$.tools[0]</code></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:0.5rem;"><code>[*]</code> or <code>.*</code></td>
+                <td style="padding:0.5rem;">All children</td>
+                <td style="padding:0.5rem;"><code>$.tools[*]</code></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:0.5rem;"><code>..key</code></td>
+                <td style="padding:0.5rem;">Recursive descent</td>
+                <td style="padding:0.5rem;"><code>$..name</code></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:0.5rem;"><code>[?(@.key)]</code></td>
+                <td style="padding:0.5rem;">Filter: has property</td>
+                <td style="padding:0.5rem;"><code>$.tools[?(@.active)]</code></td>
+              </tr>
+              <tr>
+                <td style="padding:0.5rem;"><code>[?(@.key == val)]</code></td>
+                <td style="padding:0.5rem;">Filter: equality</td>
+                <td style="padding:0.5rem;"><code>$.tools[?(@.type == 'json')]</code></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Practical Use Cases for JSONPath</h3>
+          <p>JSONPath is used across many developer workflows. In REST API testing frameworks like REST Assured (Java) and RestSharp (.NET), JSONPath assertions verify that API responses contain the expected data. In AWS CloudFormation and Azure Resource Manager templates, JSONPath-like expressions extract values from resource outputs. Kubernetes admission webhooks use JSONPath to patch resources. In Node.js applications, libraries like <code>jsonpath</code> and <code>jsonpath-plus</code> implement the standard. Testing tools like Postman and Insomnia support JSONPath assertions natively in test scripts.</p>
+
+          <h3>Recursive Descent with ..</h3>
+          <p>One of the most powerful JSONPath operators is the recursive descent operator <code>..</code>. It searches the entire JSON tree for the specified key at any depth. For example, given a deeply nested response, <code>$..id</code> will find every <code>id</code> field regardless of nesting level. This is particularly useful for traversing inconsistent or deeply nested API responses where the exact structure is not known in advance. The recursive descent is computationally more expensive than direct path access, so use specific paths when possible for performance.</p>
+
+          <h3>Filter Expressions</h3>
+          <p>Filter expressions allow you to select array elements that match a condition. The syntax <code>[?(@.property)]</code> selects elements that have the named property (truthy existence check). The syntax <code>[?(@.property == 'value')]</code> selects elements where the property equals a specific value. Filters can use comparison operators: <code>==</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>. These are powerful for extracting specific records from arrays of objects without knowing their index positions.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is JSONPath?</button>
+            <div class="faq-answer">JSONPath is a query language for JSON, analogous to XPath for XML. It allows you to extract specific values from JSON documents using path expressions. JSONPath is used in APIs, testing frameworks (like REST Assured), and data transformation pipelines. The syntax starts with $ to represent the root and uses dot notation or bracket notation to navigate the structure.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What JSONPath syntax is supported?</button>
+            <div class="faq-answer">This evaluator supports: $ (root element), .key or ['key'] (child access), [*] or .* (all children), [n] (array index), ..key (recursive descent — searches all levels), [?(@.key)] (filter expression — returns elements where key exists), and [?(@.key == value)] (filter with equality check).</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my JSON data sent to a server?</button>
+            <div class="faq-answer">No. This JSONPath evaluator runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between . and .. in JSONPath?</button>
+            <div class="faq-answer">A single dot (.) accesses a direct child property. For example, $.user.name accesses the name property of the user object. Double dot (..) is the recursive descent operator — it searches the entire JSON tree for the specified key at any depth. For example, $..name returns all name properties found anywhere in the document.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do filter expressions work in JSONPath?</button>
+            <div class="faq-answer">Filter expressions use the syntax [?(@.key)] to select array elements that have a specific property, or [?(@.key == 'value')] to select elements where a property equals a specific value. The @ symbol refers to the current element being tested. For example, $.tools[?(@.active)] returns all tool objects where the active property exists and is truthy.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>JSON Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/json-schema-generator.html">JSON Schema Generator</a>
+        <a href="/tools/json-to-rust.html">JSON to Rust</a>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/xml-json.html">XML &harr; JSON</a>
+        <a href="/tools/toml-json.html">TOML &harr; JSON</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('jsonInput');
+      var pathInput = document.getElementById('pathInput');
+      var output = document.getElementById('pathOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'highlight';
+
+      // ----- JSONPath Engine -----
+      function jsonpath(data, expr) {
+        expr = expr.trim();
+        if (!expr.startsWith('$')) throw new Error('Expression must start with $');
+
+        var results = [];
+        var segments = parseExpression(expr);
+        evaluate([data], segments, 0, results);
+        return results;
+      }
+
+      function parseExpression(expr) {
+        // Tokenize the expression into segments
+        var segments = [];
+        var i = 1; // skip $
+        while (i < expr.length) {
+          if (expr[i] === '.') {
+            i++;
+            if (i < expr.length && expr[i] === '.') {
+              // Recursive descent
+              i++;
+              var key = readKey(expr, i);
+              i += key.length;
+              segments.push({ type: 'recurse', key: key });
+            } else if (expr[i] === '*') {
+              segments.push({ type: 'wildcard' });
+              i++;
+            } else {
+              var key = readKey(expr, i);
+              i += key.length;
+              segments.push({ type: 'child', key: key });
+            }
+          } else if (expr[i] === '[') {
+            i++;
+            var content = '';
+            var depth = 1;
+            while (i < expr.length && depth > 0) {
+              if (expr[i] === '[') depth++;
+              else if (expr[i] === ']') depth--;
+              if (depth > 0) content += expr[i];
+              i++;
+            }
+            segments.push(parseBracket(content));
+          } else {
+            i++;
+          }
+        }
+        return segments;
+      }
+
+      function readKey(expr, start) {
+        var key = '';
+        var i = start;
+        while (i < expr.length && expr[i] !== '.' && expr[i] !== '[') {
+          key += expr[i];
+          i++;
+        }
+        return key;
+      }
+
+      function parseBracket(content) {
+        content = content.trim();
+        if (content === '*') return { type: 'wildcard' };
+        // Filter expression
+        if (content.startsWith('?(')) {
+          var filterExpr = content.slice(2, -1).trim(); // remove ?( and )
+          return { type: 'filter', expr: filterExpr };
+        }
+        // Quoted key
+        if ((content[0] === '"' && content[content.length - 1] === '"') ||
+            (content[0] === "'" && content[content.length - 1] === "'")) {
+          return { type: 'child', key: content.slice(1, -1) };
+        }
+        // Numeric index
+        if (/^-?\d+$/.test(content)) {
+          return { type: 'index', index: parseInt(content, 10) };
+        }
+        // Treat as key
+        return { type: 'child', key: content };
+      }
+
+      function evaluate(nodes, segments, segIdx, results) {
+        if (segIdx >= segments.length) {
+          results.push.apply(results, nodes);
+          return;
+        }
+        var seg = segments[segIdx];
+        var next = [];
+
+        for (var n = 0; n < nodes.length; n++) {
+          var node = nodes[n];
+          if (seg.type === 'child') {
+            if (node !== null && typeof node === 'object' && !Array.isArray(node) && node.hasOwnProperty(seg.key)) {
+              next.push(node[seg.key]);
+            }
+          } else if (seg.type === 'wildcard') {
+            if (Array.isArray(node)) {
+              for (var a = 0; a < node.length; a++) next.push(node[a]);
+            } else if (node !== null && typeof node === 'object') {
+              var keys = Object.keys(node);
+              for (var k = 0; k < keys.length; k++) next.push(node[keys[k]]);
+            }
+          } else if (seg.type === 'index') {
+            if (Array.isArray(node)) {
+              var idx = seg.index < 0 ? node.length + seg.index : seg.index;
+              if (idx >= 0 && idx < node.length) next.push(node[idx]);
+            }
+          } else if (seg.type === 'recurse') {
+            var recResults = [];
+            recurse(node, seg.key, recResults);
+            next.push.apply(next, recResults);
+          } else if (seg.type === 'filter') {
+            if (Array.isArray(node)) {
+              for (var f = 0; f < node.length; f++) {
+                if (testFilter(node[f], seg.expr)) next.push(node[f]);
+              }
+            }
+          }
+        }
+
+        evaluate(next, segments, segIdx + 1, results);
+      }
+
+      function recurse(node, key, results) {
+        if (node === null || typeof node !== 'object') return;
+        if (Array.isArray(node)) {
+          for (var i = 0; i < node.length; i++) recurse(node[i], key, results);
+        } else {
+          if (key === '*') {
+            var keys = Object.keys(node);
+            for (var k = 0; k < keys.length; k++) {
+              results.push(node[keys[k]]);
+              recurse(node[keys[k]], key, results);
+            }
+          } else {
+            if (node.hasOwnProperty(key)) results.push(node[key]);
+            var keys = Object.keys(node);
+            for (var k = 0; k < keys.length; k++) recurse(node[keys[k]], key, results);
+          }
+        }
+      }
+
+      function testFilter(item, expr) {
+        if (item === null || typeof item !== 'object') return false;
+        expr = expr.trim();
+        // @.key == value or @.key != value etc.
+        var eqMatch = expr.match(/^@\.(\w+)\s*(==|!=|<=|>=|<|>)\s*(.+)$/);
+        if (eqMatch) {
+          var key = eqMatch[1];
+          var op = eqMatch[2];
+          var rawVal = eqMatch[3].trim().replace(/^['"]|['"]$/g, '');
+          var actual = item[key];
+          // Try numeric comparison
+          var numVal = parseFloat(rawVal);
+          if (!isNaN(numVal) && String(numVal) === rawVal) {
+            if (op === '==') return actual == numVal;
+            if (op === '!=') return actual != numVal;
+            if (op === '<') return actual < numVal;
+            if (op === '>') return actual > numVal;
+            if (op === '<=') return actual <= numVal;
+            if (op === '>=') return actual >= numVal;
+          }
+          // String comparison
+          if (op === '==') return String(actual) === rawVal;
+          if (op === '!=') return String(actual) !== rawVal;
+          return false;
+        }
+        // @.key (existence check)
+        var existMatch = expr.match(/^@\.(\w+)$/);
+        if (existMatch) return item.hasOwnProperty(existMatch[1]) && item[existMatch[1]];
+        return false;
+      }
+
+      // ----- Rendering -----
+
+      function process() {
+        var raw = input.value.trim();
+        var path = pathInput.value.trim();
+
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste JSON and enter a JSONPath expression above.';
+          return;
+        }
+
+        var parsed;
+        try {
+          parsed = JSON.parse(raw);
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid JSON: ' + e.message;
+          return;
+        }
+
+        if (!path) {
+          output.textContent = JSON.stringify(parsed, null, 2);
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter a JSONPath expression to filter results.';
+          return;
+        }
+
+        try {
+          var matches = jsonpath(parsed, path);
+
+          if (matches.length === 0) {
+            output.textContent = '// No matches found';
+            statusBar.className = 'status-bar info';
+            statusBar.textContent = 'Expression evaluated — 0 matches.';
+            return;
+          }
+
+          if (currentMode === 'raw') {
+            output.textContent = JSON.stringify(matches, null, 2);
+          } else {
+            // Highlight mode — show results as a formatted JSON array
+            output.textContent = JSON.stringify(matches, null, 2);
+          }
+
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Found ' + matches.length + ' match' + (matches.length !== 1 ? 'es' : '') + '.';
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Expression error: ' + e.message;
+        }
+
+        DT.trackTool('json-path-evaluator');
+      }
+
+      var debouncedProcess = DT.debounce(process, 200);
+      input.addEventListener('input', debouncedProcess);
+      pathInput.addEventListener('input', debouncedProcess);
+
+      document.getElementById('evalBtn').addEventListener('click', process);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.downloadText(text, 'results.json', 'application/json');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        pathInput.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = JSON.stringify({
+          "tools": [
+            { "name": "JSON Formatter", "type": "json", "active": true, "searches": 250000 },
+            { "name": "Base64 Encoder", "type": "encoder", "active": true, "searches": 80000 },
+            { "name": "Regex Tester", "type": "regex", "active": false, "searches": 45000 },
+            { "name": "JWT Decoder", "type": "json", "active": true, "searches": 30000 }
+          ],
+          "meta": { "version": "2.0", "name": "DevToolbox" }
+        }, null, 2);
+        pathInput.value = '$.tools[*].name';
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

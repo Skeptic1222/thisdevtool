@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>TOML ↔ JSON Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert TOML to JSON and JSON to TOML online for free. Supports sections, arrays, inline tables, booleans, integers, floats, and multi-line strings. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/toml-json.html">
+  <meta property="og:title" content="TOML to JSON Converter — DevToolbox">
+  <meta property="og:description" content="Free online TOML to JSON and JSON to TOML converter. Handles all TOML types: strings, integers, floats, booleans, arrays, tables, and array of tables.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/toml-json.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "TOML to JSON Converter",
+    "url": "https://thisdevtool.com/tools/toml-json.html",
+    "description": "Convert TOML to JSON and JSON to TOML online. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is TOML?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TOML (Tom's Obvious Minimal Language) is a configuration file format designed to be easy to read due to its simple and unambiguous semantics. It maps to a hash table and is used in many tools including Rust's Cargo.toml, Python's pyproject.toml, Hugo static site generator, and many other developer tools."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What TOML syntax does this converter support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This converter supports the core TOML specification: key = 'value' pairs (strings, integers, floats, booleans), [section] table headers, [[array]] array of tables, inline tables { key = 'value' }, arrays [ item1, item2 ], multi-line basic strings (using triple double-quotes), and comments (# prefix). Datetime values are treated as strings."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This TOML/JSON converter runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between [section] and [[array]] in TOML?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "[section] defines a single table (object in JSON). [[array]] defines an array of tables — each time [[array]] appears, a new object is appended to the array. This is the TOML equivalent of a JSON array of objects and is commonly used for things like [[package.dependencies]] or [[servers]] in configuration files."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is TOML used for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TOML is widely used as a configuration format in developer tools. Rust uses it for Cargo.toml (package manifest). Python uses pyproject.toml (PEP 517/518). The Hugo static site generator uses config.toml. GitHub Actions and many CI systems support TOML configuration. It is preferred over JSON for config files because it supports comments and is easier to read and edit by hand."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/yaml-json.html">YAML/JSON</a>
+        <a href="/tools/xml-json.html">XML/JSON</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>TOML &harr; JSON Converter</h1>
+          <p class="tool-subtitle">Convert TOML to JSON or JSON to TOML instantly. Supports tables, arrays of tables, inline tables, and all TOML value types. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="toml-to-json">TOML &rarr; JSON</button>
+            <button class="option-chip" data-mode="json-to-toml">JSON &rarr; TOML</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">TOML Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="mainInput" rows="16" placeholder='Paste your TOML here...
+
+# Example:
+title = "My App"
+version = "1.0.0"
+
+[server]
+host = "localhost"
+port = 8080' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">JSON Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="mainOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste TOML or JSON above to convert.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the TOML to JSON Converter</h2>
+          <ol>
+            <li><strong>Choose a direction</strong> — "TOML to JSON" or "JSON to TOML" using the mode chips.</li>
+            <li><strong>Paste your data</strong> into the input area. The conversion happens as you type.</li>
+            <li><strong>View the result</strong> on the right side with proper formatting.</li>
+            <li><strong>Copy or download</strong> the output as a <code>.json</code> or <code>.toml</code> file.</li>
+          </ol>
+
+          <h2>What is TOML?</h2>
+          <p>TOML (Tom's Obvious Minimal Language) was created by Tom Preston-Werner (GitHub co-founder) as a configuration file format that is easy for humans to read and write while mapping unambiguously to a hash table. It is designed to be a better alternative to INI files (which have no standardized format) and YAML (which has complex edge cases). TOML is now used as the standard configuration format in Rust (Cargo.toml), Python packaging (pyproject.toml), Hugo (config.toml), and many other developer tools.</p>
+
+          <h3>TOML Value Types</h3>
+          <ul>
+            <li><strong>Strings</strong> — basic strings use double quotes (<code>"value"</code>), literal strings use single quotes (<code>'value'</code>, no escape sequences)</li>
+            <li><strong>Integers</strong> — plain numbers without decimal points: <code>42</code>, <code>-17</code>, <code>1_000_000</code></li>
+            <li><strong>Floats</strong> — numbers with decimal points: <code>3.14</code>, <code>6.626e-34</code></li>
+            <li><strong>Booleans</strong> — lowercase only: <code>true</code>, <code>false</code></li>
+            <li><strong>Arrays</strong> — comma-separated values in brackets: <code>[1, 2, 3]</code>, can span multiple lines</li>
+            <li><strong>Inline tables</strong> — compact object notation: <code>{ x = 1, y = 2 }</code></li>
+            <li><strong>Tables</strong> — <code>[section]</code> header creates a nested object</li>
+            <li><strong>Array of tables</strong> — <code>[[array]]</code> header appends objects to an array</li>
+          </ul>
+
+          <h3>TOML vs. YAML vs. JSON for Config Files</h3>
+          <p>All three formats are used for configuration, but each has strengths. <strong>JSON</strong> is the most universally supported but does not allow comments and has verbose syntax. <strong>YAML</strong> is very compact and human-readable but has significant footguns — indentation-sensitive syntax, implicit type coercion (e.g., <code>yes</code> becomes <code>true</code>, Norwegian country code <code>NO</code> becomes <code>false</code>), and complex edge cases. <strong>TOML</strong> is the safest choice for configuration: it supports comments, has unambiguous syntax, and maps directly to a simple data structure. Most Rust and Python developers prefer TOML for these reasons.</p>
+
+          <h3>Common TOML Patterns</h3>
+          <p>The <code>[[products]]</code> / <code>[[products]]</code> pattern (array of tables) is one of TOML's most useful features for configuration. Each <code>[[products]]</code> block appends a new object to the <code>products</code> array, making it easy to define lists of configurations without verbose array syntax. Dotted keys (<code>a.b.c = "value"</code>) are equivalent to nested tables and can be used to set values deep in the hierarchy on a single line. Inline tables (<code>{ key = "value" }</code>) keep simple sub-objects on one line for readability.</p>
+
+          <h3>Using This Converter for Cargo.toml</h3>
+          <p>Cargo.toml is the package manifest for Rust projects and uses TOML format. It defines the package name, version, Rust edition, dependencies, features, and workspace configuration. Use this converter to inspect a complex Cargo.toml as JSON for easier programmatic analysis, or to convert a JSON representation back to TOML format. When working with tools that output Cargo metadata as JSON (e.g., <code>cargo metadata --format-version 1</code>), this converter helps you cross-reference the JSON with the original TOML structure.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is TOML?</button>
+            <div class="faq-answer">TOML (Tom's Obvious Minimal Language) is a configuration file format designed to be easy to read due to its simple and unambiguous semantics. It maps to a hash table and is used in many tools including Rust's Cargo.toml, Python's pyproject.toml, Hugo static site generator, and many other developer tools.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What TOML syntax does this converter support?</button>
+            <div class="faq-answer">This converter supports the core TOML specification: key = "value" pairs (strings, integers, floats, booleans), [section] table headers, [[array]] array of tables, inline tables { key = "value" }, arrays [ item1, item2 ], multi-line basic strings, and comments (# prefix). Datetime values are treated as strings.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my data sent to a server?</button>
+            <div class="faq-answer">No. This TOML/JSON converter runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between [section] and [[array]] in TOML?</button>
+            <div class="faq-answer">[section] defines a single table (object in JSON). [[array]] defines an array of tables — each time [[array]] appears, a new object is appended to the array. This is the TOML equivalent of a JSON array of objects and is commonly used for things like [[package.dependencies]] or [[servers]] in configuration files.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is TOML used for?</button>
+            <div class="faq-answer">TOML is widely used as a configuration format in developer tools. Rust uses it for Cargo.toml (package manifest). Python uses pyproject.toml (PEP 517/518). The Hugo static site generator uses config.toml. It is preferred over JSON for config files because it supports comments and is easier to read and edit by hand.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Converters</h4>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/xml-json.html">XML &harr; JSON</a>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-schema-generator.html">JSON Schema</a>
+        <a href="/tools/json-path-evaluator.html">JSONPath</a>
+        <a href="/tools/json-to-rust.html">JSON to Rust</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('mainInput');
+      var output = document.getElementById('mainOutput');
+      var statusBar = document.getElementById('statusBar');
+      var inputLabel = document.getElementById('inputLabel');
+      var outputLabel = document.getElementById('outputLabel');
+      var downloadBtn = document.getElementById('downloadBtn');
+      var currentMode = 'toml-to-json';
+
+      // ---- TOML Parser ----
+      function parseTOML(src) {
+        var root = {};
+        var currentSection = root;
+        var currentPath = [];
+        var arrayOfTablesTracker = {}; // track [[array]] paths
+
+        var lines = src.split('\n');
+        var i = 0;
+
+        function getOrCreate(obj, keys) {
+          var cur = obj;
+          for (var k = 0; k < keys.length; k++) {
+            var key = keys[k];
+            if (!(key in cur)) cur[key] = {};
+            else if (Array.isArray(cur[key])) {
+              // Navigate into the last element of array of tables
+              cur = cur[key][cur[key].length - 1];
+              continue;
+            }
+            cur = cur[key];
+          }
+          return cur;
+        }
+
+        function setNested(obj, keys, val) {
+          var cur = obj;
+          for (var k = 0; k < keys.length - 1; k++) {
+            var key = keys[k];
+            if (!(key in cur)) cur[key] = {};
+            cur = cur[key];
+          }
+          cur[keys[keys.length - 1]] = val;
+        }
+
+        function parseValue(str) {
+          str = str.trim();
+          // Multi-line string (triple-quoted) — handled at line level
+          // Boolean
+          if (str === 'true') return true;
+          if (str === 'false') return false;
+          // Integer with underscores
+          if (/^-?[0-9][0-9_]*$/.test(str)) return parseInt(str.replace(/_/g, ''), 10);
+          // Float
+          if (/^-?[0-9][0-9_]*\.[0-9][0-9_]*(e[+-]?[0-9]+)?$/i.test(str)) return parseFloat(str.replace(/_/g, ''));
+          // Scientific notation integer-looking
+          if (/^-?[0-9]+e[+-]?[0-9]+$/i.test(str)) return parseFloat(str);
+          // Inline table
+          if (str.startsWith('{') && str.endsWith('}')) {
+            return parseInlineTable(str.slice(1, -1));
+          }
+          // Array
+          if (str.startsWith('[')) {
+            return parseInlineArray(str);
+          }
+          // Double-quoted string
+          if (str.startsWith('"') && str.endsWith('"')) {
+            return str.slice(1, -1)
+              .replace(/\\n/g, '\n')
+              .replace(/\\t/g, '\t')
+              .replace(/\\r/g, '\r')
+              .replace(/\\"/g, '"')
+              .replace(/\\\\/g, '\\');
+          }
+          // Single-quoted string (literal)
+          if (str.startsWith("'") && str.endsWith("'")) {
+            return str.slice(1, -1);
+          }
+          // Bare key value (shouldn't normally reach here)
+          return str;
+        }
+
+        function parseInlineTable(str) {
+          var obj = {};
+          str = str.trim();
+          if (!str) return obj;
+          var pairs = splitComma(str);
+          for (var p = 0; p < pairs.length; p++) {
+            var pair = pairs[p].trim();
+            var eqIdx = pair.indexOf('=');
+            if (eqIdx < 0) continue;
+            var k = pair.slice(0, eqIdx).trim().replace(/^["']|["']$/g, '');
+            var v = parseValue(pair.slice(eqIdx + 1).trim());
+            obj[k] = v;
+          }
+          return obj;
+        }
+
+        function parseInlineArray(str) {
+          str = str.trim();
+          if (!str.startsWith('[') || !str.endsWith(']')) return [];
+          var inner = str.slice(1, -1).trim();
+          if (!inner) return [];
+          var items = splitComma(inner);
+          return items.map(function (item) { return parseValue(item.trim()); });
+        }
+
+        // Split by comma but respect nested brackets/quotes
+        function splitComma(str) {
+          var parts = [];
+          var depth = 0;
+          var inStr = false;
+          var strChar = '';
+          var current = '';
+          for (var c = 0; c < str.length; c++) {
+            var ch = str[c];
+            if (inStr) {
+              current += ch;
+              if (ch === strChar && str[c - 1] !== '\\') inStr = false;
+            } else if (ch === '"' || ch === "'") {
+              inStr = true; strChar = ch; current += ch;
+            } else if (ch === '[' || ch === '{') {
+              depth++; current += ch;
+            } else if (ch === ']' || ch === '}') {
+              depth--; current += ch;
+            } else if (ch === ',' && depth === 0) {
+              parts.push(current); current = '';
+            } else {
+              current += ch;
+            }
+          }
+          if (current.trim()) parts.push(current);
+          return parts;
+        }
+
+        // Collect multi-line string
+        function readMultiLineString(startLine, lines, idx) {
+          var result = '';
+          var lineContent = lines[idx].slice(startLine + 3); // after """
+          // Check if it ends on same line
+          var endIdx = lineContent.indexOf('"""');
+          if (endIdx >= 0) {
+            return { value: lineContent.slice(0, endIdx), nextLine: idx };
+          }
+          result = lineContent;
+          idx++;
+          while (idx < lines.length) {
+            var line = lines[idx];
+            var endPos = line.indexOf('"""');
+            if (endPos >= 0) {
+              result += '\n' + line.slice(0, endPos);
+              return { value: result, nextLine: idx };
+            }
+            result += '\n' + line;
+            idx++;
+          }
+          return { value: result, nextLine: idx };
+        }
+
+        while (i < lines.length) {
+          var line = lines[i].trim();
+          i++;
+
+          // Skip empty lines and comments
+          if (!line || line.startsWith('#')) continue;
+
+          // Array of tables [[section]]
+          var arrMatch = line.match(/^\[\[(.+)\]\]$/);
+          if (arrMatch) {
+            var path = arrMatch[1].trim().split('.').map(function (s) { return s.trim(); });
+            var pathKey = path.join('.');
+            // Navigate to parent
+            var parent = root;
+            for (var p = 0; p < path.length - 1; p++) {
+              var key = path[p];
+              if (!(key in parent)) parent[key] = {};
+              parent = parent[key];
+            }
+            var lastKey = path[path.length - 1];
+            if (!Array.isArray(parent[lastKey])) parent[lastKey] = [];
+            var newEntry = {};
+            parent[lastKey].push(newEntry);
+            currentSection = newEntry;
+            currentPath = path;
+            continue;
+          }
+
+          // Table [section]
+          var tableMatch = line.match(/^\[(.+)\]$/);
+          if (tableMatch) {
+            var path = tableMatch[1].trim().split('.').map(function (s) { return s.trim(); });
+            currentPath = path;
+            currentSection = getOrCreate(root, path);
+            continue;
+          }
+
+          // Key-value pair
+          var eqIdx = line.indexOf('=');
+          if (eqIdx < 0) continue;
+
+          var rawKey = line.slice(0, eqIdx).trim();
+          var rawVal = line.slice(eqIdx + 1).trim();
+
+          // Remove inline comment (not inside string)
+          // Strip trailing comment
+          if (!rawVal.startsWith('"') && !rawVal.startsWith("'") && !rawVal.startsWith('[') && !rawVal.startsWith('{')) {
+            var hashIdx = rawVal.indexOf('#');
+            if (hashIdx >= 0) rawVal = rawVal.slice(0, hashIdx).trim();
+          }
+
+          // Handle dotted keys
+          var keyParts = rawKey.split('.').map(function (k) { return k.trim().replace(/^["']|["']$/g, ''); });
+
+          // Multi-line basic string
+          if (rawVal.startsWith('"""')) {
+            var ml = readMultiLineString(0, lines, i - 1);
+            // Recompute: the value starts after the key = """
+            var fullLine = lines[i - 1];
+            var tripleIdx = fullLine.indexOf('"""', fullLine.indexOf('='));
+            var mlResult = readMultiLineString(tripleIdx, lines, i - 1);
+            i = mlResult.nextLine + 1;
+            if (keyParts.length === 1) {
+              currentSection[keyParts[0]] = mlResult.value;
+            } else {
+              setNested(currentSection, keyParts, mlResult.value);
+            }
+            continue;
+          }
+
+          var parsedVal = parseValue(rawVal);
+
+          if (keyParts.length === 1) {
+            currentSection[rawKey.trim().replace(/^["']|["']$/g, '')] = parsedVal;
+          } else {
+            setNested(currentSection, keyParts, parsedVal);
+          }
+        }
+
+        return root;
+      }
+
+      // ---- JSON -> TOML ----
+      function jsonToToml(obj, prefix) {
+        var lines = [];
+        var simpleKeys = [];
+        var tableKeys = [];
+        var arrayTableKeys = [];
+
+        var keys = Object.keys(obj);
+        for (var k = 0; k < keys.length; k++) {
+          var key = keys[k];
+          var val = obj[key];
+          if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'object' && val[0] !== null) {
+            arrayTableKeys.push(key);
+          } else if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+            tableKeys.push(key);
+          } else {
+            simpleKeys.push(key);
+          }
+        }
+
+        // Simple values first
+        for (var i = 0; i < simpleKeys.length; i++) {
+          var key = simpleKeys[i];
+          var val = obj[key];
+          lines.push(tomlKeyVal(key, val));
+        }
+
+        // Sub-tables
+        for (var i = 0; i < tableKeys.length; i++) {
+          var key = tableKeys[i];
+          var val = obj[key];
+          var fullKey = prefix ? prefix + '.' + key : key;
+          lines.push('');
+          lines.push('[' + fullKey + ']');
+          var subLines = jsonToToml(val, fullKey);
+          lines.push.apply(lines, subLines);
+        }
+
+        // Array of tables
+        for (var i = 0; i < arrayTableKeys.length; i++) {
+          var key = arrayTableKeys[i];
+          var arr = obj[key];
+          var fullKey = prefix ? prefix + '.' + key : key;
+          for (var a = 0; a < arr.length; a++) {
+            lines.push('');
+            lines.push('[[' + fullKey + ']]');
+            var subLines = jsonToToml(arr[a], fullKey);
+            lines.push.apply(lines, subLines);
+          }
+        }
+
+        return lines;
+      }
+
+      function tomlKeyVal(key, val) {
+        if (val === null || val === undefined) return key + ' = ""';
+        if (typeof val === 'boolean') return key + ' = ' + val;
+        if (typeof val === 'number') return key + ' = ' + val;
+        if (typeof val === 'string') {
+          // Use literal string if no special chars, else basic
+          if (val.indexOf('"') >= 0 || val.indexOf('\\') >= 0) {
+            return key + ' = \'' + val.replace(/'/g, "\\'") + '\'';
+          }
+          return key + ' = "' + val + '"';
+        }
+        if (Array.isArray(val)) {
+          // Inline array of primitives
+          var items = val.map(function (v) {
+            if (typeof v === 'string') return '"' + v.replace(/"/g, '\\"') + '"';
+            return String(v);
+          });
+          return key + ' = [' + items.join(', ') + ']';
+        }
+        if (typeof val === 'object') {
+          // Inline table
+          var pairs = Object.keys(val).map(function (k) {
+            return k + ' = ' + inlineTomlVal(val[k]);
+          });
+          return key + ' = { ' + pairs.join(', ') + ' }';
+        }
+        return key + ' = "' + String(val) + '"';
+      }
+
+      function inlineTomlVal(val) {
+        if (val === null || val === undefined) return '""';
+        if (typeof val === 'boolean') return String(val);
+        if (typeof val === 'number') return String(val);
+        if (typeof val === 'string') return '"' + val.replace(/"/g, '\\"') + '"';
+        if (Array.isArray(val)) {
+          return '[' + val.map(inlineTomlVal).join(', ') + ']';
+        }
+        if (typeof val === 'object') {
+          var pairs = Object.keys(val).map(function (k) { return k + ' = ' + inlineTomlVal(val[k]); });
+          return '{ ' + pairs.join(', ') + ' }';
+        }
+        return '"' + String(val) + '"';
+      }
+
+      // ---- Process ----
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste TOML or JSON above to convert.';
+          return;
+        }
+
+        try {
+          if (currentMode === 'toml-to-json') {
+            var parsed = parseTOML(raw);
+            output.textContent = JSON.stringify(parsed, null, 2);
+            var keyCount = Object.keys(parsed).length;
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Converted TOML to JSON — ' + keyCount + ' top-level key' + (keyCount !== 1 ? 's' : '') + '.';
+          } else {
+            var parsed = JSON.parse(raw);
+            var tomlLines = jsonToToml(parsed, '');
+            // Remove leading blank line
+            while (tomlLines.length > 0 && tomlLines[0] === '') tomlLines.shift();
+            output.textContent = tomlLines.join('\n');
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Converted JSON to TOML successfully.';
+          }
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+        }
+
+        DT.trackTool('toml-json');
+      }
+
+      var debouncedProcess = DT.debounce(process, 200);
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          if (currentMode === 'toml-to-json') {
+            inputLabel.textContent = 'TOML Input';
+            outputLabel.textContent = 'JSON Output';
+            input.placeholder = 'Paste your TOML here...';
+          } else {
+            inputLabel.textContent = 'JSON Input';
+            outputLabel.textContent = 'TOML Output';
+            input.placeholder = 'Paste your JSON here...';
+          }
+          input.value = '';
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste ' + (currentMode === 'toml-to-json' ? 'TOML' : 'JSON') + ' above to convert.';
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      downloadBtn.addEventListener('click', function () {
+        var text = output.textContent;
+        if (!text) return;
+        if (currentMode === 'toml-to-json') {
+          DT.downloadText(text, 'output.json', 'application/json');
+        } else {
+          DT.downloadText(text, 'output.toml', 'text/plain');
+        }
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        if (currentMode === 'toml-to-json') {
+          input.value = [
+            '# DevToolbox Cargo.toml example',
+            '[package]',
+            'name = "devtoolbox"',
+            'version = "2.0.0"',
+            'edition = "2021"',
+            'authors = ["Alice <alice@example.com>"]',
+            'description = "Developer tools collection"',
+            '',
+            '[dependencies]',
+            'serde = { version = "1", features = ["derive"] }',
+            'serde_json = "1"',
+            'tokio = { version = "1", features = ["full"] }',
+            '',
+            '[features]',
+            'default = ["json", "yaml"]',
+            'json = []',
+            'yaml = []',
+            '',
+            '[[package.metadata.tools]]',
+            'name = "JSON Formatter"',
+            'category = "developer"',
+            '',
+            '[[package.metadata.tools]]',
+            'name = "Base64 Encoder"',
+            'category = "encoder"'
+          ].join('\n');
+        } else {
+          input.value = JSON.stringify({
+            "package": {
+              "name": "devtoolbox",
+              "version": "2.0.0",
+              "edition": "2021",
+              "description": "Developer tools collection"
+            },
+            "dependencies": {
+              "serde": "1",
+              "serde_json": "1",
+              "tokio": "1"
+            },
+            "features": {
+              "default": ["json", "yaml"],
+              "json": [],
+              "yaml": []
+            }
+          }, null, 2);
+        }
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

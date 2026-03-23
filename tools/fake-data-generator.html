@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Fake Data Generator — Test Data Tool | DevToolbox</title>
+  <meta name="description" content="Generate realistic fake test data in JSON, CSV, or SQL INSERT format. Choose fields, set record count, download instantly. Free, 100% browser-based.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/fake-data-generator.html">
+  <meta property="og:title" content="Fake Data Generator — DevToolbox">
+  <meta property="og:description" content="Generate fake test data in JSON, CSV, or SQL INSERT format. Select fields, set record count, download instantly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/fake-data-generator.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Fake Data Generator",
+    "url": "https://thisdevtool.com/tools/fake-data-generator.html",
+    "description": "Generate realistic fake test data in JSON, CSV, or SQL INSERT format. 100% client-side, no data sent to a server.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is fake data or test data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Fake data (also called test data or mock data) is realistic-looking but entirely made-up data used for software testing, database seeding, API development, and UI prototyping. It lets developers build and test systems without using real personal data, which avoids privacy and compliance risks."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the generated data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All data generation happens entirely in your browser using JavaScript. No data is sent to any server. The tool works offline once the page is loaded."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I generate data for database testing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Choose the SQL INSERT output format and specify a table name. The tool generates valid SQL INSERT statements you can run directly in PostgreSQL, MySQL, SQLite, or any SQL database. For larger seeding tasks, generate 1000 records and import with your database client."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I add or remove fields?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Click the + Add Field button to add a new column. Each field has a name and a type (Name, Email, Phone, etc.). Click the trash icon next to any field to remove it. Changes take effect immediately when you click Generate."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the maximum number of records I can generate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool supports 1 to 1000 records per generation. Since all processing happens in your browser, generating 1000 records is nearly instant. For datasets larger than 1000 records, generate multiple batches and combine them."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .field-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+    .field-row input[type="text"] { flex:1; min-width:100px; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:0.9rem; }
+    .field-row select { padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:0.9rem; }
+    .field-row .btn-icon { background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:1.1rem; padding:4px 6px; border-radius:4px; transition:color 0.15s; }
+    .field-row .btn-icon:hover { color:#ef4444; }
+    #addFieldBtn { margin-top:4px; }
+    .controls-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+    .controls-row label { font-size:0.9rem; color:var(--text-muted); }
+    .controls-row input[type="number"] { width:80px; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:0.9rem; }
+    .controls-row input[type="text"] { width:140px; padding:6px 10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:0.9rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <a href="/tools/uuid-generator.html">UUID</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Fake Data Generator</h1>
+          <p class="tool-subtitle">Generate realistic test data in JSON, CSV, or SQL INSERT format. 100% client-side.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-fmt="json">JSON</button>
+            <button class="option-chip" data-fmt="csv">CSV</button>
+            <button class="option-chip" data-fmt="sql">SQL INSERT</button>
+          </div>
+
+          <div class="split-pane">
+            <!-- Left: config -->
+            <div>
+              <div class="pane-label"><span>Configuration</span></div>
+
+              <div class="controls-row">
+                <label>Records: <input type="number" id="recordCount" value="5" min="1" max="1000"></label>
+                <label id="tableNameLabel" style="display:none;">Table: <input type="text" id="tableName" value="users"></label>
+              </div>
+
+              <div class="pane-label" style="margin-top:8px;"><span>Fields</span></div>
+              <div id="fieldsList"></div>
+              <button class="btn btn-secondary btn-sm" id="addFieldBtn">+ Add Field</button>
+
+              <div class="btn-group" style="margin-top:16px;">
+                <button class="btn btn-primary" id="generateBtn">Generate</button>
+                <button class="btn btn-secondary" id="resetBtn">Reset Fields</button>
+              </div>
+            </div>
+
+            <!-- Right: output -->
+            <div>
+              <div class="pane-label">
+                <span>Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="dataOutput" style="min-height:400px;white-space:pre;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Configure fields and click Generate to create test data.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Fake Data Generator</h2>
+          <ol>
+            <li><strong>Choose output format</strong> — select JSON (default), CSV, or SQL INSERT using the chips at the top.</li>
+            <li><strong>Set the record count</strong> — enter how many rows of data you need (1-1000).</li>
+            <li><strong>Configure fields</strong> — each row has a field name and a data type. Add or remove fields with the buttons. For SQL format, set the table name.</li>
+            <li><strong>Click Generate</strong> — the tool produces realistic fake data instantly in the selected format.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output panel to get your data.</li>
+          </ol>
+
+          <h2>Why Use Fake Test Data?</h2>
+          <p>Building software that handles real user data — names, emails, phone numbers, addresses — carries compliance risk. Using real customer data in development or testing environments may violate GDPR, HIPAA, CCPA, and other data protection regulations. Fake data that looks realistic allows you to develop, test, and demo applications without any privacy exposure.</p>
+
+          <h3>Use Cases</h3>
+          <ul>
+            <li><strong>Database seeding</strong> — populate tables with hundreds of records for development and QA environments</li>
+            <li><strong>API development</strong> — create realistic response payloads to test against</li>
+            <li><strong>Frontend prototyping</strong> — fill UI components with data that looks real</li>
+            <li><strong>Performance testing</strong> — generate 1000 records to stress-test queries and pagination</li>
+            <li><strong>Demo environments</strong> — show clients realistic-looking applications without exposing internal data</li>
+            <li><strong>Automated testing</strong> — seed test databases before running Playwright or Cypress test suites</li>
+          </ul>
+
+          <h3>Available Field Types</h3>
+          <ul>
+            <li><strong>Name</strong> — realistic first + last name combinations (e.g., "Sarah Mitchell")</li>
+            <li><strong>Email</strong> — email addresses based on name patterns (e.g., "sarah.mitchell@example.com")</li>
+            <li><strong>Phone</strong> — formatted phone numbers (e.g., "+1-555-234-5678")</li>
+            <li><strong>Address</strong> — street address with number (e.g., "1421 Oak Street")</li>
+            <li><strong>City</strong> — real US city names drawn from a broad list</li>
+            <li><strong>Country</strong> — country names for international datasets</li>
+            <li><strong>Date</strong> — ISO 8601 dates within the last 5 years</li>
+            <li><strong>Number</strong> — random integer between 1 and 10000</li>
+            <li><strong>UUID</strong> — RFC 4122 v4 UUID strings</li>
+            <li><strong>Boolean</strong> — true or false values</li>
+            <li><strong>Company</strong> — company names (e.g., "Apex Solutions Inc")</li>
+            <li><strong>URL</strong> — realistic website URLs</li>
+            <li><strong>IP Address</strong> — random IPv4 addresses</li>
+            <li><strong>Color</strong> — hex color codes (e.g., "#3a8fbf")</li>
+          </ul>
+
+          <h3>Output Formats Explained</h3>
+          <p><strong>JSON:</strong> Produces a JSON array of objects. Each object has keys matching your field names and values of the selected type. This format works directly with JavaScript fetch, Postman, and most API testing tools. Paste it into your frontend's mock data file or use it as a fixture in Jest or Vitest tests.</p>
+          <p><strong>CSV:</strong> Produces comma-separated values with a header row. This format is importable into spreadsheets (Excel, Google Sheets), database tools (TablePlus, DBeaver), and data science tools (pandas, R). CSV is the fastest way to bulk-import data into databases using COPY commands or import wizards.</p>
+          <p><strong>SQL INSERT:</strong> Produces ready-to-run INSERT statements for a table of your choosing. Compatible with PostgreSQL, MySQL, SQLite, and SQL Server. Values are properly quoted and escaped. This is the fastest path from this tool to a populated development database.</p>
+
+          <h3>Privacy and Data Safety</h3>
+          <p>All data generation happens entirely in your browser. No configuration, no generated data, and no field definitions are sent to any server. The generator uses seeded random functions with browser entropy — data is not reproducible between sessions, so each generation produces a unique dataset. This tool is safe to use on corporate networks and in compliance-sensitive environments.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is fake data or test data?</button>
+            <div class="faq-answer">Fake data (also called test data or mock data) is realistic-looking but entirely made-up data used for software testing, database seeding, API development, and UI prototyping. It lets developers build and test systems without using real personal data, which avoids privacy and compliance risks.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is the generated data sent to a server?</button>
+            <div class="faq-answer">No. All data generation happens entirely in your browser using JavaScript. No data is sent to any server. The tool works offline once the page is loaded.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I generate data for database testing?</button>
+            <div class="faq-answer">Yes. Choose the SQL INSERT output format and specify a table name. The tool generates valid SQL INSERT statements you can run directly in PostgreSQL, MySQL, SQLite, or any SQL database. For larger seeding tasks, generate 1000 records and import with your database client.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I add or remove fields?</button>
+            <div class="faq-answer">Click the + Add Field button to add a new column. Each field has a name and a type (Name, Email, Phone, etc.). Click the trash icon next to any field to remove it. Changes take effect when you click Generate.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the maximum number of records I can generate?</button>
+            <div class="faq-answer">This tool supports 1 to 1000 records per generation. Since all processing happens in your browser, generating 1000 records is nearly instant. For datasets larger than 1000 records, generate multiple batches and combine them.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/fake-data-generator.html">Fake Data Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/gitignore-builder.html">.gitignore Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+
+      // Data pools
+      var FIRST = ['James','Mary','John','Patricia','Robert','Jennifer','Michael','Linda','William','Barbara','David','Susan','Richard','Jessica','Joseph','Sarah','Thomas','Karen','Charles','Lisa','Christopher','Nancy','Daniel','Betty','Matthew','Margaret','Anthony','Sandra','Mark','Ashley','Donald','Dorothy','Steven','Kimberly','Paul','Emily','Andrew','Donna','Joshua','Michelle','Kenneth','Carol','Kevin','Amanda','Brian','Melissa','George','Deborah','Timothy','Stephanie'];
+      var LAST  = ['Smith','Johnson','Williams','Brown','Jones','Garcia','Miller','Davis','Rodriguez','Martinez','Hernandez','Lopez','Gonzalez','Wilson','Anderson','Thomas','Taylor','Moore','Jackson','Martin','Lee','Perez','Thompson','White','Harris','Sanchez','Clark','Ramirez','Lewis','Robinson','Walker','Young','Allen','King','Wright','Scott','Torres','Nguyen','Hill','Flores','Green','Adams','Nelson','Baker','Hall','Rivera','Campbell','Mitchell','Carter','Roberts'];
+      var CITIES = ['New York','Los Angeles','Chicago','Houston','Phoenix','Philadelphia','San Antonio','San Diego','Dallas','San Jose','Austin','Jacksonville','Fort Worth','Columbus','Charlotte','Indianapolis','San Francisco','Seattle','Denver','Nashville','Boston','El Paso','Portland','Las Vegas','Memphis','Louisville','Baltimore','Milwaukee','Albuquerque','Tucson','Fresno','Sacramento','Kansas City','Atlanta','Omaha','Raleigh','Miami','Minneapolis','Tampa','New Orleans'];
+      var COUNTRIES = ['United States','United Kingdom','Canada','Australia','Germany','France','Japan','India','Brazil','Mexico','Netherlands','Spain','Italy','Sweden','Norway','Denmark','Finland','Switzerland','Belgium','Austria','Singapore','South Korea','New Zealand','Portugal','Ireland'];
+      var COMPANIES = ['Tech','Solutions','Systems','Group','Corp','Industries','Digital','Global','Advanced','Premier','Integrated','Dynamic','Elite','Pro','Peak'];
+      var COMPANY_PRE = ['Apex','Nova','Summit','Pinnacle','Vertex','Nexus','Axiom','Omni','Synergy','Catalyst','Horizon','Quantum','Atlas','Titan','Vector'];
+      var DOMAINS = ['example.com','test.org','sample.net','demo.io','fake.dev','mock.co','placeholder.biz'];
+      var STREETS = ['Oak','Maple','Cedar','Pine','Elm','Washington','Lincoln','Park','Lake','River','Hill','Valley','Ridge','Forest','Sunrise'];
+      var STREET_TYPE = ['Street','Avenue','Boulevard','Drive','Court','Way','Lane','Road','Place'];
+
+      function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+      function rndInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+      function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+      function genUUID() {
+        if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+
+      var nameCache = {};
+      function genName(idx) {
+        if (!nameCache[idx]) nameCache[idx] = { first: rnd(FIRST), last: rnd(LAST) };
+        return nameCache[idx].first + ' ' + nameCache[idx].last;
+      }
+      function genEmail(idx) {
+        var n = nameCache[idx] || { first: rnd(FIRST), last: rnd(LAST) };
+        return (n.first.toLowerCase() + '.' + n.last.toLowerCase() + '@' + rnd(DOMAINS)).replace(/\s/g, '');
+      }
+
+      function genValue(type, rowIdx) {
+        nameCache[rowIdx] = nameCache[rowIdx] || { first: rnd(FIRST), last: rnd(LAST) };
+        switch (type) {
+          case 'name':    return genName(rowIdx);
+          case 'email':   return genEmail(rowIdx);
+          case 'phone':   return '+1-' + rndInt(200,999) + '-' + pad2(rndInt(10,99)) + pad2(rndInt(0,9)) + '-' + pad2(rndInt(10,99)) + pad2(rndInt(0,9));
+          case 'address': return rndInt(100,9999) + ' ' + rnd(STREETS) + ' ' + rnd(STREET_TYPE);
+          case 'city':    return rnd(CITIES);
+          case 'country': return rnd(COUNTRIES);
+          case 'date': {
+            var d = new Date(Date.now() - rndInt(0, 5*365*24*3600*1000));
+            return d.toISOString().slice(0,10);
+          }
+          case 'number':  return rndInt(1, 10000);
+          case 'uuid':    return genUUID();
+          case 'boolean': return Math.random() > 0.5;
+          case 'company': return rnd(COMPANY_PRE) + ' ' + rnd(COMPANIES);
+          case 'url':     return 'https://www.' + rnd(COMPANY_PRE).toLowerCase() + '.com';
+          case 'ip':      return rndInt(1,254)+'.'+rndInt(1,254)+'.'+rndInt(1,254)+'.'+rndInt(1,254);
+          case 'color':   return '#' + Math.floor(Math.random()*0xFFFFFF).toString(16).padStart(6,'0');
+          default:        return '';
+        }
+      }
+
+      var currentFormat = 'json';
+      var DEFAULT_FIELDS = [
+        { name:'name', type:'name' },
+        { name:'email', type:'email' },
+        { name:'phone', type:'phone' },
+        { name:'city', type:'city' }
+      ];
+      var fields = JSON.parse(JSON.stringify(DEFAULT_FIELDS));
+
+      var FIELD_TYPES = [
+        ['name','Name'],['email','Email'],['phone','Phone'],['address','Address'],
+        ['city','City'],['country','Country'],['date','Date'],['number','Number'],
+        ['uuid','UUID'],['boolean','Boolean'],['company','Company'],['url','URL'],
+        ['ip','IP Address'],['color','Color']
+      ];
+
+      function renderFields() {
+        var container = document.getElementById('fieldsList');
+        container.innerHTML = '';
+        fields.forEach(function (f, i) {
+          var row = document.createElement('div');
+          row.className = 'field-row';
+          var nameInput = document.createElement('input');
+          nameInput.type = 'text';
+          nameInput.value = f.name;
+          nameInput.placeholder = 'field_name';
+          nameInput.addEventListener('input', function () { fields[i].name = this.value; });
+
+          var typeSelect = document.createElement('select');
+          FIELD_TYPES.forEach(function (t) {
+            var opt = document.createElement('option');
+            opt.value = t[0]; opt.textContent = t[1];
+            if (t[0] === f.type) opt.selected = true;
+            typeSelect.appendChild(opt);
+          });
+          typeSelect.addEventListener('change', function () { fields[i].type = this.value; });
+
+          var removeBtn = document.createElement('button');
+          removeBtn.className = 'btn-icon';
+          removeBtn.title = 'Remove field';
+          removeBtn.textContent = '\u2715';
+          removeBtn.addEventListener('click', function () {
+            fields.splice(i, 1);
+            renderFields();
+          });
+
+          row.appendChild(nameInput);
+          row.appendChild(typeSelect);
+          row.appendChild(removeBtn);
+          container.appendChild(row);
+        });
+      }
+
+      function generate() {
+        nameCache = {};
+        var count = Math.min(1000, Math.max(1, parseInt(document.getElementById('recordCount').value, 10) || 5));
+        var fmt = currentFormat;
+        var tableName = document.getElementById('tableName').value.trim() || 'users';
+        var rows = [];
+        for (var i = 0; i < count; i++) {
+          var obj = {};
+          fields.forEach(function (f) {
+            obj[f.name || 'field'] = genValue(f.type, i);
+          });
+          rows.push(obj);
+        }
+
+        var output = '';
+        var ext = 'json';
+
+        if (fmt === 'json') {
+          output = JSON.stringify(rows, null, 2);
+          ext = 'json';
+        } else if (fmt === 'csv') {
+          var headers = fields.map(function (f) { return f.name; });
+          var csvLines = [headers.join(',')];
+          rows.forEach(function (r) {
+            csvLines.push(headers.map(function (h) {
+              var v = String(r[h] === undefined ? '' : r[h]);
+              return v.includes(',') || v.includes('"') || v.includes('\n') ? '"' + v.replace(/"/g, '""') + '"' : v;
+            }).join(','));
+          });
+          output = csvLines.join('\n');
+          ext = 'csv';
+        } else if (fmt === 'sql') {
+          var cols = fields.map(function (f) { return f.name; });
+          var sqlLines = rows.map(function (r) {
+            var vals = cols.map(function (c) {
+              var v = r[c];
+              if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE';
+              if (typeof v === 'number') return v;
+              return "'" + String(v).replace(/'/g, "''") + "'";
+            });
+            return 'INSERT INTO ' + tableName + ' (' + cols.join(', ') + ') VALUES (' + vals.join(', ') + ');';
+          });
+          output = sqlLines.join('\n');
+          ext = 'sql';
+        }
+
+        document.getElementById('dataOutput').textContent = output;
+        var statusBar = document.getElementById('statusBar');
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = count + ' records generated in ' + fmt.toUpperCase() + ' format (' + DT.formatBytes(new Blob([output]).size) + ').';
+
+        document.getElementById('downloadBtn').onclick = function () {
+          DT.downloadText(output, 'data.' + ext, fmt === 'json' ? 'application/json' : 'text/plain');
+        };
+
+        DT.trackTool('fake-data-generator');
+      }
+
+      // Format chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentFormat = chip.getAttribute('data-fmt');
+          document.getElementById('tableNameLabel').style.display = currentFormat === 'sql' ? '' : 'none';
+        });
+      });
+
+      document.getElementById('generateBtn').addEventListener('click', generate);
+
+      document.getElementById('addFieldBtn').addEventListener('click', function () {
+        fields.push({ name: 'field' + (fields.length + 1), type: 'name' });
+        renderFields();
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', function () {
+        fields = JSON.parse(JSON.stringify(DEFAULT_FIELDS));
+        renderFields();
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = document.getElementById('dataOutput').textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      renderFields();
+      generate();
+    })();
+  </script>
+</body>
+</html>

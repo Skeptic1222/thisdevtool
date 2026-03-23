@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JSON to TypeScript — Free Online Converter | DevToolbox</title>
+  <meta name="description" content="Convert JSON to TypeScript interfaces instantly. Generate TypeScript types, type aliases, and readonly interfaces from any JSON. Free, client-side, no signup.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/json-to-typescript.html">
+  <meta property="og:title" content="JSON to TypeScript — DevToolbox">
+  <meta property="og:description" content="Free online JSON to TypeScript converter. Generates interfaces, type aliases, and readonly types from JSON. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/json-to-typescript.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON to TypeScript Converter",
+    "url": "https://thisdevtool.com/tools/json-to-typescript.html",
+    "description": "Convert JSON to TypeScript interfaces, type aliases, and readonly types instantly. Free, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a TypeScript interface?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A TypeScript interface is a structural contract that defines the shape of an object. It specifies which properties an object must have and their types. Interfaces are erased at compile time and have no runtime representation, making them purely a type-checking mechanism."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between interface and type alias in TypeScript?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Interfaces can be extended and merged (declaration merging), while type aliases support union types, intersection types, and mapped types. For representing JSON object shapes, both work equally well. The community convention is to use interfaces for object shapes and type aliases for unions or computed types."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my JSON sent to a server when converting?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This converter runs entirely in your browser using JavaScript. Your JSON never leaves your machine. There is no server processing, no logging, and no data collection of any kind."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the tool handle null values in JSON?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JSON null values are mapped to the TypeScript type 'null'. If you want to allow null on a property, the generated type will show 'string | null' or similar union types. The Readonly mode wraps all properties with the readonly modifier to prevent mutation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I convert nested JSON objects to TypeScript?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The converter recursively processes nested JSON objects and generates separate interfaces for each nested type. For example, if your JSON has an 'address' object inside a 'user' object, you will get both an Address interface and a User interface with the address property typed as Address."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-to-go.html">JSON to Go</a>
+        <a href="/tools/json-to-python.html">JSON to Python</a>
+        <a href="/tools/json-to-csharp.html">JSON to C#</a>
+        <a href="/tools/json-to-java.html">JSON to Java</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>JSON to TypeScript Converter</h1>
+          <p class="tool-subtitle">Paste JSON to generate TypeScript interfaces instantly. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="interface">Interface</button>
+            <button class="option-chip" data-mode="type">Type Alias</button>
+            <button class="option-chip" data-mode="readonly">Readonly</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>JSON Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="jsonInput" rows="16" placeholder='Paste your JSON here...
+
+Example:
+{
+  "name": "John",
+  "age": 30,
+  "active": true
+}' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>TypeScript Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="tsOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste JSON above to generate TypeScript interfaces.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Convert JSON to TypeScript</h2>
+          <ol>
+            <li><strong>Paste your JSON</strong> into the input area on the left.</li>
+            <li><strong>Choose a mode</strong> — Interface (default), Type Alias, or Readonly.</li>
+            <li><strong>Copy or download</strong> the generated TypeScript using the buttons above the output.</li>
+            <li><strong>Paste into your project</strong> — the generated types are ready to use immediately.</li>
+          </ol>
+
+          <h2>What This Tool Generates</h2>
+          <p>This converter parses your JSON and generates fully typed TypeScript definitions. It recursively handles nested objects, arrays, primitive values (string, number, boolean), and null values. Each nested object gets its own named interface so your types stay clean, composable, and reusable across your codebase.</p>
+
+          <h3>Output Modes Explained</h3>
+          <ul>
+            <li><strong>Interface</strong> — Generates <code>interface</code> declarations. Best for object shapes that may be extended. Interfaces support declaration merging, which is useful when working with third-party type definitions.</li>
+            <li><strong>Type Alias</strong> — Generates <code>type</code> declarations using <code>= &#123; ... &#125;</code> syntax. Functionally identical to interfaces for plain objects, but supports union types and mapped types if you need them later.</li>
+            <li><strong>Readonly</strong> — Generates interfaces with the <code>readonly</code> modifier on every property. Useful when modelling API responses that should not be mutated after receipt — TypeScript will produce a compile error if you try to assign to a readonly property.</li>
+          </ul>
+
+          <h3>Type Mapping Reference</h3>
+          <ul>
+            <li>JSON string → <code>string</code></li>
+            <li>JSON number → <code>number</code></li>
+            <li>JSON boolean → <code>boolean</code></li>
+            <li>JSON null → <code>null</code></li>
+            <li>JSON array of strings → <code>string[]</code></li>
+            <li>JSON array of objects → <code>ChildType[]</code> (separate interface generated)</li>
+            <li>JSON nested object → named interface (PascalCase)</li>
+          </ul>
+
+          <h3>Why Use TypeScript Interfaces for JSON?</h3>
+          <p>When you fetch data from a REST API or read a configuration file, you receive plain JavaScript objects with no type information. Without TypeScript interfaces, you are working blindly — autocomplete does not work, typos in property names go undetected, and refactoring is risky. By converting your JSON schema to TypeScript interfaces, you get full IntelliSense in VS Code, compile-time type checking, and safe refactoring across your entire codebase.</p>
+
+          <h3>Working with API Responses</h3>
+          <p>The most common workflow is to copy an example API response from your browser's Network tab, paste it into this converter, and paste the output into a <code>types.ts</code> file in your project. Then cast your fetch response: <code>const user = await response.json() as User</code>. For even stronger guarantees, pair TypeScript types with a runtime validation library like Zod, which can generate TypeScript types from schemas that are also validated at runtime.</p>
+
+          <h3>Naming Conventions</h3>
+          <p>The converter uses PascalCase for all generated type names (e.g., the root object becomes <code>RootObject</code>, a nested <code>address</code> object becomes <code>Address</code>). Array item types are named after the array property with "Item" appended when the element type is an object (e.g., <code>hobbies</code> containing objects becomes <code>HobbiesItem[]</code>). These names match TypeScript community conventions and are safe to use in any TypeScript project.</p>
+
+          <h3>JSON to TypeScript vs. Other Converters</h3>
+          <p>Several tools exist for generating TypeScript types from JSON, including <code>json-to-ts</code> npm package, <code>quicktype</code>, and VS Code extensions. This browser-based tool requires no installation, runs instantly, and works offline. For very large JSON schemas or advanced features like discriminated unions and generics, <code>quicktype</code> is a more powerful alternative. For everyday API type generation, this tool is the fastest path from JSON to TypeScript. Once you have your types, check out our <a href="/tools/json-formatter.html">JSON Formatter</a> to clean up your input data.</p>
+
+          <h3>Best Practices for Generated Types</h3>
+          <p>Generated types are a starting point, not a finished product. Review the output and consider: (1) replacing <code>number</code> with more specific types like <code>int</code> from a utility library when you need integer-only values; (2) adding JSDoc comments to document what each field represents; (3) using string literal union types (e.g., <code>'active' | 'inactive'</code>) instead of plain <code>string</code> for enum-like fields; (4) marking optional fields with <code>?</code> if the API sometimes omits them. The generated code follows TypeScript strict mode conventions and is compatible with TypeScript 4.0 and above.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a TypeScript interface?</button>
+            <div class="faq-answer">A TypeScript interface is a structural contract that defines the shape of an object. It specifies which properties an object must have and their types. Interfaces are erased at compile time and have no runtime representation, making them purely a type-checking mechanism.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between interface and type alias in TypeScript?</button>
+            <div class="faq-answer">Interfaces can be extended and merged (declaration merging), while type aliases support union types, intersection types, and mapped types. For representing JSON object shapes, both work equally well. The community convention is to use interfaces for object shapes and type aliases for unions or computed types.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my JSON sent to a server when converting?</button>
+            <div class="faq-answer">No. This converter runs entirely in your browser using JavaScript. Your JSON never leaves your machine. There is no server processing, no logging, and no data collection of any kind.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the tool handle null values in JSON?</button>
+            <div class="faq-answer">JSON null values are mapped to the TypeScript type 'null'. If you want to allow null on a property, the generated type will show 'string | null' or similar union types. The Readonly mode wraps all properties with the readonly modifier to prevent mutation.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I convert nested JSON objects to TypeScript?</button>
+            <div class="faq-answer">Yes. The converter recursively processes nested JSON objects and generates separate interfaces for each nested type. For example, if your JSON has an 'address' object inside a 'user' object, you will get both an Address interface and a User interface with the address property typed as Address.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>JSON Converters</h4>
+        <a href="/tools/json-to-typescript.html">JSON to TypeScript</a>
+        <a href="/tools/json-to-go.html">JSON to Go</a>
+        <a href="/tools/json-to-python.html">JSON to Python</a>
+        <a href="/tools/json-to-csharp.html">JSON to C#</a>
+        <a href="/tools/json-to-java.html">JSON to Java</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('jsonInput');
+      var output = document.getElementById('tsOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'interface';
+
+      // Collected type definitions (ordered, root last)
+      var typeDefs = [];
+
+      function toPascalCase(str) {
+        if (!str) return 'Root';
+        return str.charAt(0).toUpperCase() + str.slice(1).replace(/[-_\s](.)/g, function (_, c) { return c.toUpperCase(); });
+      }
+
+      function inferType(value, key, context) {
+        if (value === null) return 'null';
+        var t = typeof value;
+        if (t === 'string') return 'string';
+        if (t === 'number') return 'number';
+        if (t === 'boolean') return 'boolean';
+        if (Array.isArray(value)) {
+          if (value.length === 0) return 'unknown[]';
+          var first = value[0];
+          if (first === null) return 'null[]';
+          var ft = typeof first;
+          if (ft === 'string') return 'string[]';
+          if (ft === 'number') return 'number[]';
+          if (ft === 'boolean') return 'boolean[]';
+          if (typeof first === 'object' && !Array.isArray(first)) {
+            var itemName = toPascalCase(key) + 'Item';
+            buildType(first, itemName);
+            return itemName + '[]';
+          }
+          return 'unknown[]';
+        }
+        if (t === 'object') {
+          var childName = toPascalCase(key);
+          buildType(value, childName);
+          return childName;
+        }
+        return 'unknown';
+      }
+
+      function buildType(obj, name) {
+        // Avoid duplicate type names
+        for (var i = 0; i < typeDefs.length; i++) {
+          if (typeDefs[i].name === name) return;
+        }
+        var lines = [];
+        var ro = currentMode === 'readonly' ? 'readonly ' : '';
+        var isType = currentMode === 'type';
+
+        var keys = Object.keys(obj);
+        for (var k = 0; k < keys.length; k++) {
+          var key = keys[k];
+          var val = obj[key];
+          var ts = inferType(val, key, name);
+          lines.push('  ' + ro + key + ': ' + ts + ';');
+        }
+
+        var header = isType
+          ? 'type ' + name + ' = {'
+          : 'interface ' + name + ' {';
+        var footer = isType ? '};' : '}';
+
+        typeDefs.push({ name: name, text: header + '\n' + lines.join('\n') + '\n' + footer });
+      }
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste JSON above to generate TypeScript interfaces.';
+          return;
+        }
+
+        try {
+          var parsed = JSON.parse(raw);
+          typeDefs = [];
+
+          var rootObj = Array.isArray(parsed) ? (parsed[0] || {}) : parsed;
+          if (typeof rootObj !== 'object' || rootObj === null) {
+            throw new Error('Root value must be a JSON object or array of objects');
+          }
+
+          buildType(rootObj, 'RootObject');
+
+          // Output child types first, root last
+          var result = typeDefs.slice().reverse().map(function (d) { return d.text; }).join('\n\n');
+          output.textContent = result;
+
+          var count = typeDefs.length;
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Generated ' + count + ' TypeScript ' + (currentMode === 'type' ? 'type' : 'interface') + (count !== 1 ? 's' : '') + '.';
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+        }
+
+        DT.trackTool('json-to-typescript');
+      }
+
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      // Mode chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.downloadText(text, 'output.ts', 'text/plain');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = JSON.stringify({
+          "name": "John",
+          "age": 30,
+          "address": { "city": "NYC", "zip": "10001" },
+          "hobbies": ["reading"],
+          "active": true,
+          "score": 9.5,
+          "nickname": null
+        }, null, 2);
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

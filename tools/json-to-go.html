@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JSON to Go Struct — Free Online Converter | DevToolbox</title>
+  <meta name="description" content="Convert JSON to Go structs with json tags instantly. Generate Go struct definitions with omitempty and inline tags from any JSON. Free, client-side, no signup.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/json-to-go.html">
+  <meta property="og:title" content="JSON to Go Struct — DevToolbox">
+  <meta property="og:description" content="Free online JSON to Go struct converter. Generates Go structs with json tags, omitempty, and proper type mapping. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/json-to-go.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON to Go Struct Converter",
+    "url": "https://thisdevtool.com/tools/json-to-go.html",
+    "description": "Convert JSON to Go structs with json tags instantly. Free, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are Go struct json tags?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Go struct json tags are string annotations attached to struct fields using backtick syntax. They tell the encoding/json package how to marshal and unmarshal the field. For example, `json:\"user_name\"` maps the Go field UserName to the JSON key 'user_name'. Without tags, Go uses the exact field name, which is PascalCase and differs from the snake_case or camelCase common in JSON APIs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does omitempty do in Go json tags?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The omitempty option in a json tag tells the encoder to omit the field from the JSON output if its value is the zero value for its type (empty string, 0, false, nil pointer, empty slice/map). This produces cleaner JSON payloads by excluding fields that have no meaningful value, which is useful for optional API request fields."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my JSON sent to a server when using this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This converter runs entirely in your browser. Your JSON never leaves your device. There is no backend server, no logging, and no data storage."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the tool map JSON types to Go types?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JSON strings map to Go string, JSON booleans to bool, JSON numbers to float64 (Go's default for JSON numbers), JSON null to interface{}, JSON arrays to slices ([]string, []float64, etc.), and JSON objects to nested struct types. If a number looks like an integer, the tool generates int64 instead of float64."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use the generated Go struct with encoding/json directly?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The generated structs are fully compatible with Go's standard library encoding/json package. You can use json.Unmarshal to decode JSON into the struct or json.Marshal to encode the struct back to JSON. The json tags ensure correct field name mapping between Go's PascalCase and JSON's camelCase or snake_case conventions."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-to-typescript.html">JSON to TS</a>
+        <a href="/tools/json-to-python.html">JSON to Python</a>
+        <a href="/tools/json-to-csharp.html">JSON to C#</a>
+        <a href="/tools/json-to-java.html">JSON to Java</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>JSON to Go Struct Converter</h1>
+          <p class="tool-subtitle">Paste JSON to generate Go struct definitions with json tags. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="struct">Struct</button>
+            <button class="option-chip" data-mode="inline">Inline Tags</button>
+            <button class="option-chip" data-mode="omitempty">Omitempty</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>JSON Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="jsonInput" rows="16" placeholder='Paste your JSON here...
+
+Example:
+{
+  "name": "John",
+  "age": 30,
+  "active": true
+}' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Go Struct Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="goOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste JSON above to generate Go structs.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Convert JSON to Go Structs</h2>
+          <ol>
+            <li><strong>Paste your JSON</strong> into the input area on the left.</li>
+            <li><strong>Choose a mode</strong> — Struct (basic json tags), Inline Tags (compact), or Omitempty (add omitempty to all fields).</li>
+            <li><strong>Copy or download</strong> the generated Go code using the buttons above the output.</li>
+            <li><strong>Paste into your Go project</strong> and import <code>encoding/json</code> to use immediately.</li>
+          </ol>
+
+          <h2>Understanding Go Struct Tags</h2>
+          <p>Go uses struct field tags to control how the <code>encoding/json</code> package serialises and deserialises data. Without tags, the encoder uses the exact Go field name (PascalCase), which rarely matches JSON APIs that use camelCase or snake_case. This converter automatically generates the correct json tag for every field based on the original JSON key name, ensuring your Go code works with any JSON API out of the box.</p>
+
+          <h3>Output Modes Explained</h3>
+          <ul>
+            <li><strong>Struct</strong> — Standard Go struct with <code>`json:"field_name"`</code> tags. The default mode, compatible with all standard Go JSON workflows.</li>
+            <li><strong>Inline Tags</strong> — Same as Struct but places all fields on a single line with the tag on the same line. Produces more compact output useful for reviewing many fields at once.</li>
+            <li><strong>Omitempty</strong> — Adds <code>,omitempty</code> to every json tag. When marshalling back to JSON, fields with zero values (empty string, 0, false, nil) are omitted from the output. Use this for optional API request payloads.</li>
+          </ul>
+
+          <h3>Go Type Mapping from JSON</h3>
+          <ul>
+            <li>JSON string → <code>string</code></li>
+            <li>JSON integer number → <code>int64</code></li>
+            <li>JSON floating-point number → <code>float64</code></li>
+            <li>JSON boolean → <code>bool</code></li>
+            <li>JSON null → <code>interface&#123;&#125;</code></li>
+            <li>JSON array of strings → <code>[]string</code></li>
+            <li>JSON array of objects → <code>[]ChildStruct</code></li>
+            <li>JSON nested object → separate named struct</li>
+          </ul>
+
+          <h3>Using Generated Structs with encoding/json</h3>
+          <p>Once you paste the generated struct into your Go file, you can use it immediately with the standard library. To decode a JSON API response: <code>var result RootObject; json.Unmarshal(body, &amp;result)</code>. To encode a struct to JSON for an HTTP request: <code>data, _ := json.Marshal(myStruct)</code>. The json tags guarantee that Go field names like <code>UserName</code> correctly map to JSON keys like <code>user_name</code> or <code>userName</code>.</p>
+
+          <h3>Naming Conventions in Go</h3>
+          <p>Go requires exported (public) struct fields to start with an uppercase letter. This converter always generates PascalCase field names to ensure all fields are exported and accessible from other packages. The original JSON key is preserved verbatim in the json tag so round-trip serialisation is lossless. For example, the JSON key <code>first_name</code> becomes the Go field <code>FirstName</code> with tag <code>`json:"first_name"`</code>.</p>
+
+          <h3>Handling Nested and Array Types</h3>
+          <p>Nested JSON objects become separate Go struct definitions. The converter generates child structs before the parent so the file compiles immediately without reordering. Arrays of primitive values become Go slices (<code>[]string</code>, <code>[]float64</code>). Arrays of objects become slices of a named struct type, with the struct automatically generated and included in the output. Empty arrays default to <code>[]interface&#123;&#125;</code> since the element type cannot be inferred.</p>
+
+          <h3>Go JSON vs. Other Languages</h3>
+          <p>Go's approach to JSON differs from dynamic languages like Python or JavaScript. In Go, you must explicitly define the structure of your data as a struct before you can decode JSON into it. This strict typing catches mismatches between your expected schema and actual API responses at compile time or during testing. It also enables IDE autocompletion and safe refactoring. For comparison, see our <a href="/tools/json-to-typescript.html">JSON to TypeScript</a> converter for a similar statically typed workflow, or <a href="/tools/json-to-python.html">JSON to Python Dataclass</a> for Python's equivalent.</p>
+
+          <h3>Working with the Go Ecosystem</h3>
+          <p>The generated structs work with all major Go JSON libraries beyond the standard library: <code>github.com/json-iterator/go</code> for faster encoding, <code>github.com/go-json-experiment/json</code> (the experimental v2 API), and <code>github.com/bytedance/sonic</code>. All of these respect the standard <code>json:</code> struct tag format. If you use GORM for database access, you can combine json tags with gorm tags on the same field: <code>`json:"name" gorm:"column:name"`</code>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What are Go struct json tags?</button>
+            <div class="faq-answer">Go struct json tags are string annotations attached to struct fields using backtick syntax. They tell the encoding/json package how to marshal and unmarshal the field. For example, `json:"user_name"` maps the Go field UserName to the JSON key 'user_name'. Without tags, Go uses the exact field name, which is PascalCase and differs from the snake_case or camelCase common in JSON APIs.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does omitempty do in Go json tags?</button>
+            <div class="faq-answer">The omitempty option in a json tag tells the encoder to omit the field from the JSON output if its value is the zero value for its type (empty string, 0, false, nil pointer, empty slice/map). This produces cleaner JSON payloads by excluding fields that have no meaningful value, which is useful for optional API request fields.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my JSON sent to a server when using this tool?</button>
+            <div class="faq-answer">No. This converter runs entirely in your browser. Your JSON never leaves your device. There is no backend server, no logging, and no data storage.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the tool map JSON types to Go types?</button>
+            <div class="faq-answer">JSON strings map to Go string, JSON booleans to bool, JSON numbers to float64 (Go's default for JSON numbers), JSON null to interface{}, JSON arrays to slices ([]string, []float64, etc.), and JSON objects to nested struct types. If a number looks like an integer, the tool generates int64 instead of float64.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use the generated Go struct with encoding/json directly?</button>
+            <div class="faq-answer">Yes. The generated structs are fully compatible with Go's standard library encoding/json package. You can use json.Unmarshal to decode JSON into the struct or json.Marshal to encode the struct back to JSON. The json tags ensure correct field name mapping between Go's PascalCase and JSON's camelCase or snake_case conventions.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>JSON Converters</h4>
+        <a href="/tools/json-to-typescript.html">JSON to TypeScript</a>
+        <a href="/tools/json-to-go.html">JSON to Go</a>
+        <a href="/tools/json-to-python.html">JSON to Python</a>
+        <a href="/tools/json-to-csharp.html">JSON to C#</a>
+        <a href="/tools/json-to-java.html">JSON to Java</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('jsonInput');
+      var output = document.getElementById('goOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'struct';
+
+      var structDefs = [];
+
+      function toPascalCase(str) {
+        if (!str) return 'Field';
+        return str.replace(/[-_\s]+(.)/g, function (_, c) { return c.toUpperCase(); })
+          .replace(/^(.)/, function (_, c) { return c.toUpperCase(); });
+      }
+
+      function isInteger(n) {
+        return Number.isFinite(n) && Math.floor(n) === n;
+      }
+
+      function inferGoType(value, key) {
+        if (value === null) return 'interface{}';
+        var t = typeof value;
+        if (t === 'string') return 'string';
+        if (t === 'boolean') return 'bool';
+        if (t === 'number') return isInteger(value) ? 'int64' : 'float64';
+        if (Array.isArray(value)) {
+          if (value.length === 0) return '[]interface{}';
+          var first = value[0];
+          if (first === null) return '[]interface{}';
+          var ft = typeof first;
+          if (ft === 'string') return '[]string';
+          if (ft === 'number') return isInteger(first) ? '[]int64' : '[]float64';
+          if (ft === 'boolean') return '[]bool';
+          if (typeof first === 'object' && !Array.isArray(first)) {
+            var itemName = toPascalCase(key) + 'Item';
+            buildStruct(first, itemName);
+            return '[]' + itemName;
+          }
+          return '[]interface{}';
+        }
+        if (t === 'object') {
+          var childName = toPascalCase(key);
+          buildStruct(value, childName);
+          return childName;
+        }
+        return 'interface{}';
+      }
+
+      function buildStruct(obj, name) {
+        for (var i = 0; i < structDefs.length; i++) {
+          if (structDefs[i].name === name) return;
+        }
+        var lines = [];
+        var keys = Object.keys(obj);
+        var oe = currentMode === 'omitempty';
+        for (var k = 0; k < keys.length; k++) {
+          var key = keys[k];
+          var goName = toPascalCase(key);
+          var goType = inferGoType(obj[key], key);
+          var tag = oe
+            ? '`json:"' + key + ',omitempty"`'
+            : '`json:"' + key + '"`';
+          lines.push('\t' + goName + ' ' + goType + ' ' + tag);
+        }
+        structDefs.push({
+          name: name,
+          text: 'type ' + name + ' struct {\n' + lines.join('\n') + '\n}'
+        });
+      }
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste JSON above to generate Go structs.';
+          return;
+        }
+
+        try {
+          var parsed = JSON.parse(raw);
+          structDefs = [];
+
+          var rootObj = Array.isArray(parsed) ? (parsed[0] || {}) : parsed;
+          if (typeof rootObj !== 'object' || rootObj === null) {
+            throw new Error('Root value must be a JSON object or array of objects');
+          }
+
+          buildStruct(rootObj, 'RootObject');
+
+          var result = structDefs.slice().reverse().map(function (d) { return d.text; }).join('\n\n');
+          output.textContent = result;
+
+          var count = structDefs.length;
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Generated ' + count + ' Go struct' + (count !== 1 ? 's' : '') + '.';
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+        }
+
+        DT.trackTool('json-to-go');
+      }
+
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.downloadText(text, 'output.go', 'text/plain');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = JSON.stringify({
+          "name": "John",
+          "age": 30,
+          "address": { "city": "NYC", "zip": "10001" },
+          "hobbies": ["reading"],
+          "active": true,
+          "score": 9.5,
+          "nickname": null
+        }, null, 2);
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

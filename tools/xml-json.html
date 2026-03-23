@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>XML ↔ JSON Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert XML to JSON and JSON to XML online for free. Handles attributes, text content, repeated elements, and nested structures. 100% client-side, no upload required.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/xml-json.html">
+  <meta property="og:title" content="XML to JSON Converter — DevToolbox">
+  <meta property="og:description" content="Free online XML to JSON and JSON to XML converter. Handles attributes as @attr, text as #text, arrays, and nested structures. Instant, client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/xml-json.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "XML to JSON Converter",
+    "url": "https://thisdevtool.com/tools/xml-json.html",
+    "description": "Convert XML to JSON and JSON to XML online. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does the XML to JSON converter handle attributes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "XML element attributes are converted to JSON properties prefixed with @ (e.g., an attribute 'id' becomes '@id'). This convention preserves attribute data while making it clear in the JSON output which properties came from XML attributes versus child elements."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How are repeated XML elements handled?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When the same element name appears multiple times within a parent element, they are automatically grouped into a JSON array. For example, multiple <item> elements under <items> will be converted to an items array in the JSON output."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This XML/JSON converter runs 100% in your browser using the built-in DOMParser API for XML parsing. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does #text mean in the JSON output?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "#text represents the text content of an XML element that also has attributes or child elements. For example, <price currency='USD'>9.99</price> becomes { '@currency': 'USD', '#text': '9.99' }. If an element has only text and no attributes or children, it is represented as a plain string value."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I convert JSON back to XML?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Switch to 'JSON to XML' mode and paste your JSON. The converter generates well-formed XML with proper indentation. Object keys become element names, arrays become repeated elements, and properties prefixed with @ are converted back to XML attributes."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/yaml-json.html">YAML/JSON</a>
+        <a href="/tools/toml-json.html">TOML/JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>XML &harr; JSON Converter</h1>
+          <p class="tool-subtitle">Convert XML to JSON or JSON to XML instantly. Handles attributes, text content, and repeated elements. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="xml-to-json">XML &rarr; JSON</button>
+            <button class="option-chip" data-mode="json-to-xml">JSON &rarr; XML</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">XML Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="mainInput" rows="16" placeholder='Paste your XML here...' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">JSON Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="mainOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste XML or JSON above to convert.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the XML to JSON Converter</h2>
+          <ol>
+            <li><strong>Choose a direction</strong> — "XML to JSON" or "JSON to XML" using the chips above the input.</li>
+            <li><strong>Paste your data</strong> into the input area on the left.</li>
+            <li><strong>View the converted output</strong> on the right, updating as you type.</li>
+            <li><strong>Copy or download</strong> the result as a <code>.json</code> or <code>.xml</code> file.</li>
+          </ol>
+
+          <h2>Conversion Conventions</h2>
+          <p>Converting between XML and JSON requires a mapping convention because the two formats have fundamentally different concepts. This tool uses the widely adopted BadgerFish-inspired convention:</p>
+          <ul>
+            <li><strong>XML attributes</strong> become JSON properties prefixed with <code>@</code> (e.g., <code>&lt;el id="1"&gt;</code> becomes <code>{ "@id": "1" }</code>)</li>
+            <li><strong>Mixed content</strong> (element with both attributes and text) uses <code>#text</code> for the text portion</li>
+            <li><strong>Repeated sibling elements</strong> are grouped into a JSON array</li>
+            <li><strong>Text-only elements</strong> with no attributes become plain string values</li>
+            <li><strong>Nested elements</strong> become nested JSON objects</li>
+          </ul>
+
+          <h3>XML vs. JSON: Key Differences</h3>
+          <p>XML and JSON serve similar purposes but have different strengths. XML supports attributes (metadata about elements), mixed content (text and child elements in the same element), namespaces (XML Schema, SOAP), comments, processing instructions, and CDATA sections. JSON is simpler, lighter, and maps directly to programming language data structures. Most modern REST APIs use JSON, while SOAP APIs, RSS/Atom feeds, SVG graphics, Microsoft Office files (DOCX, XLSX), and many enterprise system integrations use XML. Converting between them is common when migrating legacy systems or working with multi-format APIs.</p>
+
+          <h3>Common Use Cases</h3>
+          <ul>
+            <li><strong>SOAP to REST migration</strong> — Convert SOAP XML responses to JSON for use with modern REST clients</li>
+            <li><strong>RSS/Atom feed parsing</strong> — Convert feed XML to JSON for JavaScript processing</li>
+            <li><strong>Configuration files</strong> — Convert Maven/Gradle XML configs to JSON format for tooling</li>
+            <li><strong>API format bridging</strong> — Some APIs accept both formats; convert before submission</li>
+            <li><strong>Data transformation pipelines</strong> — Convert XML exports from legacy systems to JSON for modern databases</li>
+          </ul>
+
+          <h3>Limitations</h3>
+          <p>The conversion cannot perfectly preserve all XML features. XML namespaces, processing instructions (<code>&lt;?xml ... ?&gt;</code>), CDATA sections, and XML comments are not preserved in the JSON output. The root element name is preserved as the top-level key in the JSON object. When converting JSON back to XML, properties with <code>@</code> prefix become attributes, and arrays generate repeated elements with the same tag name. The root element is named "root" by default if the JSON starts with an object.</p>
+
+          <h3>Working with SOAP XML</h3>
+          <p>SOAP XML responses typically include namespace prefixes (e.g., <code>&lt;ns1:Body&gt;</code>) and deeply nested envelope structures. The converter handles namespaced elements by preserving the prefix as part of the property name in JSON. For complex SOAP responses, you may need to navigate through the envelope structure in the resulting JSON. For production SOAP integration, consider using dedicated SOAP client libraries that handle namespace resolution automatically.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the XML to JSON converter handle attributes?</button>
+            <div class="faq-answer">XML element attributes are converted to JSON properties prefixed with @ (e.g., an attribute 'id' becomes '@id'). This convention preserves attribute data while making it clear in the JSON output which properties came from XML attributes versus child elements.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How are repeated XML elements handled?</button>
+            <div class="faq-answer">When the same element name appears multiple times within a parent element, they are automatically grouped into a JSON array. For example, multiple &lt;item&gt; elements under &lt;items&gt; will be converted to an items array in the JSON output.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my data sent to a server?</button>
+            <div class="faq-answer">No. This XML/JSON converter runs 100% in your browser using the built-in DOMParser API for XML parsing. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does #text mean in the JSON output?</button>
+            <div class="faq-answer">#text represents the text content of an XML element that also has attributes or child elements. For example, &lt;price currency="USD"&gt;9.99&lt;/price&gt; becomes { "@currency": "USD", "#text": "9.99" }. If an element has only text and no attributes or children, it is represented as a plain string value.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I convert JSON back to XML?</button>
+            <div class="faq-answer">Yes. Switch to "JSON to XML" mode and paste your JSON. The converter generates well-formed XML with proper indentation. Object keys become element names, arrays become repeated elements, and properties prefixed with @ are converted back to XML attributes.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Converters</h4>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/toml-json.html">TOML &harr; JSON</a>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-schema-generator.html">JSON Schema</a>
+        <a href="/tools/json-path-evaluator.html">JSONPath</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/json-to-rust.html">JSON to Rust</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('mainInput');
+      var output = document.getElementById('mainOutput');
+      var statusBar = document.getElementById('statusBar');
+      var inputLabel = document.getElementById('inputLabel');
+      var outputLabel = document.getElementById('outputLabel');
+      var downloadBtn = document.getElementById('downloadBtn');
+      var currentMode = 'xml-to-json';
+
+      // ---- XML -> JSON ----
+      function xmlNodeToJson(node) {
+        // Text node
+        if (node.nodeType === 3) {
+          var t = node.nodeValue.trim();
+          return t.length > 0 ? t : null;
+        }
+        // Element node
+        if (node.nodeType !== 1) return null;
+
+        var obj = {};
+        var hasAttrs = node.attributes && node.attributes.length > 0;
+        var childElements = [];
+        var textParts = [];
+
+        // Attributes
+        if (hasAttrs) {
+          for (var a = 0; a < node.attributes.length; a++) {
+            var attr = node.attributes[a];
+            obj['@' + attr.name] = attr.value;
+          }
+        }
+
+        // Children
+        for (var c = 0; c < node.childNodes.length; c++) {
+          var child = node.childNodes[c];
+          if (child.nodeType === 3) {
+            var t = child.nodeValue.trim();
+            if (t) textParts.push(t);
+          } else if (child.nodeType === 1) {
+            childElements.push(child);
+          }
+        }
+
+        // Only text, no attributes, no child elements
+        if (!hasAttrs && childElements.length === 0 && textParts.length > 0) {
+          return textParts.join(' ');
+        }
+
+        // Mixed: attributes + text
+        if (textParts.length > 0 && childElements.length === 0) {
+          obj['#text'] = textParts.join(' ');
+        }
+
+        // Child elements — group repeated tags into arrays
+        var tagCounts = {};
+        for (var i = 0; i < childElements.length; i++) {
+          var tag = childElements[i].tagName;
+          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+        }
+
+        for (var i = 0; i < childElements.length; i++) {
+          var child = childElements[i];
+          var tag = child.tagName;
+          var childJson = xmlNodeToJson(child);
+          if (tagCounts[tag] > 1) {
+            if (!Array.isArray(obj[tag])) obj[tag] = [];
+            obj[tag].push(childJson);
+          } else {
+            obj[tag] = childJson;
+          }
+        }
+
+        // If obj is empty, return null
+        if (Object.keys(obj).length === 0) return null;
+        return obj;
+      }
+
+      function xmlToJson(xmlStr) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(xmlStr, 'text/xml');
+        var errorNode = doc.querySelector('parsererror');
+        if (errorNode) throw new Error(errorNode.textContent.split('\n')[0]);
+        var root = doc.documentElement;
+        var result = {};
+        result[root.tagName] = xmlNodeToJson(root);
+        return result;
+      }
+
+      // ---- JSON -> XML ----
+      function jsonToXmlNode(key, val, indent) {
+        var pad = indent;
+        var lines = [];
+
+        if (Array.isArray(val)) {
+          for (var i = 0; i < val.length; i++) {
+            lines.push.apply(lines, jsonToXmlNode(key, val[i], indent));
+          }
+          return lines;
+        }
+
+        if (val === null || val === undefined) {
+          lines.push(pad + '<' + key + '/>');
+          return lines;
+        }
+
+        if (typeof val !== 'object') {
+          var safeVal = String(val).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+          lines.push(pad + '<' + key + '>' + safeVal + '</' + key + '>');
+          return lines;
+        }
+
+        // Object
+        var attrs = [];
+        var children = [];
+        var textContent = null;
+        var objKeys = Object.keys(val);
+
+        for (var k = 0; k < objKeys.length; k++) {
+          var prop = objKeys[k];
+          if (prop.startsWith('@')) {
+            var attrVal = String(val[prop]).replace(/"/g, '&quot;');
+            attrs.push(prop.slice(1) + '="' + attrVal + '"');
+          } else if (prop === '#text') {
+            textContent = val[prop];
+          } else {
+            children.push({ key: prop, val: val[prop] });
+          }
+        }
+
+        var openTag = '<' + key + (attrs.length > 0 ? ' ' + attrs.join(' ') : '') + '>';
+
+        if (children.length === 0 && textContent === null) {
+          lines.push(pad + '<' + key + (attrs.length > 0 ? ' ' + attrs.join(' ') : '') + '/>');
+          return lines;
+        }
+
+        if (children.length === 0 && textContent !== null) {
+          var safeText = String(textContent).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          lines.push(pad + openTag + safeText + '</' + key + '>');
+          return lines;
+        }
+
+        lines.push(pad + openTag);
+        if (textContent !== null) {
+          var safeText = String(textContent).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          lines.push(pad + '  ' + safeText);
+        }
+        for (var c = 0; c < children.length; c++) {
+          var childLines = jsonToXmlNode(children[c].key, children[c].val, indent + '  ');
+          lines.push.apply(lines, childLines);
+        }
+        lines.push(pad + '</' + key + '>');
+        return lines;
+      }
+
+      function jsonToXml(jsonStr) {
+        var parsed = JSON.parse(jsonStr);
+        var lines = ['<?xml version="1.0" encoding="UTF-8"?>'];
+        var keys = Object.keys(parsed);
+        if (keys.length === 1) {
+          var rootLines = jsonToXmlNode(keys[0], parsed[keys[0]], '');
+          lines.push.apply(lines, rootLines);
+        } else {
+          // Wrap in root
+          lines.push('<root>');
+          for (var k = 0; k < keys.length; k++) {
+            var childLines = jsonToXmlNode(keys[k], parsed[keys[k]], '  ');
+            lines.push.apply(lines, childLines);
+          }
+          lines.push('</root>');
+        }
+        return lines.join('\n');
+      }
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste XML or JSON above to convert.';
+          return;
+        }
+
+        try {
+          if (currentMode === 'xml-to-json') {
+            var result = xmlToJson(raw);
+            output.textContent = JSON.stringify(result, null, 2);
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Converted XML to JSON successfully.';
+          } else {
+            var result = jsonToXml(raw);
+            output.textContent = result;
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Converted JSON to XML successfully.';
+          }
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+        }
+
+        DT.trackTool('xml-json');
+      }
+
+      var debouncedProcess = DT.debounce(process, 200);
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          if (currentMode === 'xml-to-json') {
+            inputLabel.textContent = 'XML Input';
+            outputLabel.textContent = 'JSON Output';
+            input.placeholder = 'Paste your XML here...';
+          } else {
+            inputLabel.textContent = 'JSON Input';
+            outputLabel.textContent = 'XML Output';
+            input.placeholder = 'Paste your JSON here...';
+          }
+          input.value = '';
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste ' + (currentMode === 'xml-to-json' ? 'XML' : 'JSON') + ' above to convert.';
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      downloadBtn.addEventListener('click', function () {
+        var text = output.textContent;
+        if (!text) return;
+        if (currentMode === 'xml-to-json') {
+          DT.downloadText(text, 'output.json', 'application/json');
+        } else {
+          DT.downloadText(text, 'output.xml', 'application/xml');
+        }
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        if (currentMode === 'xml-to-json') {
+          input.value = [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<catalog>',
+            '  <book id="bk101" genre="fiction">',
+            '    <title>The Great Gatsby</title>',
+            '    <author>F. Scott Fitzgerald</author>',
+            '    <price currency="USD">9.99</price>',
+            '    <tags>',
+            '      <tag>classic</tag>',
+            '      <tag>american</tag>',
+            '    </tags>',
+            '  </book>',
+            '  <book id="bk102" genre="nonfiction">',
+            '    <title>Sapiens</title>',
+            '    <author>Yuval Noah Harari</author>',
+            '    <price currency="USD">14.99</price>',
+            '    <tags>',
+            '      <tag>history</tag>',
+            '      <tag>anthropology</tag>',
+            '    </tags>',
+            '  </book>',
+            '</catalog>'
+          ].join('\n');
+        } else {
+          input.value = JSON.stringify({
+            "catalog": {
+              "book": [
+                {
+                  "@id": "bk101",
+                  "@genre": "fiction",
+                  "title": "The Great Gatsby",
+                  "author": "F. Scott Fitzgerald",
+                  "price": { "@currency": "USD", "#text": "9.99" }
+                },
+                {
+                  "@id": "bk102",
+                  "@genre": "nonfiction",
+                  "title": "Sapiens",
+                  "author": "Yuval Noah Harari",
+                  "price": { "@currency": "USD", "#text": "14.99" }
+                }
+              ]
+            }
+          }, null, 2);
+        }
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

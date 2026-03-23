@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>cURL to Code Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert cURL commands to Python requests, JavaScript fetch, Node.js axios, Go net/http, and PHP code. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/curl-to-code.html">
+  <meta property="og:title" content="cURL to Code Converter — Free Online Tool | DevToolbox">
+  <meta property="og:description" content="Convert any cURL command to Python, JavaScript fetch, Node.js axios, Go, or PHP code instantly. No signup required, runs in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/curl-to-code.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "cURL to Code Converter",
+    "url": "https://thisdevtool.com/tools/curl-to-code.html",
+    "description": "Convert cURL commands to Python, JavaScript fetch, Node.js axios, Go, and PHP code. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What cURL flags does this converter support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The converter parses the most commonly used cURL flags: -X (method), -H (headers), -d/--data/--data-raw (request body), -u (basic auth), -F (form data), -b/--cookie (cookies), -L (follow redirects), -k/--insecure (skip SSL), -o (output file name hint), and --max-time/--connect-timeout (timeouts). The URL is auto-extracted as the bare argument."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why use Python requests instead of cURL?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Python requests library is higher-level than cURL. It handles JSON parsing, session management, cookies, redirects, and authentication with less code. cURL is great for quick one-liners and shell scripts; requests is better for applications, data pipelines, and scripts that need to process the response programmatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between fetch and axios in JavaScript?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "fetch() is a built-in browser and Node.js (v18+) API that returns a Promise. It does not automatically parse JSON or throw on HTTP error status codes — you must check response.ok yourself. axios is a third-party library that automatically parses JSON responses, throws on non-2xx status codes, and supports request/response interceptors. axios is more batteries-included; fetch is available without any install."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the converter handle JSON request bodies?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "If the -d or --data flag contains a JSON string and the Content-Type header is set to application/json (or no Content-Type is set), the converter treats the body as JSON and generates idiomatic code: json= keyword argument in Python requests, JSON.stringify() in fetch, and json: true in axios."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my cURL command sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The cURL converter runs entirely in your browser using JavaScript. Your commands, headers, API keys, and request bodies never leave your machine. There is no server, no logging, and no data storage."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>cURL to Code Converter</h1>
+          <p class="tool-subtitle">Paste a cURL command and get equivalent code in Python, JavaScript, Node.js, Go, or PHP. 100% client-side.</p>
+
+          <!-- Language Chips -->
+          <div class="option-chips" id="langChips">
+            <button class="option-chip active" data-lang="python">Python</button>
+            <button class="option-chip" data-lang="fetch">JavaScript (fetch)</button>
+            <button class="option-chip" data-lang="axios">Node.js (axios)</button>
+            <button class="option-chip" data-lang="go">Go</button>
+            <button class="option-chip" data-lang="php">PHP</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>cURL Command</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="curlInput" rows="16" placeholder="curl -X POST https://api.example.com/data \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;key&quot;: &quot;value&quot;}'" spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Generated Code</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="codeOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a cURL command above to convert it.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the cURL to Code Converter</h2>
+          <ol>
+            <li><strong>Copy your cURL command</strong> — from browser DevTools, Postman, API docs, or your terminal.</li>
+            <li><strong>Paste it</strong> into the left panel — multi-line commands with backslash continuation are supported.</li>
+            <li><strong>Select your target language</strong> — Python, JavaScript fetch, Node.js axios, Go, or PHP.</li>
+            <li><strong>Copy the generated code</strong> — paste it directly into your project and start using it.</li>
+          </ol>
+
+          <h2>Supported cURL Flags</h2>
+          <p>The converter handles the most common cURL options used when working with HTTP APIs:</p>
+          <ul>
+            <li><strong>-X, --request</strong> — HTTP method (GET, POST, PUT, PATCH, DELETE, etc.)</li>
+            <li><strong>-H, --header</strong> — request headers (can be repeated multiple times)</li>
+            <li><strong>-d, --data, --data-raw</strong> — request body for POST/PUT/PATCH</li>
+            <li><strong>-u, --user</strong> — basic authentication (username:password)</li>
+            <li><strong>-F, --form</strong> — multipart form data</li>
+            <li><strong>-b, --cookie</strong> — cookies to include in the request</li>
+            <li><strong>-L, --location</strong> — follow redirects</li>
+            <li><strong>-k, --insecure</strong> — skip SSL certificate verification</li>
+          </ul>
+
+          <h2>Language Comparison</h2>
+          <h3>Python requests</h3>
+          <p>The <code>requests</code> library is the de facto standard for HTTP in Python. It automatically handles JSON serialization, URL encoding, session management, and redirects. Install with <code>pip install requests</code>. The library's API is clean and readable: <code>requests.get(url, headers=headers)</code> for simple requests, or <code>requests.post(url, json=data)</code> for JSON payloads. The <code>requests</code> library is the right choice for data science scripts, automation, CLI tools, and any Python application making HTTP calls.</p>
+
+          <h3>JavaScript fetch</h3>
+          <p>The <code>fetch()</code> API is built into all modern browsers and Node.js 18+. It returns Promises and integrates naturally with <code>async/await</code>. Unlike axios, fetch does not automatically throw on HTTP error codes — you must check <code>response.ok</code> or <code>response.status</code>. No installation is required, making it ideal for browser-side scripts and modern Node.js applications that want zero external dependencies.</p>
+
+          <h3>Node.js axios</h3>
+          <p>Axios is a popular third-party HTTP client for Node.js and browsers. It automatically parses JSON response bodies, throws errors on 4xx/5xx responses, and supports request/response interceptors for cross-cutting concerns like authentication and logging. Install with <code>npm install axios</code>. Axios is a common choice in Express.js backends, CLI tools, and any project already using npm.</p>
+
+          <h3>Go net/http</h3>
+          <p>Go's standard library <code>net/http</code> package provides a complete HTTP client with no external dependencies. The generated code creates an <code>http.NewRequest</code>, sets headers, and uses <code>http.DefaultClient.Do</code> to execute the request. Go's explicit error handling pattern makes the code more verbose than Python or JavaScript but ensures errors are never silently swallowed. No install needed — net/http is part of the Go standard library.</p>
+
+          <h3>PHP cURL</h3>
+          <p>PHP has built-in cURL support via the <code>curl_init()</code> family of functions. The generated PHP code uses idiomatic cURL options (<code>CURLOPT_URL</code>, <code>CURLOPT_HTTPHEADER</code>, <code>CURLOPT_POSTFIELDS</code>) and properly closes the handle with <code>curl_close()</code>. This pattern works in any PHP environment where the curl extension is enabled (which is most shared hosting and all modern PHP installations).</p>
+
+          <p>For more API-related tools, try our <a href="/tools/jwt-decoder.html">JWT Decoder</a>, <a href="/tools/json-formatter.html">JSON Formatter</a>, or <a href="/tools/base64.html">Base64 Encoder</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What cURL flags does this converter support?</button>
+            <div class="faq-answer">The converter parses the most commonly used cURL flags: -X (method), -H (headers), -d/--data/--data-raw (request body), -u (basic auth), -F (form data), -b/--cookie (cookies), -L (follow redirects), -k/--insecure (skip SSL), and more. The URL is auto-extracted as the bare argument.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why use Python requests instead of cURL?</button>
+            <div class="faq-answer">The Python requests library is higher-level than cURL. It handles JSON parsing, session management, cookies, redirects, and authentication with less code. cURL is great for quick one-liners and shell scripts; requests is better for applications and data pipelines that need to process responses programmatically.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between fetch and axios in JavaScript?</button>
+            <div class="faq-answer">fetch() is a built-in browser and Node.js API. It does not automatically parse JSON or throw on HTTP error status codes. axios is a third-party library that automatically parses JSON responses and throws on non-2xx status codes. axios is more batteries-included; fetch requires no install.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the converter handle JSON request bodies?</button>
+            <div class="faq-answer">If the -d or --data flag contains a JSON string and Content-Type is application/json, the converter generates idiomatic JSON handling code: json= keyword argument in Python requests, JSON.stringify() in fetch, and json object in axios.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my cURL command sent to a server?</button>
+            <div class="faq-answer">No. The cURL converter runs entirely in your browser. Your commands, headers, API keys, and request bodies never leave your machine. There is no server, no logging, and no data storage.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/string-escape.html">String Escape</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('curlInput');
+      var output = document.getElementById('codeOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentLang = 'python';
+
+      var EXAMPLE = "curl -X POST https://api.example.com/data \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Authorization: Bearer token123\" \\\n  -d '{\"key\":\"value\",\"count\":42}'";
+
+      // ---- cURL Parser ----
+      function tokenize(cmd) {
+        // Normalize line continuations
+        var s = cmd.replace(/\\\s*\n\s*/g, ' ').trim();
+        // Remove leading 'curl' token
+        s = s.replace(/^\s*curl\s+/, '');
+
+        var tokens = [];
+        var i = 0;
+        while (i < s.length) {
+          // Skip whitespace
+          while (i < s.length && /\s/.test(s[i])) i++;
+          if (i >= s.length) break;
+
+          var ch = s[i];
+          if (ch === '"' || ch === "'") {
+            // Quoted token
+            var quote = ch;
+            var j = i + 1;
+            var val = '';
+            while (j < s.length) {
+              if (s[j] === '\\' && j + 1 < s.length && quote === '"') {
+                j++;
+                val += s[j];
+              } else if (s[j] === quote) {
+                j++;
+                break;
+              } else {
+                val += s[j];
+              }
+              j++;
+            }
+            tokens.push(val);
+            i = j;
+          } else {
+            // Unquoted token (ends at whitespace)
+            var start = i;
+            while (i < s.length && !/\s/.test(s[i])) i++;
+            tokens.push(s.slice(start, i));
+          }
+        }
+        return tokens;
+      }
+
+      function parseCurl(cmd) {
+        var tokens = tokenize(cmd);
+        var parsed = {
+          method: 'GET',
+          url: '',
+          headers: [],
+          data: null,
+          auth: null,
+          formData: [],
+          cookies: null,
+          followRedirects: false,
+          insecure: false
+        };
+
+        var i = 0;
+        while (i < tokens.length) {
+          var t = tokens[i];
+          if (t === '-X' || t === '--request') {
+            parsed.method = tokens[++i] || 'GET';
+          } else if (t === '-H' || t === '--header') {
+            var h = tokens[++i] || '';
+            var colon = h.indexOf(':');
+            if (colon > 0) {
+              parsed.headers.push({ name: h.slice(0, colon).trim(), value: h.slice(colon + 1).trim() });
+            }
+          } else if (t === '-d' || t === '--data' || t === '--data-raw' || t === '--data-ascii') {
+            parsed.data = tokens[++i] || '';
+            if (parsed.method === 'GET') parsed.method = 'POST';
+          } else if (t === '-u' || t === '--user') {
+            parsed.auth = tokens[++i] || '';
+          } else if (t === '-F' || t === '--form') {
+            parsed.formData.push(tokens[++i] || '');
+            if (parsed.method === 'GET') parsed.method = 'POST';
+          } else if (t === '-b' || t === '--cookie') {
+            parsed.cookies = tokens[++i] || '';
+          } else if (t === '-L' || t === '--location') {
+            parsed.followRedirects = true;
+          } else if (t === '-k' || t === '--insecure') {
+            parsed.insecure = true;
+          } else if (t === '-o' || t === '--output' || t === '-s' || t === '--silent'
+            || t === '-v' || t === '--verbose' || t === '--max-time' || t === '--connect-timeout') {
+            // skip value for flags with values
+            if (t === '--max-time' || t === '--connect-timeout') i++;
+          } else if (!t.startsWith('-')) {
+            parsed.url = t;
+          }
+          i++;
+        }
+
+        return parsed;
+      }
+
+      function isJSON(s) {
+        if (!s) return false;
+        var trimmed = s.trim();
+        return (trimmed.startsWith('{') || trimmed.startsWith('['));
+      }
+
+      function getContentType(parsed) {
+        for (var i = 0; i < parsed.headers.length; i++) {
+          if (parsed.headers[i].name.toLowerCase() === 'content-type') {
+            return parsed.headers[i].value;
+          }
+        }
+        return '';
+      }
+
+      function q(s) { return JSON.stringify(s); }
+
+      // ---- Code Generators ----
+
+      function toPython(p) {
+        var lines = ['import requests', ''];
+        var ct = getContentType(p);
+        var isJson = isJSON(p.data) || ct.indexOf('json') !== -1;
+
+        // Headers
+        if (p.headers.length) {
+          lines.push('headers = {');
+          p.headers.forEach(function (h) {
+            lines.push('    ' + q(h.name) + ': ' + q(h.value) + ',');
+          });
+          lines.push('}');
+          lines.push('');
+        }
+
+        // Auth
+        if (p.auth) {
+          var parts = p.auth.split(':');
+          lines.push('auth = (' + q(parts[0]) + ', ' + q(parts.slice(1).join(':')) + ')');
+          lines.push('');
+        }
+
+        // Data
+        var callArgs = [q(p.url)];
+        if (p.headers.length) callArgs.push('headers=headers');
+        if (p.auth) callArgs.push('auth=auth');
+
+        if (p.data) {
+          if (isJson) {
+            try {
+              var parsed = JSON.parse(p.data);
+              lines.push('payload = ' + JSON.stringify(parsed, null, 4));
+              lines.push('');
+              callArgs.push('json=payload');
+            } catch (e) {
+              lines.push('data = ' + q(p.data));
+              lines.push('');
+              callArgs.push('data=data');
+            }
+          } else {
+            lines.push('data = ' + q(p.data));
+            lines.push('');
+            callArgs.push('data=data');
+          }
+        }
+
+        if (p.cookies) {
+          lines.push('cookies = ' + q(p.cookies));
+          lines.push('');
+          callArgs.push('cookies=cookies');
+        }
+
+        if (p.insecure) callArgs.push('verify=False');
+
+        var method = p.method.toLowerCase();
+        lines.push('response = requests.' + method + '(');
+        callArgs.forEach(function (a, idx) {
+          lines.push('    ' + a + (idx < callArgs.length - 1 ? ',' : ''));
+        });
+        lines.push(')');
+        lines.push('');
+        lines.push('print(response.status_code)');
+        lines.push('print(response.json())');
+        return lines.join('\n');
+      }
+
+      function toFetch(p) {
+        var lines = [];
+        var ct = getContentType(p);
+        var isJson = isJSON(p.data) || ct.indexOf('json') !== -1;
+
+        lines.push('const response = await fetch(' + q(p.url) + ', {');
+        lines.push('  method: ' + q(p.method) + ',');
+
+        if (p.headers.length) {
+          lines.push('  headers: {');
+          p.headers.forEach(function (h) {
+            lines.push('    ' + q(h.name) + ': ' + q(h.value) + ',');
+          });
+          lines.push('  },');
+        }
+
+        if (p.data) {
+          if (isJson) {
+            try {
+              var parsed = JSON.parse(p.data);
+              lines.push('  body: JSON.stringify(' + JSON.stringify(parsed) + '),');
+            } catch (e) {
+              lines.push('  body: ' + q(p.data) + ',');
+            }
+          } else {
+            lines.push('  body: ' + q(p.data) + ',');
+          }
+        }
+
+        if (p.followRedirects) lines.push('  redirect: \'follow\',');
+
+        lines.push('});');
+        lines.push('');
+        lines.push('if (!response.ok) {');
+        lines.push('  throw new Error(`HTTP error! status: ${response.status}`);');
+        lines.push('}');
+        lines.push('');
+        lines.push('const data = await response.json();');
+        lines.push('console.log(data);');
+        return lines.join('\n');
+      }
+
+      function toAxios(p) {
+        var lines = [];
+        var ct = getContentType(p);
+        var isJson = isJSON(p.data) || ct.indexOf('json') !== -1;
+
+        lines.push('const axios = require(\'axios\');');
+        lines.push('');
+        lines.push('const response = await axios({');
+        lines.push('  method: ' + q(p.method.toLowerCase()) + ',');
+        lines.push('  url: ' + q(p.url) + ',');
+
+        if (p.headers.length) {
+          lines.push('  headers: {');
+          p.headers.forEach(function (h) {
+            lines.push('    ' + q(h.name) + ': ' + q(h.value) + ',');
+          });
+          lines.push('  },');
+        }
+
+        if (p.data) {
+          if (isJson) {
+            try {
+              var parsed = JSON.parse(p.data);
+              lines.push('  data: ' + JSON.stringify(parsed, null, 2).replace(/\n/g, '\n  ') + ',');
+            } catch (e) {
+              lines.push('  data: ' + q(p.data) + ',');
+            }
+          } else {
+            lines.push('  data: ' + q(p.data) + ',');
+          }
+        }
+
+        if (p.auth) {
+          var parts = p.auth.split(':');
+          lines.push('  auth: { username: ' + q(parts[0]) + ', password: ' + q(parts.slice(1).join(':')) + ' },');
+        }
+
+        if (p.insecure) {
+          lines.push('  // Note: disable SSL verification (insecure!)');
+          lines.push('  httpsAgent: new require(\'https\').Agent({ rejectUnauthorized: false }),');
+        }
+
+        lines.push('});');
+        lines.push('');
+        lines.push('console.log(response.status);');
+        lines.push('console.log(response.data);');
+        return lines.join('\n');
+      }
+
+      function toGo(p) {
+        var lines = [];
+        var ct = getContentType(p);
+        var isJson = isJSON(p.data) || ct.indexOf('json') !== -1;
+        var hasBody = !!p.data;
+
+        lines.push('package main');
+        lines.push('');
+        lines.push('import (');
+        lines.push('\t"fmt"');
+        lines.push('\t"io"');
+        lines.push('\t"net/http"');
+        if (hasBody) lines.push('\t"strings"');
+        lines.push(')');
+        lines.push('');
+        lines.push('func main() {');
+
+        if (hasBody) {
+          lines.push('\tbody := strings.NewReader(' + q(p.data) + ')');
+          lines.push('\treq, err := http.NewRequest(' + q(p.method) + ', ' + q(p.url) + ', body)');
+        } else {
+          lines.push('\treq, err := http.NewRequest(' + q(p.method) + ', ' + q(p.url) + ', nil)');
+        }
+
+        lines.push('\tif err != nil {');
+        lines.push('\t\tpanic(err)');
+        lines.push('\t}');
+        lines.push('');
+
+        p.headers.forEach(function (h) {
+          lines.push('\treq.Header.Set(' + q(h.name) + ', ' + q(h.value) + ')');
+        });
+
+        if (p.auth) {
+          var parts = p.auth.split(':');
+          lines.push('\treq.SetBasicAuth(' + q(parts[0]) + ', ' + q(parts.slice(1).join(':')) + ')');
+        }
+
+        lines.push('');
+        lines.push('\tclient := &http.Client{}');
+        lines.push('\tresp, err := client.Do(req)');
+        lines.push('\tif err != nil {');
+        lines.push('\t\tpanic(err)');
+        lines.push('\t}');
+        lines.push('\tdefer resp.Body.Close()');
+        lines.push('');
+        lines.push('\tfmt.Println("Status:", resp.Status)');
+        lines.push('\tbody2, _ := io.ReadAll(resp.Body)');
+        lines.push('\tfmt.Println(string(body2))');
+        lines.push('}');
+        return lines.join('\n');
+      }
+
+      function toPHP(p) {
+        var lines = [];
+        var ct = getContentType(p);
+        var hasBody = !!p.data;
+
+        lines.push('<?php');
+        lines.push('');
+        lines.push('$ch = curl_init();');
+        lines.push('');
+        lines.push('curl_setopt($ch, CURLOPT_URL, ' + q(p.url) + ');');
+        lines.push('curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);');
+        lines.push('curl_setopt($ch, CURLOPT_CUSTOMREQUEST, ' + q(p.method) + ');');
+
+        if (p.headers.length) {
+          lines.push('curl_setopt($ch, CURLOPT_HTTPHEADER, [');
+          p.headers.forEach(function (h) {
+            lines.push('    ' + q(h.name + ': ' + h.value) + ',');
+          });
+          lines.push(']);');
+        }
+
+        if (hasBody) {
+          lines.push('curl_setopt($ch, CURLOPT_POSTFIELDS, ' + q(p.data) + ');');
+        }
+
+        if (p.auth) {
+          lines.push('curl_setopt($ch, CURLOPT_USERPWD, ' + q(p.auth) + ');');
+        }
+
+        if (p.followRedirects) {
+          lines.push('curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);');
+        }
+
+        if (p.insecure) {
+          lines.push('curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);');
+          lines.push('curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);');
+        }
+
+        lines.push('');
+        lines.push('$response = curl_exec($ch);');
+        lines.push('$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);');
+        lines.push('curl_close($ch);');
+        lines.push('');
+        lines.push('echo "Status: " . $httpCode . PHP_EOL;');
+        lines.push('echo $response . PHP_EOL;');
+        return lines.join('\n');
+      }
+
+      var fileExts = { python: 'request.py', fetch: 'request.js', axios: 'request.js', go: 'request.go', php: 'request.php' };
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste a cURL command above to convert it.';
+          return;
+        }
+
+        // Require 'curl' to start
+        if (!/^\s*curl\b/i.test(raw)) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Input must start with "curl". Example: curl -X GET https://api.example.com';
+          return;
+        }
+
+        try {
+          var parsed = parseCurl(raw);
+          if (!parsed.url) {
+            output.textContent = '';
+            statusBar.className = 'status-bar invalid';
+            statusBar.textContent = 'Could not find a URL in the cURL command.';
+            return;
+          }
+
+          var code;
+          switch (currentLang) {
+            case 'python': code = toPython(parsed); break;
+            case 'fetch':  code = toFetch(parsed); break;
+            case 'axios':  code = toAxios(parsed); break;
+            case 'go':     code = toGo(parsed); break;
+            case 'php':    code = toPHP(parsed); break;
+            default: code = toPython(parsed);
+          }
+
+          output.textContent = code;
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = parsed.method + ' ' + parsed.url + ' — ' + parsed.headers.length + ' header' + (parsed.headers.length !== 1 ? 's' : '') + (parsed.data ? ', has body' : '');
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Parse error: ' + e.message;
+        }
+
+        DT.trackTool('curl-to-code');
+      }
+
+      var debouncedProcess = DT.debounce(process, 200);
+      input.addEventListener('input', debouncedProcess);
+
+      // Lang chips
+      document.querySelectorAll('#langChips .option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('#langChips .option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentLang = chip.getAttribute('data-lang');
+          process();
+        });
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Download
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.downloadText(text, fileExts[currentLang] || 'request.txt', 'text/plain');
+      });
+
+      // Clear
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      // Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = EXAMPLE;
+        process();
+      });
+
+      // Tab key
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>chmod Calculator — Unix File Permissions Tool | DevToolbox</title>
+  <meta name="description" content="Calculate Unix file permissions with an interactive chmod calculator. Convert between octal (755), symbolic (rwxr-xr-x), and plain English. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/chmod-calculator.html">
+  <meta property="og:title" content="chmod Calculator — Unix Permissions Tool | DevToolbox">
+  <meta property="og:description" content="Free online chmod calculator. Set Unix file permissions visually and get the octal code, symbolic notation, and chmod command instantly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/chmod-calculator.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <style>
+    .chmod-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .chmod-group {
+      background: var(--bg-secondary, #f8fafc);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .chmod-group h3 {
+      margin: 0 0 12px 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary, #64748b);
+    }
+    .chmod-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .chmod-row:last-child { margin-bottom: 0; }
+    .chmod-row label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+    .chmod-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #10b981;
+      cursor: pointer;
+    }
+    .perm-letter {
+      font-family: var(--font-mono, monospace);
+      font-weight: 600;
+      color: #10b981;
+      min-width: 12px;
+    }
+    .chmod-outputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .chmod-output-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .chmod-output-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary, #64748b);
+    }
+    .chmod-output-group input[type="text"] {
+      font-family: var(--font-mono, monospace);
+      font-size: 1.1rem;
+      padding: 10px 14px;
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 6px;
+      background: var(--bg-secondary, #f8fafc);
+      color: var(--text-primary, #1e293b);
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .chmod-command-box {
+      background: var(--bg-secondary, #f8fafc);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .chmod-command-box code {
+      font-family: var(--font-mono, monospace);
+      font-size: 1.05rem;
+      color: #10b981;
+      word-break: break-all;
+    }
+    .chmod-octal-display {
+      text-align: center;
+      margin: 16px 0;
+    }
+    .chmod-octal-big {
+      font-family: var(--font-mono, monospace);
+      font-size: 3rem;
+      font-weight: 700;
+      color: #10b981;
+      letter-spacing: 0.1em;
+    }
+    .chmod-symbolic-big {
+      font-family: var(--font-mono, monospace);
+      font-size: 1.5rem;
+      color: var(--text-secondary, #64748b);
+      margin-top: 4px;
+    }
+    @media (max-width: 600px) {
+      .chmod-grid {
+        grid-template-columns: 1fr;
+      }
+      .chmod-outputs {
+        grid-template-columns: 1fr;
+      }
+      .chmod-octal-big {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "chmod Calculator",
+    "url": "https://thisdevtool.com/tools/chmod-calculator.html",
+    "description": "Calculate Unix file permissions. Convert between octal, symbolic notation, and plain English. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What does chmod mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "chmod stands for 'change mode'. It is a Unix command used to change the access permissions of files and directories. The command controls who can read, write, or execute a file — distinguishing between the file owner, the owner's group, and all other users on the system."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does 755 mean in chmod?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "chmod 755 means the owner has read, write, and execute permissions (7 = 4+2+1), while the group and others each have read and execute permissions (5 = 4+1). In symbolic notation, this is rwxr-xr-x. This is the most common permission for executable files and directories on web servers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does 644 mean in chmod?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "chmod 644 means the owner has read and write permissions (6 = 4+2), while the group and others have read-only permissions (4). In symbolic notation, this is rw-r--r--. This is the standard permission for regular files — documents, configuration files, and web page assets."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is chmod 777 safe?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "chmod 777 gives read, write, and execute permissions to everyone — the owner, the group, and all other users. This is rarely safe in production and should almost never be used on a web server. Any user on the system can modify or execute a 777 file, which is a significant security risk. Use the minimum permissions necessary: 644 for files, 755 for directories."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I calculate chmod permissions?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Each permission digit is the sum of read (4), write (2), and execute (1) for each class: owner, group, and others. For example, read+write = 4+2 = 6, and read+execute = 4+1 = 5. So chmod 644 means owner has read+write (6), group has read (4), others have read (4). This calculator lets you click checkboxes to set permissions visually and instantly see the resulting octal code and symbolic notation."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>chmod Calculator</h1>
+          <p class="tool-subtitle">Calculate Unix file permissions visually. Click checkboxes or type the octal/symbolic value — all fields update instantly.</p>
+
+          <!-- Preset Chips -->
+          <div class="option-chips">
+            <button class="option-chip" data-preset="644">644 — files</button>
+            <button class="option-chip" data-preset="755">755 — dirs/exec</button>
+            <button class="option-chip" data-preset="600">600 — private</button>
+            <button class="option-chip" data-preset="777">777 — open</button>
+            <button class="option-chip" data-preset="400">400 — read-only</button>
+            <button class="option-chip" data-preset="750">750 — group exec</button>
+          </div>
+
+          <!-- Octal + Symbolic big display -->
+          <div class="chmod-octal-display">
+            <div class="chmod-octal-big" id="octalBig">644</div>
+            <div class="chmod-symbolic-big" id="symbolicBig">rw-r--r--</div>
+          </div>
+
+          <!-- Checkboxes Grid -->
+          <div class="chmod-grid">
+            <!-- Owner -->
+            <div class="chmod-group">
+              <h3>Owner (u)</h3>
+              <div class="chmod-row">
+                <label>
+                  <input type="checkbox" id="ur" data-group="owner" data-bit="4">
+                  <span class="perm-letter">r</span> Read
+                </label>
+              </div>
+              <div class="chmod-row">
+                <label>
+                  <input type="checkbox" id="uw" data-group="owner" data-bit="2">
+                  <span class="perm-letter">w</span> Write
+                </label>
+              </div>
+              <div class="chmod-row">
+                <label>
+                  <input type="checkbox" id="ux" data-group="owner" data-bit="1">
+                  <span class="perm-letter">x</span> Execute
+                </label>
+              </div>
+            </div>
+
+            <!-- Group -->
+            <div class="chmod-group">
+              <h3>Group (g)</h3>
+              <div class="chmod-row">
+                <label>
+                  <input type="checkbox" id="gr" data-group="group" data-bit="4">
+                  <span class="perm-letter">r</span> Read
+                </label>
+              </div>
+              <div class="chmod-row">
+                <label>
+                  <input type="checkbox" id="gw" data-group="group" data-bit="2">
+                  <span class="perm-letter">w</span> Write
+                </label>
+              </div>
+              <div class="chmod-row">
+                <label>
+                  <input type="checkbox" id="gx" data-group="group" data-bit="1">
+                  <span class="perm-letter">x</span> Execute
+                </label>
+              </div>
+            </div>
+
+            <!-- Others -->
+            <div class="chmod-group">
+              <h3>Others (o)</h3>
+              <div class="chmod-row">
+                <label>
+                  <input type="checkbox" id="or" data-group="other" data-bit="4">
+                  <span class="perm-letter">r</span> Read
+                </label>
+              </div>
+              <div class="chmod-row">
+                <label>
+                  <input type="checkbox" id="ow" data-group="other" data-bit="2">
+                  <span class="perm-letter">w</span> Write
+                </label>
+              </div>
+              <div class="chmod-row">
+                <label>
+                  <input type="checkbox" id="ox" data-group="other" data-bit="1">
+                  <span class="perm-letter">x</span> Execute
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Text Inputs -->
+          <div class="chmod-outputs">
+            <div class="chmod-output-group">
+              <label for="octalInput">Octal</label>
+              <input type="text" id="octalInput" value="644" maxlength="3" placeholder="e.g. 755" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="chmod-output-group">
+              <label for="symbolicInput">Symbolic</label>
+              <input type="text" id="symbolicInput" value="rw-r--r--" maxlength="9" placeholder="e.g. rwxr-xr-x" autocomplete="off" spellcheck="false">
+            </div>
+          </div>
+
+          <!-- Command Box -->
+          <div class="chmod-command-box">
+            <code id="chmodCommand">chmod 644 filename</code>
+            <button class="btn btn-sm btn-primary" id="copyCmd">Copy Command</button>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Owner can read and write. Group and Others can read only.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the chmod Calculator</h2>
+          <ol>
+            <li><strong>Check the boxes</strong> to set read, write, and execute permissions for the Owner, Group, and Others.</li>
+            <li><strong>Or type directly</strong> — enter an octal value (like 755) in the Octal field, or a symbolic value (like rwxr-xr-x) in the Symbolic field. All other fields update automatically.</li>
+            <li><strong>Use a preset</strong> — click any preset chip above for the most common permission patterns.</li>
+            <li><strong>Copy the command</strong> — click "Copy Command" to copy the ready-to-use chmod command for your terminal.</li>
+          </ol>
+
+          <h2>Understanding Unix File Permissions</h2>
+          <p>Every file and directory on a Unix or Linux system has three sets of permissions: one for the file <em>owner</em> (the user who created it), one for the owner's <em>group</em>, and one for <em>others</em> (all other users on the system). Each set contains three permission bits: <strong>read (r)</strong>, <strong>write (w)</strong>, and <strong>execute (x)</strong>.</p>
+
+          <h3>How Octal Permissions Work</h3>
+          <p>Each permission set (owner, group, other) is represented as a single digit in base 8 (octal). The digit is calculated by summing the values of the active permissions:</p>
+          <ul>
+            <li><strong>Read (r) = 4</strong></li>
+            <li><strong>Write (w) = 2</strong></li>
+            <li><strong>Execute (x) = 1</strong></li>
+          </ul>
+          <p>So read+write = 4+2 = 6, read+execute = 4+1 = 5, and read+write+execute = 4+2+1 = 7. This means chmod 755 gives the owner full permissions (7) and the group and others read+execute (5). chmod 644 gives the owner read+write (6) and everyone else read-only (4).</p>
+
+          <h3>What the Permissions Mean in Practice</h3>
+          <p>For <em>files</em>: read means you can view the file's contents, write means you can modify or delete it, and execute means you can run it as a program or script. For <em>directories</em>: read means you can list the directory's contents (ls), write means you can create, rename, or delete files inside it, and execute means you can enter the directory (cd) and access its contents.</p>
+
+          <h3>Common Permission Patterns</h3>
+          <ul>
+            <li><strong>644 (rw-r--r--)</strong> — Standard for web files, configuration files, and documents. Owner can edit, everyone can read.</li>
+            <li><strong>755 (rwxr-xr-x)</strong> — Standard for directories and executable scripts. Owner can do everything, group and others can read and enter/run.</li>
+            <li><strong>600 (rw-------)</strong> — Private files like SSH keys and credential files. Only the owner can read or write.</li>
+            <li><strong>400 (r--------)</strong> — Read-only for owner only. Common for key files that should never be modified.</li>
+            <li><strong>777 (rwxrwxrwx)</strong> — Full access for everyone. Almost always a security risk and should be avoided in production.</li>
+            <li><strong>750 (rwxr-x---)</strong> — Owner has full access, group members can read and execute, others have no access. Common for restricted scripts.</li>
+          </ul>
+
+          <h3>The chmod Command</h3>
+          <p>The chmod command is used in the terminal to change file permissions. You can use it with either octal notation (<code>chmod 755 script.sh</code>) or symbolic notation (<code>chmod u+x script.sh</code> to add execute permission for the owner). To apply permissions recursively to a directory and all its contents, use the <code>-R</code> flag: <code>chmod -R 755 /var/www/html</code>. Be careful with recursive chmod — applying wrong permissions to system directories can cause serious problems.</p>
+
+          <h3>chmod on macOS</h3>
+          <p>macOS is a Unix-based operating system, so chmod works the same way on macOS as on Linux. Open Terminal and use the same octal notation: <code>chmod 644 myfile.txt</code>. The <code>ls -l</code> command shows current permissions in symbolic format (e.g., <code>-rw-r--r--</code>). The first character is <code>d</code> for directories and <code>-</code> for regular files.</p>
+
+          <h3>chmod for Web Servers</h3>
+          <p>If you run a website on a Linux server (Apache, Nginx, or similar), getting file permissions right is both a security and a functionality requirement. A common and secure setup is: directories set to 755, regular files set to 644, and executable scripts set to 755. Avoid 777 permissions on a web server — they allow the web server process to write and modify files, which can be exploited if your application has a file upload vulnerability. For SSH key files used in deployment, use 600 or 400. For related system administration tools, see our <a href="/tools/cron-parser.html">Cron Parser</a> or <a href="/tools/hash-generator.html">Hash Generator</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What does chmod mean?</button>
+            <div class="faq-answer">chmod stands for "change mode". It is a Unix command used to change the access permissions of files and directories. The command controls who can read, write, or execute a file — distinguishing between the file owner, the owner's group, and all other users on the system.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does 755 mean in chmod?</button>
+            <div class="faq-answer">chmod 755 means the owner has read, write, and execute permissions (7 = 4+2+1), while the group and others each have read and execute permissions (5 = 4+1). In symbolic notation, this is rwxr-xr-x. This is the most common permission for executable files and directories on web servers.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does 644 mean in chmod?</button>
+            <div class="faq-answer">chmod 644 means the owner has read and write permissions (6 = 4+2), while the group and others have read-only permissions (4). In symbolic notation, this is rw-r--r--. This is the standard permission for regular files — documents, configuration files, and web page assets.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is chmod 777 safe?</button>
+            <div class="faq-answer">chmod 777 gives read, write, and execute permissions to everyone. This is rarely safe in production and should almost never be used on a web server. Any user on the system can modify or execute a 777 file. Use the minimum permissions necessary: 644 for files, 755 for directories.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I calculate chmod permissions?</button>
+            <div class="faq-answer">Each permission digit is the sum of read (4), write (2), and execute (1) for each class. For example, read+write = 4+2 = 6, and read+execute = 4+1 = 5. So chmod 644 means owner has read+write (6), group has read (4), others have read (4). Use this calculator to set permissions visually and instantly see the octal code, symbolic notation, and the ready-to-use command.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/cron-parser.html">Cron Parser</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/timestamp.html">Timestamp Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+
+      // Checkbox refs
+      var boxes = {
+        ur: document.getElementById('ur'),
+        uw: document.getElementById('uw'),
+        ux: document.getElementById('ux'),
+        gr: document.getElementById('gr'),
+        gw: document.getElementById('gw'),
+        gx: document.getElementById('gx'),
+        or: document.getElementById('or'),
+        ow: document.getElementById('ow'),
+        ox: document.getElementById('ox')
+      };
+
+      var octalInput = document.getElementById('octalInput');
+      var symbolicInput = document.getElementById('symbolicInput');
+      var octalBig = document.getElementById('octalBig');
+      var symbolicBig = document.getElementById('symbolicBig');
+      var chmodCommand = document.getElementById('chmodCommand');
+      var statusBar = document.getElementById('statusBar');
+
+      // Internal state: array of 9 booleans [ur, uw, ux, gr, gw, gx, or, ow, ox]
+      var state = [true, true, false, true, false, false, true, false, false]; // 644
+
+      function stateToOctal() {
+        var o = 0, g = 0, ot = 0;
+        if (state[0]) o += 4;
+        if (state[1]) o += 2;
+        if (state[2]) o += 1;
+        if (state[3]) g += 4;
+        if (state[4]) g += 2;
+        if (state[5]) g += 1;
+        if (state[6]) ot += 4;
+        if (state[7]) ot += 2;
+        if (state[8]) ot += 1;
+        return '' + o + g + ot;
+      }
+
+      function stateToSymbolic() {
+        return (state[0] ? 'r' : '-') +
+               (state[1] ? 'w' : '-') +
+               (state[2] ? 'x' : '-') +
+               (state[3] ? 'r' : '-') +
+               (state[4] ? 'w' : '-') +
+               (state[5] ? 'x' : '-') +
+               (state[6] ? 'r' : '-') +
+               (state[7] ? 'w' : '-') +
+               (state[8] ? 'x' : '-');
+      }
+
+      function octalToState(oct) {
+        if (!/^[0-7]{3}$/.test(oct)) return null;
+        var digits = oct.split('').map(Number);
+        var s = [];
+        digits.forEach(function (d) {
+          s.push((d & 4) !== 0);
+          s.push((d & 2) !== 0);
+          s.push((d & 1) !== 0);
+        });
+        return s;
+      }
+
+      function symbolicToState(sym) {
+        if (!/^[r\-][w\-][x\-][r\-][w\-][x\-][r\-][w\-][x\-]$/.test(sym)) return null;
+        return [
+          sym[0] === 'r',
+          sym[1] === 'w',
+          sym[2] === 'x',
+          sym[3] === 'r',
+          sym[4] === 'w',
+          sym[5] === 'x',
+          sym[6] === 'r',
+          sym[7] === 'w',
+          sym[8] === 'x'
+        ];
+      }
+
+      function describePermissions(oct) {
+        var descriptions = {
+          '777': 'Everyone (owner, group, and others) has read, write, and execute permissions. Use with extreme caution.',
+          '755': 'Owner can read, write, and execute. Group and others can read and execute. Standard for directories and scripts.',
+          '644': 'Owner can read and write. Group and others can read only. Standard for web files and documents.',
+          '600': 'Owner can read and write. Group and others have no access. Use for private files and credentials.',
+          '400': 'Owner can read only. Group and others have no access. Use for read-only key files.',
+          '750': 'Owner can read, write, and execute. Group can read and execute. Others have no access.',
+          '700': 'Owner has full access. Group and others have no access. Fully private directory or script.',
+          '666': 'Everyone can read and write. No execute. Avoid in production — too permissive.',
+          '444': 'Everyone can read only. No write or execute for anyone.',
+          '711': 'Owner has full access. Group and others can execute only. Unusual — rarely needed.',
+          '500': 'Owner can read and execute. Group and others have no access.',
+          '440': 'Owner and group can read. Others have no access.'
+        };
+        if (descriptions[oct]) return descriptions[oct];
+
+        // Generate a description
+        var parts = [];
+        var d = oct.split('').map(Number);
+        var names = ['Owner', 'Group', 'Others'];
+        d.forEach(function (digit, i) {
+          var perms = [];
+          if (digit & 4) perms.push('read');
+          if (digit & 2) perms.push('write');
+          if (digit & 1) perms.push('execute');
+          if (perms.length === 0) {
+            parts.push(names[i] + ' has no permissions.');
+          } else {
+            parts.push(names[i] + ' can ' + perms.join(' and ') + '.');
+          }
+        });
+        return parts.join(' ');
+      }
+
+      function updateUI(source) {
+        // Update checkboxes
+        var keys = ['ur','uw','ux','gr','gw','gx','or','ow','ox'];
+        keys.forEach(function (k, i) { boxes[k].checked = state[i]; });
+
+        // Update big display
+        var oct = stateToOctal();
+        var sym = stateToSymbolic();
+        octalBig.textContent = oct;
+        symbolicBig.textContent = sym;
+
+        // Update text inputs (avoid feedback loop)
+        if (source !== 'octal') octalInput.value = oct;
+        if (source !== 'symbolic') symbolicInput.value = sym;
+
+        // Update command
+        chmodCommand.textContent = 'chmod ' + oct + ' filename';
+
+        // Update status
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = describePermissions(oct);
+
+        // Update preset chip active state
+        document.querySelectorAll('.option-chip').forEach(function (c) {
+          c.classList.toggle('active', c.getAttribute('data-preset') === oct);
+        });
+
+        DT.trackTool('chmod-calculator');
+      }
+
+      // Checkbox change
+      var keys = ['ur','uw','ux','gr','gw','gx','or','ow','ox'];
+      keys.forEach(function (k, i) {
+        boxes[k].addEventListener('change', function () {
+          state[i] = boxes[k].checked;
+          updateUI('checkbox');
+        });
+      });
+
+      // Octal input
+      octalInput.addEventListener('input', function () {
+        var val = this.value.trim();
+        var s = octalToState(val);
+        if (s) {
+          state = s;
+          updateUI('octal');
+          octalInput.style.borderColor = '';
+        } else {
+          octalInput.style.borderColor = 'var(--red, #ef4444)';
+        }
+      });
+
+      // Symbolic input
+      symbolicInput.addEventListener('input', function () {
+        var val = this.value.trim().toLowerCase();
+        var s = symbolicToState(val);
+        if (s) {
+          state = s;
+          updateUI('symbolic');
+          symbolicInput.style.borderColor = '';
+        } else {
+          symbolicInput.style.borderColor = 'var(--red, #ef4444)';
+        }
+      });
+
+      // Preset chips
+      document.querySelectorAll('.option-chip[data-preset]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var preset = chip.getAttribute('data-preset');
+          var s = octalToState(preset);
+          if (s) {
+            state = s;
+            updateUI('preset');
+          }
+        });
+      });
+
+      // Copy command
+      document.getElementById('copyCmd').addEventListener('click', function () {
+        DT.copyToClipboard(chmodCommand.textContent, this);
+      });
+
+      // Init
+      updateUI('init');
+    })();
+  </script>
+</body>
+</html>

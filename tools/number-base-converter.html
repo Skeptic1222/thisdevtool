@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Number Base Converter — Binary, Octal, Decimal, Hex | DevToolbox</title>
+  <meta name="description" content="Convert numbers between binary, octal, decimal, and hexadecimal online. Type in any field and all bases update instantly. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/number-base-converter.html">
+  <meta property="og:title" content="Number Base Converter — Binary, Octal, Decimal, Hex | DevToolbox">
+  <meta property="og:description" content="Free online number base converter. Convert between binary (base 2), octal (base 8), decimal (base 10), and hexadecimal (base 16) instantly. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/number-base-converter.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <style>
+    .base-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    @media (max-width: 600px) {
+      .base-grid { grid-template-columns: 1fr; }
+    }
+    .base-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .base-field label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted, #6b7280);
+    }
+    .base-field label span.base-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 6px;
+      background: var(--color-accent, #10b981);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+    .base-field input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      font-family: var(--font-mono, monospace);
+      font-size: 1rem;
+      border: 1.5px solid var(--color-border, #e5e7eb);
+      border-radius: 8px;
+      background: var(--color-surface, #fff);
+      color: var(--color-text, #111827);
+      box-sizing: border-box;
+      transition: border-color 0.15s;
+    }
+    .base-field input[type="text"]:focus {
+      outline: none;
+      border-color: var(--color-accent, #10b981);
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.12);
+    }
+    .base-field input[type="text"].error {
+      border-color: #ef4444;
+    }
+    .conversion-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.85rem;
+      margin-top: 8px;
+    }
+    .conversion-table th {
+      text-align: left;
+      padding: 7px 10px;
+      background: var(--color-surface-alt, #f9fafb);
+      border: 1px solid var(--color-border, #e5e7eb);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-text-muted, #6b7280);
+    }
+    .conversion-table td {
+      padding: 6px 10px;
+      border: 1px solid var(--color-border, #e5e7eb);
+      color: var(--color-text, #111827);
+    }
+    .conversion-table tr:nth-child(even) td {
+      background: var(--color-surface-alt, #f9fafb);
+    }
+    .conversion-table tr.highlight td {
+      background: rgba(16,185,129,0.1);
+      font-weight: 700;
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Number Base Converter",
+    "url": "https://thisdevtool.com/tools/number-base-converter.html",
+    "description": "Convert numbers between binary (base 2), octal (base 8), decimal (base 10), and hexadecimal (base 16). Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a number base?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A number base (or radix) determines how many unique digits a number system uses. Decimal (base 10) uses 10 digits (0-9), binary (base 2) uses 2 digits (0 and 1), octal (base 8) uses 8 digits (0-7), and hexadecimal (base 16) uses 16 symbols (0-9 and A-F). All these systems represent the same numbers — they just use different notations."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do computers use binary?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Computers use binary because electronic circuits naturally have two states: on (1) and off (0). Representing data with just two states is simple, reliable, and immune to small variations in voltage. Every piece of data a computer processes — text, images, videos, programs — is ultimately stored and manipulated as sequences of 0s and 1s."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why is hexadecimal used in programming?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Hexadecimal is used because it is a compact way to represent binary data. Since 16 = 2^4, each hexadecimal digit represents exactly 4 binary digits (bits), and a byte (8 bits) is always exactly two hex digits. This makes it much easier to read and write binary values. Hex is used for memory addresses, color codes, cryptographic hashes, and binary protocols."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I convert a decimal number to binary?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "To convert decimal to binary, repeatedly divide the number by 2, writing down the remainder each time, until the quotient reaches 0. Then read the remainders from bottom to top. For example, 13 divided by 2 gives 6 remainder 1, then 3 remainder 0, then 1 remainder 1, then 0 remainder 1. Reading upward: 1101. This tool does this conversion instantly — just type a decimal number in the Decimal field."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the 0b, 0o, and 0x prefix notation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "These prefixes are used in many programming languages (JavaScript, Python, C, C++) to indicate the number base: 0b means binary (e.g., 0b1101 = 13), 0o means octal (e.g., 0o15 = 13), and 0x means hexadecimal (e.g., 0xD = 13). Enable the 'Show Prefix' chip in this converter to add these prefixes to the output fields."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hex-ascii.html">Hex &harr; ASCII</a>
+        <a href="/tools/binary-text.html">Binary Text</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Number Base Converter</h1>
+          <p class="tool-subtitle">Type a number in any field — Binary, Octal, Decimal, or Hex — and all other fields update instantly. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="integer">Integer</button>
+            <button class="option-chip" data-mode="prefix">Show Prefix (0b / 0o / 0x)</button>
+          </div>
+
+          <!-- Four-field layout -->
+          <div class="base-grid">
+            <div class="base-field">
+              <label>Binary <span class="base-badge">Base 2</span></label>
+              <input type="text" id="binaryField" placeholder="e.g. 11111111" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="base-field">
+              <label>Octal <span class="base-badge">Base 8</span></label>
+              <input type="text" id="octalField" placeholder="e.g. 377" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="base-field">
+              <label>Decimal <span class="base-badge">Base 10</span></label>
+              <input type="text" id="decimalField" placeholder="e.g. 255" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="base-field">
+              <label>Hexadecimal <span class="base-badge">Base 16</span></label>
+              <input type="text" id="hexField" placeholder="e.g. FF" spellcheck="false" autocomplete="off">
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite" style="margin-top:16px;">
+            Type a number in any field above to convert between bases.
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="btn-group" style="margin-top:12px;">
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example (255)</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear All</button>
+            <button class="btn btn-sm btn-primary" id="copyDecBtn">Copy Decimal</button>
+            <button class="btn btn-sm btn-primary" id="copyHexBtn">Copy Hex</button>
+          </div>
+
+          <!-- Conversion Table -->
+          <div style="margin-top: 28px;">
+            <h3 style="margin-bottom: 10px; font-size: 1rem;">Common Value Reference Table</h3>
+            <div style="overflow-x: auto;">
+              <table class="conversion-table" id="refTable">
+                <thead>
+                  <tr>
+                    <th>Decimal</th>
+                    <th>Binary</th>
+                    <th>Octal</th>
+                    <th>Hex</th>
+                    <th>Char</th>
+                  </tr>
+                </thead>
+                <tbody id="refTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Number Base Converter</h2>
+          <ol>
+            <li><strong>Type a number</strong> into any field — Binary, Octal, Decimal, or Hex. All other fields update automatically.</li>
+            <li><strong>Enable Show Prefix</strong> to display the standard programming language prefixes: <code>0b</code> for binary, <code>0o</code> for octal, <code>0x</code> for hex.</li>
+            <li><strong>Use the reference table</strong> below the input fields for a quick lookup of common values.</li>
+            <li><strong>Copy results</strong> using the Copy Decimal or Copy Hex buttons.</li>
+          </ol>
+
+          <h2>Understanding Number Bases</h2>
+          <p>Every positional number system is defined by its <strong>base</strong> (also called the radix), which determines how many unique digits it uses and what value each digit position represents. In decimal (base 10), the digit positions represent powers of 10: ones (10<sup>0</sup>), tens (10<sup>1</sup>), hundreds (10<sup>2</sup>), and so on. In binary (base 2), positions represent powers of 2: 1, 2, 4, 8, 16, 32, 64, 128. All number systems ultimately represent the same values — they just use different notation.</p>
+
+          <h3>Binary (Base 2)</h3>
+          <p>Binary uses only the digits 0 and 1. It is the language of computers because electronic circuits have two states: on (represented as 1) and off (represented as 0). Every piece of digital data — text, images, programs — is ultimately stored as binary. Binary numbers can be long: the decimal number 255 requires 8 binary digits (11111111). The 8-bit group (one byte) is the fundamental unit of computer memory.</p>
+
+          <h3>Octal (Base 8)</h3>
+          <p>Octal uses the digits 0 through 7. Each octal digit represents exactly 3 binary digits, making it a compact shorthand for binary. Octal was popular in early computing and is still used in Unix/Linux file permissions (e.g., <code>chmod 755</code>, where 7 = 111 in binary = read+write+execute, 5 = 101 = read+execute). In modern programming, octal literals are written with a <code>0o</code> prefix in Python and JavaScript.</p>
+
+          <h3>Hexadecimal (Base 16)</h3>
+          <p>Hexadecimal uses the digits 0-9 and the letters A-F (representing values 10-15). Each hex digit represents exactly 4 binary digits (one nibble), so a byte (8 bits) is always exactly 2 hex digits. This makes hex extremely compact for representing binary data. Hex is ubiquitous in programming: color codes (#FF5733), memory addresses (0x7FFE1234), cryptographic hashes (SHA256 is 64 hex chars), and binary file formats all use hexadecimal notation.</p>
+
+          <h3>Conversion Examples</h3>
+          <p>Here are some landmark values across all four bases:</p>
+          <ul>
+            <li>Decimal 255 = Binary 11111111 = Octal 377 = Hex FF (maximum value of one byte)</li>
+            <li>Decimal 256 = Binary 100000000 = Octal 400 = Hex 100 (one more than one byte)</li>
+            <li>Decimal 65535 = Binary 1111111111111111 = Octal 177777 = Hex FFFF (maximum 16-bit unsigned integer)</li>
+            <li>Decimal 65536 = Binary 10000000000000000 = Octal 200000 = Hex 10000</li>
+          </ul>
+
+          <p>For converting text characters to their numeric codes and then to hex or binary, combine this tool with our <a href="/tools/hex-ascii.html">Hex ↔ ASCII Converter</a> and <a href="/tools/binary-text.html">Binary ↔ Text Converter</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a number base?</button>
+            <div class="faq-answer">A number base (or radix) determines how many unique digits a number system uses. Decimal (base 10) uses 10 digits (0-9), binary (base 2) uses 2 digits (0 and 1), octal (base 8) uses 8 digits (0-7), and hexadecimal (base 16) uses 16 symbols (0-9 and A-F). All these systems represent the same numbers in different notations.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why do computers use binary?</button>
+            <div class="faq-answer">Computers use binary because electronic circuits naturally have two states: on (1) and off (0). Representing data with just two states is simple, reliable, and immune to small variations in voltage. Every piece of data a computer processes — text, images, videos, programs — is ultimately stored and manipulated as sequences of 0s and 1s.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why is hexadecimal used in programming?</button>
+            <div class="faq-answer">Hexadecimal is used because it is a compact way to represent binary data. Since 16 = 2^4, each hexadecimal digit represents exactly 4 binary digits, and a byte (8 bits) is always exactly two hex digits. This makes it much easier to read and write binary values. Hex is used for memory addresses, color codes, cryptographic hashes, and binary protocols.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I convert a decimal number to binary?</button>
+            <div class="faq-answer">To convert decimal to binary, repeatedly divide the number by 2, writing down the remainder each time, until the quotient reaches 0. Then read the remainders from bottom to top. For example, 13 divided by 2 gives 6 R1, then 3 R0, then 1 R1, then 0 R1. Reading upward: 1101. Just type a decimal number in the Decimal field here and the binary result appears instantly.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the 0b, 0o, and 0x prefix notation?</button>
+            <div class="faq-answer">These prefixes are used in programming languages to indicate number base: 0b means binary (0b1101 = 13), 0o means octal (0o15 = 13), and 0x means hexadecimal (0xD = 13). Enable the "Show Prefix" chip in this converter to add these prefixes to the output fields.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Conversion Tools</h4>
+        <a href="/tools/number-base-converter.html">Base Converter</a>
+        <a href="/tools/hex-ascii.html">Hex &harr; ASCII</a>
+        <a href="/tools/binary-text.html">Binary &harr; Text</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var binaryField = document.getElementById('binaryField');
+      var octalField = document.getElementById('octalField');
+      var decimalField = document.getElementById('decimalField');
+      var hexField = document.getElementById('hexField');
+      var statusBar = document.getElementById('statusBar');
+      var showPrefix = false;
+      var updating = false;
+
+      // Reference table values
+      var TABLE_VALUES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+        16, 32, 48, 64, 65, 90, 97, 122, 127, 128, 255, 256, 512, 1023, 1024, 65535];
+
+      function buildTable(highlightDec) {
+        var tbody = document.getElementById('refTableBody');
+        tbody.innerHTML = '';
+        TABLE_VALUES.forEach(function (n) {
+          var tr = document.createElement('tr');
+          if (n === highlightDec) tr.className = 'highlight';
+          var bin = n.toString(2);
+          var oct = n.toString(8);
+          var hex = n.toString(16).toUpperCase();
+          var ch = (n >= 32 && n <= 126) ? String.fromCharCode(n) : (n === 0 ? 'NUL' : (n === 127 ? 'DEL' : ''));
+          tr.innerHTML =
+            '<td>' + n + '</td>' +
+            '<td>' + bin + '</td>' +
+            '<td>' + oct + '</td>' +
+            '<td>' + hex + '</td>' +
+            '<td>' + ch + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      function parseInput(str, base) {
+        var clean = str.trim();
+        // Strip known prefixes
+        if (base === 2 && /^0b/i.test(clean)) clean = clean.slice(2);
+        else if (base === 8 && /^0o/i.test(clean)) clean = clean.slice(2);
+        else if (base === 16 && /^0x/i.test(clean)) clean = clean.slice(2);
+
+        if (!clean) return null;
+
+        // Validate characters
+        var patterns = { 2: /^[01]+$/, 8: /^[0-7]+$/, 10: /^\d+$/, 16: /^[0-9a-fA-F]+$/ };
+        if (!patterns[base].test(clean)) return null;
+
+        // Use BigInt for safety with large numbers
+        try {
+          return BigInt('0' + (base === 2 ? 'b' : base === 8 ? 'o' : base === 16 ? 'x' : '') + clean);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function formatOutput(bigVal, toBase, addPrefix) {
+        var str;
+        switch (toBase) {
+          case 2: str = bigVal.toString(2); break;
+          case 8: str = bigVal.toString(8); break;
+          case 10: str = bigVal.toString(10); break;
+          case 16: str = bigVal.toString(16).toUpperCase(); break;
+          default: str = bigVal.toString(10);
+        }
+        if (addPrefix) {
+          if (toBase === 2) str = '0b' + str;
+          else if (toBase === 8) str = '0o' + str;
+          else if (toBase === 16) str = '0x' + str;
+        }
+        return str;
+      }
+
+      function updateAll(value, fromBase, sourceField) {
+        if (value === null) {
+          // Clear other fields on invalid input
+          [binaryField, octalField, decimalField, hexField].forEach(function (f) {
+            if (f !== sourceField) {
+              f.value = '';
+              f.classList.remove('error');
+            }
+          });
+          if (sourceField.value.trim()) {
+            sourceField.classList.add('error');
+            statusBar.className = 'status-bar invalid';
+            statusBar.textContent = 'Invalid input for the selected base.';
+          } else {
+            sourceField.classList.remove('error');
+            statusBar.className = 'status-bar info';
+            statusBar.textContent = 'Type a number in any field above to convert between bases.';
+          }
+          buildTable(null);
+          return;
+        }
+
+        sourceField.classList.remove('error');
+        updating = true;
+
+        if (sourceField !== binaryField) binaryField.value = formatOutput(value, 2, showPrefix);
+        if (sourceField !== octalField) octalField.value = formatOutput(value, 8, showPrefix);
+        if (sourceField !== decimalField) decimalField.value = formatOutput(value, 10, false); // decimal never needs prefix
+        if (sourceField !== hexField) hexField.value = formatOutput(value, 16, showPrefix);
+
+        var decVal = Number(value);
+        var bitCount = value === 0n ? 1 : value.toString(2).length;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Dec: ' + value.toString() + ' | Bits: ' + bitCount + (bitCount <= 64 ? ' (' + Math.ceil(bitCount / 8) + ' byte' + (Math.ceil(bitCount / 8) !== 1 ? 's' : '') + ')' : '');
+
+        buildTable(decVal <= 65535 ? decVal : null);
+        updating = false;
+
+        DT.trackTool('number-base-converter');
+      }
+
+      function makeHandler(base, field) {
+        return DT.debounce(function () {
+          if (updating) return;
+          var raw = field.value;
+          if (!raw.trim()) {
+            [binaryField, octalField, decimalField, hexField].forEach(function (f) {
+              if (f !== field) f.value = '';
+            });
+            statusBar.className = 'status-bar info';
+            statusBar.textContent = 'Type a number in any field above to convert between bases.';
+            buildTable(null);
+            return;
+          }
+          var val = parseInput(raw, base);
+          if (val !== null && val < 0n) val = null; // no negative support
+          updateAll(val, base, field);
+        }, 100);
+      }
+
+      binaryField.addEventListener('input', makeHandler(2, binaryField));
+      octalField.addEventListener('input', makeHandler(8, octalField));
+      decimalField.addEventListener('input', makeHandler(10, decimalField));
+      hexField.addEventListener('input', makeHandler(16, hexField));
+
+      // Mode chips
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var mode = chip.getAttribute('data-mode');
+          if (mode === 'integer') {
+            // Already always on — ignore secondary toggle
+            return;
+          } else if (mode === 'prefix') {
+            chip.classList.toggle('active');
+            showPrefix = chip.classList.contains('active');
+            // Re-run from decimal field if it has a value
+            if (decimalField.value.trim()) {
+              var val = parseInput(decimalField.value, 10);
+              if (val !== null) updateAll(val, 10, decimalField);
+            }
+          }
+        });
+      });
+
+      // Buttons
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        decimalField.value = '255';
+        var val = parseInput('255', 10);
+        updateAll(val, 10, decimalField);
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        [binaryField, octalField, decimalField, hexField].forEach(function (f) {
+          f.value = '';
+          f.classList.remove('error');
+        });
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Type a number in any field above to convert between bases.';
+        buildTable(null);
+        decimalField.focus();
+      });
+
+      document.getElementById('copyDecBtn').addEventListener('click', function () {
+        var text = decimalField.value;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('copyHexBtn').addEventListener('click', function () {
+        var text = hexField.value;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Build initial table
+      buildTable(null);
+    })();
+  </script>
+</body>
+</html>

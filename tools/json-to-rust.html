@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JSON to Rust Structs — Free Online Converter | DevToolbox</title>
+  <meta name="description" content="Convert JSON to Rust structs with serde derive macros instantly. Free online JSON to Rust converter with serde, Option types, and public fields support. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/json-to-rust.html">
+  <meta property="og:title" content="JSON to Rust Structs — DevToolbox">
+  <meta property="og:description" content="Free online JSON to Rust struct converter. Generates serde Serialize/Deserialize derives, Option types, and snake_case field names automatically.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/json-to-rust.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON to Rust Structs",
+    "url": "https://thisdevtool.com/tools/json-to-rust.html",
+    "description": "Convert JSON to Rust structs with serde derive macros. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is serde in Rust?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Serde is a Rust framework for serializing and deserializing data. It provides Serialize and Deserialize derive macros that automatically implement the conversion logic for your structs. Serde supports JSON (via serde_json), YAML, TOML, MessagePack, and many other formats."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my JSON data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This JSON to Rust converter runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What Rust types does the converter generate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The converter maps JSON types to Rust types as follows: JSON strings become String, JSON integers become i64, JSON floats become f64, JSON booleans become bool, JSON arrays become Vec<T>, JSON objects become nested structs, and null values become Option<T>. Field names are converted to snake_case and struct names to PascalCase."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When should I use Option<T> for fields?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use Option<T> when a field may be absent or null in the JSON data. The 'Serde + Option' mode wraps all fields in Option<T>, which is useful when consuming APIs that may omit fields or return null values. This prevents deserialization failures when fields are missing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What Cargo dependencies do I need to add?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Add the following to your Cargo.toml: serde = { version = '1', features = ['derive'] } and serde_json = '1'. These are the two core dependencies for JSON serialization in Rust. The derive feature enables the #[derive(Serialize, Deserialize)] macros used by the generated code."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/json-schema-generator.html">JSON Schema</a>
+        <a href="/tools/json-path-evaluator.html">JSONPath</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>JSON to Rust Structs</h1>
+          <p class="tool-subtitle">Paste JSON to generate Rust structs with serde derive macros. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="serde">Serde</button>
+            <button class="option-chip" data-mode="serde-option">Serde + Option</button>
+            <button class="option-chip" data-mode="public">Public Fields</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>JSON Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="jsonInput" rows="16" placeholder='Paste your JSON here...
+
+Example:
+{
+  "user_id": 42,
+  "name": "Alice",
+  "active": true,
+  "score": 9.5,
+  "tags": ["admin", "user"]
+}' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Rust Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download .rs</button>
+                </div>
+              </div>
+              <div class="code-output" id="rustOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste JSON above to generate Rust structs.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the JSON to Rust Converter</h2>
+          <ol>
+            <li><strong>Paste your JSON</strong> into the input area on the left. The tool accepts any valid JSON object or array.</li>
+            <li><strong>Choose a mode</strong> — Serde (default), Serde + Option (all fields wrapped in Option), or Public Fields (adds <code>pub</code> visibility).</li>
+            <li><strong>View the generated Rust structs</strong> on the right with proper field names and type mappings.</li>
+            <li><strong>Copy or download</strong> the output as a <code>.rs</code> file ready to paste into your project.</li>
+          </ol>
+
+          <h2>What This Tool Generates</h2>
+          <p>This converter analyzes your JSON structure and generates idiomatic Rust structs with <code>#[derive(Debug, Serialize, Deserialize)]</code> macros from the <a href="https://serde.rs/" rel="noopener noreferrer">serde</a> framework. It handles nested objects as separate structs, arrays as <code>Vec&lt;T&gt;</code>, and null values as <code>Option&lt;T&gt;</code>.</p>
+
+          <h3>JSON to Rust Type Mapping</h3>
+          <ul>
+            <li><strong>JSON string</strong> → <code>String</code></li>
+            <li><strong>JSON integer</strong> → <code>i64</code></li>
+            <li><strong>JSON float</strong> → <code>f64</code></li>
+            <li><strong>JSON boolean</strong> → <code>bool</code></li>
+            <li><strong>JSON array</strong> → <code>Vec&lt;T&gt;</code> (type inferred from first element)</li>
+            <li><strong>JSON object</strong> → nested <code>struct</code></li>
+            <li><strong>JSON null</strong> → <code>Option&lt;serde_json::Value&gt;</code></li>
+            <li><strong>Mixed arrays</strong> → <code>Vec&lt;serde_json::Value&gt;</code></li>
+          </ul>
+
+          <h3>Field Name Conventions</h3>
+          <p>JSON keys are converted to <code>snake_case</code> for Rust field names following the Rust naming convention. If the original JSON key differs from the snake_case conversion, a <code>#[serde(rename = "original_key")]</code> attribute is added automatically, ensuring correct deserialization. Struct names are generated in <code>PascalCase</code>, with the root struct named <code>Root</code> and nested structs named after their parent field.</p>
+
+          <h3>Cargo.toml Dependencies</h3>
+          <p>To use the generated code, add these dependencies to your <code>Cargo.toml</code>:</p>
+          <pre style="background:var(--bg-secondary);padding:1rem;border-radius:6px;overflow:auto;font-size:0.85rem;">[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"</pre>
+
+          <h3>Mode Differences</h3>
+          <ul>
+            <li><strong>Serde</strong> — generates the most idiomatic code. Fields are the exact types inferred from the JSON. Use this when your JSON structure is fixed and reliable.</li>
+            <li><strong>Serde + Option</strong> — wraps all fields in <code>Option&lt;T&gt;</code>. Use this when consuming APIs that may omit fields or return null values. Prevents deserialization panics when fields are absent.</li>
+            <li><strong>Public Fields</strong> — adds <code>pub</code> visibility to all struct fields. Use this when the struct is in a library module and fields need to be accessed from outside the module.</li>
+          </ul>
+
+          <h3>Working with the Generated Code</h3>
+          <p>After generating your structs, use <code>serde_json::from_str()</code> to deserialize JSON into the struct and <code>serde_json::to_string()</code> to serialize back to JSON. For API clients built with <code>reqwest</code>, you can use <code>.json::&lt;Root&gt;()</code> directly on the response, which handles deserialization automatically. The generated structs are also compatible with <code>actix-web</code>, <code>axum</code>, and other Rust web frameworks that support serde types.</p>
+
+          <h3>Handling Complex JSON Structures</h3>
+          <p>When your JSON contains deeply nested objects, the converter generates a separate struct for each level of nesting. This produces clean, reusable code but may result in many struct definitions for complex data. For simple cases where you need flexibility, consider using <code>serde_json::Value</code> directly, which can represent any valid JSON value without a predefined schema. The generated code is a starting point — you should review and adjust types (for example, changing <code>i64</code> to <code>u32</code> if values are always non-negative) based on your specific use case.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is serde in Rust?</button>
+            <div class="faq-answer">Serde is a Rust framework for serializing and deserializing data. It provides Serialize and Deserialize derive macros that automatically implement the conversion logic for your structs. Serde supports JSON (via serde_json), YAML, TOML, MessagePack, and many other formats.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my JSON data sent to a server?</button>
+            <div class="faq-answer">No. This JSON to Rust converter runs 100% in your browser using JavaScript. Your data never leaves your machine. There is no server-side processing, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What Rust types does the converter generate?</button>
+            <div class="faq-answer">The converter maps JSON types to Rust types as follows: JSON strings become String, JSON integers become i64, JSON floats become f64, JSON booleans become bool, JSON arrays become Vec&lt;T&gt;, JSON objects become nested structs, and null values become Option&lt;T&gt;. Field names are converted to snake_case and struct names to PascalCase.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">When should I use Option&lt;T&gt; for fields?</button>
+            <div class="faq-answer">Use Option&lt;T&gt; when a field may be absent or null in the JSON data. The "Serde + Option" mode wraps all fields in Option&lt;T&gt;, which is useful when consuming APIs that may omit fields or return null values. This prevents deserialization failures when fields are missing.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What Cargo dependencies do I need to add?</button>
+            <div class="faq-answer">Add the following to your Cargo.toml: serde = { version = "1", features = ["derive"] } and serde_json = "1". These are the two core dependencies for JSON serialization in Rust. The derive feature enables the #[derive(Serialize, Deserialize)] macros used by the generated code.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>JSON Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/json-schema-generator.html">JSON Schema Generator</a>
+        <a href="/tools/json-path-evaluator.html">JSONPath Evaluator</a>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/xml-json.html">XML &harr; JSON</a>
+        <a href="/tools/toml-json.html">TOML &harr; JSON</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('jsonInput');
+      var output = document.getElementById('rustOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'serde';
+
+      // Convert camelCase / any-key to snake_case
+      function toSnakeCase(str) {
+        return str
+          .replace(/([A-Z])/g, function (m) { return '_' + m.toLowerCase(); })
+          .replace(/[-\s]+/g, '_')
+          .replace(/^_+/, '')
+          .toLowerCase();
+      }
+
+      // Convert key to PascalCase struct name
+      function toPascalCase(str) {
+        return str
+          .split(/[-_\s]+/)
+          .map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); })
+          .join('');
+      }
+
+      // Infer Rust type from a JS value
+      function inferType(val, fieldName, structs, useOption) {
+        if (val === null || val === undefined) {
+          return useOption ? 'Option<serde_json::Value>' : 'Option<serde_json::Value>';
+        }
+        var t = typeof val;
+        if (t === 'boolean') return useOption ? 'Option<bool>' : 'bool';
+        if (t === 'number') {
+          var rustType = Number.isInteger(val) ? 'i64' : 'f64';
+          return useOption ? 'Option<' + rustType + '>' : rustType;
+        }
+        if (t === 'string') return useOption ? 'Option<String>' : 'String';
+        if (Array.isArray(val)) {
+          if (val.length === 0) return useOption ? 'Option<Vec<serde_json::Value>>' : 'Vec<serde_json::Value>';
+          var firstEl = val[0];
+          if (firstEl !== null && typeof firstEl === 'object' && !Array.isArray(firstEl)) {
+            var structName = toPascalCase(fieldName) + 'Item';
+            collectStruct(structName, firstEl, structs, useOption);
+            return useOption ? 'Option<Vec<' + structName + '>>' : 'Vec<' + structName + '>';
+          }
+          var innerType = inferType(firstEl, fieldName, structs, false);
+          // Check if all elements are same primitive
+          var allSame = val.every(function (el) { return typeof el === typeof firstEl; });
+          if (!allSame) return useOption ? 'Option<Vec<serde_json::Value>>' : 'Vec<serde_json::Value>';
+          return useOption ? 'Option<Vec<' + innerType + '>>' : 'Vec<' + innerType + '>';
+        }
+        if (t === 'object') {
+          var structName = toPascalCase(fieldName);
+          collectStruct(structName, val, structs, useOption);
+          return useOption ? 'Option<' + structName + '>' : structName;
+        }
+        return useOption ? 'Option<serde_json::Value>' : 'serde_json::Value';
+      }
+
+      function collectStruct(name, obj, structs, useOption) {
+        // Avoid duplicates
+        for (var i = 0; i < structs.length; i++) {
+          if (structs[i].name === name) return;
+        }
+        var fields = [];
+        var keys = Object.keys(obj);
+        for (var k = 0; k < keys.length; k++) {
+          var originalKey = keys[k];
+          var snakeKey = toSnakeCase(originalKey);
+          var rustType = inferType(obj[originalKey], snakeKey, structs, useOption);
+          fields.push({ original: originalKey, snake: snakeKey, type: rustType });
+        }
+        structs.push({ name: name, fields: fields });
+      }
+
+      function renderStructs(structs, mode) {
+        var isPublic = mode === 'public';
+        var visPrefix = isPublic ? 'pub ' : '';
+        var lines = [];
+        lines.push('use serde::{Serialize, Deserialize};');
+        lines.push('');
+        for (var i = 0; i < structs.length; i++) {
+          var s = structs[i];
+          lines.push('#[derive(Debug, Serialize, Deserialize)]');
+          lines.push((isPublic ? 'pub ' : '') + 'struct ' + s.name + ' {');
+          for (var f = 0; f < s.fields.length; f++) {
+            var field = s.fields[f];
+            if (field.original !== field.snake) {
+              lines.push('    #[serde(rename = "' + field.original + '")]');
+            }
+            lines.push('    ' + visPrefix + field.snake + ': ' + field.type + ',');
+          }
+          lines.push('}');
+          lines.push('');
+        }
+        return lines.join('\n').trim();
+      }
+
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste JSON above to generate Rust structs.';
+          return;
+        }
+
+        try {
+          var parsed = JSON.parse(raw);
+          var structs = [];
+          var useOption = currentMode === 'serde-option';
+
+          // Handle root array
+          var rootObj = parsed;
+          if (Array.isArray(parsed)) {
+            if (parsed.length > 0 && typeof parsed[0] === 'object' && parsed[0] !== null) {
+              rootObj = parsed[0];
+            } else {
+              output.textContent = '// Root is an array of primitives\n// type Root = Vec<' + inferType(parsed[0], 'root', [], useOption) + '>;';
+              statusBar.className = 'status-bar valid';
+              statusBar.textContent = 'Generated type alias for primitive array.';
+              return;
+            }
+          }
+
+          if (typeof rootObj !== 'object' || rootObj === null) {
+            output.textContent = '// Root value is a primitive type\n// type Root = ' + inferType(rootObj, 'root', [], useOption) + ';';
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Generated type alias for primitive value.';
+            return;
+          }
+
+          collectStruct('Root', rootObj, structs, useOption);
+          var rustCode = renderStructs(structs, currentMode);
+          output.textContent = rustCode;
+
+          var structCount = structs.length;
+          var fieldCount = structs.reduce(function (acc, s) { return acc + s.fields.length; }, 0);
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Generated ' + structCount + ' struct' + (structCount !== 1 ? 's' : '') + ' with ' + fieldCount + ' field' + (fieldCount !== 1 ? 's' : '') + '.';
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid JSON: ' + e.message;
+        }
+
+        DT.trackTool('json-to-rust');
+      }
+
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.downloadText(text, 'output.rs', 'text/plain');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = JSON.stringify({
+          "userId": 42,
+          "name": "Alice Smith",
+          "email": "alice@example.com",
+          "active": true,
+          "score": 9.5,
+          "tags": ["admin", "user"],
+          "address": {
+            "street": "123 Main St",
+            "city": "Springfield",
+            "zip": "12345"
+          },
+          "createdAt": null
+        }, null, 2);
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

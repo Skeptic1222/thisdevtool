@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Code Line Counter — Count Code, Comments &amp; Blanks | DevToolbox</title>
+  <meta name="description" content="Count total lines, code lines, comment lines, and blank lines in your code. Supports JavaScript, Python, CSS, HTML, Java, C#. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/code-line-counter.html">
+  <meta property="og:title" content="Code Line Counter — Count Code, Comments &amp; Blanks | DevToolbox">
+  <meta property="og:description" content="Free online code line counter. Counts total, code, comment, and blank lines. Auto-detects JavaScript, Python, CSS, HTML, Java, and C#.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/code-line-counter.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <style>
+    .stats-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.95em; }
+    .stats-table th { text-align: left; padding: 8px 12px; background: var(--surface-alt, rgba(16,185,129,0.08)); color: var(--text-muted); font-weight: 600; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stats-table td { padding: 8px 12px; border-top: 1px solid var(--border); color: var(--text); }
+    .stats-table tr:last-child td { border-bottom: 1px solid var(--border); }
+    .stats-table .stat-value { font-weight: 700; color: var(--accent, #10b981); font-size: 1.1em; }
+    .stats-table .stat-pct { color: var(--text-muted); font-size: 0.88em; }
+    .stat-bar-wrap { background: var(--border); border-radius: 4px; height: 6px; margin-top: 4px; }
+    .stat-bar { height: 6px; border-radius: 4px; background: var(--accent, #10b981); transition: width 0.3s; }
+    .stat-bar.bar-comment { background: #6366f1; }
+    .stat-bar.bar-blank { background: var(--text-muted); opacity: 0.4; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Code Line Counter",
+    "url": "https://thisdevtool.com/tools/code-line-counter.html",
+    "description": "Count code lines, comment lines, and blank lines in JavaScript, Python, CSS, HTML, Java, and C#. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What counts as a code line vs. a comment line?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A blank line contains only whitespace. A comment line contains only a comment (after trimming whitespace). A code line contains actual executable or declarative code — it may also contain an inline comment, but if any code exists on the line it is counted as a code line."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does auto-detect language work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Auto-detect looks for tell-tale patterns in the first 30 lines. HTML is detected by DOCTYPE or HTML tags. Python by def/class/import patterns and hash comments. CSS by selector/property patterns and /* */ comments. JavaScript and Java/C# are distinguished by common keywords and syntax patterns. If detection is uncertain, it falls back to JavaScript/C-style comment rules."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the tool count lines inside multi-line strings?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The line counter works at the line level, not the AST level. Lines inside multi-line strings (like Python triple-quoted strings or JavaScript template literals) are counted as code lines, not blank lines, even if they appear visually empty. For a production-grade count, use a dedicated tool like cloc or tokei."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a good ratio of comments to code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "There is no single correct ratio, but 10-30% comment lines relative to total lines is commonly cited as healthy for most codebases. Very low comment density may indicate under-documented code. Very high comment density can indicate over-commenting obvious code. The best comments explain why, not what."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my code sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The code line counter runs entirely in your browser. Your code never leaves your machine. There is no server processing, no logging, and no data storage."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/indent-converter.html">Indent Converter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Code Line Counter</h1>
+          <p class="tool-subtitle">Count total lines, code lines, comment lines, and blank lines. Auto-detects language from comment syntax.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips" id="langChips">
+            <button class="option-chip active" data-lang="auto">Auto-detect</button>
+            <button class="option-chip" data-lang="js">JavaScript</button>
+            <button class="option-chip" data-lang="python">Python</button>
+            <button class="option-chip" data-lang="css">CSS</button>
+            <button class="option-chip" data-lang="html">HTML</button>
+            <button class="option-chip" data-lang="java">Java / C#</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input Code</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="codeInput" rows="16" placeholder="Paste your code here..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Results</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy Report</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="resultsOutput" style="min-height:340px; padding:16px;">
+                <p style="color:var(--text-muted); margin:0;">Results will appear here after you paste code.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste code above to count lines.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Code Line Counter</h2>
+          <ol>
+            <li><strong>Choose a language</strong> — or leave it on Auto-detect and the tool will identify the comment syntax.</li>
+            <li><strong>Paste your code</strong> — the results update instantly as you type.</li>
+            <li><strong>Read the breakdown</strong> — total, code, comment, and blank line counts with percentage bars.</li>
+            <li><strong>Download the report</strong> — save a plain-text summary for documentation.</li>
+          </ol>
+
+          <h2>What the Counts Mean</h2>
+          <p>Most code metrics tools classify each line into one of three categories. This counter follows the same standard definitions used by tools like <code>cloc</code> and <code>tokei</code>.</p>
+
+          <h3>Blank Lines</h3>
+          <p>A blank line contains only whitespace characters (spaces, tabs) or is completely empty. Blank lines are first in the counting hierarchy — a line that contains only whitespace is always counted as blank, never as code or comment.</p>
+
+          <h3>Comment Lines</h3>
+          <p>A comment line (after stripping leading whitespace) starts with a comment delimiter — <code>//</code> for JavaScript/Java/C#/CSS, <code>#</code> for Python, <code>&lt;!--</code> for HTML — or is inside an active block comment. Multi-line block comments (<code>/* ... */</code> in C-style languages, <code>""" ... """</code> in Python, <code>&lt;!-- ... --&gt;</code> in HTML) are tracked across lines using a state flag.</p>
+
+          <h3>Code Lines</h3>
+          <p>Any non-blank, non-comment line is counted as a code line. Lines that contain both code and an inline comment (e.g., <code>return true; // always</code>) are counted as code lines, not comment lines. This matches the behavior of standard tools like <code>cloc</code>.</p>
+
+          <h3>Language Support</h3>
+          <p>The auto-detect algorithm inspects the first 30 lines for tell-tale patterns. HTML is recognized by <code>&lt;!DOCTYPE&gt;</code> or common HTML tags. Python is identified by <code>def</code>, <code>class</code>, <code>import</code> statements and <code>#</code>-prefixed comments. CSS is detected by selector/property patterns and <code>/* */</code> comments. JavaScript and Java/C# share C-style comment syntax but are distinguished by keywords like <code>function</code>, <code>var</code>, <code>let</code>, <code>const</code> (JS) versus <code>class</code>, <code>public</code>, <code>void</code>, <code>namespace</code> (Java/C#).</p>
+
+          <h3>Practical Uses for Line Counts</h3>
+          <p>Code line counts are useful in many professional contexts. Project managers use them to estimate code complexity and size for planning. Developers use comment ratios to evaluate documentation quality before code reviews. Some organizations track lines of code (LOC) as a rough proxy for technical debt — though this metric must be interpreted carefully, as fewer, well-crafted lines often indicate higher quality than more verbose code. For historical analysis across a full codebase, command-line tools like <code>cloc</code> (Count Lines of Code) or <code>tokei</code> (Rust-based, very fast) are recommended. For single-file analysis in a browser without installing anything, this tool is the fastest option. See related tools: <a href="/tools/indent-converter.html">Indent Converter</a>, <a href="/tools/diff-checker.html">Diff Checker</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What counts as a code line vs. a comment line?</button>
+            <div class="faq-answer">A blank line contains only whitespace. A comment line contains only a comment (after trimming whitespace). A code line contains actual executable or declarative code — it may also have an inline comment, but if any code exists on the line it is counted as a code line.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does auto-detect language work?</button>
+            <div class="faq-answer">Auto-detect looks for tell-tale patterns in the first 30 lines. HTML is detected by DOCTYPE or HTML tags. Python by def/class/import patterns and hash comments. CSS by selector/property patterns. JavaScript and Java/C# are distinguished by common keywords and syntax patterns.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does the tool count lines inside multi-line strings?</button>
+            <div class="faq-answer">The line counter works at the line level, not the AST level. Lines inside multi-line strings are counted as code lines even if visually empty. For production-grade counts, use a dedicated tool like cloc or tokei.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a good ratio of comments to code?</button>
+            <div class="faq-answer">There is no single correct ratio, but 10-30% comment lines relative to total lines is commonly cited as healthy. Very low comment density may indicate under-documented code. Very high density can indicate over-commenting obvious code. The best comments explain why, not what.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my code sent to a server?</button>
+            <div class="faq-answer">No. The code line counter runs entirely in your browser. Your code never leaves your machine. There is no server processing, no logging, and no data storage.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/indent-converter.html">Indent Converter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/string-escape.html">String Escape</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+        <a href="/tools/curl-to-code.html">cURL to Code</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('codeInput');
+      var resultsOutput = document.getElementById('resultsOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentLang = 'auto';
+      var lastReport = '';
+
+      var examples = {
+        js: '// JavaScript example\n/* Multi-line\n   comment block */\nfunction add(a, b) {\n  // Return sum\n  return a + b; // inline comment\n}\n\nvar result = add(1, 2);\nconsole.log(result);\n',
+        python: '# Python example\n"""\nMulti-line docstring\n"""\ndef greet(name):\n    # Print greeting\n    print(f"Hello, {name}")\n\nif __name__ == "__main__":\n    greet("World")\n',
+        css: '/* Base styles */\nbody {\n  margin: 0;\n  /* Reset padding */\n  padding: 0;\n  font-family: sans-serif;\n}\n\n.container {\n  max-width: 1200px;\n  margin: 0 auto;\n}\n',
+        html: '<!DOCTYPE html>\n<!-- Page template -->\n<html lang="en">\n<head>\n  <title>Example</title>\n</head>\n<body>\n  <!-- Main content -->\n  <h1>Hello World</h1>\n  <p>Welcome to my page.</p>\n</body>\n</html>\n',
+        java: '// Java example\n/* Configuration class */\npublic class Config {\n    private String host;\n    private int port;\n\n    // Constructor\n    public Config(String host, int port) {\n        this.host = host;\n        this.port = port;\n    }\n}\n'
+      };
+
+      function detectLang(code) {
+        var lines = code.split('\n').slice(0, 30).join('\n');
+        if (/<!DOCTYPE html|<html|<head|<body/i.test(lines)) return 'html';
+        if (/def |import |class |^\s*#/m.test(lines) && !/{/.test(lines.slice(0, 5))) return 'python';
+        if (/^\s*[.#][\w-]+\s*{|^\s*[\w-]+\s*:\s*[\w-]/m.test(lines)) return 'css';
+        if (/\b(function|var |let |const |=>|require\(|module\.exports)\b/.test(lines)) return 'js';
+        if (/\b(public|private|protected|namespace|using |void |int |string )\b/.test(lines)) return 'java';
+        return 'js';
+      }
+
+      function countLines(code, lang) {
+        var effectiveLang = lang === 'auto' ? detectLang(code) : lang;
+        var lines = code.split('\n');
+        var total = lines.length;
+        var blank = 0, comment = 0, codeCnt = 0;
+        var inBlockComment = false;
+
+        for (var i = 0; i < lines.length; i++) {
+          var raw = lines[i];
+          var trimmed = raw.trim();
+
+          if (trimmed === '') {
+            blank++;
+            continue;
+          }
+
+          if (effectiveLang === 'html') {
+            if (inBlockComment) {
+              comment++;
+              if (trimmed.indexOf('-->') !== -1) inBlockComment = false;
+            } else if (/^<!--/.test(trimmed)) {
+              comment++;
+              if (trimmed.indexOf('-->') === -1) inBlockComment = true;
+            } else {
+              codeCnt++;
+            }
+          } else if (effectiveLang === 'python') {
+            if (inBlockComment) {
+              comment++;
+              if (/"""/.test(trimmed) || /'''/.test(trimmed)) inBlockComment = false;
+            } else if (/^#/.test(trimmed)) {
+              comment++;
+            } else if (/^"""/.test(trimmed) || /^'''/.test(trimmed)) {
+              comment++;
+              // Check if block closes on same line (more than one occurrence)
+              var quote = trimmed.substring(0, 3);
+              if (trimmed.indexOf(quote, 3) === -1) inBlockComment = true;
+            } else {
+              codeCnt++;
+            }
+          } else {
+            // js, java, css
+            if (inBlockComment) {
+              comment++;
+              if (trimmed.indexOf('*/') !== -1) inBlockComment = false;
+            } else if (/^\/\*/.test(trimmed)) {
+              comment++;
+              if (trimmed.indexOf('*/') === -1) inBlockComment = true;
+            } else if (/^\/\//.test(trimmed)) {
+              comment++;
+            } else {
+              codeCnt++;
+            }
+          }
+        }
+
+        return {
+          lang: effectiveLang,
+          total: total,
+          code: codeCnt,
+          comment: comment,
+          blank: blank
+        };
+      }
+
+      function pct(n, total) {
+        if (!total) return '0%';
+        return Math.round((n / total) * 100) + '%';
+      }
+
+      function pctNum(n, total) {
+        if (!total) return 0;
+        return Math.round((n / total) * 100);
+      }
+
+      function renderResults(stats) {
+        var langNames = { js: 'JavaScript', python: 'Python', css: 'CSS', html: 'HTML', java: 'Java / C#' };
+        var detectedLabel = currentLang === 'auto' ? 'Auto-detected: ' + (langNames[stats.lang] || stats.lang) : langNames[currentLang];
+
+        var codeP = pctNum(stats.code, stats.total);
+        var commentP = pctNum(stats.comment, stats.total);
+        var blankP = pctNum(stats.blank, stats.total);
+
+        var html = '<div style="margin-bottom:12px; font-size:0.85em; color:var(--text-muted);">Language: <strong style="color:var(--accent)">' + detectedLabel + '</strong></div>';
+        html += '<table class="stats-table">';
+        html += '<thead><tr><th>Category</th><th>Lines</th><th>Share</th></tr></thead>';
+        html += '<tbody>';
+        html += '<tr><td>Total</td><td class="stat-value">' + stats.total + '</td><td class="stat-pct">100%</td></tr>';
+        html += '<tr><td>Code</td><td class="stat-value">' + stats.code + '</td><td><div class="stat-pct">' + pct(stats.code, stats.total) + '</div><div class="stat-bar-wrap"><div class="stat-bar" style="width:' + codeP + '%"></div></div></td></tr>';
+        html += '<tr><td>Comments</td><td class="stat-value" style="color:#6366f1">' + stats.comment + '</td><td><div class="stat-pct">' + pct(stats.comment, stats.total) + '</div><div class="stat-bar-wrap"><div class="stat-bar bar-comment" style="width:' + commentP + '%"></div></div></td></tr>';
+        html += '<tr><td>Blank</td><td class="stat-value" style="color:var(--text-muted)">' + stats.blank + '</td><td><div class="stat-pct">' + pct(stats.blank, stats.total) + '</div><div class="stat-bar-wrap"><div class="stat-bar bar-blank" style="width:' + blankP + '%"></div></div></td></tr>';
+        html += '</tbody></table>';
+
+        resultsOutput.innerHTML = html;
+
+        lastReport = 'Code Line Count Report\n'
+          + '======================\n'
+          + 'Language: ' + detectedLabel + '\n\n'
+          + 'Total lines:   ' + stats.total + '\n'
+          + 'Code lines:    ' + stats.code + ' (' + pct(stats.code, stats.total) + ')\n'
+          + 'Comment lines: ' + stats.comment + ' (' + pct(stats.comment, stats.total) + ')\n'
+          + 'Blank lines:   ' + stats.blank + ' (' + pct(stats.blank, stats.total) + ')\n';
+      }
+
+      function process() {
+        var raw = input.value;
+        if (!raw.trim()) {
+          resultsOutput.innerHTML = '<p style="color:var(--text-muted); margin:0;">Results will appear here after you paste code.</p>';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste code above to count lines.';
+          lastReport = '';
+          return;
+        }
+
+        var stats = countLines(raw, currentLang);
+        renderResults(stats);
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = stats.total + ' total: ' + stats.code + ' code, ' + stats.comment + ' comment' + (stats.comment !== 1 ? 's' : '') + ', ' + stats.blank + ' blank';
+
+        DT.trackTool('code-line-counter');
+      }
+
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      // Lang chips
+      document.querySelectorAll('#langChips .option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('#langChips .option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentLang = chip.getAttribute('data-lang');
+          process();
+        });
+      });
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (lastReport) DT.copyToClipboard(lastReport, this);
+      });
+
+      // Download
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        if (lastReport) DT.downloadText(lastReport, 'report.txt', 'text/plain');
+      });
+
+      // Clear
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      // Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        var lang = currentLang === 'auto' ? 'js' : currentLang;
+        input.value = examples[lang] || examples.js;
+        process();
+      });
+
+      // Tab key
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

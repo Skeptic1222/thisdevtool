@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Indent Converter — Tabs ↔ Spaces | DevToolbox</title>
+  <meta name="description" content="Convert indentation between tabs and spaces online. Tabs to 2 or 4 spaces, spaces to tabs. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/indent-converter.html">
+  <meta property="og:title" content="Indent Converter — Tabs ↔ Spaces | DevToolbox">
+  <meta property="og:description" content="Free online tool to convert code indentation between tabs and spaces. Handles all languages. Runs entirely in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/indent-converter.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/js/core.js"></script>
+  <script src="/js/ads.js"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Indent Converter — Tabs to Spaces",
+    "url": "https://thisdevtool.com/tools/indent-converter.html",
+    "description": "Convert code indentation between tabs and spaces online. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Should I use tabs or spaces for indentation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Both have merits. Spaces produce consistent visual output across all editors regardless of settings. Tabs allow developers to set their own preferred visual width. Most modern style guides (Google, Airbnb, PEP 8) prefer spaces. Python requires consistent indentation and most Pythonistas use 4 spaces. Go, on the other hand, uses tabs by convention enforced by gofmt."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool modify non-indentation whitespace?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This indent converter only replaces leading whitespace at the beginning of each line. Whitespace in the middle or end of lines is left completely unchanged. This means your strings, comments, and inline spacing are preserved exactly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the custom indent size option?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Custom mode lets you specify any number of spaces per indent level when converting spaces to tabs or tabs to spaces. For example, if your code uses 3-space indentation you can set the custom size to 3 and convert to tabs or to a different number of spaces."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this to fix mixed tabs and spaces?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. If you have code with mixed indentation, first convert to tabs (which collapses all space-based indentation), then convert back to your preferred space width. This two-step process normalizes mixed indentation into a consistent style."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my code sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The indent converter runs 100% in your browser. Your code never leaves your machine. There is no server, no logging, and no data collection."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/code-line-counter.html">Line Counter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Indent Converter — Tabs &harr; Spaces</h1>
+          <p class="tool-subtitle">Convert leading indentation between tabs and spaces. Only leading whitespace is changed — your code content is untouched.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips" id="modeChips">
+            <button class="option-chip active" data-mode="tabs-to-2">Tabs &rarr; 2 Spaces</button>
+            <button class="option-chip" data-mode="tabs-to-4">Tabs &rarr; 4 Spaces</button>
+            <button class="option-chip" data-mode="spaces-to-tabs">Spaces &rarr; Tabs</button>
+            <button class="option-chip" data-mode="custom">Custom</button>
+          </div>
+
+          <!-- Custom Size (hidden by default) -->
+          <div id="customControls" style="display:none; margin-top:10px; display:none; align-items:center; gap:12px;">
+            <label style="font-size:0.9em; color:var(--text-muted);">Spaces per indent level:</label>
+            <input type="number" id="customSize" value="2" min="1" max="16" style="width:70px; padding:6px 8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--text); font-size:0.9em;">
+            <label style="font-size:0.9em; color:var(--text-muted);">Direction:</label>
+            <select id="customDir" style="padding:6px 8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--text); font-size:0.9em;">
+              <option value="tabs-to-spaces">Tabs to Spaces</option>
+              <option value="spaces-to-tabs">Spaces to Tabs</option>
+            </select>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="codeInput" rows="16" placeholder="Paste your code here..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="codeOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste code above to convert indentation.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Indent Converter</h2>
+          <ol>
+            <li><strong>Choose a conversion mode</strong> — tabs to 2 spaces, tabs to 4 spaces, spaces to tabs, or custom.</li>
+            <li><strong>Paste your code</strong> — the output updates immediately as you type.</li>
+            <li><strong>Check the status bar</strong> — it shows how many lines were changed.</li>
+            <li><strong>Copy or download</strong> — grab the converted code with one click.</li>
+          </ol>
+
+          <h2>Tabs vs. Spaces: The Eternal Debate</h2>
+          <p>The choice between tabs and spaces for code indentation is one of the longest-running debates in software development. Both approaches have legitimate advantages, and the right answer often depends on your team, language, and tooling conventions.</p>
+
+          <h3>Arguments for Spaces</h3>
+          <p>Spaces render identically in every editor, terminal, and code review tool regardless of configuration. When you share code on GitHub, in Slack, or in a terminal, space-indented code always looks exactly as intended. Most popular style guides — including Google's style guides for JavaScript, Python (PEP 8), and Java — specify spaces. The dominant JavaScript ecosystem tools (Prettier, ESLint) default to spaces. Two spaces is conventional in JavaScript/TypeScript (React, Node.js, Vue), while four spaces is the standard in Python, PHP, and Java.</p>
+
+          <h3>Arguments for Tabs</h3>
+          <p>Tabs are semantically correct: a tab character represents one level of indentation. Developers can set their editor to display tabs as 2, 4, or 8 columns wide according to personal preference. This is especially valuable for accessibility — developers with visual impairments sometimes prefer wider indentation that tabs make easy to configure. Go enforces tabs via <code>gofmt</code>, and the Linux kernel uses tabs. Tabs can also result in smaller file sizes for heavily indented code.</p>
+
+          <h3>How the Converter Works</h3>
+          <p>This tool processes each line of your code and looks at the leading whitespace only. For tabs-to-spaces conversion, each leading tab character is replaced by the specified number of spaces. For spaces-to-tabs conversion, leading groups of N spaces are replaced by a single tab. Non-leading whitespace — spaces inside strings, between tokens, in comments — is left completely unchanged. This means the conversion is safe for code in any language and will not alter your logic or string values.</p>
+
+          <h3>Fixing Mixed Indentation</h3>
+          <p>Mixed indentation (some lines using tabs, others using spaces) causes subtle bugs in Python (which treats tabs and spaces as different indentation levels) and creates inconsistent visual appearance in all languages. The recommended fix is to first convert everything to tabs, then convert back to your target space width. This two-pass approach normalizes all indentation levels correctly regardless of how mixed the original was. After normalizing, run your formatter (Prettier, Black, gofmt) to apply any remaining style rules.</p>
+
+          <h3>Editor Integration</h3>
+          <p>Most modern editors handle this automatically. In VS Code, set <code>editor.tabSize</code> and <code>editor.insertSpaces</code> in settings.json. Use the "Convert Indentation to Spaces" or "Convert Indentation to Tabs" commands from the command palette. In Vim, use <code>:set expandtab</code> for spaces or <code>:set noexpandtab</code> for tabs, then run <code>:retab</code> to reformat the buffer. For project-level consistency, use an <code>.editorconfig</code> file that all modern editors respect. See related tools: <a href="/tools/code-line-counter.html">Code Line Counter</a>, <a href="/tools/diff-checker.html">Diff Checker</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">Should I use tabs or spaces for indentation?</button>
+            <div class="faq-answer">Both have merits. Spaces produce consistent visual output across all editors. Tabs allow developers to set their preferred visual width. Most modern style guides (Google, Airbnb, PEP 8) prefer spaces. Python requires consistent indentation and most Pythonistas use 4 spaces. Go uses tabs by convention enforced by gofmt.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does this tool modify non-indentation whitespace?</button>
+            <div class="faq-answer">No. This indent converter only replaces leading whitespace at the beginning of each line. Whitespace in the middle or end of lines is left completely unchanged. Your strings, comments, and inline spacing are preserved exactly.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the custom indent size option?</button>
+            <div class="faq-answer">The Custom mode lets you specify any number of spaces per indent level. For example, if your code uses 3-space indentation you can set the custom size to 3 and convert to tabs or to a different number of spaces.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use this to fix mixed tabs and spaces?</button>
+            <div class="faq-answer">Yes. First convert to tabs (which collapses all space-based indentation), then convert back to your preferred space width. This two-step process normalizes mixed indentation into a consistent style.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my code sent to a server?</button>
+            <div class="faq-answer">No. The indent converter runs 100% in your browser. Your code never leaves your machine. There is no server, no logging, and no data collection.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/code-line-counter.html">Line Counter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/sql-formatter.html">SQL Formatter</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+        <a href="/tools/string-escape.html">String Escape</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('codeInput');
+      var output = document.getElementById('codeOutput');
+      var statusBar = document.getElementById('statusBar');
+      var customControls = document.getElementById('customControls');
+      var customSizeEl = document.getElementById('customSize');
+      var customDirEl = document.getElementById('customDir');
+      var currentMode = 'tabs-to-2';
+
+      var exampleCode = 'function greet(name) {\n\tif (name) {\n\t\tconsole.log("Hello, " + name);\n\t} else {\n\t\tconsole.log("Hello, World!");\n\t}\n}';
+
+      function convertLine(line, mode) {
+        // Count leading characters
+        var match = line.match(/^(\s*)(.*)/);
+        if (!match) return { line: line, changed: false };
+        var leading = match[1];
+        var rest = match[2];
+        var newLeading = leading;
+
+        if (mode === 'tabs-to-2') {
+          newLeading = leading.replace(/\t/g, '  ');
+        } else if (mode === 'tabs-to-4') {
+          newLeading = leading.replace(/\t/g, '    ');
+        } else if (mode === 'spaces-to-tabs') {
+          // Group leading spaces into tabs (2 spaces -> 1 tab by default fallback, but we use custom)
+          newLeading = leading.replace(/ {2}/g, '\t');
+        } else if (mode === 'custom') {
+          var size = parseInt(customSizeEl.value, 10) || 2;
+          var dir = customDirEl.value;
+          if (dir === 'tabs-to-spaces') {
+            newLeading = leading.replace(/\t/g, ' '.repeat(size));
+          } else {
+            var re = new RegExp(' {' + size + '}', 'g');
+            newLeading = leading.replace(re, '\t');
+          }
+        }
+
+        return {
+          line: newLeading + rest,
+          changed: newLeading !== leading
+        };
+      }
+
+      function process() {
+        var raw = input.value;
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste code above to convert indentation.';
+          return;
+        }
+
+        var lines = raw.split('\n');
+        var changedCount = 0;
+        var converted = lines.map(function (line) {
+          var result = convertLine(line, currentMode);
+          if (result.changed) changedCount++;
+          return result.line;
+        });
+
+        var resultText = converted.join('\n');
+        output.textContent = resultText;
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = lines.length + ' lines — ' + changedCount + ' line' + (changedCount !== 1 ? 's' : '') + ' changed';
+
+        DT.trackTool('indent-converter');
+      }
+
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      // Mode chips
+      document.querySelectorAll('#modeChips .option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('#modeChips .option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          customControls.style.display = currentMode === 'custom' ? 'flex' : 'none';
+          process();
+        });
+      });
+
+      customSizeEl.addEventListener('input', debouncedProcess);
+      customDirEl.addEventListener('change', debouncedProcess);
+
+      // Copy
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Download
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) DT.downloadText(text, 'converted.txt', 'text/plain');
+      });
+
+      // Clear
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      // Example
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = exampleCode;
+        process();
+      });
+
+      // Tab key support (insert literal tab)
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var start = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, start) + '\t' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = start + 1;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
