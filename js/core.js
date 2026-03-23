@@ -322,9 +322,8 @@
   }
 
   // --- Cookiebot Consent ---
-  // Disabled until thisdevtool.com is added to Cookiebot domain group.
-  // Re-enable by setting COOKIEBOT_ID to your CBID (was: 9362730c-1d81-419b-8f5f-21130b3ab7e5)
-  var COOKIEBOT_ID = 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX';
+  // thisdevtool.com authorized in Cookiebot domain group on 2026-03-22
+  var COOKIEBOT_ID = '9362730c-1d81-419b-8f5f-21130b3ab7e5';
   if (COOKIEBOT_ID !== 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX') {
     var cbScript = document.createElement('script');
     cbScript.id = 'Cookiebot';
