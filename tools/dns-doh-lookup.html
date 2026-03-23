@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>DNS over HTTPS Lookup — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Query DNS records online via DNS over HTTPS (DoH). Look up A, AAAA, MX, TXT, CNAME, NS records using Cloudflare and Google public resolvers. Free, instant, no install.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/dns-doh-lookup.html">
+  <meta property="og:title" content="DNS over HTTPS Lookup — ThisDevTool">
+  <meta property="og:description" content="Free online DNS lookup tool using public DoH resolvers (Cloudflare 1.1.1.1, Google 8.8.8.8). Query A, AAAA, MX, TXT, CNAME, NS records instantly in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/dns-doh-lookup.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "DNS over HTTPS Lookup",
+    "url": "https://thisdevtool.com/tools/dns-doh-lookup.html",
+    "description": "Query DNS records online via public DoH resolvers (Cloudflare, Google). Look up A, AAAA, MX, TXT, CNAME, NS records instantly in your browser.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is DNS over HTTPS (DoH)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DNS over HTTPS (DoH) is a protocol that sends DNS queries over an encrypted HTTPS connection instead of the traditional plaintext UDP/TCP channel. This prevents eavesdropping and manipulation of DNS requests by intermediaries. Cloudflare (1.1.1.1) and Google (8.8.8.8) both offer public DoH endpoints anyone can query."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this tool sending my queries to your servers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool runs entirely in your browser. When you perform a lookup, your browser sends the DNS query directly to Cloudflare's or Google's public DoH endpoint (cloudflare-dns.com/dns-query or dns.google/resolve). ThisDevTool's servers are never involved in the query."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What DNS record types can I look up?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool supports the most common DNS record types: A (IPv4 address), AAAA (IPv6 address), MX (mail exchange), TXT (text records including SPF, DKIM, DMARC), CNAME (canonical name alias), and NS (nameserver). For less common types like SRV, CAA, or SOA, use a command-line tool like dig."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do results differ between Cloudflare and Google?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Different resolvers may have different cached results, especially if a DNS record was recently changed. Both Cloudflare and Google follow the TTL (Time To Live) value set by the domain owner, but their caches refresh independently. Comparing both resolvers is a quick way to verify DNS propagation after a change."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does TTL mean in DNS records?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TTL stands for Time To Live and is measured in seconds. It tells resolvers how long to cache a DNS record before re-querying the authoritative nameserver. A TTL of 3600 means the record is cached for one hour. Lower TTLs (60-300 seconds) allow faster DNS propagation after changes, while higher TTLs (86400 = 24 hours) reduce load on nameservers but slow propagation."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .dns-form {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .dns-form input[type="text"] {
+      flex: 1 1 200px;
+      min-width: 0;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    .dns-form select {
+      padding: 0.55rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text);
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .dns-results-wrap {
+      overflow-x: auto;
+      min-height: 120px;
+    }
+    .dns-results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      font-family: var(--font-mono, monospace);
+    }
+    .dns-results-table th {
+      background: var(--code-bg);
+      color: var(--text-muted);
+      text-align: left;
+      padding: 0.45rem 0.75rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+    }
+    .dns-results-table td {
+      padding: 0.45rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      word-break: break-all;
+    }
+    .dns-results-table tr:last-child td {
+      border-bottom: none;
+    }
+    .dns-results-table tr:hover td {
+      background: var(--hover-bg, rgba(16,185,129,0.05));
+    }
+    .ttl-badge {
+      display: inline-block;
+      background: var(--code-bg);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 0.8em;
+      color: var(--text-muted);
+    }
+    .batch-textarea {
+      width: 100%;
+      min-height: 100px;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.88rem;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text);
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    .batch-results {
+      margin-top: 0.75rem;
+    }
+    .batch-domain-block {
+      margin-bottom: 1rem;
+    }
+    .batch-domain-block h4 {
+      margin: 0 0 0.35rem;
+      font-size: 0.9rem;
+      color: var(--accent, #10b981);
+    }
+    .reference-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .reference-table th {
+      background: var(--code-bg);
+      padding: 0.4rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+    .reference-table td {
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .reference-table tr:last-child td {
+      border-bottom: none;
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent, #10b981);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #lookupPanel, #batchPanel, #referencePanel { display: none; }
+    #lookupPanel.active, #batchPanel.active, #referencePanel.active { display: block; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/basic-auth-header.html">Auth Header</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>DNS over HTTPS Lookup</h1>
+          <p class="tool-subtitle">Query DNS records via public DoH resolvers (Cloudflare &amp; Google). Runs entirely in your browser — your queries go directly to the resolver, not through our servers.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="lookup">Lookup</button>
+            <button class="option-chip" data-mode="batch">Batch</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <!-- Lookup Panel -->
+          <div id="lookupPanel" class="active">
+            <div class="dns-form">
+              <input type="text" id="domainInput" placeholder="example.com" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Domain name">
+              <select id="recordType" aria-label="Record type">
+                <option value="A">A — IPv4</option>
+                <option value="AAAA">AAAA — IPv6</option>
+                <option value="MX">MX — Mail</option>
+                <option value="TXT">TXT — Text</option>
+                <option value="CNAME">CNAME — Alias</option>
+                <option value="NS">NS — Nameserver</option>
+              </select>
+              <select id="resolverSelect" aria-label="Resolver">
+                <option value="cloudflare">Cloudflare 1.1.1.1</option>
+                <option value="google">Google 8.8.8.8</option>
+                <option value="both">Both</option>
+              </select>
+              <button class="btn btn-primary" id="lookupBtn">Lookup</button>
+            </div>
+
+            <div class="dns-results-wrap" id="resultsWrap">
+              <p style="color:var(--text-muted);font-size:0.9rem;padding:0.5rem 0;">Enter a domain and click Lookup to query DNS records.</p>
+            </div>
+          </div>
+
+          <!-- Batch Panel -->
+          <div id="batchPanel">
+            <p style="font-size:0.88rem;color:var(--text-muted);margin:0 0 0.5rem;">Enter one domain per line. All domains will be queried for the same record type.</p>
+            <div style="display:flex;gap:0.5rem;align-items:flex-start;flex-wrap:wrap;margin-bottom:0.5rem;">
+              <select id="batchRecordType" aria-label="Batch record type" style="padding:0.55rem 0.6rem;border:1px solid var(--border);border-radius:6px;background:var(--input-bg);color:var(--text);font-size:0.95rem;">
+                <option value="A">A — IPv4</option>
+                <option value="AAAA">AAAA — IPv6</option>
+                <option value="MX">MX — Mail</option>
+                <option value="TXT">TXT — Text</option>
+                <option value="CNAME">CNAME — Alias</option>
+                <option value="NS">NS — Nameserver</option>
+              </select>
+              <select id="batchResolver" aria-label="Batch resolver" style="padding:0.55rem 0.6rem;border:1px solid var(--border);border-radius:6px;background:var(--input-bg);color:var(--text);font-size:0.95rem;">
+                <option value="cloudflare">Cloudflare 1.1.1.1</option>
+                <option value="google">Google 8.8.8.8</option>
+              </select>
+              <button class="btn btn-primary" id="batchLookupBtn">Lookup All</button>
+              <button class="btn btn-secondary" id="batchDownloadBtn">Download CSV</button>
+            </div>
+            <textarea class="batch-textarea" id="batchInput" placeholder="example.com&#10;google.com&#10;github.com" spellcheck="false"></textarea>
+            <div class="batch-results" id="batchResults"></div>
+          </div>
+
+          <!-- Reference Panel -->
+          <div id="referencePanel">
+            <p style="font-size:0.88rem;color:var(--text-muted);margin:0 0 0.75rem;">Quick reference for common DNS record types and their uses.</p>
+            <table class="reference-table">
+              <thead>
+                <tr><th>Type</th><th>Full Name</th><th>Purpose</th><th>Example Value</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong>A</strong></td><td>Address</td><td>Maps a domain to an IPv4 address</td><td>93.184.216.34</td></tr>
+                <tr><td><strong>AAAA</strong></td><td>IPv6 Address</td><td>Maps a domain to an IPv6 address</td><td>2606:2800:220:1:248:1893:25c8:1946</td></tr>
+                <tr><td><strong>CNAME</strong></td><td>Canonical Name</td><td>Alias pointing to another domain name</td><td>www.example.com → example.com</td></tr>
+                <tr><td><strong>MX</strong></td><td>Mail Exchange</td><td>Specifies mail servers for the domain</td><td>10 mail.example.com</td></tr>
+                <tr><td><strong>TXT</strong></td><td>Text</td><td>Arbitrary text; used for SPF, DKIM, DMARC, domain verification</td><td>v=spf1 include:_spf.google.com ~all</td></tr>
+                <tr><td><strong>NS</strong></td><td>Nameserver</td><td>Authoritative nameservers for the domain</td><td>ns1.cloudflare.com</td></tr>
+                <tr><td><strong>TTL</strong></td><td>Time To Live</td><td>Cache duration in seconds (not a record type)</td><td>3600 = 1 hour</td></tr>
+              </tbody>
+            </table>
+
+            <h3 style="margin-top:1.25rem;">Common TXT Record Prefixes</h3>
+            <table class="reference-table">
+              <thead>
+                <tr><th>Prefix</th><th>Protocol</th><th>Purpose</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>v=spf1</code></td><td>SPF</td><td>Authorised senders for email (reduces spam)</td></tr>
+                <tr><td><code>v=DKIM1</code></td><td>DKIM</td><td>Email signing key for origin verification</td></tr>
+                <tr><td><code>v=DMARC1</code></td><td>DMARC</td><td>Email policy: reject/quarantine/monitor unverified mail</td></tr>
+                <tr><td><code>google-site-verification=</code></td><td>Google</td><td>Proves domain ownership to Google Search Console</td></tr>
+                <tr><td><code>MS=ms</code></td><td>Microsoft</td><td>Proves domain ownership for Microsoft 365</td></tr>
+              </tbody>
+            </table>
+
+            <h3 style="margin-top:1.25rem;">DoH Resolver Endpoints</h3>
+            <table class="reference-table">
+              <thead>
+                <tr><th>Resolver</th><th>Endpoint</th><th>Privacy</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Cloudflare 1.1.1.1</td><td>https://cloudflare-dns.com/dns-query</td><td>Logs purged within 24 h</td></tr>
+                <tr><td>Google 8.8.8.8</td><td>https://dns.google/resolve</td><td>Logs retained per Google policy</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a domain and click Lookup to query DNS records.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the DNS over HTTPS Lookup Tool</h2>
+          <ol>
+            <li><strong>Enter a domain name</strong> — type any domain (e.g. <code>example.com</code>, <code>mail.google.com</code>) in the input field. Do not include <code>http://</code> or a trailing slash.</li>
+            <li><strong>Select the record type</strong> — choose A, AAAA, MX, TXT, CNAME, or NS from the dropdown.</li>
+            <li><strong>Choose a resolver</strong> — query Cloudflare 1.1.1.1, Google 8.8.8.8, or both simultaneously to compare results.</li>
+            <li><strong>Click Lookup</strong> — results appear in a table showing the record data, TTL, and which resolver returned it.</li>
+            <li><strong>Batch mode</strong> — paste multiple domains (one per line) to look them all up in one click. Download results as CSV.</li>
+          </ol>
+
+          <h2>What is DNS over HTTPS?</h2>
+          <p>DNS over HTTPS (DoH, RFC 8484) encrypts DNS queries inside standard HTTPS traffic, preventing your ISP or network observer from seeing which domains you look up. Traditional DNS runs over UDP port 53 with no encryption, making every domain lookup visible to anyone on your network path. With DoH, queries are sent to a resolver's HTTPS endpoint — the same port (443) used by regular web traffic — so lookups are indistinguishable from any other HTTPS request.</p>
+
+          <p>Cloudflare launched the first major public DoH resolver at <code>1.1.1.1</code> in 2018, followed by Google at <code>8.8.8.8</code>. Both provide JSON-over-HTTPS APIs, which is what this tool uses. When you click Lookup, your browser makes a direct <code>fetch()</code> call to <code>https://cloudflare-dns.com/dns-query?name=...&amp;type=...</code> or <code>https://dns.google/resolve?name=...&amp;type=...</code>. ThisDevTool's servers are never involved.</p>
+
+          <h3>Understanding DNS Record Types</h3>
+          <p><strong>A records</strong> are the most common DNS record type. They map a domain name to an IPv4 address (four groups of numbers, e.g. <code>93.184.216.34</code>). Most websites have at least one A record. When you visit a website, your computer starts by looking up its A record to find which server to connect to.</p>
+
+          <p><strong>AAAA records</strong> do the same thing as A records but for IPv6 addresses — the next-generation Internet Protocol that uses 128-bit addresses (e.g. <code>2606:2800:220:1:248:1893:25c8:1946</code>). As IPv4 addresses become scarce, more services are adding AAAA records alongside their A records.</p>
+
+          <p><strong>MX records</strong> (Mail Exchange) tell sending mail servers which server handles email for a domain. MX records include a priority number — lower numbers are tried first. A domain can have multiple MX records for redundancy. If you're setting up email or troubleshooting delivery problems, MX records are the first thing to check.</p>
+
+          <p><strong>TXT records</strong> store arbitrary text associated with a domain. They're widely used for SPF (which servers can send email on your behalf), DKIM (cryptographic email signature keys), DMARC (email authentication policy), and domain ownership verification for services like Google Search Console and Microsoft 365. TXT records have no specific format requirement, though individual protocols define their own prefixes.</p>
+
+          <p><strong>CNAME records</strong> (Canonical Name) create an alias from one domain name to another. For example, <code>www.example.com</code> might be a CNAME pointing to <code>example.com</code>. CNAMEs can only point to other domain names, never directly to IP addresses. You cannot put a CNAME on a root domain (the zone apex) — that's why many DNS providers offer proprietary CNAME-like records (ALIAS, ANAME, FLATTENED-CNAME) for root domains.</p>
+
+          <p><strong>NS records</strong> (Nameserver) list the authoritative DNS servers for a domain. These are the servers that hold the actual DNS records for the domain. When you register a domain and point it to Cloudflare, Route 53, or any other DNS provider, the registrar updates the NS records for your domain at the top-level domain (TLD) level.</p>
+
+          <h3>Checking DNS Propagation</h3>
+          <p>After changing DNS records, propagation can take anywhere from a few minutes to 48 hours depending on the TTL of the old record and how quickly resolvers worldwide flush their caches. Use the "Both" resolver option to compare Cloudflare and Google simultaneously — if they return different results, propagation is still in progress. Query repeatedly over time to watch the new records appear. Reducing your TTL to 300 seconds (5 minutes) before making changes speeds up propagation significantly.</p>
+
+          <h3>Common Use Cases</h3>
+          <ul>
+            <li><strong>Verifying SSL certificate ownership</strong> — check TXT records after adding a DNS-01 challenge for Let's Encrypt</li>
+            <li><strong>Email troubleshooting</strong> — confirm MX, SPF, DKIM, and DMARC records are correct when emails are being rejected</li>
+            <li><strong>Domain migration</strong> — compare old and new A records to verify a site has been moved</li>
+            <li><strong>Security audits</strong> — enumerate NS and MX records to understand a domain's infrastructure</li>
+            <li><strong>Checking CDN setup</strong> — verify CNAME records point to the correct CDN edge hostname</li>
+          </ul>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is DNS over HTTPS (DoH)?</button>
+            <div class="faq-answer">DNS over HTTPS (DoH) is a protocol that sends DNS queries over an encrypted HTTPS connection instead of the traditional plaintext UDP/TCP channel. This prevents eavesdropping and manipulation of DNS requests by intermediaries. Cloudflare (1.1.1.1) and Google (8.8.8.8) both offer public DoH endpoints anyone can query.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is this tool sending my queries to your servers?</button>
+            <div class="faq-answer">No. This tool runs entirely in your browser. When you perform a lookup, your browser sends the DNS query directly to Cloudflare's or Google's public DoH endpoint (cloudflare-dns.com/dns-query or dns.google/resolve). ThisDevTool's servers are never involved in the query.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What DNS record types can I look up?</button>
+            <div class="faq-answer">This tool supports A (IPv4), AAAA (IPv6), MX (mail exchange), TXT (text records including SPF/DKIM/DMARC), CNAME (canonical name alias), and NS (nameserver). For less common types like SRV, CAA, or SOA, use a command-line tool like dig.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why do results differ between Cloudflare and Google?</button>
+            <div class="faq-answer">Different resolvers may have different cached results, especially if a DNS record was recently changed. Both Cloudflare and Google follow the TTL value set by the domain owner, but their caches refresh independently. Comparing both resolvers is a quick way to verify DNS propagation after a change.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does TTL mean in DNS records?</button>
+            <div class="faq-answer">TTL stands for Time To Live and is measured in seconds. It tells resolvers how long to cache a DNS record before re-querying the authoritative nameserver. A TTL of 3600 means the record is cached for one hour. Lower TTLs (60–300) allow faster DNS propagation; higher TTLs (86400 = 24 h) reduce nameserver load but slow propagation.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/basic-auth-header.html">Auth Header</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/forensics-analyzer.html">Log Forensics</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = window.DevToolbox;
+
+    // ── Resolvers ─────────────────────────────────────────────────────────────
+    var RESOLVERS = {
+      cloudflare: {
+        name: 'Cloudflare 1.1.1.1',
+        url: function (domain, type) {
+          return 'https://cloudflare-dns.com/dns-query?name=' + encodeURIComponent(domain) + '&type=' + encodeURIComponent(type);
+        },
+        headers: { 'Accept': 'application/dns-json' }
+      },
+      google: {
+        name: 'Google 8.8.8.8',
+        url: function (domain, type) {
+          return 'https://dns.google/resolve?name=' + encodeURIComponent(domain) + '&type=' + encodeURIComponent(type);
+        },
+        headers: { 'Accept': 'application/json' }
+      }
+    };
+
+    var DNS_TYPES = { 1: 'A', 2: 'NS', 5: 'CNAME', 15: 'MX', 16: 'TXT', 28: 'AAAA' };
+    var RCODES = { 0: 'NOERROR', 1: 'FORMERR', 2: 'SERVFAIL', 3: 'NXDOMAIN', 4: 'NOTIMP', 5: 'REFUSED' };
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    var currentMode = 'lookup';
+    var lastBatchData = [];
+
+    // ── DOM refs ──────────────────────────────────────────────────────────────
+    var domainInput   = document.getElementById('domainInput');
+    var recordType    = document.getElementById('recordType');
+    var resolverSel   = document.getElementById('resolverSelect');
+    var lookupBtn     = document.getElementById('lookupBtn');
+    var resultsWrap   = document.getElementById('resultsWrap');
+    var statusBar     = document.getElementById('statusBar');
+    var batchInput    = document.getElementById('batchInput');
+    var batchLookupBtn= document.getElementById('batchLookupBtn');
+    var batchDownloadBtn = document.getElementById('batchDownloadBtn');
+    var batchResults  = document.getElementById('batchResults');
+    var batchRecordType = document.getElementById('batchRecordType');
+    var batchResolver = document.getElementById('batchResolver');
+
+    // ── Mode switching ────────────────────────────────────────────────────────
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('lookupPanel').classList.toggle('active', currentMode === 'lookup');
+        document.getElementById('batchPanel').classList.toggle('active', currentMode === 'batch');
+        document.getElementById('referencePanel').classList.toggle('active', currentMode === 'reference');
+        setStatus('info', currentMode === 'reference' ? 'DNS record type reference.' : 'Enter a domain and click Lookup.');
+      });
+    });
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function setStatus(type, text) {
+      statusBar.className = 'status-bar ' + type;
+      statusBar.textContent = text;
+    }
+
+    function setLoading(btn, loading) {
+      btn.disabled = loading;
+      btn.textContent = loading ? 'Looking up…' : 'Lookup';
+    }
+
+    function ttlHuman(ttl) {
+      if (ttl >= 86400) return Math.round(ttl / 86400) + 'd';
+      if (ttl >= 3600)  return Math.round(ttl / 3600) + 'h';
+      if (ttl >= 60)    return Math.round(ttl / 60) + 'm';
+      return ttl + 's';
+    }
+
+    function sanitizeDomain(raw) {
+      return raw.trim()
+        .replace(/^https?:\/\//i, '')
+        .replace(/\/.*$/, '')
+        .toLowerCase();
+    }
+
+    // ── Fetch DNS via DoH ─────────────────────────────────────────────────────
+    function fetchDoh(resolverKey, domain, type) {
+      var r = RESOLVERS[resolverKey];
+      return fetch(r.url(domain, type), { headers: r.headers })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          return { resolver: r.name, data: data, error: null };
+        })
+        .catch(function (err) {
+          return { resolver: r.name, data: null, error: err.message };
+        });
+    }
+
+    // ── Render results table ──────────────────────────────────────────────────
+    function renderResults(responses, domain, type) {
+      var rows = [];
+      var totalAnswers = 0;
+
+      responses.forEach(function (resp) {
+        if (resp.error) {
+          rows.push('<tr><td>' + escHtml(resp.resolver) + '</td><td colspan="3" style="color:var(--error,#ef4444)">' + escHtml(resp.error) + '</td></tr>');
+          return;
+        }
+        var d = resp.data;
+        var rcode = RCODES[d.Status] || ('RCODE ' + d.Status);
+        if (d.Status !== 0) {
+          rows.push('<tr><td>' + escHtml(resp.resolver) + '</td><td colspan="3" style="color:var(--warning,#f59e0b)">' + rcode + ' — no records found</td></tr>');
+          return;
+        }
+        if (!d.Answer || d.Answer.length === 0) {
+          rows.push('<tr><td>' + escHtml(resp.resolver) + '</td><td colspan="3" style="color:var(--text-muted)">No answers in response</td></tr>');
+          return;
+        }
+        d.Answer.forEach(function (ans) {
+          totalAnswers++;
+          var recTypeName = DNS_TYPES[ans.type] || ('TYPE' + ans.type);
+          var dataStr = ans.data;
+          // Strip wrapping quotes from TXT records
+          if (recTypeName === 'TXT') dataStr = dataStr.replace(/^"|"$/g, '');
+          rows.push(
+            '<tr>' +
+            '<td>' + escHtml(resp.resolver) + '</td>' +
+            '<td><strong>' + escHtml(recTypeName) + '</strong></td>' +
+            '<td style="word-break:break-all;">' + escHtml(dataStr) + '</td>' +
+            '<td><span class="ttl-badge">' + escHtml(String(ans.TTL)) + 's (' + ttlHuman(ans.TTL) + ')</span></td>' +
+            '</tr>'
+          );
+        });
+      });
+
+      resultsWrap.innerHTML =
+        '<table class="dns-results-table">' +
+        '<thead><tr><th>Resolver</th><th>Type</th><th>Data</th><th>TTL</th></tr></thead>' +
+        '<tbody>' + rows.join('') + '</tbody>' +
+        '</table>';
+
+      if (totalAnswers > 0) {
+        setStatus('valid', domain + ' — ' + type + ': ' + totalAnswers + ' record' + (totalAnswers !== 1 ? 's' : '') + ' found');
+        if (DT && DT.trackTool) DT.trackTool('dns-doh-lookup');
+      } else {
+        setStatus('info', domain + ' — ' + type + ': no records found');
+      }
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ── Single lookup ─────────────────────────────────────────────────────────
+    function doLookup() {
+      var raw = domainInput.value.trim();
+      if (!raw) { setStatus('invalid', 'Please enter a domain name.'); return; }
+      var domain = sanitizeDomain(raw);
+      if (!domain) { setStatus('invalid', 'Invalid domain name.'); return; }
+      var type = recordType.value;
+      var resolver = resolverSel.value;
+
+      setLoading(lookupBtn, true);
+      setStatus('info', 'Querying ' + (resolver === 'both' ? 'Cloudflare & Google' : resolver) + '…');
+      resultsWrap.innerHTML = '<p style="color:var(--text-muted);"><span class="spinner"></span>Looking up ' + escHtml(domain) + ' ' + type + '…</p>';
+
+      var promises = resolver === 'both'
+        ? [fetchDoh('cloudflare', domain, type), fetchDoh('google', domain, type)]
+        : [fetchDoh(resolver, domain, type)];
+
+      Promise.all(promises).then(function (responses) {
+        setLoading(lookupBtn, false);
+        lookupBtn.textContent = 'Lookup';
+        renderResults(responses, domain, type);
+      });
+    }
+
+    lookupBtn.addEventListener('click', doLookup);
+    domainInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doLookup();
+    });
+
+    // ── Batch lookup ──────────────────────────────────────────────────────────
+    batchLookupBtn.addEventListener('click', function () {
+      var lines = batchInput.value.split('\n').map(function (l) { return sanitizeDomain(l); }).filter(Boolean);
+      if (lines.length === 0) { setStatus('invalid', 'Enter at least one domain in the batch input.'); return; }
+      if (lines.length > 20) { setStatus('invalid', 'Maximum 20 domains per batch.'); return; }
+
+      var type = batchRecordType.value;
+      var resolver = batchResolver.value;
+
+      batchLookupBtn.disabled = true;
+      batchLookupBtn.textContent = 'Looking up…';
+      setStatus('info', 'Batch querying ' + lines.length + ' domains…');
+      batchResults.innerHTML = '<p style="color:var(--text-muted);"><span class="spinner"></span>Querying ' + lines.length + ' domain' + (lines.length > 1 ? 's' : '') + '…</p>';
+      lastBatchData = [];
+
+      var promises = lines.map(function (domain) {
+        return fetchDoh(resolver, domain, type).then(function (resp) {
+          return { domain: domain, resp: resp };
+        });
+      });
+
+      Promise.all(promises).then(function (results) {
+        batchLookupBtn.disabled = false;
+        batchLookupBtn.textContent = 'Lookup All';
+        var html = '';
+        lastBatchData = [];
+
+        results.forEach(function (r) {
+          var domain = r.domain;
+          var resp = r.resp;
+          html += '<div class="batch-domain-block"><h4>' + escHtml(domain) + ' (' + type + ')</h4>';
+
+          if (resp.error) {
+            html += '<p style="color:var(--error,#ef4444);font-size:0.85rem;">' + escHtml(resp.error) + '</p>';
+            lastBatchData.push({ domain: domain, type: type, data: 'ERROR: ' + resp.error, ttl: '' });
+          } else if (!resp.data || resp.data.Status !== 0 || !resp.data.Answer) {
+            var rcode = RCODES[(resp.data || {}).Status] || 'NXDOMAIN';
+            html += '<p style="color:var(--text-muted);font-size:0.85rem;">' + rcode + ' — no records</p>';
+            lastBatchData.push({ domain: domain, type: type, data: rcode, ttl: '' });
+          } else {
+            html += '<table class="dns-results-table"><thead><tr><th>Type</th><th>Data</th><th>TTL</th></tr></thead><tbody>';
+            resp.data.Answer.forEach(function (ans) {
+              var typeName = DNS_TYPES[ans.type] || ('TYPE' + ans.type);
+              var dataStr = ans.data;
+              if (typeName === 'TXT') dataStr = dataStr.replace(/^"|"$/g, '');
+              html += '<tr><td>' + escHtml(typeName) + '</td><td style="word-break:break-all;">' + escHtml(dataStr) + '</td><td><span class="ttl-badge">' + ans.TTL + 's</span></td></tr>';
+              lastBatchData.push({ domain: domain, type: typeName, data: dataStr, ttl: String(ans.TTL) });
+            });
+            html += '</tbody></table>';
+          }
+          html += '</div>';
+        });
+
+        batchResults.innerHTML = html;
+        setStatus('valid', 'Batch complete — ' + results.length + ' domain' + (results.length > 1 ? 's' : '') + ' queried');
+        if (DT && DT.trackTool) DT.trackTool('dns-doh-lookup');
+      });
+    });
+
+    batchDownloadBtn.addEventListener('click', function () {
+      if (!lastBatchData.length) { setStatus('invalid', 'Run a batch lookup first.'); return; }
+      var csv = 'Domain,Type,Data,TTL\n';
+      lastBatchData.forEach(function (row) {
+        csv += '"' + row.domain.replace(/"/g, '""') + '",' +
+               '"' + row.type.replace(/"/g, '""') + '",' +
+               '"' + row.data.replace(/"/g, '""') + '",' +
+               '"' + row.ttl + '"\n';
+      });
+      if (DT && DT.downloadText) {
+        DT.downloadText(csv, 'dns-batch-results.csv', 'text/csv');
+      } else {
+        var a = document.createElement('a');
+        a.href = 'data:text/csv,' + encodeURIComponent(csv);
+        a.download = 'dns-batch-results.csv';
+        a.click();
+      }
+    });
+
+  }());
+  </script>
+</body>
+</html>

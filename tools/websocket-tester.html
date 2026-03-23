@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>WebSocket Tester — Free Online WebSocket Client | ThisDevTool</title>
+  <meta name="description" content="Test WebSocket connections online. Connect to any ws:// or wss:// URL, send messages, view live event logs with timestamps, and auto-detect JSON. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/websocket-tester.html">
+  <meta property="og:title" content="WebSocket Tester — ThisDevTool">
+  <meta property="og:description" content="Connect to WebSocket servers, send messages, and view live event logs. Auto-detects JSON. Message history saved locally. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/websocket-tester.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "WebSocket Tester",
+    "url": "https://thisdevtool.com/tools/websocket-tester.html",
+    "description": "Test WebSocket connections, send messages, and inspect live event logs. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is WebSocket?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WebSocket is a communication protocol that provides full-duplex (two-way) communication over a single TCP connection. Unlike HTTP which is request-response, WebSocket keeps a persistent connection open so both the client and server can send data at any time. WebSocket is widely used for real-time features like chat applications, live dashboards, collaborative editing, financial tickers, and multiplayer games."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between ws:// and wss://?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ws:// is the unencrypted WebSocket protocol, analogous to http://. wss:// is the encrypted WebSocket Secure protocol, analogous to https://. In production, always use wss:// as it encrypts all data in transit using TLS. Browsers running on HTTPS pages will block connections to unencrypted ws:// endpoints (mixed content policy). This testing tool supports both protocols."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do WebSocket close codes work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WebSocket close events include a numeric code and a reason string. Common close codes include: 1000 (Normal Closure — clean close), 1001 (Going Away — server shutting down or page navigated away), 1006 (Abnormal Closure — connection lost without a proper close handshake), 1008 (Policy Violation — server rejected the message), 1011 (Internal Error — server encountered an unexpected error). A code of 0 means no close code was provided."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I test a local WebSocket server with this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, if you use ws:// with localhost or 127.0.0.1 (for example, ws://localhost:8080/ws). Note that browsers may block ws:// connections from an https:// page due to mixed content policy. If that happens, open the page in a local development server via http:// instead, or use wss:// with a local certificate. Some browsers also require the page and WebSocket server to be on the same origin, or the server to send appropriate CORS headers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my WebSocket data sent to a third-party server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This WebSocket tester establishes a direct connection from your browser to the WebSocket server URL you enter. The tool itself runs entirely in your browser — no data is routed through our servers. Message history is saved only to your browser's localStorage and never leaves your device."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    /* ── Layout ── */
+    .ws-layout { display: flex; flex-direction: column; gap: 12px; }
+    .ws-connect-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .ws-url-input { flex: 1; min-width: 220px; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 0.88rem; }
+    .ws-btn-connect { white-space: nowrap; }
+
+    /* ── Status indicator ── */
+    .ws-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #6b7280; margin-right: 6px; flex-shrink: 0; vertical-align: middle; transition: background 0.25s; }
+    .ws-indicator.connected    { background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.25); }
+    .ws-indicator.connecting   { background: #f59e0b; animation: ws-pulse 1s infinite; }
+    .ws-indicator.error        { background: #ef4444; }
+    @keyframes ws-pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.4; } }
+
+    /* ── Event log ── */
+    .ws-log { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow-y: auto; height: 320px; padding: 6px 0; font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace; font-size: 0.8rem; }
+    .ws-log-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted, #6b7280); font-style: italic; font-size: 0.85rem; font-family: inherit; }
+    .ws-event { display: flex; gap: 0; padding: 4px 12px; border-bottom: 1px solid var(--border); line-height: 1.5; }
+    .ws-event:last-child { border-bottom: none; }
+    .ws-event.ev-open    { background: rgba(16,185,129,.06); }
+    .ws-event.ev-message { }
+    .ws-event.ev-send    { background: rgba(99,102,241,.06); }
+    .ws-event.ev-error   { background: rgba(239,68,68,.07); }
+    .ws-event.ev-close   { background: rgba(245,158,11,.06); }
+    .ws-ts   { color: var(--text-muted, #6b7280); min-width: 90px; flex-shrink: 0; font-size: 0.75rem; padding-top: 1px; }
+    .ws-tag  { min-width: 72px; flex-shrink: 0; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.04em; padding-top: 2px; }
+    .tag-open    { color: #10b981; }
+    .tag-message { color: #6366f1; }
+    .tag-send    { color: #3b82f6; }
+    .tag-error   { color: #ef4444; }
+    .tag-close   { color: #f59e0b; }
+    .ws-body { flex: 1; word-break: break-all; white-space: pre-wrap; color: var(--text); }
+    .ws-body pre { margin: 0; padding: 6px 0 0; font-family: inherit; font-size: inherit; white-space: pre-wrap; }
+
+    /* ── Send row ── */
+    .ws-send-row { display: flex; gap: 8px; }
+    .ws-send-input { flex: 1; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: 0.88rem; resize: vertical; min-height: 56px; }
+
+    /* ── History panel ── */
+    .ws-history-list { display: flex; flex-direction: column; gap: 6px; }
+    .ws-history-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; background: var(--surface2); border-radius: 6px; border: 1px solid var(--border); cursor: pointer; }
+    .ws-history-item:hover { background: var(--surface3, var(--surface2)); filter: brightness(1.05); }
+    .ws-history-url { flex: 1; font-family: monospace; font-size: 0.82rem; word-break: break-all; color: var(--text); }
+    .ws-history-meta { font-size: 0.75rem; color: var(--text-muted, #6b7280); white-space: nowrap; }
+    .ws-history-del { background: none; border: none; cursor: pointer; color: var(--text-muted, #6b7280); font-size: 1rem; padding: 0 4px; line-height: 1; flex-shrink: 0; }
+    .ws-history-del:hover { color: #ef4444; }
+    .ws-history-empty { color: var(--text-muted, #6b7280); font-size: 0.85rem; font-style: italic; padding: 8px 0; }
+
+    /* ── Log header controls ── */
+    .ws-log-controls { display: flex; gap: 6px; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .ws-msg-count { font-size: 0.8rem; color: var(--text-muted, #6b7280); }
+
+    .ws-subpanel { display: none; }
+    .ws-subpanel.active { display: block; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/protobuf-preview.html">Protobuf Preview</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>WebSocket Tester</h1>
+          <p class="tool-subtitle">Connect to any <code>ws://</code> or <code>wss://</code> endpoint, send messages, and inspect live events with timestamps. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-panel="connect">Connect</button>
+            <button class="option-chip" data-panel="history">History</button>
+            <button class="option-chip" data-panel="reference">Reference</button>
+          </div>
+
+          <!-- CONNECT PANEL -->
+          <div class="ws-subpanel active" id="panel-connect">
+            <div class="ws-layout">
+
+              <!-- URL row -->
+              <div class="ws-connect-row">
+                <span class="ws-indicator" id="wsIndicator"></span>
+                <input type="text" class="ws-url-input" id="wsUrl"
+                  placeholder="wss://echo.websocket.org"
+                  autocomplete="off" spellcheck="false">
+                <button class="btn btn-primary ws-btn-connect" id="wsConnectBtn">Connect</button>
+                <button class="btn btn-secondary ws-btn-connect" id="wsDisconnectBtn" disabled>Disconnect</button>
+              </div>
+
+              <!-- Log header -->
+              <div class="ws-log-controls">
+                <span class="ws-msg-count" id="wsMsgCount">No events yet.</span>
+                <button class="btn btn-sm btn-secondary" id="wsClearLogBtn">Clear Log</button>
+              </div>
+
+              <!-- Event log -->
+              <div class="ws-log" id="wsLog" aria-live="polite" aria-label="WebSocket event log">
+                <div class="ws-log-empty" id="wsLogEmpty">Events will appear here after connecting.</div>
+              </div>
+
+              <!-- Send message -->
+              <div class="ws-send-row">
+                <textarea class="ws-send-input" id="wsSendInput"
+                  placeholder='Message to send (text or JSON)&#10;e.g. {"type":"ping","id":1}'
+                  rows="3" spellcheck="false"></textarea>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <button class="btn btn-primary" id="wsSendBtn" disabled style="white-space:nowrap;">Send</button>
+                  <button class="btn btn-sm btn-secondary" id="wsFormatBtn" title="Format JSON in send area">Format JSON</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- HISTORY PANEL -->
+          <div class="ws-subpanel" id="panel-history">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <span style="font-size:0.85rem;color:var(--text-muted,#6b7280);">Recent connections (saved locally)</span>
+              <button class="btn btn-sm btn-secondary" id="wsClearHistoryBtn">Clear All</button>
+            </div>
+            <div class="ws-history-list" id="wsHistoryList">
+              <div class="ws-history-empty">No history yet. Connect to a WebSocket URL to save it.</div>
+            </div>
+          </div>
+
+          <!-- REFERENCE PANEL -->
+          <div class="ws-subpanel" id="panel-reference">
+            <div style="padding:4px 0;font-size:0.83rem;line-height:1.7;">
+              <h3 style="margin:0 0 10px;font-size:0.95rem;">WebSocket Event Reference</h3>
+              <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+                <thead>
+                  <tr>
+                    <th style="padding:7px 10px;border:1px solid var(--border);background:var(--surface2);text-align:left;min-width:80px;">Event</th>
+                    <th style="padding:7px 10px;border:1px solid var(--border);background:var(--surface2);text-align:left;">Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);"><span class="tag-open" style="font-weight:700;">OPEN</span></td><td style="padding:7px 10px;border:1px solid var(--border);">Connection established. Ready to send and receive messages.</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);"><span class="tag-message" style="font-weight:700;">RECV</span></td><td style="padding:7px 10px;border:1px solid var(--border);">Message received from the server. JSON is auto-detected and pretty-printed.</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);"><span class="tag-send" style="font-weight:700;">SEND</span></td><td style="padding:7px 10px;border:1px solid var(--border);">Message sent to the server from this client.</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);"><span class="tag-error" style="font-weight:700;">ERROR</span></td><td style="padding:7px 10px;border:1px solid var(--border);">A connection error occurred. Often followed by a CLOSE event.</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);"><span class="tag-close" style="font-weight:700;">CLOSE</span></td><td style="padding:7px 10px;border:1px solid var(--border);">Connection closed. Shows close code and reason if provided by the server.</td></tr>
+                </tbody>
+              </table>
+              <h3 style="margin:16px 0 8px;font-size:0.95rem;">Close Codes</h3>
+              <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+                <thead>
+                  <tr>
+                    <th style="padding:7px 10px;border:1px solid var(--border);background:var(--surface2);text-align:left;">Code</th>
+                    <th style="padding:7px 10px;border:1px solid var(--border);background:var(--surface2);text-align:left;">Meaning</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);">1000</td><td style="padding:7px 10px;border:1px solid var(--border);">Normal Closure — clean, intentional close</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);">1001</td><td style="padding:7px 10px;border:1px solid var(--border);">Going Away — server shutting down or page navigation</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);">1002</td><td style="padding:7px 10px;border:1px solid var(--border);">Protocol Error — invalid framing</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);">1003</td><td style="padding:7px 10px;border:1px solid var(--border);">Unsupported Data — binary data when text expected</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);">1006</td><td style="padding:7px 10px;border:1px solid var(--border);">Abnormal Closure — connection lost without close handshake</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);">1007</td><td style="padding:7px 10px;border:1px solid var(--border);">Invalid Frame Payload Data — not valid UTF-8</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);">1008</td><td style="padding:7px 10px;border:1px solid var(--border);">Policy Violation — server rejected the message</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);">1009</td><td style="padding:7px 10px;border:1px solid var(--border);">Message Too Big — payload exceeds server limit</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);">1011</td><td style="padding:7px 10px;border:1px solid var(--border);">Internal Error — server encountered unexpected condition</td></tr>
+                  <tr><td style="padding:7px 10px;border:1px solid var(--border);">1015</td><td style="padding:7px 10px;border:1px solid var(--border);">TLS Handshake — TLS failure (not sent over the wire)</td></tr>
+                </tbody>
+              </table>
+              <h3 style="margin:16px 0 8px;font-size:0.95rem;">Public Test Endpoints</h3>
+              <ul style="margin:0;padding-left:20px;">
+                <li><code>wss://echo.websocket.org</code> — echoes back everything you send</li>
+                <li><code>wss://ws.postman-echo.com/raw</code> — Postman echo server</li>
+                <li><code>wss://socketsbay.com/wss/v2/1/demo/</code> — public demo channel</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a WebSocket URL and click Connect.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the WebSocket Tester</h2>
+          <ol>
+            <li><strong>Enter a URL</strong> — type or paste a <code>ws://</code> or <code>wss://</code> URL in the field at the top.</li>
+            <li><strong>Click Connect</strong> — the indicator turns green when the connection is established.</li>
+            <li><strong>Watch the log</strong> — open, receive, send, error, and close events appear in the event log with timestamps.</li>
+            <li><strong>Send messages</strong> — type any text or JSON in the send box and click Send. JSON is auto-detected and pretty-printed in the log.</li>
+            <li><strong>Disconnect</strong> when done — the connection is closed cleanly and the log shows the close code.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>This WebSocket tester establishes a direct WebSocket connection from your browser to any URL you enter. It logs all lifecycle events — <code>onopen</code>, <code>onmessage</code>, <code>onerror</code>, and <code>onclose</code> — with precise timestamps. Messages are inspected: if the server sends valid JSON, the tool automatically pretty-prints it for easy reading. Your connection history is saved to <code>localStorage</code> so frequently used endpoints are one click away.</p>
+
+          <h3>WebSocket vs HTTP Polling</h3>
+          <p>Traditional HTTP requires the client to send a request before the server can respond — every real-time update requires a new request (polling). WebSocket eliminates this by opening a persistent, bidirectional channel where both sides can push data at any time. This makes WebSocket dramatically more efficient for applications that need frequent updates: a stock price feed that updates 10 times per second would require 10 HTTP requests per second per client under polling, versus a single always-open WebSocket connection. The protocol upgrade from HTTP to WebSocket happens via a standard HTTP request with the <code>Upgrade: websocket</code> header, after which the connection is handed off to the WebSocket protocol.</p>
+
+          <h3>Testing gRPC-Web and GraphQL Subscriptions</h3>
+          <p>WebSocket is also the transport layer for GraphQL subscriptions and some gRPC-Web implementations. When testing a GraphQL subscription server, you typically send a connection init message like <code>{"type":"connection_init"}</code> and then subscribe with a start message. The server responds with <code>connection_ack</code> and then streams <code>data</code> messages. This WebSocket tester lets you manually replicate that handshake to verify your subscription server responds correctly before wiring it up to a client library.</p>
+
+          <h3>Debugging Connection Issues</h3>
+          <p>When a WebSocket connection fails, the event log shows the exact close code, which is the most reliable diagnostic signal. A code of <strong>1006</strong> (Abnormal Closure) usually means the TCP connection dropped without a clean WebSocket close — often caused by a firewall, proxy, or load balancer that does not support WebSocket upgrades. Code <strong>1015</strong> indicates a TLS certificate problem on the server. If the connection never reaches the <code>OPEN</code> state, the server may be rejecting the upgrade request, which can be diagnosed via the browser's Network tab (look for a 101 Switching Protocols response). The Reference tab in this tool documents all standard close codes.</p>
+
+          <h3>Security Notes</h3>
+          <p>Always use <code>wss://</code> in production — it encrypts all traffic via TLS, preventing man-in-the-middle attacks. Browsers enforce a mixed content policy: a page loaded over HTTPS cannot open an unencrypted <code>ws://</code> connection. If you need to test a local development server that uses plain <code>ws://</code>, either access this page via HTTP or configure your local server with a self-signed TLS certificate and use <code>wss://</code>. Never send sensitive credentials, tokens, or PII via an unencrypted WebSocket connection. Message history saved by this tool stays entirely in your browser's <code>localStorage</code> — nothing is sent to our servers.</p>
+
+          <h3>Related Tools</h3>
+          <p>For API testing beyond WebSocket, try the <a href="/tools/json-formatter.html">JSON Formatter</a> to inspect server payloads. If your WebSocket server uses Protocol Buffers, use the <a href="/tools/protobuf-preview.html">Protobuf Schema Preview</a> to understand the message structure before testing. The <a href="/tools/jwt-decoder.html">JWT Decoder</a> is useful for inspecting authentication tokens your WebSocket server might require in the initial handshake headers.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is WebSocket?</button>
+            <div class="faq-answer">WebSocket is a communication protocol providing full-duplex communication over a single TCP connection. Unlike HTTP which is request-response, WebSocket keeps a persistent connection open so both the client and server can send data at any time. It is widely used for chat apps, live dashboards, financial tickers, and multiplayer games.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between ws:// and wss://?</button>
+            <div class="faq-answer">ws:// is unencrypted WebSocket (like http://). wss:// is encrypted WebSocket Secure (like https://), using TLS. In production, always use wss://. Browsers on HTTPS pages block connections to unencrypted ws:// endpoints due to mixed content policy.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do WebSocket close codes work?</button>
+            <div class="faq-answer">WebSocket close events include a numeric code. Key codes: 1000 (Normal Closure), 1001 (Going Away), 1006 (Abnormal Closure — connection lost), 1008 (Policy Violation), 1011 (Internal Server Error). The Reference tab lists all standard codes and their meanings.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I test a local WebSocket server with this tool?</button>
+            <div class="faq-answer">Yes, using ws://localhost:PORT/path. Note that browsers may block ws:// from an https:// page (mixed content). If blocked, access this page via http:// locally, or configure your dev server with TLS and use wss://.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my WebSocket data sent to a third-party server?</button>
+            <div class="faq-answer">No. This tester connects directly from your browser to the WebSocket URL you enter. The tool runs entirely in your browser. Message history is saved only to your browser's localStorage and never leaves your device.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/protobuf-preview.html">Protobuf Preview</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = window.DevToolbox;
+
+    /* ─── DOM refs ──────────────────────────────────────────────────── */
+    var wsUrl          = document.getElementById('wsUrl');
+    var connectBtn     = document.getElementById('wsConnectBtn');
+    var disconnectBtn  = document.getElementById('wsDisconnectBtn');
+    var indicator      = document.getElementById('wsIndicator');
+    var logEl          = document.getElementById('wsLog');
+    var logEmpty       = document.getElementById('wsLogEmpty');
+    var msgCount       = document.getElementById('wsMsgCount');
+    var statusBar      = document.getElementById('statusBar');
+    var sendInput      = document.getElementById('wsSendInput');
+    var sendBtn        = document.getElementById('wsSendBtn');
+    var formatBtn      = document.getElementById('wsFormatBtn');
+    var clearLogBtn    = document.getElementById('wsClearLogBtn');
+    var historyList    = document.getElementById('wsHistoryList');
+    var clearHistBtn   = document.getElementById('wsClearHistoryBtn');
+
+    /* ─── State ─────────────────────────────────────────────────────── */
+    var ws = null;
+    var eventLog = [];           // array of log entry objects
+    var totalReceived = 0;
+    var totalSent = 0;
+    var HISTORY_KEY = 'dt_ws_history';
+    var MAX_HISTORY = 20;
+    var MAX_LOG_ENTRIES = 500;   // cap to avoid DOM bloat
+
+    /* ─── Panel switching ───────────────────────────────────────────── */
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var panel = chip.getAttribute('data-panel');
+        document.querySelectorAll('.ws-subpanel').forEach(function (p) { p.classList.remove('active'); });
+        document.getElementById('panel-' + panel).classList.add('active');
+        if (panel === 'history') renderHistory();
+      });
+    });
+
+    /* ─── Utility ───────────────────────────────────────────────────── */
+    function ts() {
+      var d = new Date();
+      var pad = function (n) { return String(n).padStart(2, '0'); };
+      return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '.' + String(d.getMilliseconds()).padStart(3, '0');
+    }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function tryPrettyJson(text) {
+      try {
+        var obj = JSON.parse(text);
+        return { isJson: true, pretty: JSON.stringify(obj, null, 2) };
+      } catch (e) {
+        return { isJson: false, pretty: text };
+      }
+    }
+
+    function setIndicator(state) {
+      indicator.className = 'ws-indicator ' + state;
+    }
+
+    function updateMsgCount() {
+      var parts = [];
+      if (totalReceived > 0) parts.push(totalReceived + ' received');
+      if (totalSent > 0) parts.push(totalSent + ' sent');
+      msgCount.textContent = parts.length ? parts.join(', ') : 'No messages yet.';
+    }
+
+    /* ─── Log rendering ─────────────────────────────────────────────── */
+    function appendLogEntry(type, label, body, isJson) {
+      // Limit log entries
+      if (eventLog.length >= MAX_LOG_ENTRIES) {
+        eventLog.shift();
+        var first = logEl.querySelector('.ws-event');
+        if (first) logEl.removeChild(first);
+      }
+
+      var time = ts();
+      eventLog.push({ type: type, time: time, body: body });
+
+      // Remove empty placeholder
+      if (logEmpty && logEmpty.parentNode === logEl) {
+        logEl.removeChild(logEmpty);
+      }
+
+      var div = document.createElement('div');
+      div.className = 'ws-event ev-' + type;
+
+      var bodyHtml;
+      if (isJson) {
+        bodyHtml = '<pre>' + esc(body) + '</pre>';
+      } else {
+        bodyHtml = esc(body);
+      }
+
+      div.innerHTML = '<span class="ws-ts">' + time + '</span>'
+        + '<span class="ws-tag tag-' + type + '">' + label + '</span>'
+        + '<span class="ws-body">' + bodyHtml + '</span>';
+
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    /* ─── WebSocket lifecycle ───────────────────────────────────────── */
+    function connect() {
+      var url = wsUrl.value.trim();
+      if (!url) { statusBar.className = 'status-bar invalid'; statusBar.textContent = 'Please enter a WebSocket URL.'; return; }
+      if (!/^wss?:\/\//i.test(url)) { statusBar.className = 'status-bar invalid'; statusBar.textContent = 'URL must start with ws:// or wss://'; return; }
+
+      if (ws) { ws.close(1000, 'User reconnect'); ws = null; }
+
+      setIndicator('connecting');
+      connectBtn.disabled = true;
+      disconnectBtn.disabled = true;
+      sendBtn.disabled = true;
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Connecting to ' + url + ' ...';
+
+      try {
+        ws = new WebSocket(url);
+      } catch (e) {
+        setIndicator('error');
+        connectBtn.disabled = false;
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Failed to create WebSocket: ' + e.message;
+        ws = null;
+        return;
+      }
+
+      ws.onopen = function () {
+        setIndicator('connected');
+        connectBtn.disabled = true;
+        disconnectBtn.disabled = false;
+        sendBtn.disabled = false;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Connected to ' + url;
+        appendLogEntry('open', 'OPEN', 'Connection established to ' + url, false);
+        saveToHistory(url);
+        renderHistory();
+        DT.trackTool('websocket-tester');
+      };
+
+      ws.onmessage = function (e) {
+        totalReceived++;
+        var data = e.data;
+        var parsed = tryPrettyJson(data);
+        appendLogEntry('message', 'RECV', parsed.pretty, parsed.isJson);
+        updateMsgCount();
+        // Update status with count
+        var baseUrl = url.length > 40 ? url.slice(0, 40) + '...' : url;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Connected to ' + baseUrl + ' — ' + totalReceived + ' message' + (totalReceived !== 1 ? 's' : '') + ' received';
+      };
+
+      ws.onerror = function () {
+        setIndicator('error');
+        appendLogEntry('error', 'ERROR', 'Connection error. See browser console for details.', false);
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'WebSocket error — connection may have been refused or dropped.';
+      };
+
+      ws.onclose = function (e) {
+        ws = null;
+        setIndicator('');
+        connectBtn.disabled = false;
+        disconnectBtn.disabled = true;
+        sendBtn.disabled = true;
+        var codeMsg = e.code ? 'Code ' + e.code : 'No code';
+        var reason = e.reason ? ' — ' + e.reason : '';
+        appendLogEntry('close', 'CLOSE', codeMsg + reason + (e.wasClean ? ' (clean close)' : ' (unclean)'), false);
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Disconnected. ' + codeMsg + reason;
+        updateMsgCount();
+      };
+    }
+
+    function disconnect() {
+      if (ws) {
+        ws.close(1000, 'User closed connection');
+      }
+    }
+
+    connectBtn.addEventListener('click', connect);
+    disconnectBtn.addEventListener('click', disconnect);
+
+    wsUrl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') connect();
+    });
+
+    /* ─── Send ──────────────────────────────────────────────────────── */
+    function sendMessage() {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Not connected. Connect first.';
+        return;
+      }
+      var msg = sendInput.value;
+      if (!msg.trim()) return;
+      ws.send(msg);
+      totalSent++;
+      var parsed = tryPrettyJson(msg);
+      appendLogEntry('send', 'SEND', parsed.pretty, parsed.isJson);
+      updateMsgCount();
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    sendInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    // Format JSON in send box
+    formatBtn.addEventListener('click', function () {
+      var val = sendInput.value.trim();
+      if (!val) return;
+      try {
+        sendInput.value = JSON.stringify(JSON.parse(val), null, 2);
+      } catch (e) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Not valid JSON: ' + e.message;
+      }
+    });
+
+    // Clear log
+    clearLogBtn.addEventListener('click', function () {
+      eventLog = [];
+      totalReceived = 0;
+      totalSent = 0;
+      logEl.innerHTML = '';
+      logEl.appendChild(logEmpty);
+      logEmpty.style.display = '';
+      msgCount.textContent = 'No messages yet.';
+    });
+
+    /* ─── History ───────────────────────────────────────────────────── */
+    function loadHistory() {
+      try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch (e) { return []; }
+    }
+
+    function saveHistory(arr) {
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); } catch (e) { /* quota */ }
+    }
+
+    function saveToHistory(url) {
+      var hist = loadHistory();
+      // Remove duplicate
+      hist = hist.filter(function (h) { return h.url !== url; });
+      // Prepend
+      hist.unshift({ url: url, ts: new Date().toISOString(), count: 1 });
+      // Trim
+      hist = hist.slice(0, MAX_HISTORY);
+      saveHistory(hist);
+    }
+
+    function renderHistory() {
+      var hist = loadHistory();
+      if (hist.length === 0) {
+        historyList.innerHTML = '<div class="ws-history-empty">No history yet. Connect to a WebSocket URL to save it.</div>';
+        return;
+      }
+      historyList.innerHTML = '';
+      hist.forEach(function (item, idx) {
+        var div = document.createElement('div');
+        div.className = 'ws-history-item';
+
+        var info = document.createElement('div');
+        info.style.flex = '1';
+
+        var urlSpan = document.createElement('div');
+        urlSpan.className = 'ws-history-url';
+        urlSpan.textContent = item.url;
+
+        var metaSpan = document.createElement('div');
+        metaSpan.className = 'ws-history-meta';
+        try {
+          var d = new Date(item.ts);
+          metaSpan.textContent = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch (e) { metaSpan.textContent = ''; }
+
+        info.appendChild(urlSpan);
+        info.appendChild(metaSpan);
+
+        var useBtn = document.createElement('button');
+        useBtn.className = 'btn btn-sm btn-secondary';
+        useBtn.textContent = 'Use';
+        useBtn.style.flexShrink = '0';
+        useBtn.addEventListener('click', function () {
+          wsUrl.value = item.url;
+          // Switch to connect panel
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          document.querySelector('[data-panel="connect"]').classList.add('active');
+          document.querySelectorAll('.ws-subpanel').forEach(function (p) { p.classList.remove('active'); });
+          document.getElementById('panel-connect').classList.add('active');
+        });
+
+        var delBtn = document.createElement('button');
+        delBtn.className = 'ws-history-del';
+        delBtn.title = 'Remove';
+        delBtn.setAttribute('aria-label', 'Remove from history');
+        delBtn.textContent = '\u00D7';
+        delBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var h = loadHistory();
+          h.splice(idx, 1);
+          saveHistory(h);
+          renderHistory();
+        });
+
+        div.appendChild(info);
+        div.appendChild(useBtn);
+        div.appendChild(delBtn);
+        historyList.appendChild(div);
+      });
+    }
+
+    clearHistBtn.addEventListener('click', function () {
+      saveHistory([]);
+      renderHistory();
+    });
+
+    // Init history render
+    renderHistory();
+
+    /* ─── Cleanup on page unload ─────────────────────────────────────── */
+    window.addEventListener('beforeunload', function () {
+      if (ws) { ws.close(1001, 'Page unloaded'); }
+    });
+
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Log File Forensics Analyzer — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Paste or drag-drop log files to extract and count IP addresses, emails, URLs, file paths, timestamps, and MAC addresses. Free, client-side, no upload required.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/forensics-analyzer.html">
+  <meta property="og:title" content="Log File Forensics Analyzer — ThisDevTool">
+  <meta property="og:description" content="Extract IPs, emails, URLs, file paths, timestamps, and MAC addresses from any log file. Free online forensics tool — runs 100% in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/forensics-analyzer.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Log File Forensics Analyzer",
+    "url": "https://thisdevtool.com/tools/forensics-analyzer.html",
+    "description": "Extract and count IP addresses, emails, URLs, file paths, timestamps, and MAC addresses from log files. Runs 100% in your browser.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is my log file data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The forensics analyzer runs entirely in your browser using JavaScript. Your log data never leaves your machine. All regex extraction happens locally — there is no upload, no server processing, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What patterns does the forensics analyzer extract?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool extracts: IPv4 addresses (e.g. 192.168.1.1), IPv6 addresses, email addresses, HTTP/HTTPS/FTP URLs, Unix and Windows file paths, ISO 8601 and common log timestamps (Apache/nginx CLF, syslog), and MAC addresses in common formats."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How large a log file can this tool handle?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Since processing runs in the browser, practical limits depend on your device's RAM. The tool handles files up to approximately 10 MB comfortably. For very large log files (100 MB+), consider using command-line tools like grep, awk, or the UNIX strings utility, then paste just the relevant sections here."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I drag and drop a log file into the tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Drag any plain-text log file from your desktop or file manager directly onto the input area. The file contents will be loaded automatically. The tool accepts .log, .txt, .csv, and any other plain-text format. Binary files are not supported."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does 'highlight in source' do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When you enable highlighting, the tool wraps all found pattern matches in the source text with colored spans so you can visually identify where each IP, email, URL, or other artifact appears in context. Each category gets a distinct color. This is useful for reading log lines with multiple artifacts at once."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    /* ── Drop zone ─────────────────────────────────────────────── */
+    .log-drop-zone {
+      position: relative;
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .log-drop-zone.drag-over {
+      border-color: var(--accent, #10b981);
+      background: rgba(16,185,129,0.05);
+    }
+    .log-drop-zone textarea {
+      width: 100%;
+      min-height: 220px;
+      border: none;
+      background: transparent;
+      resize: vertical;
+      font-family: var(--font-mono, monospace);
+      font-size: 0.82rem;
+      line-height: 1.5;
+      padding: 0.75rem;
+      box-sizing: border-box;
+      color: var(--text);
+      outline: none;
+    }
+    .drop-hint {
+      position: absolute;
+      bottom: 0.5rem;
+      right: 0.75rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* ── Highlighted output ────────────────────────────────────── */
+    .highlighted-source {
+      font-family: var(--font-mono, monospace);
+      font-size: 0.82rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .hl-ip    { background: rgba(59,130,246,0.25);  border-radius: 2px; }
+    .hl-ipv6  { background: rgba(99,102,241,0.25);  border-radius: 2px; }
+    .hl-email { background: rgba(16,185,129,0.28);  border-radius: 2px; }
+    .hl-url   { background: rgba(245,158,11,0.28);  border-radius: 2px; }
+    .hl-path  { background: rgba(236,72,153,0.22);  border-radius: 2px; }
+    .hl-ts    { background: rgba(139,92,246,0.22);  border-radius: 2px; }
+    .hl-mac   { background: rgba(20,184,166,0.28);  border-radius: 2px; }
+
+    /* ── Findings table ────────────────────────────────────────── */
+    .findings-section { margin-top: 1rem; }
+    .findings-section h3 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin: 1rem 0 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .findings-count-badge {
+      background: var(--accent, #10b981);
+      color: #fff;
+      border-radius: 10px;
+      padding: 1px 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+    .findings-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      font-family: var(--font-mono, monospace);
+    }
+    .findings-table th {
+      background: var(--code-bg);
+      color: var(--text-muted);
+      text-align: left;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+    }
+    .findings-table td {
+      padding: 0.35rem 0.65rem;
+      border-bottom: 1px solid var(--border);
+      word-break: break-all;
+    }
+    .findings-table tr:last-child td { border-bottom: none; }
+    .findings-table tr:hover td { background: rgba(16,185,129,0.04); }
+    .count-cell {
+      text-align: right;
+      font-weight: 600;
+      color: var(--accent, #10b981);
+      white-space: nowrap;
+      min-width: 3rem;
+    }
+
+    /* ── Legend ────────────────────────────────────────────────── */
+    .hl-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .hl-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .hl-legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    /* ── Controls row ──────────────────────────────────────────── */
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.75rem;
+      align-items: center;
+    }
+    .controls-row .btn { flex-shrink: 0; }
+    .file-btn-wrap { position: relative; overflow: hidden; }
+    .file-btn-wrap input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    }
+
+    /* ── Summary banner ────────────────────────────────────────── */
+    .summary-banner {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.85rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    .summary-item { display: flex; align-items: center; gap: 0.3rem; }
+    .summary-dot {
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+    }
+    .dot-ip    { background: rgba(59,130,246,0.7); }
+    .dot-ipv6  { background: rgba(99,102,241,0.7); }
+    .dot-email { background: rgba(16,185,129,0.7); }
+    .dot-url   { background: rgba(245,158,11,0.7); }
+    .dot-path  { background: rgba(236,72,153,0.7); }
+    .dot-ts    { background: rgba(139,92,246,0.7); }
+    .dot-mac   { background: rgba(20,184,166,0.7); }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Log File Forensics Analyzer</h1>
+          <p class="tool-subtitle">Paste or drag-drop a log file. Extracts IP addresses, emails, URLs, file paths, timestamps, and MAC addresses — grouped, counted, and highlighted. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="all">Extract All</button>
+            <button class="option-chip" data-mode="ips">IPs Only</button>
+            <button class="option-chip" data-mode="emails">Emails Only</button>
+            <button class="option-chip" data-mode="urls">URLs Only</button>
+          </div>
+
+          <!-- Controls -->
+          <div class="controls-row">
+            <div class="file-btn-wrap">
+              <button class="btn btn-secondary btn-sm">Upload File</button>
+              <input type="file" id="fileInput" accept=".log,.txt,.csv,.json,text/*" title="Upload a log file">
+            </div>
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-primary" id="analyzeBtn">Analyze</button>
+            <button class="btn btn-sm btn-secondary" id="downloadCsvBtn" style="margin-left:auto;">Download CSV</button>
+          </div>
+
+          <!-- Drop zone + textarea -->
+          <div class="log-drop-zone" id="dropZone">
+            <textarea id="logInput" placeholder="Paste your log file here, or drag-and-drop a file onto this area…
+
+Example:
+2024-03-15T14:23:01Z 192.168.1.105 GET /admin/login HTTP/1.1 401
+192.168.1.1 - admin 15/Mar/2024:14:23:02 +0000 POST /api/users 200
+User-Agent: Mozilla/5.0; from=attacker@evil.example.com
+Connecting from 2001:db8::ff00:42:8329 via fe80::1
+Path: /var/log/apache2/access.log MAC: 00:1B:44:11:3A:B7" spellcheck="false"></textarea>
+            <span class="drop-hint">Drag &amp; drop a .log or .txt file</span>
+          </div>
+
+          <!-- Summary banner (hidden until analysis) -->
+          <div class="summary-banner" id="summaryBanner" style="display:none;"></div>
+
+          <!-- Findings -->
+          <div class="findings-section" id="findingsSection"></div>
+
+          <!-- Highlighted source -->
+          <div id="highlightSection" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;margin-bottom:0.35rem;">
+              <strong style="font-size:0.85rem;">Highlighted Source</strong>
+              <button class="btn btn-sm btn-secondary" id="toggleHighlight">Hide Highlight</button>
+            </div>
+            <div class="hl-legend" id="hlLegend"></div>
+            <div class="highlighted-source" id="highlightedSource"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste or upload a log file, then click Analyze.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Log Forensics Analyzer</h2>
+          <ol>
+            <li><strong>Paste or upload</strong> — paste log content directly into the text area, drag-and-drop a file onto the area, or click "Upload File" to browse for a .log or .txt file.</li>
+            <li><strong>Choose extraction mode</strong> — "Extract All" finds every pattern; the mode chips let you focus on IPs, emails, or URLs.</li>
+            <li><strong>Click Analyze</strong> — the tool scans the log with regex patterns, groups unique values, and shows counts.</li>
+            <li><strong>Review findings</strong> — each category (IPv4, IPv6, emails, URLs, paths, timestamps, MACs) is shown in a sorted table with occurrence counts.</li>
+            <li><strong>Highlight in source</strong> — the tool renders your log with color-coded highlights so you can see each artifact in context.</li>
+            <li><strong>Export as CSV</strong> — download all findings grouped by category for further analysis in Excel, Python, or other tools.</li>
+          </ol>
+
+          <h2>What This Tool Extracts</h2>
+
+          <h3>IP Addresses (IPv4 and IPv6)</h3>
+          <p>The tool extracts IPv4 addresses in dotted-decimal notation (e.g. <code>192.168.1.1</code>, <code>10.0.0.255</code>) and IPv6 addresses in colon-hex notation including compressed forms (e.g. <code>2001:db8::1</code>, <code>fe80::1</code>). In security log analysis, IP addresses are often the primary identifier for clients, attackers, or internal hosts. The tool groups IPs by unique address and shows how many times each appeared, making it easy to spot high-frequency IPs that may indicate scanning, brute-force attacks, or crawlers.</p>
+
+          <h3>Email Addresses</h3>
+          <p>Email addresses extracted via RFC-compliant pattern matching cover the vast majority of real-world addresses including subdomains and plus-addressing (e.g. <code>user+tag@subdomain.example.com</code>). Email addresses in logs typically come from authentication attempts, contact form submissions, API payloads logged in debug mode, or SMTP server logs. Finding unexpected email domains can reveal phishing attempts, spam submissions, or misconfigured systems.</p>
+
+          <h3>URLs</h3>
+          <p>The tool extracts full URLs starting with <code>http://</code>, <code>https://</code>, or <code>ftp://</code> including query strings and fragments. Web server access logs, reverse proxy logs, and application logs often contain the full request URL. Analyzing URL frequency can reveal scrapers targeting specific paths, vulnerability scanners testing known exploit paths (e.g. <code>/wp-admin</code>, <code>/.env</code>, <code>/etc/passwd</code>), or broken links causing 404 storms.</p>
+
+          <h3>File Paths</h3>
+          <p>Both Unix paths starting with <code>/</code> (e.g. <code>/var/log/syslog</code>, <code>/home/user/</code>) and Windows UNC/drive paths (e.g. <code>C:\Windows\System32</code>, <code>\\server\share</code>) are extracted. File paths in logs often appear in stack traces, error messages, audit logs, and file integrity monitoring (FIM) output. Unexpected system paths can indicate path traversal attacks or unauthorized file access.</p>
+
+          <h3>Timestamps</h3>
+          <p>Common timestamp formats are recognized: ISO 8601 (<code>2024-03-15T14:23:01Z</code>), Apache/nginx combined log format (<code>15/Mar/2024:14:23:01 +0000</code>), syslog format (<code>Mar 15 14:23:01</code>), and Unix epoch-like numeric timestamps. Timestamps are valuable for correlating events across multiple log sources and for establishing timelines in incident response. The tool extracts and groups unique timestamps so you can identify burst periods with unusual activity.</p>
+
+          <h3>MAC Addresses</h3>
+          <p>Media Access Control (MAC) addresses are extracted in common formats including colon-separated (<code>00:1B:44:11:3A:B7</code>), hyphen-separated (<code>00-1B-44-11-3A-B7</code>), and dot-separated Cisco notation (<code>001b.4411.3ab7</code>). MAC addresses appear in DHCP server logs, ARP tables, wireless controller logs, and network switch logs. Seeing unexpected MAC addresses can indicate unauthorized devices on your network.</p>
+
+          <h3>Log Forensics Use Cases</h3>
+          <ul>
+            <li><strong>Incident response</strong> — quickly extract all attacker IPs from a compromised server's access log</li>
+            <li><strong>Brute-force detection</strong> — count authentication attempts per IP to identify password spray attacks</li>
+            <li><strong>Data exfiltration review</strong> — find unusual URLs or file paths in outbound proxy logs</li>
+            <li><strong>SIEM pre-processing</strong> — extract structured data from raw logs before ingesting into Splunk, ELK, or similar</li>
+            <li><strong>Email spam analysis</strong> — extract sender addresses from mail server logs to build blocklists</li>
+            <li><strong>Compliance auditing</strong> — verify that PII (emails, IPs) in logs is limited to what your policy allows</li>
+          </ul>
+
+          <h3>Privacy Note</h3>
+          <p>Log files often contain sensitive personal data: IP addresses, email addresses, usernames, and URLs that encode user sessions. This tool processes everything locally in your browser. Your log data is never uploaded, transmitted, or stored anywhere. You can use this tool safely on production log data without any risk of data leakage. The only network requests this page makes are to load its own CSS/JS assets from thisdevtool.com.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my log file data sent to a server?</button>
+            <div class="faq-answer">No. The forensics analyzer runs entirely in your browser using JavaScript. Your log data never leaves your machine. All regex extraction happens locally — there is no upload, no server processing, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What patterns does the forensics analyzer extract?</button>
+            <div class="faq-answer">The tool extracts: IPv4 addresses (e.g. 192.168.1.1), IPv6 addresses, email addresses, HTTP/HTTPS/FTP URLs, Unix and Windows file paths, ISO 8601 and common log timestamps (Apache/nginx CLF, syslog), and MAC addresses in common formats.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How large a log file can this tool handle?</button>
+            <div class="faq-answer">Since processing runs in the browser, practical limits depend on your device's RAM. The tool handles files up to approximately 10 MB comfortably. For very large log files (100 MB+), consider using command-line tools like grep or awk, then paste the relevant sections here.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I drag and drop a log file into the tool?</button>
+            <div class="faq-answer">Yes. Drag any plain-text log file from your desktop or file manager directly onto the input area. The file contents will be loaded automatically. The tool accepts .log, .txt, .csv, and any other plain-text format. Binary files are not supported.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does 'highlight in source' do?</button>
+            <div class="faq-answer">When you click Analyze, the tool renders your source text with color-coded highlighting so you can see each IP, email, URL, or other artifact in its original context. Each category gets a distinct color. This is useful for reading log lines with multiple artifacts at once.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/dns-doh-lookup.html">DNS Lookup</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/base64.html">Base64</a>
+        <a href="/tools/list-deduper.html">List Deduper</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = window.DevToolbox;
+
+    // ── Regex patterns ────────────────────────────────────────────────────────
+    var PATTERNS = {
+      ipv4: {
+        label: 'IPv4 Addresses',
+        re: /\b(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\b/g,
+        hlClass: 'hl-ip',
+        dotClass: 'dot-ip',
+        swatchColor: 'rgba(59,130,246,0.5)'
+      },
+      ipv6: {
+        label: 'IPv6 Addresses',
+        re: /\b(?:[0-9a-fA-F]{1,4}:){2,7}[0-9a-fA-F]{1,4}\b|(?:\bfe80:[0-9a-fA-F:]+%\w+\b)|(?:\b(?:[0-9a-fA-F]{1,4}:)*::(?:[0-9a-fA-F]{1,4}:)*[0-9a-fA-F]{1,4}\b)/g,
+        hlClass: 'hl-ipv6',
+        dotClass: 'dot-ipv6',
+        swatchColor: 'rgba(99,102,241,0.5)'
+      },
+      email: {
+        label: 'Email Addresses',
+        re: /\b[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+\b/g,
+        hlClass: 'hl-email',
+        dotClass: 'dot-email',
+        swatchColor: 'rgba(16,185,129,0.5)'
+      },
+      url: {
+        label: 'URLs',
+        re: /https?:\/\/[^\s"'<>)\]]+|ftp:\/\/[^\s"'<>)\]]+/gi,
+        hlClass: 'hl-url',
+        dotClass: 'dot-url',
+        swatchColor: 'rgba(245,158,11,0.5)'
+      },
+      path: {
+        label: 'File Paths',
+        re: /(?:\/(?:[\w.\-]+\/)*[\w.\-]+(?:\.\w+)?)|(?:[A-Za-z]:\\(?:[\w.\- ]+\\)*[\w.\- ]+(?:\.\w+)?)|(?:\\\\[\w.\-]+\\[\w$.\-]+(?:\\[\w.\-]*)*)/g,
+        hlClass: 'hl-path',
+        dotClass: 'dot-path',
+        swatchColor: 'rgba(236,72,153,0.5)'
+      },
+      timestamp: {
+        label: 'Timestamps',
+        re: /\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:[.,]\d+)?(?:Z|[+-]\d{2}:\d{2})?|\d{2}\/\w{3}\/\d{4}:\d{2}:\d{2}:\d{2} [+-]\d{4}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}/g,
+        hlClass: 'hl-ts',
+        dotClass: 'dot-ts',
+        swatchColor: 'rgba(139,92,246,0.5)'
+      },
+      mac: {
+        label: 'MAC Addresses',
+        re: /\b(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}\b|\b(?:[0-9a-fA-F]{2}-){5}[0-9a-fA-F]{2}\b|\b(?:[0-9a-fA-F]{4}\.){2}[0-9a-fA-F]{4}\b/g,
+        hlClass: 'hl-mac',
+        dotClass: 'dot-mac',
+        swatchColor: 'rgba(20,184,166,0.5)'
+      }
+    };
+
+    var MODE_KEYS = {
+      all:    ['ipv4','ipv6','email','url','path','timestamp','mac'],
+      ips:    ['ipv4','ipv6'],
+      emails: ['email'],
+      urls:   ['url']
+    };
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    var currentMode = 'all';
+    var lastFindings = {};
+    var highlightVisible = true;
+
+    // ── DOM ───────────────────────────────────────────────────────────────────
+    var logInput         = document.getElementById('logInput');
+    var fileInput        = document.getElementById('fileInput');
+    var analyzeBtn       = document.getElementById('analyzeBtn');
+    var exampleBtn       = document.getElementById('exampleBtn');
+    var clearBtn         = document.getElementById('clearBtn');
+    var downloadCsvBtn   = document.getElementById('downloadCsvBtn');
+    var findingsSection  = document.getElementById('findingsSection');
+    var summaryBanner    = document.getElementById('summaryBanner');
+    var highlightSection = document.getElementById('highlightSection');
+    var highlightedSource= document.getElementById('highlightedSource');
+    var hlLegend         = document.getElementById('hlLegend');
+    var toggleHighlight  = document.getElementById('toggleHighlight');
+    var statusBar        = document.getElementById('statusBar');
+    var dropZone         = document.getElementById('dropZone');
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function setStatus(type, text) {
+      statusBar.className = 'status-bar ' + type;
+      statusBar.textContent = text;
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function countLines(text) {
+      var n = 0;
+      for (var i = 0; i < text.length; i++) if (text[i] === '\n') n++;
+      return n + 1;
+    }
+
+    // ── Mode chips ────────────────────────────────────────────────────────────
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+      });
+    });
+
+    // ── Drag-and-drop ─────────────────────────────────────────────────────────
+    dropZone.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      dropZone.classList.add('drag-over');
+    });
+    dropZone.addEventListener('dragleave', function () {
+      dropZone.classList.remove('drag-over');
+    });
+    dropZone.addEventListener('drop', function (e) {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      var file = e.dataTransfer.files[0];
+      if (file) readFile(file);
+    });
+
+    // ── File input ────────────────────────────────────────────────────────────
+    fileInput.addEventListener('change', function () {
+      if (fileInput.files[0]) readFile(fileInput.files[0]);
+    });
+
+    function readFile(file) {
+      if (file.size > 15 * 1024 * 1024) {
+        setStatus('invalid', 'File too large (max 15 MB). Paste a portion of the log instead.');
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        logInput.value = e.target.result;
+        setStatus('info', 'Loaded: ' + file.name + ' (' + formatBytes(file.size) + '). Click Analyze.');
+      };
+      reader.readAsText(file);
+    }
+
+    function formatBytes(b) {
+      if (b < 1024) return b + ' B';
+      if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+      return (b / 1048576).toFixed(1) + ' MB';
+    }
+
+    // ── Example ───────────────────────────────────────────────────────────────
+    var EXAMPLE_LOG = [
+      '2024-03-15T14:23:01Z 192.168.1.105 GET /admin/login HTTP/1.1 401',
+      '2024-03-15T14:23:02Z 192.168.1.105 GET /admin/login HTTP/1.1 401',
+      '2024-03-15T14:23:03Z 192.168.1.105 GET /admin/login HTTP/1.1 401',
+      '10.0.0.1 - admin [15/Mar/2024:14:23:04 +0000] "POST /api/users HTTP/1.1" 200 512',
+      'Mar 15 14:23:05 webserver sshd[1234]: Failed password for root from 203.0.113.42 port 22 ssh2',
+      'Mar 15 14:23:06 webserver sshd[1235]: Failed password for root from 203.0.113.42 port 22 ssh2',
+      '192.168.1.200 - - [15/Mar/2024:14:23:07 +0000] "GET /.env HTTP/1.1" 404 162',
+      '192.168.1.200 - - [15/Mar/2024:14:23:08 +0000] "GET /wp-admin HTTP/1.1" 301 0',
+      'ERROR [2024-03-15T14:23:09.123Z] Exception in /var/www/app/controllers/AuthController.php',
+      'Stack trace: #0 /var/www/app/lib/Database.php(45)',
+      'DHCP: assigned 10.0.0.55 to MAC 00:1B:44:11:3A:B7 (hostname: desktop-alice)',
+      'DHCP: assigned 10.0.0.56 to MAC aa-bb-cc-dd-ee-ff (hostname: laptop-bob)',
+      'Contact form submission from user@example.com via https://thisdevtool.com/contact',
+      'Outbound request to https://api.external-service.io/v2/data?key=abc123&limit=50',
+      'Alert: login attempt for admin@corp.internal from 2001:db8::ff00:42:8329',
+      'Backup archived to \\\\fileserver\\backups\\2024-03-15\\db-dump.sql.gz',
+      '2024-03-15T14:23:15Z 172.16.0.99 GET /api/export?format=csv&rows=all HTTP/1.1 200'
+    ].join('\n');
+
+    exampleBtn.addEventListener('click', function () {
+      logInput.value = EXAMPLE_LOG;
+      setStatus('info', 'Example log loaded. Click Analyze to extract patterns.');
+    });
+
+    clearBtn.addEventListener('click', function () {
+      logInput.value = '';
+      findingsSection.innerHTML = '';
+      summaryBanner.style.display = 'none';
+      highlightSection.style.display = 'none';
+      lastFindings = {};
+      setStatus('info', 'Paste or upload a log file, then click Analyze.');
+    });
+
+    // ── Core analysis ─────────────────────────────────────────────────────────
+    function extractPattern(text, key) {
+      var p = PATTERNS[key];
+      // Reset lastIndex (global regex)
+      p.re.lastIndex = 0;
+      var counts = {};
+      var match;
+      while ((match = p.re.exec(text)) !== null) {
+        var val = match[0];
+        counts[val] = (counts[val] || 0) + 1;
+      }
+      return counts;
+    }
+
+    analyzeBtn.addEventListener('click', doAnalyze);
+
+    function doAnalyze() {
+      var text = logInput.value;
+      if (!text.trim()) {
+        setStatus('invalid', 'Paste or upload a log file first.');
+        return;
+      }
+
+      var keys = MODE_KEYS[currentMode] || MODE_KEYS['all'];
+      var lineCount = countLines(text);
+
+      lastFindings = {};
+      var totalFound = 0;
+      keys.forEach(function (key) {
+        lastFindings[key] = extractPattern(text, key);
+        totalFound += Object.keys(lastFindings[key]).length;
+      });
+
+      renderFindings(keys, lineCount);
+      renderHighlight(text, keys);
+      renderSummary(keys, lineCount);
+
+      // Status message
+      var parts = [];
+      keys.forEach(function (key) {
+        var n = Object.keys(lastFindings[key]).length;
+        if (n > 0) parts.push(n + ' ' + PATTERNS[key].label.toLowerCase());
+      });
+      if (parts.length) {
+        setStatus('valid', 'Found ' + parts.join(', ') + ' in ' + lineCount.toLocaleString() + ' lines');
+      } else {
+        setStatus('info', 'No patterns found in ' + lineCount.toLocaleString() + ' lines — check the mode filter');
+      }
+
+      if (DT && DT.trackTool) DT.trackTool('forensics-analyzer');
+    }
+
+    // ── Render summary banner ─────────────────────────────────────────────────
+    function renderSummary(keys, lineCount) {
+      var items = [];
+      keys.forEach(function (key) {
+        var n = Object.keys(lastFindings[key]).length;
+        var p = PATTERNS[key];
+        items.push(
+          '<span class="summary-item">' +
+          '<span class="summary-dot ' + p.dotClass + '"></span>' +
+          '<strong>' + n + '</strong>&nbsp;' + p.label +
+          '</span>'
+        );
+      });
+      summaryBanner.innerHTML = items.join('') +
+        '<span class="summary-item" style="margin-left:auto;color:var(--text-muted);">' +
+        lineCount.toLocaleString() + ' lines</span>';
+      summaryBanner.style.display = 'flex';
+    }
+
+    // ── Render findings tables ────────────────────────────────────────────────
+    function renderFindings(keys, lineCount) {
+      var html = '';
+      keys.forEach(function (key) {
+        var counts = lastFindings[key];
+        var entries = Object.keys(counts);
+        var p = PATTERNS[key];
+        if (entries.length === 0) {
+          html += '<h3>' + escHtml(p.label) + ' <span style="color:var(--text-muted);font-weight:normal;text-transform:none;font-size:0.8rem;">(none found)</span></h3>';
+          return;
+        }
+        // Sort by count desc, then alphabetically
+        entries.sort(function (a, b) {
+          return counts[b] - counts[a] || a.localeCompare(b);
+        });
+        html += '<h3>' + escHtml(p.label) +
+          ' <span class="findings-count-badge">' + entries.length + ' unique</span></h3>';
+        html += '<div style="overflow-x:auto;">' +
+          '<table class="findings-table"><thead><tr><th>Value</th><th>Occurrences</th></tr></thead><tbody>';
+        // Cap at 200 rows in table to prevent DOM explosion
+        var shown = Math.min(entries.length, 200);
+        for (var i = 0; i < shown; i++) {
+          var val = entries[i];
+          html += '<tr><td>' + escHtml(val) + '</td><td class="count-cell">' + counts[val] + '</td></tr>';
+        }
+        if (entries.length > shown) {
+          html += '<tr><td colspan="2" style="color:var(--text-muted);text-align:center;">' +
+            '… and ' + (entries.length - shown) + ' more (download CSV to see all)</td></tr>';
+        }
+        html += '</tbody></table></div>';
+      });
+      findingsSection.innerHTML = html;
+    }
+
+    // ── Highlighted source ────────────────────────────────────────────────────
+    function renderHighlight(text, keys) {
+      // Build sorted replacements list to avoid nested/overlapping spans
+      // We use a simple approach: collect all match ranges, sort by start,
+      // then interleave with plain text.
+      var segments = []; // {start, end, cls}
+
+      keys.forEach(function (key) {
+        var p = PATTERNS[key];
+        p.re.lastIndex = 0;
+        var m;
+        while ((m = p.re.exec(text)) !== null) {
+          segments.push({ start: m.index, end: m.index + m[0].length, cls: p.hlClass });
+        }
+      });
+
+      // Sort by start, break ties by longer match first
+      segments.sort(function (a, b) {
+        return a.start - b.start || b.end - a.end;
+      });
+
+      // Remove overlaps (keep first/longest)
+      var cleaned = [];
+      var cursor = 0;
+      segments.forEach(function (seg) {
+        if (seg.start >= cursor) {
+          cleaned.push(seg);
+          cursor = seg.end;
+        }
+      });
+
+      // Build HTML
+      var parts = [];
+      var pos = 0;
+      cleaned.forEach(function (seg) {
+        if (seg.start > pos) {
+          parts.push(escHtml(text.slice(pos, seg.start)));
+        }
+        parts.push('<span class="' + seg.cls + '">' + escHtml(text.slice(seg.start, seg.end)) + '</span>');
+        pos = seg.end;
+      });
+      if (pos < text.length) parts.push(escHtml(text.slice(pos)));
+
+      highlightedSource.innerHTML = parts.join('');
+
+      // Legend
+      var legendHtml = '';
+      keys.forEach(function (key) {
+        var p = PATTERNS[key];
+        legendHtml += '<span class="hl-legend-item">' +
+          '<span class="hl-legend-swatch" style="background:' + p.swatchColor + '"></span>' +
+          escHtml(p.label) + '</span>';
+      });
+      hlLegend.innerHTML = legendHtml;
+
+      highlightSection.style.display = 'block';
+      highlightVisible = true;
+      toggleHighlight.textContent = 'Hide Highlight';
+    }
+
+    toggleHighlight.addEventListener('click', function () {
+      highlightVisible = !highlightVisible;
+      highlightedSource.style.display = highlightVisible ? '' : 'none';
+      hlLegend.style.display = highlightVisible ? '' : 'none';
+      toggleHighlight.textContent = highlightVisible ? 'Hide Highlight' : 'Show Highlight';
+    });
+
+    // ── CSV export ────────────────────────────────────────────────────────────
+    downloadCsvBtn.addEventListener('click', function () {
+      if (!Object.keys(lastFindings).length) {
+        setStatus('invalid', 'Run an analysis first.');
+        return;
+      }
+      var rows = [['Category', 'Value', 'Count']];
+      Object.keys(lastFindings).forEach(function (key) {
+        var counts = lastFindings[key];
+        var label = PATTERNS[key].label;
+        var entries = Object.keys(counts).sort(function (a, b) {
+          return counts[b] - counts[a];
+        });
+        entries.forEach(function (val) {
+          rows.push([label, val, String(counts[val])]);
+        });
+      });
+      var csv = rows.map(function (row) {
+        return row.map(function (cell) {
+          return '"' + cell.replace(/"/g, '""') + '"';
+        }).join(',');
+      }).join('\n');
+
+      if (DT && DT.downloadText) {
+        DT.downloadText(csv, 'forensics-findings.csv', 'text/csv');
+      } else {
+        var a = document.createElement('a');
+        a.href = 'data:text/csv,' + encodeURIComponent(csv);
+        a.download = 'forensics-findings.csv';
+        a.click();
+      }
+    });
+
+  }());
+  </script>
+</body>
+</html>

@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>SQL to ORM Model Generator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Paste a CREATE TABLE SQL statement and generate boilerplate ORM models for Sequelize (JS), GORM (Go), SQLAlchemy (Python), or Prisma. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/sql-to-orm.html">
+  <meta property="og:title" content="SQL to ORM Model Generator — ThisDevTool">
+  <meta property="og:description" content="Convert CREATE TABLE SQL to Sequelize, GORM, SQLAlchemy, or Prisma model boilerplate instantly. Free and 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/sql-to-orm.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SQL to ORM Model Generator",
+    "url": "https://thisdevtool.com/tools/sql-to-orm.html",
+    "description": "Convert CREATE TABLE SQL statements into Sequelize, GORM, SQLAlchemy, or Prisma model boilerplate. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What SQL dialects does this tool support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The parser handles standard CREATE TABLE syntax as used in PostgreSQL, MySQL, SQLite, and SQL Server. It recognises common data types like VARCHAR, TEXT, INT, BIGINT, BOOLEAN, TIMESTAMP, DATE, FLOAT, DECIMAL, UUID, and JSON. Column constraints like NOT NULL, PRIMARY KEY, DEFAULT, UNIQUE, and AUTO_INCREMENT are also extracted."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my SQL sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All parsing and code generation runs entirely in your browser using JavaScript. Your SQL schema is never sent to any server, stored, or logged. This tool is 100% client-side."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between Sequelize, GORM, SQLAlchemy, and Prisma?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sequelize is a Node.js ORM for PostgreSQL, MySQL, MariaDB, SQLite, and SQL Server. GORM is the most popular ORM for Go. SQLAlchemy is the standard ORM for Python, supporting many database backends. Prisma is a next-generation Node.js/TypeScript ORM with a schema-first approach and auto-generated client. Each has its own model definition syntax — this tool generates the correct boilerplate for whichever you choose."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How accurate is the generated ORM model?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The generated code is a starting-point boilerplate, not production-ready code. It maps standard SQL types to ORM equivalents and respects NOT NULL and PRIMARY KEY constraints. You will need to add relationships (associations/foreign keys), indexes, validation rules, hooks, and any ORM-specific configurations manually."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I generate models for multiple tables at once?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Currently the tool processes the first CREATE TABLE statement found in the input. Paste each table separately to generate its model. Multi-table support with relationship inference is planned for a future update."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/sql-formatter.html">SQL Formatter</a>
+        <a href="/tools/json-to-typescript.html">JSON to TypeScript</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>SQL to ORM Model Generator</h1>
+          <p class="tool-subtitle">Paste a CREATE TABLE SQL statement to generate an ORM model for Sequelize, GORM, SQLAlchemy, or Prisma. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="sequelize">Sequelize (JS)</button>
+            <button class="option-chip" data-mode="gorm">GORM (Go)</button>
+            <button class="option-chip" data-mode="sqlalchemy">SQLAlchemy (Python)</button>
+            <button class="option-chip" data-mode="prisma">Prisma</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>CREATE TABLE SQL</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="sqlInput" rows="16" placeholder="Paste your CREATE TABLE statement here...
+
+Example:
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  name VARCHAR(100),
+  created_at TIMESTAMP DEFAULT NOW()
+);" spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Generated ORM Model</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="ormOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a CREATE TABLE statement above to generate the ORM model.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the SQL to ORM Generator</h2>
+          <ol>
+            <li><strong>Paste your CREATE TABLE SQL</strong> into the left panel — standard PostgreSQL, MySQL, SQLite, or SQL Server syntax.</li>
+            <li><strong>Choose your ORM</strong> — Sequelize (JavaScript/Node.js), GORM (Go), SQLAlchemy (Python), or Prisma.</li>
+            <li><strong>Copy or download</strong> the generated model and paste it into your project.</li>
+            <li><strong>Customise</strong> — add relationships, validations, hooks, and index definitions that cannot be inferred from the table definition alone.</li>
+          </ol>
+
+          <h2>Why Use an ORM?</h2>
+          <p>An Object-Relational Mapper (ORM) lets you interact with a relational database using your programming language's native objects and methods instead of writing raw SQL. ORMs handle parameterisation (preventing SQL injection), connection pooling, migration management, and often provide a query builder API. They improve developer productivity by keeping database access code in the same language and style as the rest of the application. Trade-offs include some performance overhead for complex queries and the need to learn the ORM's specific API — but for most CRUD-heavy web applications the productivity gains outweigh the costs.</p>
+
+          <h3>SQL Type Mapping Reference</h3>
+          <p>The following table summarises how this tool maps SQL column types to each ORM's equivalent:</p>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:.9rem;">
+              <thead>
+                <tr style="background:var(--bg-secondary);">
+                  <th style="padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border);">SQL Type</th>
+                  <th style="padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border);">Sequelize</th>
+                  <th style="padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border);">GORM (Go)</th>
+                  <th style="padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border);">SQLAlchemy</th>
+                  <th style="padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border);">Prisma</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">VARCHAR, TEXT</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DataTypes.STRING</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">string</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">String</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">String</td></tr>
+                <tr><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">INT, INTEGER, SERIAL</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DataTypes.INTEGER</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">int</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">Integer</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">Int</td></tr>
+                <tr><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">BIGINT, BIGSERIAL</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DataTypes.BIGINT</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">int64</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">BigInteger</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">BigInt</td></tr>
+                <tr><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">BOOLEAN, BOOL</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DataTypes.BOOLEAN</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">bool</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">Boolean</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">Boolean</td></tr>
+                <tr><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">FLOAT, REAL, DOUBLE</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DataTypes.FLOAT</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">float64</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">Float</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">Float</td></tr>
+                <tr><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DECIMAL, NUMERIC</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DataTypes.DECIMAL</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">float64</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">Numeric</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">Decimal</td></tr>
+                <tr><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">TIMESTAMP, DATETIME</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DataTypes.DATE</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">time.Time</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DateTime</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DateTime</td></tr>
+                <tr><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DATE</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DataTypes.DATEONLY</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">time.Time</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">Date</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DateTime</td></tr>
+                <tr><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">UUID</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">DataTypes.UUID</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">string</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">UUID</td><td style="padding:.4rem .75rem;border-bottom:1px solid var(--border);">String @db.Uuid</td></tr>
+                <tr><td style="padding:.4rem .75rem;">JSON, JSONB</td><td style="padding:.4rem .75rem;">DataTypes.JSON</td><td style="padding:.4rem .75rem;">datatypes.JSON</td><td style="padding:.4rem .75rem;">JSON</td><td style="padding:.4rem .75rem;">Json</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3>Sequelize</h3>
+          <p>Sequelize is the most widely used Node.js ORM, supporting PostgreSQL, MySQL, MariaDB, SQLite, and Microsoft SQL Server. Models are defined by calling <code>sequelize.define()</code> with a model name and an attributes object. Each attribute maps to a column and includes a <code>DataTypes</code> enum value plus optional constraint flags like <code>allowNull</code>, <code>primaryKey</code>, and <code>unique</code>. Associations (hasOne, hasMany, belongsTo, belongsToMany) are defined separately on the model. Migrations are managed with the Sequelize CLI (<code>sequelize-cli</code>). The generated boilerplate sets <code>underscored: true</code> and <code>timestamps: false</code> as sensible defaults — adjust these for your project conventions.</p>
+
+          <h3>GORM</h3>
+          <p>GORM is the Go ORM library and follows Go's struct conventions. Each model is a Go struct where fields map to columns. GORM uses struct tags (<code>gorm:"..."</code>) to express constraints, column names, and foreign key relationships. The primary key is conventionally named <code>ID</code> or tagged with <code>primaryKey</code>. GORM includes an <code>gorm.Model</code> embedded struct that provides <code>ID</code>, <code>CreatedAt</code>, <code>UpdatedAt</code>, and <code>DeletedAt</code> fields automatically — the generated code embeds this when those columns are detected in the SQL. GORM supports auto-migration with <code>db.AutoMigrate(&amp;Model{})</code>.</p>
+
+          <h3>SQLAlchemy</h3>
+          <p>SQLAlchemy is the Python SQL toolkit and ORM. The generated code uses the modern declarative base style with <code>DeclarativeBase</code> (SQLAlchemy 2.x) and <code>Mapped[type]</code> type annotations for columns. Each column is declared using <code>mapped_column()</code> with optional parameters for primary key, nullable, unique, and default values. SQLAlchemy supports Alembic for database migrations. The generated class name is a PascalCase version of the table name.</p>
+
+          <h3>Prisma</h3>
+          <p>Prisma is a TypeScript-first ORM with a schema-first workflow. Instead of defining models in application code, you define them in a <code>schema.prisma</code> file, then run <code>prisma generate</code> to produce a fully-typed client. The generated Prisma model block uses the table name and maps each SQL column to a field with a Prisma scalar type. The <code>@@map</code> directive links the model to the actual SQL table name when it differs from the model name. Run <code>prisma db push</code> or <code>prisma migrate dev</code> to apply the schema to your database.</p>
+
+          <h3>Choosing the Right ORM for Your Project</h3>
+          <p>For new Node.js projects with TypeScript, Prisma's type safety and developer experience are hard to beat. For existing Node.js projects that are already using Sequelize, stay with it — migration costs rarely justify switching. In Go, GORM is the de-facto standard and integrates well with gin, echo, and fiber. In Python, SQLAlchemy is the right choice for almost every project — FastAPI, Flask, and Django (via SQLAlchemy as an alternative to Django ORM) all work well with it. Whatever ORM you use, always review generated boilerplate carefully before committing — an ORM model is a contract between your application and your database schema. Use our <a href="/tools/sql-formatter.html">SQL Formatter</a> to clean up your SQL before pasting, or try the <a href="/tools/json-to-typescript.html">JSON to TypeScript</a> generator for frontend type definitions.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What SQL dialects does this tool support?</button>
+            <div class="faq-answer">The parser handles standard CREATE TABLE syntax as used in PostgreSQL, MySQL, SQLite, and SQL Server. It recognises common data types like VARCHAR, TEXT, INT, BIGINT, BOOLEAN, TIMESTAMP, DATE, FLOAT, DECIMAL, UUID, and JSON. Column constraints like NOT NULL, PRIMARY KEY, DEFAULT, UNIQUE, and AUTO_INCREMENT are also extracted.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my SQL sent to a server?</button>
+            <div class="faq-answer">No. All parsing and code generation runs entirely in your browser using JavaScript. Your SQL schema is never sent to any server, stored, or logged. This tool is 100% client-side.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between Sequelize, GORM, SQLAlchemy, and Prisma?</button>
+            <div class="faq-answer">Sequelize is a Node.js ORM for PostgreSQL, MySQL, MariaDB, SQLite, and SQL Server. GORM is the most popular ORM for Go. SQLAlchemy is the standard ORM for Python. Prisma is a TypeScript-first ORM with a schema-first approach and auto-generated client. Each has its own model definition syntax — this tool generates the correct boilerplate for each.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How accurate is the generated ORM model?</button>
+            <div class="faq-answer">The generated code is starting-point boilerplate, not production-ready code. It maps standard SQL types to ORM equivalents and respects NOT NULL and PRIMARY KEY constraints. You will need to add relationships (associations/foreign keys), indexes, validation rules, hooks, and ORM-specific configurations manually.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I generate models for multiple tables at once?</button>
+            <div class="faq-answer">Currently the tool processes the first CREATE TABLE statement found in the input. Paste each table separately to generate its model. Multi-table support with relationship inference is on the roadmap.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/sql-formatter.html">SQL Formatter</a>
+        <a href="/tools/json-to-typescript.html">JSON to TypeScript</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/jwt-to-openapi.html">JWT to OpenAPI</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+        <a href="/tools/json-schema.html">JSON Schema Generator</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      var DT = window.DevToolbox;
+      var sqlInput = document.getElementById('sqlInput');
+      var ormOutput = document.getElementById('ormOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'sequelize';
+
+      // ── SQL type → ORM type maps ─────────────────────────────────────────────
+      var TYPE_MAP = {
+        sequelize: {
+          varchar: 'DataTypes.STRING', char: 'DataTypes.STRING', text: 'DataTypes.TEXT',
+          tinytext: 'DataTypes.TEXT', mediumtext: 'DataTypes.TEXT', longtext: 'DataTypes.TEXT',
+          int: 'DataTypes.INTEGER', integer: 'DataTypes.INTEGER', serial: 'DataTypes.INTEGER',
+          smallint: 'DataTypes.SMALLINT', tinyint: 'DataTypes.TINYINT',
+          bigint: 'DataTypes.BIGINT', bigserial: 'DataTypes.BIGINT',
+          float: 'DataTypes.FLOAT', real: 'DataTypes.FLOAT', double: 'DataTypes.FLOAT',
+          decimal: 'DataTypes.DECIMAL', numeric: 'DataTypes.DECIMAL',
+          boolean: 'DataTypes.BOOLEAN', bool: 'DataTypes.BOOLEAN',
+          timestamp: 'DataTypes.DATE', datetime: 'DataTypes.DATE',
+          date: 'DataTypes.DATEONLY', time: 'DataTypes.TIME',
+          uuid: 'DataTypes.UUID', uniqueidentifier: 'DataTypes.UUID',
+          json: 'DataTypes.JSON', jsonb: 'DataTypes.JSON',
+          blob: 'DataTypes.BLOB', bytea: 'DataTypes.BLOB', binary: 'DataTypes.BLOB'
+        },
+        gorm: {
+          varchar: 'string', char: 'string', text: 'string',
+          tinytext: 'string', mediumtext: 'string', longtext: 'string',
+          int: 'int', integer: 'int', serial: 'int',
+          smallint: 'int16', tinyint: 'int8',
+          bigint: 'int64', bigserial: 'int64',
+          float: 'float64', real: 'float32', double: 'float64',
+          decimal: 'float64', numeric: 'float64',
+          boolean: 'bool', bool: 'bool',
+          timestamp: 'time.Time', datetime: 'time.Time',
+          date: 'time.Time', time: 'time.Time',
+          uuid: 'string', uniqueidentifier: 'string',
+          json: 'datatypes.JSON', jsonb: 'datatypes.JSON',
+          blob: '[]byte', bytea: '[]byte', binary: '[]byte'
+        },
+        sqlalchemy: {
+          varchar: 'String', char: 'String', text: 'Text',
+          tinytext: 'Text', mediumtext: 'Text', longtext: 'Text',
+          int: 'Integer', integer: 'Integer', serial: 'Integer',
+          smallint: 'SmallInteger', tinyint: 'SmallInteger',
+          bigint: 'BigInteger', bigserial: 'BigInteger',
+          float: 'Float', real: 'Float', double: 'Float',
+          decimal: 'Numeric', numeric: 'Numeric',
+          boolean: 'Boolean', bool: 'Boolean',
+          timestamp: 'DateTime', datetime: 'DateTime',
+          date: 'Date', time: 'Time',
+          uuid: 'UUID', uniqueidentifier: 'UUID',
+          json: 'JSON', jsonb: 'JSON',
+          blob: 'LargeBinary', bytea: 'LargeBinary', binary: 'LargeBinary'
+        },
+        prisma: {
+          varchar: 'String', char: 'String', text: 'String',
+          tinytext: 'String', mediumtext: 'String', longtext: 'String',
+          int: 'Int', integer: 'Int', serial: 'Int',
+          smallint: 'Int', tinyint: 'Int',
+          bigint: 'BigInt', bigserial: 'BigInt',
+          float: 'Float', real: 'Float', double: 'Float',
+          decimal: 'Decimal', numeric: 'Decimal',
+          boolean: 'Boolean', bool: 'Boolean',
+          timestamp: 'DateTime', datetime: 'DateTime',
+          date: 'DateTime', time: 'String',
+          uuid: 'String', uniqueidentifier: 'String',
+          json: 'Json', jsonb: 'Json',
+          blob: 'Bytes', bytea: 'Bytes', binary: 'Bytes'
+        }
+      };
+
+      // ── SQL Parser ───────────────────────────────────────────────────────────
+      function parseSql(sql) {
+        // Extract table name
+        var tableMatch = sql.match(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"']?(\w+)[`"']?\s*\(/i);
+        if (!tableMatch) return null;
+        var tableName = tableMatch[1];
+
+        // Extract the column definitions block
+        var bodyMatch = sql.match(/\(\s*([\s\S]+)\s*\)\s*;?/);
+        if (!bodyMatch) return null;
+        var body = bodyMatch[1];
+
+        // Split on commas that are not inside parentheses
+        var lines = splitColumnDefs(body);
+        var columns = [];
+
+        lines.forEach(function (line) {
+          line = line.trim();
+          if (!line) return;
+
+          // Skip table-level constraints
+          if (/^(PRIMARY\s+KEY|UNIQUE|INDEX|KEY|CONSTRAINT|CHECK|FOREIGN\s+KEY)/i.test(line)) return;
+
+          // Match: colname TYPE[(size)] [constraints...]
+          var colMatch = line.match(/^[`"']?(\w+)[`"']?\s+(\w+)/i);
+          if (!colMatch) return;
+
+          var colName = colMatch[1];
+          var rawType = colMatch[2].toLowerCase();
+
+          var isPrimary = /PRIMARY\s+KEY/i.test(line) || /\bSERIAL\b/i.test(line) || /\bAUTO_INCREMENT\b/i.test(line);
+          var isNotNull = isPrimary || /NOT\s+NULL/i.test(line);
+          var isUnique = /\bUNIQUE\b/i.test(line);
+          var hasDefault = /\bDEFAULT\b/i.test(line);
+          var isAutoInc = /\bAUTO_INCREMENT\b|\bSERIAL\b|\bBIGSERIAL\b/i.test(line);
+
+          var defaultMatch = line.match(/DEFAULT\s+([^\s,]+)/i);
+          var defaultVal = defaultMatch ? defaultMatch[1] : null;
+
+          // Resolve type from base type word
+          var baseType = rawType.replace(/\(.+\)/, '');
+
+          columns.push({
+            name: colName,
+            rawType: rawType,
+            baseType: baseType,
+            isPrimary: isPrimary,
+            isNotNull: isNotNull,
+            isUnique: isUnique,
+            hasDefault: hasDefault,
+            defaultVal: defaultVal,
+            isAutoInc: isAutoInc
+          });
+        });
+
+        return { tableName: tableName, columns: columns };
+      }
+
+      function splitColumnDefs(body) {
+        var parts = [];
+        var depth = 0;
+        var current = '';
+        for (var i = 0; i < body.length; i++) {
+          var ch = body[i];
+          if (ch === '(') { depth++; current += ch; }
+          else if (ch === ')') { depth--; current += ch; }
+          else if (ch === ',' && depth === 0) {
+            parts.push(current.trim());
+            current = '';
+          } else {
+            current += ch;
+          }
+        }
+        if (current.trim()) parts.push(current.trim());
+        return parts;
+      }
+
+      // ── Helpers ──────────────────────────────────────────────────────────────
+      function toPascalCase(s) {
+        return s.replace(/(^|_)(\w)/g, function (_, _sep, c) { return c.toUpperCase(); });
+      }
+
+      function toCamelCase(s) {
+        var p = toPascalCase(s);
+        return p.charAt(0).toLowerCase() + p.slice(1);
+      }
+
+      function getOrmType(baseType, mode) {
+        return (TYPE_MAP[mode] && TYPE_MAP[mode][baseType]) || (mode === 'sequelize' ? 'DataTypes.TEXT' : mode === 'gorm' ? 'string' : mode === 'sqlalchemy' ? 'Text' : 'String');
+      }
+
+      // ── Code generators ──────────────────────────────────────────────────────
+      function genSequelize(parsed) {
+        var model = toPascalCase(parsed.tableName);
+        var lines = [
+          "const { DataTypes } = require('sequelize');",
+          "// import { DataTypes } from 'sequelize'; // ESM",
+          '',
+          "module.exports = (sequelize) => {",
+          "  const " + model + " = sequelize.define('" + parsed.tableName + "', {",
+        ];
+
+        parsed.columns.forEach(function (col, idx) {
+          var ormType = getOrmType(col.baseType, 'sequelize');
+          var props = [];
+          props.push('      type: ' + ormType);
+          if (col.isPrimary) props.push('      primaryKey: true');
+          if (col.isAutoInc) props.push('      autoIncrement: true');
+          props.push('      allowNull: ' + !col.isNotNull);
+          if (col.isUnique && !col.isPrimary) props.push('      unique: true');
+          var comma = idx < parsed.columns.length - 1 ? ',' : '';
+          lines.push('    ' + toCamelCase(col.name) + ': {' + (col.name !== toCamelCase(col.name) ? "\n      field: '" + col.name + "'," : ''));
+          props.forEach(function (p) { lines.push(p + ','); });
+          // Remove trailing comma from last prop
+          lines[lines.length - 1] = lines[lines.length - 1].replace(/,$/, '');
+          lines.push('    }' + comma);
+        });
+
+        lines.push('  }, {');
+        lines.push("    tableName: '" + parsed.tableName + "',");
+        lines.push('    underscored: true,');
+        lines.push('    timestamps: false,');
+        lines.push('  });');
+        lines.push('');
+        lines.push('  // Define associations here, e.g.:');
+        lines.push('  // ' + model + '.associate = (models) => { ... };');
+        lines.push('');
+        lines.push('  return ' + model + ';');
+        lines.push('};');
+        return lines.join('\n');
+      }
+
+      function genGorm(parsed) {
+        var model = toPascalCase(parsed.tableName);
+        var needsTime = parsed.columns.some(function (c) { return c.baseType === 'timestamp' || c.baseType === 'datetime' || c.baseType === 'date' || c.baseType === 'time'; });
+        var needsDatatypes = parsed.columns.some(function (c) { return c.baseType === 'json' || c.baseType === 'jsonb'; });
+
+        var imports = ['import ('];
+        if (needsTime) imports.push('\t"time"');
+        imports.push('\t"gorm.io/gorm"');
+        if (needsDatatypes) imports.push('\t"gorm.io/datatypes"');
+        imports.push(')');
+
+        var lines = ['package models', ''];
+        lines = lines.concat(imports);
+        lines.push('');
+        lines.push('type ' + model + ' struct {');
+
+        parsed.columns.forEach(function (col) {
+          var goType = getOrmType(col.baseType, 'gorm');
+          var fieldName = toPascalCase(col.name);
+          var tags = [];
+          var gormTag = [];
+
+          if (col.name !== fieldName.toLowerCase() && col.name !== toSnake(fieldName)) {
+            gormTag.push('column:' + col.name);
+          }
+          if (col.isPrimary) gormTag.push('primaryKey');
+          if (col.isAutoInc) gormTag.push('autoIncrement');
+          if (col.isNotNull && !col.isPrimary) gormTag.push('not null');
+          if (col.isUnique && !col.isPrimary) gormTag.push('uniqueIndex');
+          if (col.hasDefault && col.defaultVal) gormTag.push('default:' + col.defaultVal);
+
+          var nullable = !col.isNotNull && !col.isPrimary;
+          if (nullable && goType !== 'datatypes.JSON' && goType !== '[]byte') {
+            goType = '*' + goType;
+          }
+
+          if (gormTag.length) tags.push('gorm:"' + gormTag.join(';') + '"');
+          var tagStr = tags.length ? ' `' + tags.join(' ') + '`' : '';
+          lines.push('\t' + fieldName + ' ' + goType + tagStr);
+        });
+
+        lines.push('}');
+        lines.push('');
+        lines.push('// TableName overrides the default table name');
+        lines.push('func (' + model + ') TableName() string {');
+        lines.push('\treturn "' + parsed.tableName + '"');
+        lines.push('}');
+        lines.push('');
+        lines.push('// AutoMigrate: db.AutoMigrate(&' + model + '{})');
+        return lines.join('\n');
+      }
+
+      function toSnake(s) {
+        return s.replace(/([A-Z])/g, function (c, _) { return '_' + c.toLowerCase(); }).replace(/^_/, '');
+      }
+
+      function genSqlAlchemy(parsed) {
+        var model = toPascalCase(parsed.tableName);
+        var needsUUID = parsed.columns.some(function (c) { return c.baseType === 'uuid'; });
+
+        var lines = [
+          'from sqlalchemy import Column, Integer, BigInteger, SmallInteger, String, Text,',
+          '    Float, Numeric, Boolean, DateTime, Date, Time, JSON, LargeBinary',
+        ];
+        if (needsUUID) lines.push('from sqlalchemy.dialects.postgresql import UUID');
+        lines.push('from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column');
+        lines.push('from typing import Optional');
+        lines.push('');
+        lines.push('class Base(DeclarativeBase):');
+        lines.push('    pass');
+        lines.push('');
+        lines.push('class ' + model + '(Base):');
+        lines.push('    __tablename__ = "' + parsed.tableName + '"');
+        lines.push('');
+
+        parsed.columns.forEach(function (col) {
+          var saType = getOrmType(col.baseType, 'sqlalchemy');
+          if (col.baseType === 'uuid') saType = 'UUID(as_uuid=True)';
+          var nullable = !col.isNotNull && !col.isPrimary;
+          var colArgs = [saType];
+          if (col.isPrimary) colArgs.push('primary_key=True');
+          if (col.isAutoInc && col.baseType !== 'serial' && col.baseType !== 'bigserial') colArgs.push('autoincrement=True');
+          if (!nullable && !col.isPrimary) colArgs.push('nullable=False');
+          if (col.isUnique && !col.isPrimary) colArgs.push('unique=True');
+          if (col.hasDefault && col.defaultVal) {
+            var dv = col.defaultVal.replace(/'/g, '"');
+            colArgs.push('server_default=' + dv);
+          }
+          var pyType = nullable ? 'Optional[' + sqlaToPy(saType) + ']' : sqlaToPy(saType);
+          lines.push('    ' + col.name + ': Mapped[' + pyType + '] = mapped_column(' + colArgs.join(', ') + ')');
+        });
+
+        return lines.join('\n');
+      }
+
+      function sqlaToPy(t) {
+        var m = { 'Integer': 'int', 'BigInteger': 'int', 'SmallInteger': 'int', 'String': 'str', 'Text': 'str', 'Float': 'float', 'Numeric': 'float', 'Boolean': 'bool', 'DateTime': 'datetime', 'Date': 'date', 'Time': 'time', 'JSON': 'dict', 'LargeBinary': 'bytes' };
+        var base = t.split('(')[0];
+        return m[base] || 'str';
+      }
+
+      function genPrisma(parsed) {
+        var model = toPascalCase(parsed.tableName);
+        var lines = ['model ' + model + ' {'];
+
+        parsed.columns.forEach(function (col) {
+          var prismaType = getOrmType(col.baseType, 'prisma');
+          var nullable = !col.isNotNull && !col.isPrimary;
+          var typeStr = prismaType + (nullable ? '?' : '');
+          var attrs = [];
+
+          if (col.isPrimary) attrs.push('@id');
+          if (col.isAutoInc) {
+            if (col.baseType === 'bigint' || col.baseType === 'bigserial') attrs.push('@default(autoincrement())');
+            else attrs.push('@default(autoincrement())');
+          }
+          if (col.isUnique && !col.isPrimary) attrs.push('@unique');
+          if (col.hasDefault && col.defaultVal && !col.isAutoInc) {
+            var dv = col.defaultVal.toUpperCase();
+            if (dv === 'NOW()' || dv === 'CURRENT_TIMESTAMP') attrs.push('@default(now())');
+            else if (dv === 'TRUE') attrs.push('@default(true)');
+            else if (dv === 'FALSE') attrs.push('@default(false)');
+            else if (!isNaN(Number(col.defaultVal))) attrs.push('@default(' + col.defaultVal + ')');
+            else attrs.push('@default("' + col.defaultVal + '")');
+          }
+          if (col.baseType === 'uuid') attrs.push('@db.Uuid');
+
+          // Map column name to camelCase field name
+          var fieldName = toCamelCase(col.name);
+          if (fieldName !== col.name) attrs.push('@map("' + col.name + '")');
+
+          var attrStr = attrs.length ? '  ' + attrs.join(' ') : '';
+          lines.push('  ' + fieldName + '  ' + typeStr + attrStr);
+        });
+
+        lines.push('');
+        lines.push('  @@map("' + parsed.tableName + '")');
+        lines.push('}');
+        lines.push('');
+        lines.push('// generator client {');
+        lines.push('//   provider = "prisma-client-js"');
+        lines.push('// }');
+        lines.push('// datasource db {');
+        lines.push('//   provider = "postgresql"');
+        lines.push('//   url      = env("DATABASE_URL")');
+        lines.push('// }');
+        return lines.join('\n');
+      }
+
+      // ── Process ──────────────────────────────────────────────────────────────
+      function process() {
+        var raw = sqlInput.value.trim();
+        if (!raw) {
+          ormOutput.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste a CREATE TABLE statement above to generate the ORM model.';
+          return;
+        }
+
+        var parsed = parseSql(raw);
+        if (!parsed) {
+          ormOutput.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Could not parse SQL. Make sure it contains a valid CREATE TABLE statement.';
+          return;
+        }
+
+        if (parsed.columns.length === 0) {
+          ormOutput.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'No columns found. Check the CREATE TABLE syntax.';
+          return;
+        }
+
+        var code = '';
+        var label = '';
+        if (currentMode === 'sequelize') { code = genSequelize(parsed); label = 'Sequelize'; }
+        else if (currentMode === 'gorm')  { code = genGorm(parsed);      label = 'GORM'; }
+        else if (currentMode === 'sqlalchemy') { code = genSqlAlchemy(parsed); label = 'SQLAlchemy'; }
+        else if (currentMode === 'prisma') { code = genPrisma(parsed);   label = 'Prisma'; }
+
+        ormOutput.textContent = code;
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Parsed ' + parsed.columns.length + ' column' + (parsed.columns.length === 1 ? '' : 's') + ' — Generated ' + label + ' model for "' + parsed.tableName + '"';
+
+        if (DT && DT.trackTool) DT.trackTool('sql-to-orm');
+      }
+
+      // ── Events ───────────────────────────────────────────────────────────────
+      var debouncedProcess = DT ? DT.debounce(process, 250) : function () { setTimeout(process, 250); };
+      sqlInput.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = ormOutput.textContent;
+        if (text) {
+          if (DT && DT.copyToClipboard) DT.copyToClipboard(text, this);
+          else { navigator.clipboard.writeText(text); this.textContent = 'Copied!'; var btn = this; setTimeout(function () { btn.textContent = 'Copy'; }, 1500); }
+        }
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = ormOutput.textContent;
+        if (!text) return;
+        var ext = currentMode === 'gorm' ? '.go' : currentMode === 'sqlalchemy' ? '.py' : currentMode === 'prisma' ? '.prisma' : '.js';
+        var mime = currentMode === 'sqlalchemy' ? 'text/x-python' : currentMode === 'gorm' ? 'text/x-go' : 'text/plain';
+        if (DT && DT.downloadText) DT.downloadText(text, 'model' + ext, mime);
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        sqlInput.value = '';
+        process();
+        sqlInput.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        sqlInput.value = [
+          'CREATE TABLE orders (',
+          '  id BIGSERIAL PRIMARY KEY,',
+          '  user_id INT NOT NULL,',
+          '  status VARCHAR(50) NOT NULL DEFAULT \'pending\',',
+          '  total_amount DECIMAL(12, 2) NOT NULL,',
+          '  shipping_address TEXT,',
+          '  is_gift BOOLEAN NOT NULL DEFAULT FALSE,',
+          '  metadata JSONB,',
+          '  placed_at TIMESTAMP NOT NULL DEFAULT NOW(),',
+          '  shipped_at TIMESTAMP',
+          ');'
+        ].join('\n');
+        process();
+      });
+
+      // Tab key support
+      sqlInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var s = this.selectionStart;
+          var end = this.selectionEnd;
+          this.value = this.value.substring(0, s) + '  ' + this.value.substring(end);
+          this.selectionStart = this.selectionEnd = s + 2;
+        }
+      });
+    }());
+  </script>
+</body>
+</html>

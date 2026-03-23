@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JWT to OpenAPI Schema — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Paste a decoded JWT JSON payload and instantly generate an OpenAPI 3.0 Schema Object or JSON Schema. Free, 100% client-side — your tokens never leave the browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/jwt-to-openapi.html">
+  <meta property="og:title" content="JWT to OpenAPI Schema — ThisDevTool">
+  <meta property="og:description" content="Convert a JWT payload JSON object into an OpenAPI 3.0 Schema Object or JSON Schema. Free, runs entirely in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/jwt-to-openapi.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JWT to OpenAPI Schema Generator",
+    "url": "https://thisdevtool.com/tools/jwt-to-openapi.html",
+    "description": "Convert a decoded JWT JSON payload into an OpenAPI 3.0 Schema Object or JSON Schema. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is an OpenAPI Schema Object?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An OpenAPI Schema Object is a JSON or YAML structure defined in the OpenAPI 3.0 specification that describes the shape, types, and constraints of a data model. It follows a subset of JSON Schema Draft 07 and is used inside OpenAPI documents to describe request bodies, response payloads, and component schemas."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between OpenAPI Schema and JSON Schema?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "OpenAPI Schema is a strict subset of JSON Schema with a few additions (like 'nullable' and 'discriminator'). JSON Schema is the broader standard. This tool can output both: the OpenAPI 3.0 Schema Object format (YAML) and a standalone JSON Schema (JSON)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my JWT payload sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool runs 100% in your browser. Your JWT payload is never transmitted anywhere. All type inference and schema generation happens locally using client-side JavaScript. There is no server, no logging, and no data collection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How are JWT claim types inferred?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool uses JavaScript's typeof operator and Array.isArray() to determine types at runtime. Standard JWT claims like 'iat', 'exp', 'nbf', and 'sub' are annotated with their semantic meaning. Nested objects are recursively described with 'type: object' and nested properties. Arrays infer the type of their first element."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use the generated schema in my Swagger/OpenAPI document?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The 'Generate' mode outputs a YAML snippet you can paste directly into the 'components/schemas' section of an OpenAPI 3.0 document. The 'Reference' mode outputs a $ref pointer so you can reference it from path operations. Review and adjust the generated schema before using it in production."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>JWT to OpenAPI Schema Generator</h1>
+          <p class="tool-subtitle">Paste a decoded JWT JSON payload to generate an OpenAPI 3.0 Schema Object or JSON Schema. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="openapi">Generate (OpenAPI 3.0)</button>
+            <button class="option-chip" data-mode="jsonschema">JSON Schema</button>
+            <button class="option-chip" data-mode="ref">Reference ($ref)</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>JWT Payload (JSON)</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="jwtInput" rows="16" placeholder='Paste decoded JWT payload JSON here...
+
+Example:
+{
+  "sub": "user_123",
+  "email": "alice@example.com",
+  "roles": ["admin", "editor"],
+  "iat": 1700000000,
+  "exp": 1700003600
+}' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Generated Schema</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="schemaOutput" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a JWT payload JSON object above to generate the schema.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the JWT to OpenAPI Schema Generator</h2>
+          <ol>
+            <li><strong>Decode your JWT</strong> — use our <a href="/tools/jwt-decoder.html">JWT Decoder</a> or copy the payload section directly (the middle part of the three dot-separated segments, Base64-decoded to JSON).</li>
+            <li><strong>Paste the payload JSON</strong> into the left panel.</li>
+            <li><strong>Choose your output mode</strong> — OpenAPI 3.0 YAML schema, standalone JSON Schema, or a <code>$ref</code> pointer for inline referencing.</li>
+            <li><strong>Copy or download</strong> the generated schema and paste it into your API specification document.</li>
+          </ol>
+
+          <h2>What Is a JWT Payload?</h2>
+          <p>A JSON Web Token (JWT) is composed of three Base64URL-encoded parts separated by dots: the <strong>header</strong>, the <strong>payload</strong>, and the <strong>signature</strong>. The payload is a JSON object containing <em>claims</em> — name/value pairs that carry information about the token subject, issuer, expiry time, and any custom application data. Common registered claims include <code>sub</code> (subject), <code>iss</code> (issuer), <code>aud</code> (audience), <code>exp</code> (expiration time), <code>nbf</code> (not before), and <code>iat</code> (issued at). Private claims are any additional fields your application needs.</p>
+
+          <h3>Why Generate an OpenAPI Schema from a JWT Payload?</h3>
+          <p>When building REST APIs that accept or return JWT claims — such as user-info endpoints, token introspection responses, or authentication request bodies — you need a machine-readable description of those fields so that API clients, SDK generators, and documentation tools can understand them. Writing OpenAPI schemas by hand for complex JWT payloads is tedious and error-prone. This tool automates type inference from a real token, saving significant time when documenting <code>/auth/token</code>, <code>/userinfo</code>, or webhook event payloads.</p>
+
+          <h3>How Type Inference Works</h3>
+          <p>Each key in the JWT payload JSON is examined using JavaScript's <code>typeof</code> operator and <code>Array.isArray()</code>:</p>
+          <ul>
+            <li><strong>string</strong> — maps to <code>type: string</code></li>
+            <li><strong>number (integer)</strong> — maps to <code>type: integer, format: int64</code> (standard Unix timestamps like <code>iat</code>/<code>exp</code> receive a <code>description</code> annotation)</li>
+            <li><strong>number (float)</strong> — maps to <code>type: number, format: float</code></li>
+            <li><strong>boolean</strong> — maps to <code>type: boolean</code></li>
+            <li><strong>array</strong> — maps to <code>type: array</code> with <code>items</code> type inferred from the first element</li>
+            <li><strong>object</strong> — maps recursively to a nested <code>type: object</code> with <code>properties</code></li>
+            <li><strong>null</strong> — maps to <code>type: string, nullable: true</code></li>
+          </ul>
+
+          <h3>OpenAPI 3.0 vs JSON Schema</h3>
+          <p>The OpenAPI 3.0 specification uses a dialect of JSON Schema Draft 07 with several differences: it uses <code>nullable: true</code> instead of <code>type: [&quot;string&quot;, &quot;null&quot;]</code>, does not support <code>$schema</code> or <code>$id</code> keywords, and adds proprietary extensions like <code>discriminator</code> and <code>xml</code>. The <strong>JSON Schema</strong> output mode of this tool generates a fully self-contained JSON Schema document, including a <code>$schema</code> declaration, suitable for use with validators like <code>ajv</code> or <code>jsonschema</code> in Python. The <strong>Reference</strong> mode generates a <code>$ref</code> string you can drop inline inside an OpenAPI path operation's <code>requestBody</code> or <code>responses</code> section, pointing to the schema in <code>components/schemas/JwtPayload</code>.</p>
+
+          <h3>Standard JWT Claim Annotations</h3>
+          <p>The following registered claim names defined in RFC 7519 are automatically annotated with descriptions when present:</p>
+          <ul>
+            <li><code>sub</code> — Subject: identifies the principal that is the subject of the JWT</li>
+            <li><code>iss</code> — Issuer: identifies the principal that issued the JWT</li>
+            <li><code>aud</code> — Audience: identifies the recipients that the JWT is intended for</li>
+            <li><code>exp</code> — Expiration Time: Unix timestamp after which the JWT must not be accepted</li>
+            <li><code>nbf</code> — Not Before: Unix timestamp before which the JWT must not be accepted</li>
+            <li><code>iat</code> — Issued At: Unix timestamp when the JWT was issued</li>
+            <li><code>jti</code> — JWT ID: unique identifier for the token, used to prevent replay attacks</li>
+          </ul>
+
+          <h3>Integrating into Your OpenAPI Document</h3>
+          <p>After generating the schema, paste it into the <code>components.schemas</code> section of your OpenAPI 3.0 YAML or JSON document. For example:</p>
+          <pre style="background:var(--bg-secondary);padding:1rem;border-radius:8px;overflow:auto;font-size:.85rem;">components:
+  schemas:
+    JwtPayload:
+      type: object
+      properties:
+        sub:
+          type: string
+          description: Subject identifier
+        exp:
+          type: integer
+          format: int64
+          description: Expiration time (Unix timestamp)</pre>
+          <p>You can then reference this schema in path operations using <code>$ref: '#/components/schemas/JwtPayload'</code>. For more API documentation tooling, try our <a href="/tools/schema-generator.html">JSON-LD Schema Generator</a> or <a href="/tools/json-formatter.html">JSON Formatter</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is an OpenAPI Schema Object?</button>
+            <div class="faq-answer">An OpenAPI Schema Object is a JSON or YAML structure defined in the OpenAPI 3.0 specification that describes the shape, types, and constraints of a data model. It follows a subset of JSON Schema Draft 07 and is used inside OpenAPI documents to describe request bodies, response payloads, and component schemas.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between OpenAPI Schema and JSON Schema?</button>
+            <div class="faq-answer">OpenAPI Schema is a strict subset of JSON Schema with a few additions (like 'nullable' and 'discriminator'). JSON Schema is the broader standard. This tool outputs both: the OpenAPI 3.0 Schema Object format (YAML) and a standalone JSON Schema (JSON).</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my JWT payload sent to a server?</button>
+            <div class="faq-answer">No. This tool runs 100% in your browser. Your JWT payload is never transmitted anywhere. All type inference and schema generation happens locally using client-side JavaScript. There is no server, no logging, and no data collection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How are JWT claim types inferred?</button>
+            <div class="faq-answer">The tool uses JavaScript's typeof operator and Array.isArray() to determine types at runtime. Standard JWT claims like 'iat', 'exp', 'nbf', and 'sub' are annotated with their semantic meaning. Nested objects are recursively described with 'type: object' and nested properties. Arrays infer the type of their first element.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use the generated schema in my Swagger/OpenAPI document?</button>
+            <div class="faq-answer">Yes. The 'Generate' mode outputs a YAML snippet you can paste directly into the 'components/schemas' section of an OpenAPI 3.0 document. The 'Reference' mode outputs a $ref pointer so you can reference it from path operations. Review and adjust the generated schema before using it in production.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/json-to-typescript.html">JSON to TypeScript</a>
+        <a href="/tools/schema-generator.html">Schema Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/json-schema.html">JSON Schema Generator</a>
+        <a href="/tools/sql-to-orm.html">SQL to ORM</a>
+        <a href="/tools/jsonpath.html">JSONPath Evaluator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+      var DT = window.DevToolbox;
+      var input = document.getElementById('jwtInput');
+      var output = document.getElementById('schemaOutput');
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'openapi';
+
+      // Known JWT registered claim annotations (RFC 7519)
+      var JWT_CLAIMS = {
+        sub:  'Subject: identifies the principal that is the subject of the JWT.',
+        iss:  'Issuer: identifies the principal that issued the JWT.',
+        aud:  'Audience: identifies the recipients that the JWT is intended for.',
+        exp:  'Expiration Time: Unix timestamp (seconds) after which the JWT must not be accepted.',
+        nbf:  'Not Before: Unix timestamp (seconds) before which the JWT must not be accepted.',
+        iat:  'Issued At: Unix timestamp (seconds) when the JWT was issued.',
+        jti:  'JWT ID: unique identifier for the token, used to prevent replay attacks.'
+      };
+
+      // ── Type inference ──────────────────────────────────────────────────────
+      function inferType(value) {
+        if (value === null) return { type: 'null' };
+        if (Array.isArray(value)) {
+          var itemType = value.length > 0 ? inferType(value[0]) : { type: 'string' };
+          return { type: 'array', items: itemType };
+        }
+        var t = typeof value;
+        if (t === 'boolean') return { type: 'boolean' };
+        if (t === 'number') {
+          return Number.isInteger(value)
+            ? { type: 'integer', format: 'int64' }
+            : { type: 'number', format: 'float' };
+        }
+        if (t === 'object') {
+          return { type: 'object', properties: inferProperties(value) };
+        }
+        return { type: 'string' };
+      }
+
+      function inferProperties(obj) {
+        var props = {};
+        Object.keys(obj).forEach(function (k) {
+          props[k] = inferType(obj[k]);
+        });
+        return props;
+      }
+
+      // ── YAML serialiser (minimal, no dependency) ────────────────────────────
+      function typeToYaml(typeDef, key, indent) {
+        var pad = repeatStr('  ', indent);
+        var lines = [];
+
+        if (typeDef.type === 'null') {
+          lines.push(pad + 'type: string');
+          lines.push(pad + 'nullable: true');
+          return lines.join('\n');
+        }
+
+        if (typeDef.type === 'array') {
+          lines.push(pad + 'type: array');
+          lines.push(pad + 'items:');
+          lines.push(typeToYaml(typeDef.items, null, indent + 1));
+          return lines.join('\n');
+        }
+
+        if (typeDef.type === 'object') {
+          lines.push(pad + 'type: object');
+          if (typeDef.properties && Object.keys(typeDef.properties).length > 0) {
+            lines.push(pad + 'properties:');
+            Object.keys(typeDef.properties).forEach(function (pk) {
+              lines.push(pad + '  ' + pk + ':');
+              lines.push(typeToYaml(typeDef.properties[pk], pk, indent + 2));
+            });
+          }
+          return lines.join('\n');
+        }
+
+        lines.push(pad + 'type: ' + typeDef.type);
+        if (typeDef.format) {
+          lines.push(pad + 'format: ' + typeDef.format);
+        }
+        if (key && JWT_CLAIMS[key]) {
+          lines.push(pad + 'description: ' + JWT_CLAIMS[key]);
+        }
+        return lines.join('\n');
+      }
+
+      function repeatStr(s, n) {
+        var r = '';
+        for (var i = 0; i < n; i++) r += s;
+        return r;
+      }
+
+      // ── JSON Schema serialiser ──────────────────────────────────────────────
+      function typeToJsonSchema(typeDef, key) {
+        if (typeDef.type === 'null') return { type: 'string', nullable: true };
+
+        if (typeDef.type === 'array') {
+          var schema = { type: 'array', items: typeToJsonSchema(typeDef.items, null) };
+          return schema;
+        }
+
+        if (typeDef.type === 'object') {
+          var objSchema = { type: 'object', properties: {} };
+          if (typeDef.properties) {
+            Object.keys(typeDef.properties).forEach(function (pk) {
+              objSchema.properties[pk] = typeToJsonSchema(typeDef.properties[pk], pk);
+            });
+          }
+          return objSchema;
+        }
+
+        var s = { type: typeDef.type };
+        if (typeDef.format) s.format = typeDef.format;
+        if (key && JWT_CLAIMS[key]) s.description = JWT_CLAIMS[key];
+        return s;
+      }
+
+      // ── Main generation ─────────────────────────────────────────────────────
+      function generate(payload) {
+        var keys = Object.keys(payload);
+
+        if (currentMode === 'openapi') {
+          var lines = ['JwtPayload:', '  type: object', '  properties:'];
+          keys.forEach(function (k) {
+            var typeDef = inferType(payload[k]);
+            lines.push('    ' + k + ':');
+            lines.push(typeToYaml(typeDef, k, 3));
+          });
+          return lines.join('\n');
+        }
+
+        if (currentMode === 'jsonschema') {
+          var schema = {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            title: 'JwtPayload',
+            type: 'object',
+            properties: {}
+          };
+          keys.forEach(function (k) {
+            schema.properties[k] = typeToJsonSchema(inferType(payload[k]), k);
+          });
+          return JSON.stringify(schema, null, 2);
+        }
+
+        if (currentMode === 'ref') {
+          return [
+            '# OpenAPI 3.0 $ref — paste into a requestBody or response schema',
+            'schema:',
+            "  $ref: '#/components/schemas/JwtPayload'",
+            '',
+            '# --- Component definition (paste under components/schemas) ---',
+            'JwtPayload:',
+            '  type: object',
+            '  properties:',
+            keys.map(function (k) {
+              var typeDef = inferType(payload[k]);
+              return '    ' + k + ':\n' + typeToYaml(typeDef, k, 3);
+            }).join('\n')
+          ].join('\n');
+        }
+
+        return '';
+      }
+
+      // ── Process ─────────────────────────────────────────────────────────────
+      function process() {
+        var raw = input.value.trim();
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste a JWT payload JSON object above to generate the schema.';
+          return;
+        }
+
+        var payload;
+        try {
+          payload = JSON.parse(raw);
+        } catch (e) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid JSON: ' + e.message;
+          return;
+        }
+
+        if (typeof payload !== 'object' || Array.isArray(payload) || payload === null) {
+          output.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Input must be a JSON object (the decoded JWT payload).';
+          return;
+        }
+
+        var schema = generate(payload);
+        output.textContent = schema;
+
+        var propCount = Object.keys(payload).length;
+        var modeLabel = currentMode === 'openapi' ? 'OpenAPI 3.0 YAML'
+          : currentMode === 'jsonschema' ? 'JSON Schema'
+          : '$ref snippet';
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Generated ' + modeLabel + ' schema — ' + propCount + ' propert' + (propCount === 1 ? 'y' : 'ies');
+
+        if (DT && DT.trackTool) DT.trackTool('jwt-to-openapi');
+      }
+
+      // ── Events ──────────────────────────────────────────────────────────────
+      var debouncedProcess = DT ? DT.debounce(process, 200) : function () { setTimeout(process, 200); };
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (text) {
+          if (DT && DT.copyToClipboard) DT.copyToClipboard(text, this);
+          else { navigator.clipboard.writeText(text); this.textContent = 'Copied!'; var btn = this; setTimeout(function () { btn.textContent = 'Copy'; }, 1500); }
+        }
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = output.textContent;
+        if (!text) return;
+        var ext = currentMode === 'jsonschema' ? '.json' : '.yaml';
+        var mime = currentMode === 'jsonschema' ? 'application/json' : 'text/yaml';
+        if (DT && DT.downloadText) DT.downloadText(text, 'jwt-schema' + ext, mime);
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = JSON.stringify({
+          sub: 'user_a8f3b2',
+          iss: 'https://auth.example.com',
+          aud: 'api.example.com',
+          iat: 1700000000,
+          exp: 1700003600,
+          email: 'alice@example.com',
+          roles: ['admin', 'editor'],
+          profile: { displayName: 'Alice', avatarUrl: 'https://cdn.example.com/alice.png' },
+          emailVerified: true
+        }, null, 2);
+        process();
+      });
+
+      // Tab key support in textarea
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var s = this.selectionStart;
+          var e2 = this.selectionEnd;
+          this.value = this.value.substring(0, s) + '  ' + this.value.substring(e2);
+          this.selectionStart = this.selectionEnd = s + 2;
+        }
+      });
+    }());
+  </script>
+</body>
+</html>

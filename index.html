@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#10b981">
   <title>ThisDevTool — Free Online Developer, SEO & Text Tools</title>
-  <meta name="description" content="Free online developer tools: JSON formatter, Base64 encoder, regex tester, JWT decoder, CSS generators, and 220+ more. No signup. Runs 100% in your browser.">
+  <meta name="description" content="Free online developer tools: JSON formatter, Base64 encoder, regex tester, JWT decoder, CSS generators, and 230+ more. No signup. Runs 100% in your browser.">
   <link rel="canonical" href="https://thisdevtool.com/">
   <meta property="og:title" content="ThisDevTool — Free Online Developer Tools">
-  <meta property="og:description" content="220+ free dev, SEO, design, and text tools. JSON formatter, regex tester, CSS generators, and more. No signup, 100% client-side.">
+  <meta property="og:description" content="230+ free dev, SEO, design, and text tools. JSON formatter, regex tester, CSS generators, and more. No signup, 100% client-side.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://thisdevtool.com/">
   <meta name="twitter:card" content="summary">
@@ -55,7 +55,7 @@
     <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
 
     <h1 style="font-size:1.75rem; margin-bottom:0.25rem;">Free Online Developer Tools</h1>
-    <p style="color:var(--text-secondary); margin-bottom:0.5rem;">220+ tools that run 100% in your browser. No signup. No data sent to servers.</p>
+    <p style="color:var(--text-secondary); margin-bottom:0.5rem;">230+ tools that run 100% in your browser. No signup. No data sent to servers.</p>
     <p style="color:var(--text-secondary); margin-bottom:1.5rem; font-size:0.9rem;">ThisDevTool is free thanks to ads. If you find a tool useful, sharing it with a friend is the best way to support us!</p>
 
     <!-- Search -->
@@ -164,6 +164,8 @@
     var currentSort = 'category';
     var searchQuery = '';
     var BATCH_SIZE = 50;
+    var currentShown = 0;
+    var currentFiltered = [];
 
     var categoryLabels = {
       dev: 'Developer', seo: 'SEO', text: 'Text',
@@ -233,38 +235,44 @@
         '</a>';
     }
 
-    function render() {
-      var filtered = sortTools(filterTools());
+    function loadMore() {
       var grid = document.getElementById('toolsGrid');
-      var wrap = document.getElementById('loadMoreWrap');
       var count = document.getElementById('toolCount');
-      var show = Math.min(filtered.length, BATCH_SIZE);
-
+      var end = Math.min(currentShown + BATCH_SIZE, currentFiltered.length);
       var html = '';
-      for (var i = 0; i < show; i++) html += cardHtml(filtered[i]);
-      grid.innerHTML = html;
-      wrap.innerHTML = '';
-
+      for (var i = currentShown; i < end; i++) html += cardHtml(currentFiltered[i]);
+      grid.insertAdjacentHTML('beforeend', html);
+      currentShown = end;
       if (count) {
-        var msg = 'Showing ' + show + ' of ' + allTools.length + ' tools';
-        if (filtered.length < allTools.length) msg = filtered.length + ' tools found (of ' + allTools.length + ' total)';
+        var msg = 'Showing ' + currentShown + ' of ' + allTools.length + ' tools';
+        if (currentFiltered.length < allTools.length) msg = currentShown + ' of ' + currentFiltered.length + ' found (of ' + allTools.length + ' total)';
         count.textContent = msg;
       }
+    }
 
-      if (filtered.length > show) {
-        var btn = document.createElement('button');
-        btn.className = 'btn btn-secondary';
-        btn.style.cssText = 'width:100%;margin-top:1rem;';
-        btn.textContent = 'Show All ' + filtered.length + ' Tools';
-        btn.addEventListener('click', function () {
-          var more = '';
-          for (var j = show; j < filtered.length; j++) more += cardHtml(filtered[j]);
-          grid.insertAdjacentHTML('beforeend', more);
-          btn.remove();
-          if (count) count.textContent = 'Showing ' + filtered.length + ' of ' + allTools.length + ' tools';
-        });
-        wrap.appendChild(btn);
+    // Infinite scroll via IntersectionObserver
+    var scrollObserver;
+    function setupInfiniteScroll() {
+      var sentinel = document.getElementById('loadMoreWrap');
+      if (scrollObserver) scrollObserver.disconnect();
+      scrollObserver = new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting && currentShown < currentFiltered.length) {
+          loadMore();
+        }
+      }, { rootMargin: '200px' });
+      sentinel.innerHTML = '';
+      if (currentShown < currentFiltered.length) {
+        scrollObserver.observe(sentinel);
       }
+    }
+
+    function render() {
+      currentFiltered = sortTools(filterTools());
+      var grid = document.getElementById('toolsGrid');
+      grid.innerHTML = '';
+      currentShown = 0;
+      loadMore();
+      setupInfiniteScroll();
     }
 
     function updateSubcategories() {

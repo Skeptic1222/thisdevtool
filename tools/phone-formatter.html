@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>E.164 Phone Number Formatter — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Format messy phone numbers to E.164 standard (+15551234567). Country code selector, batch mode, length validation. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/phone-formatter.html">
+  <meta property="og:title" content="E.164 Phone Number Formatter — ThisDevTool">
+  <meta property="og:description" content="Format phone numbers to E.164 standard. Country code selector, batch processing, validation. Free online tool.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/phone-formatter.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "E.164 Phone Number Formatter",
+    "url": "https://thisdevtool.com/tools/phone-formatter.html",
+    "description": "Format phone numbers to E.164 standard with country code selector and batch mode. 100% client-side.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is E.164 phone number format?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "E.164 is the international standard format for phone numbers, defined by the ITU-T. An E.164 number contains up to 15 digits and always starts with a + followed by the country code (1–3 digits) and the subscriber number. Example: +14155552671 for a US number. This format is required by most telephony APIs like Twilio, WhatsApp Business API, and AWS SNS."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do I need E.164 format for my phone numbers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "E.164 is the required format for programmatic telephony. Twilio, Vonage, AWS SNS, WhatsApp Business, and virtually all SMS/voice APIs require E.164 input. It eliminates ambiguity between local, national, and international dialing formats, ensuring numbers work globally. Databases storing phone numbers should use E.164 as the canonical form."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the formatter strip formatting from phone numbers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The formatter removes all non-numeric characters except a leading + sign. It strips spaces, dashes, dots, parentheses, and any other punctuation. The selected country code is prepended if the number does not already start with +. The result is validated against the E.164 maximum length of 15 digits (excluding the +)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What if a number already has a + country code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "If you enter a number that already starts with +, the formatter preserves that leading + and uses the digits as-is, ignoring the country code selector. This lets you format a mixed list of numbers where some already include country codes and some are local numbers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the maximum length for an E.164 number?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The ITU-T E.164 standard sets a maximum of 15 digits total (excluding the leading +). This includes the country code digits. A US number (+1) can have up to 14 additional digits (though NANP numbers are exactly 10 digits). Numbers exceeding 15 digits are flagged as invalid by this tool."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .country-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    .country-row label { font-size: 0.9rem; color: var(--text-muted); white-space: nowrap; }
+    .country-select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 0.9rem; min-width: 260px; }
+    .result-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-family: monospace; font-size: 0.9rem; }
+    .result-row:last-child { border-bottom: none; }
+    .result-original { color: var(--text-muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .result-arrow { color: var(--accent); flex-shrink: 0; }
+    .result-e164 { font-weight: 600; flex: 1; color: var(--text); }
+    .result-e164.valid { color: #10b981; }
+    .result-e164.invalid { color: #ef4444; }
+    .result-badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; flex-shrink: 0; }
+    .result-badge.valid { background: rgba(16,185,129,0.15); color: #10b981; }
+    .result-badge.invalid { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .ref-table th { text-align: left; padding: 6px 10px; border-bottom: 2px solid var(--border); font-weight: 600; }
+    .ref-table td { padding: 5px 10px; border-bottom: 1px solid var(--border); }
+    .ref-table tr:hover td { background: var(--surface); }
+    .ref-table td:nth-child(2) { font-family: monospace; font-weight: 600; color: var(--accent); }
+    .ref-search { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 0.9rem; margin-bottom: 10px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .results-wrap { max-height: 320px; overflow-y: auto; padding: 4px 0; }
+    .format-single-out { font-family: monospace; font-size: 1.2rem; font-weight: 700; color: #10b981; padding: 8px 0 4px; min-height: 28px; }
+    .format-single-out.invalid { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <a href="/tools/uuid-generator.html">UUID</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>E.164 Phone Number Formatter</h1>
+          <p class="tool-subtitle">Convert messy phone numbers to E.164 format (+1234567890). Country code selector, batch mode, and reference table.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-tab="format">Format</button>
+            <button class="option-chip" data-tab="batch">Batch</button>
+            <button class="option-chip" data-tab="reference">Reference</button>
+          </div>
+
+          <!-- Format Tab (single) -->
+          <div class="tab-content active" id="tab-format">
+            <div class="country-row">
+              <label for="countrySelect">Country code:</label>
+              <select class="country-select" id="countrySelect"></select>
+            </div>
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Input</span>
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+                <textarea id="phoneInput" rows="8" placeholder="Enter a phone number&#10;&#10;Examples:&#10;(555) 123-4567&#10;+44 20 7946 0958&#10;+33 1 42 86 83 26" spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>E.164 Output</span>
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                </div>
+                <div class="code-output" id="phoneOutput" style="min-height:160px;"></div>
+                <div class="format-single-out" id="singleResult"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Batch Tab -->
+          <div class="tab-content" id="tab-batch">
+            <div class="country-row">
+              <label for="batchCountrySelect">Default country code:</label>
+              <select class="country-select" id="batchCountrySelect"></select>
+            </div>
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Input (one number per line)</span>
+                  <button class="btn btn-sm btn-secondary" id="batchExampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="batchClearBtn">Clear</button>
+                </div>
+                <textarea id="batchInput" rows="12" placeholder="Paste phone numbers, one per line:&#10;(212) 555-0100&#10;+44 7911 123456&#10;0049 30 12345678&#10;+33 6 12 34 56 78&#10;0033 1 23 45 67 89" spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Results</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="batchCopyBtn">Copy All</button>
+                    <button class="btn btn-sm btn-secondary" id="batchDownloadBtn">Download</button>
+                  </div>
+                </div>
+                <div class="results-wrap" id="batchResults"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reference Tab -->
+          <div class="tab-content" id="tab-reference">
+            <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:10px;">E.164 country calling codes — click any row to copy the code.</p>
+            <input type="text" class="ref-search" id="refSearch" placeholder="Search country or code…">
+            <div style="max-height:420px;overflow-y:auto;">
+              <table class="ref-table" id="refTable">
+                <thead>
+                  <tr><th>Country</th><th>Code</th><th>Example Number</th><th>Digits</th></tr>
+                </thead>
+                <tbody id="refTbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a phone number above to format it.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Phone Number Formatter</h2>
+          <ol>
+            <li><strong>Select your country</strong> — choose the country code from the dropdown. This prefix will be added to numbers that do not already include a + country code.</li>
+            <li><strong>Enter a phone number</strong> — paste any formatted phone number: (555) 123-4567, 555-123-4567, 555.123.4567, or +1 (555) 123-4567. The formatter strips all punctuation.</li>
+            <li><strong>View E.164 output</strong> — the result appears instantly in E.164 format: +15551234567.</li>
+            <li><strong>Batch mode</strong> — paste one number per line to format a list at once. Invalid numbers are flagged in red.</li>
+            <li><strong>Reference tab</strong> — search the full table of E.164 country calling codes.</li>
+          </ol>
+
+          <h2>What is E.164 Phone Number Format?</h2>
+          <p>E.164 is the international standard telephone numbering plan maintained by the <strong>ITU-T (International Telecommunication Union)</strong>. The standard ensures that every phone number in the world can be uniquely identified and dialed using a consistent notation:</p>
+          <ul>
+            <li>Starts with a <code>+</code> sign</li>
+            <li>Followed by the <strong>country code</strong> (1–3 digits, e.g., +1 for USA/Canada, +44 for UK, +49 for Germany)</li>
+            <li>Followed by the <strong>national subscriber number</strong> (up to 12 digits)</li>
+            <li><strong>Maximum 15 digits total</strong> (excluding the +)</li>
+            <li><strong>No spaces, dashes, or parentheses</strong> — digits only after the +</li>
+          </ul>
+
+          <h3>Why E.164 Matters for Developers</h3>
+          <p>If you're building any application that sends SMS messages, makes phone calls, or stores user contact information, E.164 is the canonical format you should store and transmit. Every major telephony API requires it:</p>
+          <ul>
+            <li><strong>Twilio</strong> — all To/From numbers in the REST API must be E.164</li>
+            <li><strong>AWS SNS</strong> — phone numbers for SMS subscriptions must be E.164</li>
+            <li><strong>WhatsApp Business API</strong> — E.164 without the + for phone number IDs</li>
+            <li><strong>Vonage (Nexmo)</strong> — E.164 without the + (just digits with country code first)</li>
+            <li><strong>Firebase Auth</strong> — phone number sign-in uses E.164</li>
+            <li><strong>Stripe</strong> — customer phone numbers are stored in E.164</li>
+          </ul>
+
+          <h3>How the Formatting Algorithm Works</h3>
+          <p>This tool applies a simple, deterministic algorithm to format numbers:</p>
+          <ol>
+            <li>Detect whether the input starts with <code>+</code> — if so, preserve it and strip all non-digits from the remainder.</li>
+            <li>If the input starts with <code>00</code>, treat it as an international prefix (replace <code>00</code> with <code>+</code>) — common in European dialing.</li>
+            <li>Otherwise, strip all non-digit characters and prepend the selected country code (e.g., <code>+1</code> for US).</li>
+            <li>Validate the final length: must be between 7 and 15 digits after the <code>+</code>.</li>
+          </ol>
+
+          <h3>Common Phone Number Formats and Their E.164 Equivalents</h3>
+          <p>Phone numbers appear in dozens of local formats depending on region and convention. Here are common formats that this tool normalizes:</p>
+          <ul>
+            <li><strong>US NANP format:</strong> (555) 123-4567 → +15551234567</li>
+            <li><strong>US with country code:</strong> +1 (555) 123-4567 → +15551234567</li>
+            <li><strong>UK format:</strong> 07911 123456 → +447911123456 (drop leading 0)</li>
+            <li><strong>German format:</strong> 0049 30 12345678 → +493012345678</li>
+            <li><strong>French format:</strong> 01 23 45 67 89 → +33123456789</li>
+            <li><strong>Australian format:</strong> (02) 1234 5678 → +61212345678</li>
+            <li><strong>Indian format:</strong> +91 98765 43210 → +919876543210</li>
+          </ul>
+
+          <h3>Storing Phone Numbers in Databases</h3>
+          <p>Always store phone numbers in E.164 format in your database. Use a VARCHAR(20) column — 20 characters is enough for the + and up to 15 digits, with a small buffer. Never store numbers as integers (leading zeros are lost, and some country codes produce very large numbers). E.164 storage makes it trivial to deduplicate user records, match numbers across international formats, and pass numbers directly to telephony APIs without transformation. When displaying numbers to users, you can re-format E.164 into a local format using a library like libphonenumber.</p>
+
+          <h3>E.164 vs. Other Phone Formats</h3>
+          <p>While E.164 is the international standard, you may encounter other formats:</p>
+          <ul>
+            <li><strong>National format</strong> — omits the country code. Example: (555) 123-4567 in the US. Ambiguous without knowing the country.</li>
+            <li><strong>International format</strong> — includes the country code with a +. Example: +1 555-123-4567. This is E.164 with formatting.</li>
+            <li><strong>IDD format</strong> — uses the International Direct Dialing prefix instead of +. Example: 001 555 123 4567 (for calls from the UK to the US). Some regions use 00, others use 011.</li>
+            <li><strong>RFC 3966</strong> — the URI scheme for phone numbers, e.g., tel:+15551234567. Used in HTML href="tel:" links and SIP/VoIP systems.</li>
+          </ul>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is E.164 phone number format?</button>
+            <div class="faq-answer">E.164 is the international standard format for phone numbers, defined by the ITU-T. An E.164 number always starts with a + followed by the country code (1–3 digits) and the subscriber number, with a maximum of 15 digits total. Example: +14155552671 for a US number. This format is required by most telephony APIs like Twilio, WhatsApp Business API, and AWS SNS.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why do I need E.164 format for my phone numbers?</button>
+            <div class="faq-answer">E.164 is the required format for programmatic telephony. Twilio, Vonage, AWS SNS, WhatsApp Business, and virtually all SMS/voice APIs require E.164 input. It eliminates ambiguity between local, national, and international dialing formats, ensuring numbers work globally. Databases storing phone numbers should use E.164 as the canonical form.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the formatter strip formatting from phone numbers?</button>
+            <div class="faq-answer">The formatter removes all non-numeric characters except a leading + sign. It strips spaces, dashes, dots, parentheses, and any other punctuation. The selected country code is prepended if the number does not already start with +. The result is validated against the E.164 maximum length of 15 digits (excluding the +).</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What if a number already has a + country code?</button>
+            <div class="faq-answer">If you enter a number that already starts with +, the formatter preserves that leading + and uses the digits as-is, ignoring the country code selector. This lets you format a mixed list of numbers where some already include country codes and some are local numbers.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the maximum length for an E.164 number?</button>
+            <div class="faq-answer">The ITU-T E.164 standard sets a maximum of 15 digits total (excluding the leading +). This includes the country code digits. A US number (+1) can have up to 14 additional digits (though NANP numbers are exactly 10 digits). Numbers exceeding 15 digits are flagged as invalid by this tool.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/performance-timing.html">Performance Timing</a>
+        <a href="/tools/meta-tag-generator.html">Meta Tag Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    // ── Country data ──────────────────────────────────────────────────────────
+    var COUNTRIES = [
+      { name: 'United States / Canada', code: '+1',   example: '+12125550100', digits: '10' },
+      { name: 'United Kingdom',         code: '+44',  example: '+447911123456', digits: '10' },
+      { name: 'Germany',                code: '+49',  example: '+493012345678', digits: '10-11' },
+      { name: 'France',                 code: '+33',  example: '+33123456789',  digits: '9' },
+      { name: 'Italy',                  code: '+39',  example: '+390612345678', digits: '9-10' },
+      { name: 'Spain',                  code: '+34',  example: '+34912345678',  digits: '9' },
+      { name: 'Netherlands',            code: '+31',  example: '+31201234567',  digits: '9' },
+      { name: 'Belgium',                code: '+32',  example: '+3221234567',   digits: '8-9' },
+      { name: 'Switzerland',            code: '+41',  example: '+41441234567',  digits: '9' },
+      { name: 'Austria',                code: '+43',  example: '+431234567890', digits: '4-13' },
+      { name: 'Sweden',                 code: '+46',  example: '+46812345678',  digits: '7-9' },
+      { name: 'Norway',                 code: '+47',  example: '+4712345678',   digits: '8' },
+      { name: 'Denmark',                code: '+45',  example: '+4512345678',   digits: '8' },
+      { name: 'Finland',                code: '+358', example: '+35891234567',  digits: '5-12' },
+      { name: 'Poland',                 code: '+48',  example: '+48123456789',  digits: '9' },
+      { name: 'Russia',                 code: '+7',   example: '+79161234567',  digits: '10' },
+      { name: 'Turkey',                 code: '+90',  example: '+905321234567', digits: '10' },
+      { name: 'Australia',              code: '+61',  example: '+61212345678',  digits: '9' },
+      { name: 'New Zealand',            code: '+64',  example: '+6491234567',   digits: '8-9' },
+      { name: 'Japan',                  code: '+81',  example: '+81312345678',  digits: '9-10' },
+      { name: 'China',                  code: '+86',  example: '+8613912345678', digits: '11' },
+      { name: 'South Korea',            code: '+82',  example: '+8221234567',   digits: '9-10' },
+      { name: 'India',                  code: '+91',  example: '+919876543210', digits: '10' },
+      { name: 'Pakistan',               code: '+92',  example: '+923001234567', digits: '10' },
+      { name: 'Bangladesh',             code: '+880', example: '+8801711123456', digits: '10' },
+      { name: 'Indonesia',              code: '+62',  example: '+628123456789',  digits: '8-11' },
+      { name: 'Malaysia',               code: '+60',  example: '+60312345678',  digits: '7-9' },
+      { name: 'Singapore',              code: '+65',  example: '+6591234567',   digits: '8' },
+      { name: 'Thailand',               code: '+66',  example: '+6621234567',   digits: '8-9' },
+      { name: 'Philippines',            code: '+63',  example: '+639171234567', digits: '10' },
+      { name: 'Vietnam',                code: '+84',  example: '+84912345678',  digits: '9' },
+      { name: 'Nigeria',                code: '+234', example: '+2348012345678', digits: '10' },
+      { name: 'South Africa',           code: '+27',  example: '+27112345678',  digits: '9' },
+      { name: 'Kenya',                  code: '+254', example: '+254712345678', digits: '9' },
+      { name: 'Ethiopia',               code: '+251', example: '+251911234567', digits: '9' },
+      { name: 'Egypt',                  code: '+20',  example: '+201001234567', digits: '10' },
+      { name: 'Brazil',                 code: '+55',  example: '+5511912345678', digits: '10-11' },
+      { name: 'Argentina',              code: '+54',  example: '+5491112345678', digits: '10-11' },
+      { name: 'Mexico',                 code: '+52',  example: '+5215512345678', digits: '10' },
+      { name: 'Colombia',               code: '+57',  example: '+573112345678', digits: '10' },
+      { name: 'Chile',                  code: '+56',  example: '+56212345678',  digits: '8-9' },
+      { name: 'Peru',                   code: '+51',  example: '+51912345678',  digits: '9' },
+      { name: 'Venezuela',              code: '+58',  example: '+584121234567', digits: '10' },
+      { name: 'Saudi Arabia',           code: '+966', example: '+966512345678', digits: '9' },
+      { name: 'UAE',                    code: '+971', example: '+971501234567', digits: '9' },
+      { name: 'Israel',                 code: '+972', example: '+972521234567', digits: '9' },
+      { name: 'Iran',                   code: '+98',  example: '+989121234567', digits: '10' },
+      { name: 'Iraq',                   code: '+964', example: '+9647901234567', digits: '10' },
+      { name: 'Jordan',                 code: '+962', example: '+962791234567', digits: '9' },
+      { name: 'Lebanon',                code: '+961', example: '+96171234567',  digits: '7-8' },
+      { name: 'Greece',                 code: '+30',  example: '+306912345678', digits: '10' },
+      { name: 'Portugal',               code: '+351', example: '+351912345678', digits: '9' },
+      { name: 'Czech Republic',         code: '+420', example: '+420601234567', digits: '9' },
+      { name: 'Hungary',                code: '+36',  example: '+36301234567',  digits: '9' },
+      { name: 'Romania',                code: '+40',  example: '+40712345678',  digits: '9-10' },
+      { name: 'Ukraine',                code: '+380', example: '+380501234567', digits: '9' },
+      { name: 'Ireland',                code: '+353', example: '+353851234567', digits: '9' },
+      { name: 'Hong Kong',              code: '+852', example: '+85298765432',  digits: '8' },
+      { name: 'Taiwan',                 code: '+886', example: '+886912345678', digits: '9' },
+      { name: 'Ghana',                  code: '+233', example: '+233241234567', digits: '9' },
+      { name: 'Tanzania',               code: '+255', example: '+255712345678', digits: '9' }
+    ];
+
+    // ── Populate selects ──────────────────────────────────────────────────────
+    function populateSelect(id) {
+      var sel = document.getElementById(id);
+      COUNTRIES.forEach(function (c) {
+        var opt = document.createElement('option');
+        opt.value = c.code;
+        opt.textContent = c.name + ' (' + c.code + ')';
+        sel.appendChild(opt);
+      });
+    }
+    populateSelect('countrySelect');
+    populateSelect('batchCountrySelect');
+
+    // ── Reference table ───────────────────────────────────────────────────────
+    function renderRefTable(filter) {
+      var tbody = document.getElementById('refTbody');
+      var fl = (filter || '').toLowerCase();
+      var rows = COUNTRIES.filter(function (c) {
+        return !fl || c.name.toLowerCase().includes(fl) || c.code.includes(fl);
+      });
+      tbody.innerHTML = rows.map(function (c) {
+        return '<tr style="cursor:pointer;" title="Click to copy ' + c.code + '" onclick="DevToolbox.copyToClipboard(\'' + c.code + '\',this)">' +
+          '<td>' + c.name + '</td>' +
+          '<td>' + c.code + '</td>' +
+          '<td style="font-family:monospace;font-size:0.82rem;">' + c.example + '</td>' +
+          '<td>' + c.digits + '</td></tr>';
+      }).join('');
+    }
+    renderRefTable('');
+
+    document.getElementById('refSearch').addEventListener('input', function () {
+      renderRefTable(this.value);
+    });
+
+    // ── Core formatting logic ─────────────────────────────────────────────────
+    function formatNumber(raw, countryCode) {
+      if (!raw || !raw.trim()) return { e164: '', valid: false, reason: 'empty' };
+      var trimmed = raw.trim();
+
+      // Already starts with + → strip everything except + and digits
+      if (trimmed.charAt(0) === '+') {
+        var digits = trimmed.replace(/[^\d]/g, '');
+        var e164 = '+' + digits;
+        if (digits.length < 7 || digits.length > 15) return { e164: e164, valid: false, reason: 'Length must be 7–15 digits (got ' + digits.length + ')' };
+        return { e164: e164, valid: true };
+      }
+
+      // Starts with 00 → international prefix (common in Europe)
+      if (trimmed.startsWith('00')) {
+        var rest = trimmed.slice(2).replace(/[^\d]/g, '');
+        var e164 = '+' + rest;
+        if (rest.length < 7 || rest.length > 15) return { e164: e164, valid: false, reason: 'Length must be 7–15 digits (got ' + rest.length + ')' };
+        return { e164: e164, valid: true };
+      }
+
+      // Local number → strip non-digits, prepend country code
+      var localDigits = trimmed.replace(/[^\d]/g, '');
+      // Remove leading 0 if country code is selected and local number starts with 0 (trunk prefix)
+      if (localDigits.charAt(0) === '0') localDigits = localDigits.slice(1);
+      var codeDigits = countryCode.replace('+', '');
+      var allDigits = codeDigits + localDigits;
+      var e164 = '+' + allDigits;
+      if (allDigits.length < 7 || allDigits.length > 15) return { e164: e164, valid: false, reason: 'Length must be 7–15 digits (got ' + allDigits.length + ')' };
+      return { e164: e164, valid: true };
+    }
+
+    // ── Format tab (single) ───────────────────────────────────────────────────
+    var currentTab = 'format';
+    var phoneInput = document.getElementById('phoneInput');
+    var phoneOutput = document.getElementById('phoneOutput');
+    var singleResult = document.getElementById('singleResult');
+    var statusBar = document.getElementById('statusBar');
+
+    function processSingle() {
+      var raw = phoneInput.value.trim();
+      var cc = document.getElementById('countrySelect').value;
+      if (!raw) {
+        phoneOutput.textContent = '';
+        singleResult.textContent = '';
+        singleResult.className = 'format-single-out';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter a phone number above to format it.';
+        return;
+      }
+      var result = formatNumber(raw, cc);
+      phoneOutput.textContent = result.e164;
+      singleResult.textContent = result.e164;
+      singleResult.className = 'format-single-out' + (result.valid ? ' valid' : ' invalid');
+
+      if (result.valid) {
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = raw + ' → ' + result.e164;
+      } else {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Invalid: ' + (result.reason || 'check number format');
+      }
+      DT.trackTool('phone-formatter');
+    }
+
+    var debouncedSingle = DT.debounce(processSingle, 200);
+    phoneInput.addEventListener('input', debouncedSingle);
+    document.getElementById('countrySelect').addEventListener('change', processSingle);
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var text = phoneOutput.textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      phoneInput.value = '';
+      processSingle();
+      phoneInput.focus();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      phoneInput.value = '(555) 867-5309';
+      processSingle();
+    });
+
+    // ── Batch tab ─────────────────────────────────────────────────────────────
+    var batchInput = document.getElementById('batchInput');
+    var batchResults = document.getElementById('batchResults');
+    var batchFormatted = [];
+
+    function processBatch() {
+      var lines = batchInput.value.split('\n');
+      var cc = document.getElementById('batchCountrySelect').value;
+      batchFormatted = [];
+      var validCount = 0;
+      var invalidCount = 0;
+
+      batchResults.innerHTML = '';
+      lines.forEach(function (line) {
+        var raw = line.trim();
+        if (!raw) return;
+        var result = formatNumber(raw, cc);
+        batchFormatted.push(result.e164);
+        if (result.valid) validCount++; else invalidCount++;
+
+        var row = document.createElement('div');
+        row.className = 'result-row';
+        var orig = document.createElement('span');
+        orig.className = 'result-original';
+        orig.title = raw;
+        orig.textContent = raw;
+        var arrow = document.createElement('span');
+        arrow.className = 'result-arrow';
+        arrow.textContent = '→';
+        var e164span = document.createElement('span');
+        e164span.className = 'result-e164 ' + (result.valid ? 'valid' : 'invalid');
+        e164span.textContent = result.e164 || '(invalid)';
+        var badge = document.createElement('span');
+        badge.className = 'result-badge ' + (result.valid ? 'valid' : 'invalid');
+        badge.textContent = result.valid ? 'OK' : 'ERR';
+        row.appendChild(orig);
+        row.appendChild(arrow);
+        row.appendChild(e164span);
+        row.appendChild(badge);
+        batchResults.appendChild(row);
+      });
+
+      if (validCount + invalidCount > 0) {
+        statusBar.className = 'status-bar ' + (invalidCount === 0 ? 'valid' : 'info');
+        statusBar.textContent = validCount + ' valid, ' + invalidCount + ' invalid of ' + (validCount + invalidCount) + ' numbers';
+      } else {
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter phone numbers above, one per line.';
+      }
+      DT.trackTool('phone-formatter');
+    }
+
+    var debouncedBatch = DT.debounce(processBatch, 250);
+    batchInput.addEventListener('input', debouncedBatch);
+    document.getElementById('batchCountrySelect').addEventListener('change', processBatch);
+
+    document.getElementById('batchCopyBtn').addEventListener('click', function () {
+      var text = batchFormatted.filter(Boolean).join('\n');
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('batchDownloadBtn').addEventListener('click', function () {
+      var text = batchFormatted.filter(Boolean).join('\n');
+      if (text) DT.downloadText(text, 'e164-numbers.txt', 'text/plain');
+    });
+
+    document.getElementById('batchClearBtn').addEventListener('click', function () {
+      batchInput.value = '';
+      batchResults.innerHTML = '';
+      batchFormatted = [];
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Enter phone numbers above, one per line.';
+      batchInput.focus();
+    });
+
+    document.getElementById('batchExampleBtn').addEventListener('click', function () {
+      batchInput.value = '(212) 555-0100\n+44 7911 123456\n0049 30 12345678\n+33 6 12 34 56 78\n+81 3 1234 5678\n+61 2 1234 5678\n+91 98765 43210';
+      processBatch();
+    });
+
+    // ── Tab switching ─────────────────────────────────────────────────────────
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var tab = chip.getAttribute('data-tab');
+        currentTab = tab;
+        document.querySelectorAll('.tab-content').forEach(function (t) { t.classList.remove('active'); });
+        document.getElementById('tab-' + tab).classList.add('active');
+        // Reset status on tab change
+        if (tab === 'reference') {
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Browse or search E.164 country calling codes.';
+        }
+      });
+    });
+
+  })();
+  </script>
+</body>
+</html>

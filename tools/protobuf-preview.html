@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Protobuf Schema Preview — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Parse and visualize Protocol Buffer .proto files in your browser. View message definitions, field types, field numbers, nested messages, and services. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/protobuf-preview.html">
+  <meta property="og:title" content="Protobuf Schema Preview — ThisDevTool">
+  <meta property="og:description" content="Parse .proto files online — view message definitions, field types, field numbers, nested messages, enums, and services. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/protobuf-preview.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Protobuf Schema Preview",
+    "url": "https://thisdevtool.com/tools/protobuf-preview.html",
+    "description": "Parse and visualize Protocol Buffer .proto files online. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a .proto file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A .proto file is the schema definition file for Protocol Buffers (protobuf), Google's language-neutral binary serialization format. It defines message types, their fields (with types and field numbers), enumerations, and services for gRPC APIs. The proto compiler (protoc) uses these definitions to generate code in languages like Go, Python, Java, C++, and TypeScript."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do protobuf fields have numbers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Field numbers are the key to protobuf's efficient binary encoding and backward compatibility. In the binary wire format, fields are identified by their number — not their name. This means you can rename a field without breaking existing serialized data. Field numbers 1–15 are encoded in a single byte and should be reserved for the most frequently used fields. Numbers 16–2047 require two bytes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between proto2 and proto3?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Proto3 (the modern version) removes required/optional field labels, making all fields optional by default. It also removes the concept of default values in the schema — missing fields default to zero values (0, empty string, false). Proto2 supports required fields and custom default values. For new projects, proto3 is strongly recommended as it produces simpler, more forward-compatible schemas and is required for gRPC."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are protobuf services and RPCs?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A service block in a .proto file defines a gRPC service — a set of remote procedure calls (RPCs). Each RPC specifies a method name, an input message type, and a return message type. Services are the interface definition that gRPC uses to generate server stubs and client code. For example: rpc GetUser (GetUserRequest) returns (User) defines an RPC method that accepts a GetUserRequest and returns a User message."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my .proto file sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This protobuf preview tool runs entirely in your browser using JavaScript. Your schema definitions never leave your machine. There is no server-side processing, no logging, and no data collection of any kind."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .proto-tree { font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace; font-size: 0.85rem; line-height: 1.6; }
+    .proto-section { margin-bottom: 1.25rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .proto-section-header { display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--surface2); font-weight: 600; font-size: 0.82rem; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; user-select: none; }
+    .proto-section-header:hover { background: var(--surface3, var(--surface2)); }
+    .proto-badge { padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; }
+    .badge-message { background: #d1fae5; color: #065f46; }
+    .badge-service { background: #dbeafe; color: #1e40af; }
+    .badge-enum    { background: #fef3c7; color: #92400e; }
+    .badge-rpc     { background: #ede9fe; color: #4c1d95; }
+    [data-theme="dark"] .badge-message { background: #064e3b; color: #6ee7b7; }
+    [data-theme="dark"] .badge-service { background: #1e3a5f; color: #93c5fd; }
+    [data-theme="dark"] .badge-enum    { background: #451a03; color: #fcd34d; }
+    [data-theme="dark"] .badge-rpc     { background: #2e1065; color: #c4b5fd; }
+    .proto-section-body { padding: 10px 14px; }
+    .proto-field-row { display: flex; align-items: baseline; gap: 0; padding: 3px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+    .proto-field-row:last-child { border-bottom: none; }
+    .proto-field-num  { color: var(--text-muted, #6b7280); min-width: 34px; text-align: right; padding-right: 12px; font-size: 0.75rem; }
+    .proto-field-label { color: #f59e0b; min-width: 60px; }
+    .proto-field-type  { color: #10b981; min-width: 120px; }
+    .proto-field-name  { color: var(--text); }
+    .proto-rpc-row { padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+    .proto-rpc-row:last-child { border-bottom: none; }
+    .proto-rpc-kw   { color: #a78bfa; }
+    .proto-rpc-name { color: var(--text); font-weight: 600; }
+    .proto-rpc-type { color: #10b981; }
+    .proto-rpc-arrow { color: var(--text-muted, #6b7280); padding: 0 6px; }
+    .proto-enum-val { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+    .proto-enum-val:last-child { border-bottom: none; }
+    .proto-enum-vname { color: var(--text); flex: 1; }
+    .proto-enum-vnum  { color: #f59e0b; }
+    .proto-nested-label { font-size: 0.75rem; color: var(--text-muted, #6b7280); margin: 6px 0 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .proto-summary-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .proto-summary-chip { padding: 4px 12px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+    .chip-msg { background: #d1fae5; color: #065f46; }
+    .chip-svc { background: #dbeafe; color: #1e40af; }
+    .chip-enum { background: #fef3c7; color: #92400e; }
+    .chip-field { background: var(--surface2); color: var(--text); }
+    [data-theme="dark"] .chip-msg  { background: #064e3b; color: #6ee7b7; }
+    [data-theme="dark"] .chip-svc  { background: #1e3a5f; color: #93c5fd; }
+    [data-theme="dark"] .chip-enum { background: #451a03; color: #fcd34d; }
+    .reference-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .reference-table th, .reference-table td { padding: 7px 10px; border: 1px solid var(--border); text-align: left; }
+    .reference-table th { background: var(--surface2); font-weight: 600; }
+    code { background: var(--surface2); padding: 1px 5px; border-radius: 3px; font-size: 0.85em; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/schema-generator.html">Schema Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Protobuf Schema Preview</h1>
+          <p class="tool-subtitle">Paste a <code>.proto</code> file to parse and visualize messages, services, enums, and fields. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="parse">Parse</button>
+            <button class="option-chip" data-mode="json">JSON View</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <!-- Split Pane -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input .proto</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="protoInput" rows="18" placeholder="Paste your .proto file here..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Parsed Structure</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output proto-tree" id="protoOutput" style="min-height:360px;overflow:auto;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a .proto file above to parse it.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Protobuf Schema Preview</h2>
+          <ol>
+            <li><strong>Paste your .proto file</strong> into the input area on the left.</li>
+            <li><strong>The tool parses immediately</strong> — messages, services, enums, and fields appear in the right pane.</li>
+            <li><strong>Switch views</strong> — use "Parse" for a visual tree, "JSON View" for a structured JSON object, or "Reference" for a scalar type guide.</li>
+            <li><strong>Copy or download</strong> the parsed result using the buttons above the output.</li>
+          </ol>
+
+          <h2>What This Tool Does</h2>
+          <p>This protobuf schema preview uses a pure JavaScript regex tokenizer to parse Protocol Buffer definition files without any external dependencies or server calls. It extracts all top-level and nested message definitions, service declarations, RPC methods, enum types, and their fields — then renders them as a clean, color-coded tree.</p>
+
+          <h3>What Gets Parsed</h3>
+          <ul>
+            <li><strong>Messages</strong> — all top-level and nested message definitions with their full field lists</li>
+            <li><strong>Fields</strong> — field labels (optional/repeated/required), scalar types, message types, field numbers</li>
+            <li><strong>Services</strong> — gRPC service blocks with all RPC method signatures</li>
+            <li><strong>Enums</strong> — enum types with their named constants and values</li>
+            <li><strong>Nested messages and enums</strong> — types defined inside other messages are shown inline</li>
+            <li><strong>Summary statistics</strong> — total message count, service count, enum count, and field count</li>
+          </ul>
+
+          <h3>Understanding Protobuf Field Numbers</h3>
+          <p>Every field in a protobuf message is assigned a unique integer number (1–536,870,911). These numbers are critical: they are used to identify fields in the compact binary wire format, not the field names. This is why protobuf is both extremely compact and backward compatible — you can add new fields with new numbers without breaking existing clients. Field numbers 1–15 encode in one byte and should be reserved for the most-used fields. Once a field number is used in production data, it should never be reassigned to a different field, even if the original field is removed.</p>
+
+          <h3>Proto3 vs Proto2</h3>
+          <p>Modern .proto files start with <code>syntax = "proto3";</code>. In proto3, all fields are optional by default and there is no way to mark a field as required. Missing fields default to zero values (0, empty string, false, empty list). Proto2 files may have <code>required</code>, <code>optional</code>, or <code>repeated</code> labels. If you are starting a new project, always use proto3 — it is simpler, generates smaller binaries, and is required by gRPC. The preview tool handles both syntaxes and displays field labels accordingly.</p>
+
+          <h3>When to Use This Tool</h3>
+          <p>Use this protobuf schema preview when you receive a .proto file from a team member, a public API, or an open-source project and need to quickly understand its structure without running the protoc compiler. It is especially useful for API consumers who need to understand the shape of gRPC request and response types, for developers documenting a microservice API, and for code reviewers checking that field numbers are consistent across versions. The JSON View mode exports the parsed schema as structured JSON, making it easy to feed into documentation generators or schema registries.</p>
+
+          <h3>Common Protobuf Patterns</h3>
+          <p>Most well-designed proto files follow consistent conventions: messages are PascalCase, fields are snake_case, enum values are SCREAMING_SNAKE_CASE. RPC methods are named with verb-noun pairs like <code>GetUser</code>, <code>CreateOrder</code>, <code>ListProducts</code>. Request and response messages are typically paired as <code>GetUserRequest</code> / <code>GetUserResponse</code>. The <code>google.protobuf.Timestamp</code> well-known type is commonly used for datetime fields. This preview tool renders all of these patterns clearly so you can evaluate schema quality at a glance without needing a full protoc setup.</p>
+
+          <h3>Integration with Other Tools</h3>
+          <p>After previewing your schema, use the <a href="/tools/json-formatter.html">JSON Formatter</a> to inspect sample message payloads serialized as JSON (protobuf supports JSON encoding). Use the <a href="/tools/schema-generator.html">JSON Schema Generator</a> to create a JSON Schema from the equivalent JSON structure, enabling validation of proto-style data in JavaScript APIs. For gRPC API documentation, combine the parsed service definitions from this tool with the <a href="/tools/meta-tag-generator.html">Meta Tag Generator</a> to build documentation pages optimized for search.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a .proto file?</button>
+            <div class="faq-answer">A .proto file is the schema definition file for Protocol Buffers (protobuf), Google's language-neutral binary serialization format. It defines message types, their fields (with types and field numbers), enumerations, and services for gRPC APIs. The proto compiler (protoc) uses these definitions to generate code in Go, Python, Java, C++, TypeScript, and other languages.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why do protobuf fields have numbers?</button>
+            <div class="faq-answer">Field numbers are central to protobuf's efficient binary encoding and backward compatibility. In the binary wire format, fields are identified by their number — not their name. This means you can rename a field without breaking existing serialized data. Field numbers 1–15 are encoded in a single byte and should be reserved for the most frequently used fields. Numbers 16–2047 require two bytes.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between proto2 and proto3?</button>
+            <div class="faq-answer">Proto3 removes required/optional field labels, making all fields optional by default and defaulting to zero values when absent. Proto2 supports required fields and custom default values. For new projects, proto3 is strongly recommended — it is simpler, more forward-compatible, and required for gRPC.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What are protobuf services and RPCs?</button>
+            <div class="faq-answer">A service block defines a gRPC service — a set of remote procedure calls (RPCs). Each RPC specifies a method name, an input message type, and a return message type. For example: rpc GetUser (GetUserRequest) returns (User). Services are the interface definition that gRPC uses to generate server stubs and client code.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my .proto file sent to a server?</button>
+            <div class="faq-answer">No. This protobuf preview tool runs entirely in your browser using JavaScript. Your schema definitions never leave your machine. There is no server-side processing, no logging, and no data collection of any kind.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/schema-generator.html">Schema Generator</a>
+        <a href="/tools/yaml-json.html">YAML &#8596; JSON</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/json-to-typescript.html">JSON to TypeScript</a>
+        <a href="/tools/xml-json.html">XML &#8596; JSON</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/websocket-tester.html">WebSocket Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = window.DevToolbox;
+    var input   = document.getElementById('protoInput');
+    var output  = document.getElementById('protoOutput');
+    var statusBar = document.getElementById('statusBar');
+    var outputLabel = document.getElementById('outputLabel');
+    var currentMode = 'parse';
+    var lastParsed = null;
+
+    /* ─── PROTO TOKENIZER ──────────────────────────────────────────── */
+    var SCALAR_TYPES = new Set([
+      'double','float','int32','int64','uint32','uint64','sint32','sint64',
+      'fixed32','fixed64','sfixed32','sfixed64','bool','string','bytes'
+    ]);
+
+    function stripComments(src) {
+      // Remove line comments
+      src = src.replace(/\/\/[^\n]*/g, '');
+      // Remove block comments
+      src = src.replace(/\/\*[\s\S]*?\*\//g, '');
+      return src;
+    }
+
+    function parseProto(src) {
+      src = stripComments(src);
+      var result = {
+        syntax: '',
+        package: '',
+        messages: [],
+        services: [],
+        enums: [],
+        imports: []
+      };
+
+      // Syntax
+      var synMatch = src.match(/syntax\s*=\s*["']([^"']+)["']\s*;/);
+      if (synMatch) result.syntax = synMatch[1];
+
+      // Package
+      var pkgMatch = src.match(/\bpackage\s+([\w.]+)\s*;/);
+      if (pkgMatch) result.package = pkgMatch[1];
+
+      // Imports
+      var importRe = /\bimport\s+(?:public\s+|weak\s+)?["']([^"']+)["']\s*;/g;
+      var im;
+      while ((im = importRe.exec(src)) !== null) {
+        result.imports.push(im[1]);
+      }
+
+      // Top-level enums
+      result.enums = parseTopLevelEnums(src);
+
+      // Messages (handles nested by tracking brace depth)
+      result.messages = parseMessages(src);
+
+      // Services
+      result.services = parseServices(src);
+
+      return result;
+    }
+
+    function extractBlock(src, startIdx) {
+      /* Extract the { ... } block starting at startIdx (the '{') */
+      var depth = 0;
+      var i = startIdx;
+      var start = -1;
+      while (i < src.length) {
+        if (src[i] === '{') {
+          if (depth === 0) start = i;
+          depth++;
+        } else if (src[i] === '}') {
+          depth--;
+          if (depth === 0) return { body: src.slice(start + 1, i), end: i };
+        }
+        i++;
+      }
+      return null;
+    }
+
+    function parseFieldLine(line) {
+      line = line.trim();
+      if (!line || line === '}') return null;
+
+      // map< keyType, valueType > name = number;
+      var mapRe = /^map\s*<\s*([\w.]+)\s*,\s*([\w.]+)\s*>\s+(\w+)\s*=\s*(\d+)/;
+      var mapM = line.match(mapRe);
+      if (mapM) {
+        return {
+          label: 'map',
+          type: 'map<' + mapM[1] + ',' + mapM[2] + '>',
+          name: mapM[3],
+          number: parseInt(mapM[4], 10),
+          isScalar: false
+        };
+      }
+
+      // oneof, reserved, option — skip
+      if (/^(oneof|reserved|option|extensions)\b/.test(line)) return null;
+
+      // [label] type name = number [options];
+      var fieldRe = /^(optional|required|repeated)?\s*([\w.]+)\s+(\w+)\s*=\s*(\d+)/;
+      var m = line.match(fieldRe);
+      if (m) {
+        return {
+          label: m[1] || '',
+          type: m[2],
+          name: m[3],
+          number: parseInt(m[4], 10),
+          isScalar: SCALAR_TYPES.has(m[2])
+        };
+      }
+      return null;
+    }
+
+    function parseEnumBody(body) {
+      var values = [];
+      var lines = body.split(';');
+      lines.forEach(function (line) {
+        line = line.trim();
+        if (!line) return;
+        var m = line.match(/^(\w+)\s*=\s*(-?\d+)/);
+        if (m) values.push({ name: m[1], value: parseInt(m[2], 10) });
+      });
+      return values;
+    }
+
+    function parseTopLevelEnums(src) {
+      var enums = [];
+      var re = /\benum\s+(\w+)\s*\{/g;
+      var m;
+      while ((m = re.exec(src)) !== null) {
+        var blk = extractBlock(src, m.index + m[0].length - 1);
+        if (blk) {
+          enums.push({ name: m[1], values: parseEnumBody(blk.body) });
+        }
+      }
+      return enums;
+    }
+
+    function parseMessages(src) {
+      var messages = [];
+      var re = /\bmessage\s+(\w+)\s*\{/g;
+      var m;
+      while ((m = re.exec(src)) !== null) {
+        var blk = extractBlock(src, m.index + m[0].length - 1);
+        if (!blk) continue;
+        var msg = parseMessageBlock(m[1], blk.body);
+        messages.push(msg);
+      }
+      return messages;
+    }
+
+    function parseMessageBlock(name, body) {
+      var fields = [];
+      var nested = [];
+      var enums  = [];
+
+      // Collect nested messages and enums first (so their content doesn't confuse field parsing)
+      var nestedRe = /\bmessage\s+(\w+)\s*\{/g;
+      var nm;
+      var consumedRanges = [];
+      while ((nm = nestedRe.exec(body)) !== null) {
+        var nblk = extractBlock(body, nm.index + nm[0].length - 1);
+        if (nblk) {
+          nested.push(parseMessageBlock(nm[1], nblk.body));
+          consumedRanges.push([nm.index, nblk.end]);
+        }
+      }
+      var enumRe = /\benum\s+(\w+)\s*\{/g;
+      var em;
+      while ((em = enumRe.exec(body)) !== null) {
+        var eblk = extractBlock(body, em.index + em[0].length - 1);
+        if (eblk) {
+          enums.push({ name: em[1], values: parseEnumBody(eblk.body) });
+          consumedRanges.push([em.index, eblk.end]);
+        }
+      }
+
+      // Build a version of body with nested blocks blanked out
+      var flatBody = body.split('');
+      consumedRanges.forEach(function (range) {
+        for (var i = range[0]; i <= range[1]; i++) {
+          if (flatBody[i] !== '\n') flatBody[i] = ' ';
+        }
+      });
+      flatBody = flatBody.join('');
+
+      // Parse field lines
+      var lines = flatBody.split(';');
+      lines.forEach(function (line) {
+        var f = parseFieldLine(line);
+        if (f) fields.push(f);
+      });
+
+      // Sort by field number
+      fields.sort(function (a, b) { return a.number - b.number; });
+
+      return { name: name, fields: fields, nested: nested, enums: enums };
+    }
+
+    function parseServices(src) {
+      var services = [];
+      var re = /\bservice\s+(\w+)\s*\{/g;
+      var m;
+      while ((m = re.exec(src)) !== null) {
+        var blk = extractBlock(src, m.index + m[0].length - 1);
+        if (!blk) continue;
+        var rpcs = [];
+        var rpcRe = /\brpc\s+(\w+)\s*\(\s*(stream\s+)?([\w.]+)\s*\)\s*returns\s*\(\s*(stream\s+)?([\w.]+)\s*\)/g;
+        var rm;
+        while ((rm = rpcRe.exec(blk.body)) !== null) {
+          rpcs.push({
+            name: rm[1],
+            inputStream: !!rm[2],
+            input: rm[3],
+            outputStream: !!rm[4],
+            output: rm[5]
+          });
+        }
+        services.push({ name: m[1], rpcs: rpcs });
+      }
+      return services;
+    }
+
+    /* ─── RENDERING ────────────────────────────────────────────────── */
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function renderField(f) {
+      var labelHtml = f.label
+        ? '<span class="proto-field-label">' + esc(f.label) + ' </span>'
+        : '<span class="proto-field-label"></span>';
+      var typeClass = f.isScalar ? 'proto-field-type' : 'proto-field-type' + (f.label === 'map' ? '' : '');
+      return '<div class="proto-field-row">'
+        + '<span class="proto-field-num">' + f.number + '</span>'
+        + labelHtml
+        + '<span class="' + typeClass + '">' + esc(f.type) + ' </span>'
+        + '<span class="proto-field-name">' + esc(f.name) + '</span>'
+        + '</div>';
+    }
+
+    function renderEnum(e, indent) {
+      var html = '';
+      if (indent) {
+        html += '<div class="proto-nested-label">enum ' + esc(e.name) + '</div>';
+      }
+      e.values.forEach(function (v) {
+        html += '<div class="proto-enum-val"><span class="proto-enum-vname">' + esc(v.name) + '</span><span class="proto-enum-vnum">= ' + v.value + '</span></div>';
+      });
+      return html;
+    }
+
+    function renderMessage(msg, depth) {
+      depth = depth || 0;
+      var totalFields = msg.fields.length;
+      msg.nested.forEach(function (n) { totalFields += countFields(n); });
+
+      var html = '<div class="proto-section">';
+      html += '<div class="proto-section-header">';
+      html += (depth > 0 ? '&#x2514; ' : '') + '<span class="proto-badge badge-message">message</span> ';
+      html += '<strong>' + esc(msg.name) + '</strong>';
+      html += '<span style="margin-left:auto;color:var(--text-muted,#6b7280);font-size:0.75rem;font-weight:400;">' + msg.fields.length + ' field' + (msg.fields.length !== 1 ? 's' : '') + '</span>';
+      html += '</div>';
+      html += '<div class="proto-section-body">';
+
+      if (msg.fields.length === 0 && msg.nested.length === 0 && msg.enums.length === 0) {
+        html += '<div style="color:var(--text-muted,#6b7280);font-size:0.8rem;font-style:italic;">Empty message</div>';
+      }
+
+      msg.fields.forEach(function (f) { html += renderField(f); });
+
+      if (msg.enums.length > 0) {
+        msg.enums.forEach(function (e) {
+          html += '<div class="proto-nested-label">&#x21B3; enum <strong>' + esc(e.name) + '</strong></div>';
+          html += renderEnum(e, false);
+        });
+      }
+
+      if (msg.nested.length > 0) {
+        html += '<div class="proto-nested-label" style="margin-top:8px;">Nested messages</div>';
+        msg.nested.forEach(function (n) { html += renderMessage(n, depth + 1); });
+      }
+
+      html += '</div></div>';
+      return html;
+    }
+
+    function renderService(svc) {
+      var html = '<div class="proto-section">';
+      html += '<div class="proto-section-header"><span class="proto-badge badge-service">service</span> <strong>' + esc(svc.name) + '</strong>';
+      html += '<span style="margin-left:auto;color:var(--text-muted,#6b7280);font-size:0.75rem;font-weight:400;">' + svc.rpcs.length + ' RPC' + (svc.rpcs.length !== 1 ? 's' : '') + '</span>';
+      html += '</div>';
+      html += '<div class="proto-section-body">';
+      if (svc.rpcs.length === 0) {
+        html += '<div style="color:var(--text-muted,#6b7280);font-size:0.8rem;font-style:italic;">No RPCs defined</div>';
+      }
+      svc.rpcs.forEach(function (r) {
+        html += '<div class="proto-rpc-row">'
+          + '<span class="proto-rpc-kw">rpc </span>'
+          + '<span class="proto-rpc-name">' + esc(r.name) + '</span>'
+          + ' (<span class="proto-rpc-type">' + (r.inputStream ? 'stream ' : '') + esc(r.input) + '</span>)'
+          + '<span class="proto-rpc-arrow"> &#x2192; </span>'
+          + '(<span class="proto-rpc-type">' + (r.outputStream ? 'stream ' : '') + esc(r.output) + '</span>)'
+          + '</div>';
+      });
+      html += '</div></div>';
+      return html;
+    }
+
+    function countFields(msg) {
+      var c = msg.fields.length;
+      msg.nested.forEach(function (n) { c += countFields(n); });
+      return c;
+    }
+
+    function totalFields(parsed) {
+      var c = 0;
+      parsed.messages.forEach(function (m) { c += countFields(m); });
+      return c;
+    }
+
+    function renderParseView(parsed) {
+      var html = '';
+
+      // Summary chips
+      var tf = totalFields(parsed);
+      var totalRpcs = 0;
+      parsed.services.forEach(function (s) { totalRpcs += s.rpcs.length; });
+
+      html += '<div class="proto-summary-chips">';
+      if (parsed.syntax) html += '<span class="proto-summary-chip chip-field">syntax: ' + esc(parsed.syntax) + '</span>';
+      if (parsed.package) html += '<span class="proto-summary-chip chip-field">pkg: ' + esc(parsed.package) + '</span>';
+      html += '<span class="proto-summary-chip chip-msg">' + parsed.messages.length + ' message' + (parsed.messages.length !== 1 ? 's' : '') + '</span>';
+      if (parsed.services.length > 0) html += '<span class="proto-summary-chip chip-svc">' + parsed.services.length + ' service' + (parsed.services.length !== 1 ? 's' : '') + '</span>';
+      if (parsed.enums.length > 0) html += '<span class="proto-summary-chip chip-enum">' + parsed.enums.length + ' enum' + (parsed.enums.length !== 1 ? 's' : '') + '</span>';
+      html += '<span class="proto-summary-chip chip-field">' + tf + ' fields</span>';
+      html += '</div>';
+
+      // Top-level enums
+      parsed.enums.forEach(function (e) {
+        html += '<div class="proto-section">';
+        html += '<div class="proto-section-header"><span class="proto-badge badge-enum">enum</span> <strong>' + esc(e.name) + '</strong></div>';
+        html += '<div class="proto-section-body">' + renderEnum(e, false) + '</div>';
+        html += '</div>';
+      });
+
+      // Messages
+      parsed.messages.forEach(function (msg) { html += renderMessage(msg, 0); });
+
+      // Services
+      parsed.services.forEach(function (svc) { html += renderService(svc); });
+
+      return html || '<div style="color:var(--text-muted,#6b7280);font-size:0.85rem;padding:16px;">No messages, services, or enums detected. Check your .proto syntax.</div>';
+    }
+
+    function renderReferenceView() {
+      return '<div style="padding:4px 0;">'
+        + '<p style="margin:0 0 10px;font-size:0.83rem;">Quick reference for Protocol Buffer scalar types.</p>'
+        + '<table class="reference-table">'
+        + '<thead><tr><th>Type</th><th>Wire Type</th><th>Default</th><th>Notes</th></tr></thead>'
+        + '<tbody>'
+        + '<tr><td>double</td><td>64-bit</td><td>0.0</td><td>64-bit IEEE 754</td></tr>'
+        + '<tr><td>float</td><td>32-bit</td><td>0.0</td><td>32-bit IEEE 754</td></tr>'
+        + '<tr><td>int32</td><td>varint</td><td>0</td><td>Uses ZigZag for negatives (use sint32 instead)</td></tr>'
+        + '<tr><td>int64</td><td>varint</td><td>0</td><td>Use sint64 for negative numbers</td></tr>'
+        + '<tr><td>uint32</td><td>varint</td><td>0</td><td>Unsigned 32-bit</td></tr>'
+        + '<tr><td>uint64</td><td>varint</td><td>0</td><td>Unsigned 64-bit</td></tr>'
+        + '<tr><td>sint32</td><td>varint</td><td>0</td><td>More efficient for negatives</td></tr>'
+        + '<tr><td>sint64</td><td>varint</td><td>0</td><td>More efficient for negatives</td></tr>'
+        + '<tr><td>fixed32</td><td>32-bit</td><td>0</td><td>Better than uint32 for values &gt; 2<sup>28</sup></td></tr>'
+        + '<tr><td>fixed64</td><td>64-bit</td><td>0</td><td>Better than uint64 for values &gt; 2<sup>56</sup></td></tr>'
+        + '<tr><td>sfixed32</td><td>32-bit</td><td>0</td><td>Signed fixed 32-bit</td></tr>'
+        + '<tr><td>sfixed64</td><td>64-bit</td><td>0</td><td>Signed fixed 64-bit</td></tr>'
+        + '<tr><td>bool</td><td>varint</td><td>false</td><td>True or false</td></tr>'
+        + '<tr><td>string</td><td>length-delimited</td><td>""</td><td>UTF-8 encoded text</td></tr>'
+        + '<tr><td>bytes</td><td>length-delimited</td><td>""</td><td>Arbitrary byte sequence</td></tr>'
+        + '</tbody></table>'
+        + '<p style="margin:10px 0 0;font-size:0.8rem;color:var(--text-muted,#6b7280);">Field numbers 1–15 encode in 1 byte. Reserve them for high-frequency fields.</p>'
+        + '</div>';
+    }
+
+    /* ─── PROCESS ──────────────────────────────────────────────────── */
+    function process() {
+      var raw = input.value.trim();
+
+      if (currentMode === 'reference') {
+        outputLabel.textContent = 'Scalar Type Reference';
+        output.innerHTML = renderReferenceView();
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Showing protobuf scalar type reference.';
+        return;
+      }
+
+      if (!raw) {
+        outputLabel.textContent = 'Parsed Structure';
+        output.innerHTML = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste a .proto file above to parse it.';
+        lastParsed = null;
+        return;
+      }
+
+      try {
+        var parsed = parseProto(raw);
+        lastParsed = parsed;
+
+        var tf = totalFields(parsed);
+        var totalRpcs = 0;
+        parsed.services.forEach(function (s) { totalRpcs += s.rpcs.length; });
+
+        if (currentMode === 'json') {
+          outputLabel.textContent = 'JSON View';
+          output.textContent = JSON.stringify(parsed, null, 2);
+        } else {
+          outputLabel.textContent = 'Parsed Structure';
+          output.innerHTML = renderParseView(parsed);
+        }
+
+        var parts = [];
+        if (parsed.messages.length) parts.push(parsed.messages.length + ' message' + (parsed.messages.length !== 1 ? 's' : ''));
+        if (parsed.services.length) parts.push(parsed.services.length + ' service' + (parsed.services.length !== 1 ? 's' : ''));
+        if (parsed.enums.length) parts.push(parsed.enums.length + ' enum' + (parsed.enums.length !== 1 ? 's' : ''));
+        if (tf) parts.push(tf + ' fields');
+
+        statusBar.className = parts.length ? 'status-bar valid' : 'status-bar info';
+        statusBar.textContent = parts.length
+          ? 'Parsed ' + parts.join(', ') + '.'
+          : 'No definitions detected. Check your .proto syntax.';
+
+        DT.trackTool('protobuf-preview');
+      } catch (e) {
+        output.textContent = '';
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Parse error: ' + e.message;
+        lastParsed = null;
+      }
+    }
+
+    var debouncedProcess = DT.debounce(process, 200);
+    input.addEventListener('input', debouncedProcess);
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        process();
+      });
+    });
+
+    // Copy
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var text = currentMode === 'json' || currentMode === 'reference'
+        ? output.textContent
+        : (lastParsed ? JSON.stringify(lastParsed, null, 2) : '');
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    // Download
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var text = currentMode === 'json' || currentMode === 'reference'
+        ? output.textContent
+        : (lastParsed ? JSON.stringify(lastParsed, null, 2) : '');
+      if (text) DT.downloadText(text, 'proto-schema.json', 'application/json');
+    });
+
+    // Clear
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      input.value = '';
+      process();
+      input.focus();
+    });
+
+    // Tab key
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        var s = this.selectionStart, end = this.selectionEnd;
+        this.value = this.value.substring(0, s) + '  ' + this.value.substring(end);
+        this.selectionStart = this.selectionEnd = s + 2;
+        debouncedProcess();
+      }
+    });
+
+    // Try Example
+    var EXAMPLE_PROTO = [
+      'syntax = "proto3";',
+      'package ecommerce.v1;',
+      '',
+      'import "google/protobuf/timestamp.proto";',
+      '',
+      'enum OrderStatus {',
+      '  ORDER_STATUS_UNSPECIFIED = 0;',
+      '  ORDER_STATUS_PENDING     = 1;',
+      '  ORDER_STATUS_PAID        = 2;',
+      '  ORDER_STATUS_SHIPPED     = 3;',
+      '  ORDER_STATUS_CANCELLED   = 4;',
+      '}',
+      '',
+      'message Address {',
+      '  string street     = 1;',
+      '  string city       = 2;',
+      '  string state      = 3;',
+      '  string zip_code   = 4;',
+      '  string country    = 5;',
+      '}',
+      '',
+      'message LineItem {',
+      '  string product_id = 1;',
+      '  string sku        = 2;',
+      '  uint32 quantity   = 3;',
+      '  double unit_price = 4;',
+      '}',
+      '',
+      'message Order {',
+      '  string order_id                          = 1;',
+      '  string customer_id                       = 2;',
+      '  repeated LineItem items                  = 3;',
+      '  Address shipping_address                 = 4;',
+      '  OrderStatus status                       = 5;',
+      '  double total_amount                      = 6;',
+      '  google.protobuf.Timestamp created_at     = 7;',
+      '  google.protobuf.Timestamp updated_at     = 8;',
+      '  map<string, string> metadata             = 9;',
+      '}',
+      '',
+      'message GetOrderRequest  { string order_id = 1; }',
+      'message GetOrderResponse { Order order = 1; }',
+      'message ListOrdersRequest  { string customer_id = 1; uint32 page_size = 2; string page_token = 3; }',
+      'message ListOrdersResponse { repeated Order orders = 1; string next_page_token = 2; }',
+      'message CreateOrderRequest { Order order = 1; }',
+      'message CreateOrderResponse { Order order = 1; }',
+      '',
+      'service OrderService {',
+      '  rpc GetOrder (GetOrderRequest) returns (GetOrderResponse);',
+      '  rpc ListOrders (ListOrdersRequest) returns (ListOrdersResponse);',
+      '  rpc CreateOrder (CreateOrderRequest) returns (CreateOrderResponse);',
+      '  rpc WatchOrders (ListOrdersRequest) returns (stream GetOrderResponse);',
+      '}'
+    ].join('\n');
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      input.value = EXAMPLE_PROTO;
+      process();
+    });
+
+  })();
+  </script>
+</body>
+</html>

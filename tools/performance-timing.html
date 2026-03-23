@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Browser Performance Timing — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Analyze your browser's performance timing: DNS lookup, TCP connect, TTFB, DOM processing, LCP, CLS. Visual waterfall chart. 100% client-side, no data sent.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/performance-timing.html">
+  <meta property="og:title" content="Browser Performance Timing — ThisDevTool">
+  <meta property="og:description" content="Free online browser performance timing analyzer. View navigation waterfall, resource timing, and Core Web Vitals in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/performance-timing.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Browser Performance Timing",
+    "url": "https://thisdevtool.com/tools/performance-timing.html",
+    "description": "Analyze browser performance timing metrics including DNS, TCP, TTFB, DOM, and Core Web Vitals. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is TTFB (Time to First Byte)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TTFB (Time to First Byte) measures the time from when the browser sends a request until it receives the first byte of the server's response. It includes DNS lookup, TCP connection, TLS handshake, and server processing time. A TTFB under 800ms is considered good by Google's Core Web Vitals guidelines."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are Core Web Vitals?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Core Web Vitals are a set of specific metrics Google uses to measure user experience on web pages: Largest Contentful Paint (LCP) measures loading performance, Cumulative Layout Shift (CLS) measures visual stability, and Interaction to Next Paint (INP) measures interactivity. Google uses these metrics as ranking signals."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is LCP (Largest Contentful Paint)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "LCP (Largest Contentful Paint) measures when the largest visible content element — usually an image or a text block — finishes rendering. A good LCP is under 2.5 seconds. Slow LCP is often caused by slow server response times, render-blocking resources, or slow resource load times."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why is DNS lookup slow?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DNS lookup converts a domain name to an IP address. Slow DNS is caused by a slow DNS resolver (your ISP's default resolver is often slower than 1.1.1.1 or 8.8.8.8), DNS propagation delays for new domains, or no DNS caching. Preconnect hints and DNS prefetch can speed up repeated lookups."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my performance data sent anywhere?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All timing data is read directly from your browser's Performance API, which runs entirely in your browser's JavaScript sandbox. No data is sent to any server. This tool reads from window.performance and PerformanceObserver — both are browser-native APIs with no network requests."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .waterfall-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .waterfall-table th { text-align: left; padding: 6px 8px; border-bottom: 2px solid var(--border); font-weight: 600; white-space: nowrap; }
+    .waterfall-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .waterfall-table tr:hover td { background: var(--surface); }
+    .bar-cell { min-width: 160px; }
+    .bar-track { background: var(--border); border-radius: 3px; height: 14px; position: relative; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+    .bar-dns    { background: #f59e0b; }
+    .bar-tcp    { background: #3b82f6; }
+    .bar-tls    { background: #8b5cf6; }
+    .bar-ttfb   { background: #ef4444; }
+    .bar-dl     { background: #10b981; }
+    .bar-dom    { background: #06b6d4; }
+    .bar-other  { background: #94a3b8; }
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
+    .metric-card .metric-value { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+    .metric-card .metric-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .metric-card.good .metric-value  { color: #10b981; }
+    .metric-card.needs-improvement .metric-value { color: #f59e0b; }
+    .metric-card.poor .metric-value  { color: #ef4444; }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; font-size: 0.8rem; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+    .resource-name { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 0.8rem; }
+    .cwv-unavail { color: var(--text-muted); font-size: 0.85rem; font-style: italic; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .table-wrap { overflow-x: auto; }
+    @media (max-width: 600px) {
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      .bar-cell { min-width: 80px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <a href="/tools/regex-tester.html">Regex</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Browser Performance Timing</h1>
+          <p class="tool-subtitle">Inspect your browser's real navigation timing, resource waterfall, and Core Web Vitals — all read live from the Performance API.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-tab="navigation">Navigation</button>
+            <button class="option-chip" data-tab="resources">Resources</button>
+            <button class="option-chip" data-tab="cwv">Core Web Vitals</button>
+          </div>
+
+          <!-- Navigation Tab -->
+          <div class="tab-content active" id="tab-navigation">
+            <div id="nav-metrics" class="metric-grid"></div>
+            <div class="legend" id="nav-legend"></div>
+            <div class="table-wrap">
+              <table class="waterfall-table" id="nav-table">
+                <thead>
+                  <tr>
+                    <th>Phase</th>
+                    <th>Start (ms)</th>
+                    <th>Duration (ms)</th>
+                    <th class="bar-cell">Waterfall</th>
+                  </tr>
+                </thead>
+                <tbody id="nav-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Resources Tab -->
+          <div class="tab-content" id="tab-resources">
+            <div style="margin-bottom:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <label style="font-size:0.85rem; color:var(--text-muted);">Filter:</label>
+              <select id="resTypeFilter" style="font-size:0.85rem; padding:3px 8px; border:1px solid var(--border); border-radius:4px; background:var(--bg); color:var(--text);">
+                <option value="">All types</option>
+                <option value="script">Script</option>
+                <option value="css">CSS</option>
+                <option value="img">Image</option>
+                <option value="fetch">Fetch/XHR</option>
+                <option value="font">Font</option>
+                <option value="other">Other</option>
+              </select>
+              <span id="resCount" style="font-size:0.85rem; color:var(--text-muted);"></span>
+            </div>
+            <div class="table-wrap">
+              <table class="waterfall-table" id="res-table">
+                <thead>
+                  <tr>
+                    <th>Resource</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Duration (ms)</th>
+                    <th class="bar-cell">Waterfall</th>
+                  </tr>
+                </thead>
+                <tbody id="res-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Core Web Vitals Tab -->
+          <div class="tab-content" id="tab-cwv">
+            <div id="cwv-metrics" class="metric-grid"></div>
+            <div id="cwv-details" style="font-size:0.9rem; line-height:1.7;"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Loading performance data…
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-primary" id="refreshBtn">Refresh Data</button>
+            <button class="btn btn-secondary" id="copyBtn">Copy JSON</button>
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Browser Performance Timing Tool</h2>
+          <ol>
+            <li><strong>Load the page</strong> — timing data is captured automatically when the page loads. Switch between the three tabs to explore different views.</li>
+            <li><strong>Navigation tab</strong> — shows the full page load waterfall: DNS, TCP, TLS, request, response, DOM parsing, and page interactive times.</li>
+            <li><strong>Resources tab</strong> — lists every resource (scripts, stylesheets, images, fonts, fetch requests) with size and load time. Use the type filter to focus on specific resource types.</li>
+            <li><strong>Core Web Vitals tab</strong> — displays LCP, CLS, and INP as they are observed by PerformanceObserver, the same API used by Google's CrUX data collection.</li>
+            <li><strong>Refresh</strong> — click "Refresh Data" to re-read the current performance buffer if you've navigated or loaded additional resources.</li>
+            <li><strong>Copy JSON</strong> — exports the raw timing data as JSON for use in CI pipelines, spreadsheets, or bug reports.</li>
+          </ol>
+
+          <h2>Understanding Browser Navigation Timing</h2>
+          <p>The <strong>Navigation Timing API</strong> (part of the W3C Performance API) exposes a detailed breakdown of every phase your browser goes through when loading a page. This data is available via <code>performance.getEntriesByType("navigation")</code> and is the same data collected by Lighthouse, WebPageTest, and Chrome DevTools.</p>
+
+          <h3>Navigation Timing Phases Explained</h3>
+          <ul>
+            <li><strong>DNS Lookup</strong> — time to resolve the domain name to an IP address using DNS. Cached lookups return in under 1ms; fresh lookups typically take 10–120ms depending on your DNS resolver and geographic distance to the resolver.</li>
+            <li><strong>TCP Connect</strong> — time to establish a TCP connection to the server (three-way handshake). For connections over long distances, TCP latency adds at least one round trip (RTT).</li>
+            <li><strong>TLS Handshake</strong> — time to negotiate TLS encryption. Modern TLS 1.3 requires only one round trip; older TLS 1.2 requires two. Expect 20–100ms for TLS on most connections.</li>
+            <li><strong>TTFB (Time to First Byte)</strong> — measures from the end of the request until the first byte of the response arrives. This includes your server's processing time and is one of the most important metrics for perceived load speed. Google considers TTFB under 800ms as good.</li>
+            <li><strong>Content Download</strong> — time for the browser to download the full HTML response body. Slow values here usually indicate a large HTML document or a slow network connection.</li>
+            <li><strong>DOM Processing</strong> — time from HTML download completing until the DOM is fully parsed and all deferred scripts have run. Large DOMs, synchronous scripts, and heavy CSS slow this phase.</li>
+            <li><strong>DOM Interactive</strong> — the point at which the document's DOM is ready and scripts can access it safely. This is when the DOMContentLoaded event fires.</li>
+            <li><strong>Load Complete</strong> — the window load event, after all synchronous images, stylesheets, and scripts have loaded.</li>
+          </ul>
+
+          <h3>Resource Timing</h3>
+          <p>The <strong>Resource Timing API</strong> records the same phase breakdown for every sub-resource the browser fetches: JavaScript files, CSS stylesheets, images, web fonts, fetch() calls, and XMLHttpRequests. The resource timing buffer holds up to 250 entries by default; you can expand it with <code>performance.setResourceTimingBufferSize()</code>.</p>
+          <p>Key metrics in the resource waterfall:</p>
+          <ul>
+            <li><strong>Transfer size vs. decoded size</strong> — a large decoded size but small transfer size indicates effective compression (gzip/Brotli). No compression means transfer size equals decoded size.</li>
+            <li><strong>Duration</strong> — total time from initiating the request to downloading the last byte. This is the column to sort by when hunting for slow resources.</li>
+            <li><strong>Stacked same-origin requests</strong> — HTTP/1.1 allows only 6 concurrent connections per origin; HTTP/2 multiplexes requests, so you'll see true parallelism in the waterfall.</li>
+          </ul>
+
+          <h3>Core Web Vitals</h3>
+          <p>Google's <strong>Core Web Vitals</strong> are three user-centric metrics that measure real-world page experience. Unlike synthetic metrics from Lighthouse, Core Web Vitals reflect actual browser behavior during your current session:</p>
+          <ul>
+            <li><strong>LCP (Largest Contentful Paint)</strong> — measures loading performance. The LCP element is usually the hero image or the largest text block visible above the fold. Aim for under 2.5 seconds. Common causes of poor LCP: slow server response (TTFB), render-blocking resources, slow image loading.</li>
+            <li><strong>CLS (Cumulative Layout Shift)</strong> — measures visual stability. Each time a visible element moves unexpectedly (e.g., a banner loads and pushes content down), CLS increases. Aim for under 0.1. Reserve space for images and ads with explicit width/height attributes.</li>
+            <li><strong>INP (Interaction to Next Paint)</strong> — measures interactivity. It records the worst interaction delay observed during the session. Aim for under 200ms. Heavy JavaScript execution and long tasks on the main thread are the primary culprits.</li>
+          </ul>
+
+          <h3>How to Improve Performance</h3>
+          <p>Once you've identified slow phases in the waterfall, here are targeted fixes:</p>
+          <ul>
+            <li><strong>Slow DNS:</strong> Add DNS prefetch hints (<code>&lt;link rel="dns-prefetch" href="//example.com"&gt;</code>) or switch to a faster DNS resolver like Cloudflare (1.1.1.1) or Google (8.8.8.8).</li>
+            <li><strong>Slow TLS:</strong> Upgrade to TLS 1.3, enable OCSP stapling, and use ECDHE key exchange to minimize handshake round trips.</li>
+            <li><strong>High TTFB:</strong> Add server-side caching (Redis, Varnish), use a CDN, or optimize database queries.</li>
+            <li><strong>Slow DOM:</strong> Defer non-critical JavaScript (<code>defer</code> / <code>async</code> attributes), reduce DOM node count, and split large synchronous scripts.</li>
+            <li><strong>Large resources:</strong> Compress images (WebP/AVIF), enable gzip/Brotli on your server, and code-split JavaScript bundles.</li>
+          </ul>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is TTFB (Time to First Byte)?</button>
+            <div class="faq-answer">TTFB (Time to First Byte) measures the time from when the browser sends a request until it receives the first byte of the server's response. It includes DNS lookup, TCP connection, TLS handshake, and server processing time. A TTFB under 800ms is considered good by Google's Core Web Vitals guidelines.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What are Core Web Vitals?</button>
+            <div class="faq-answer">Core Web Vitals are a set of specific metrics Google uses to measure user experience on web pages: Largest Contentful Paint (LCP) measures loading performance, Cumulative Layout Shift (CLS) measures visual stability, and Interaction to Next Paint (INP) measures interactivity. Google uses these metrics as ranking signals.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is LCP (Largest Contentful Paint)?</button>
+            <div class="faq-answer">LCP (Largest Contentful Paint) measures when the largest visible content element — usually an image or a text block — finishes rendering. A good LCP is under 2.5 seconds. Slow LCP is often caused by slow server response times, render-blocking resources, or slow resource load times.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why is DNS lookup slow?</button>
+            <div class="faq-answer">DNS lookup converts a domain name to an IP address. Slow DNS is caused by a slow DNS resolver (your ISP's default resolver is often slower than 1.1.1.1 or 8.8.8.8), DNS propagation delays for new domains, or no DNS caching. Preconnect hints and DNS prefetch can speed up repeated lookups.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my performance data sent anywhere?</button>
+            <div class="faq-answer">No. All timing data is read directly from your browser's Performance API, which runs entirely in your browser's JavaScript sandbox. No data is sent to any server. This tool reads from window.performance and PerformanceObserver — both are browser-native APIs with no network requests.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/phone-formatter.html">Phone Formatter</a>
+        <a href="/tools/meta-tag-generator.html">Meta Tag Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentTab = 'navigation';
+    var cwvData = { lcp: null, cls: 0, inp: null };
+    var navRaw = null;
+    var resRaw = [];
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function fmt(ms) {
+      if (ms == null || isNaN(ms) || ms < 0) return '—';
+      return ms.toFixed(1);
+    }
+
+    function fmtBytes(b) {
+      if (!b) return '—';
+      return DT.formatBytes(b);
+    }
+
+    function ratingClass(metric, value) {
+      if (value == null) return '';
+      var thresholds = {
+        lcp:  [2500, 4000],
+        cls:  [0.1,  0.25],
+        inp:  [200,  500],
+        ttfb: [800,  1800],
+        load: [2500, 5000]
+      };
+      var t = thresholds[metric];
+      if (!t) return 'good';
+      if (value <= t[0]) return 'good';
+      if (value <= t[1]) return 'needs-improvement';
+      return 'poor';
+    }
+
+    function ratingLabel(cls) {
+      return cls === 'good' ? 'Good' : cls === 'needs-improvement' ? 'Needs Improvement' : 'Poor';
+    }
+
+    function makeBar(pct, colorClass) {
+      var track = document.createElement('div');
+      track.className = 'bar-track';
+      var fill = document.createElement('div');
+      fill.className = 'bar-fill ' + colorClass;
+      fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
+      track.appendChild(fill);
+      return track;
+    }
+
+    function resourceColorClass(type) {
+      var map = { script: 'bar-tcp', css: 'bar-dns', img: 'bar-dl', fetch: 'bar-ttfb', xmlhttprequest: 'bar-ttfb', font: 'bar-tls' };
+      return map[type] || 'bar-other';
+    }
+
+    // ── Navigation Timing ────────────────────────────────────────────────────
+    function renderNavigation() {
+      var entries = performance.getEntriesByType('navigation');
+      if (!entries || !entries.length) {
+        document.getElementById('nav-tbody').innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);padding:16px;">Navigation Timing API not available in this browser.</td></tr>';
+        return;
+      }
+      var e = entries[0];
+      navRaw = e;
+
+      var phases = [
+        { label: 'DNS Lookup',      start: e.domainLookupStart,   end: e.domainLookupEnd,       color: 'bar-dns' },
+        { label: 'TCP Connect',     start: e.connectStart,        end: e.connectEnd,             color: 'bar-tcp' },
+        { label: 'TLS Handshake',   start: e.secureConnectionStart > 0 ? e.secureConnectionStart : null, end: e.connectEnd, color: 'bar-tls' },
+        { label: 'Request → TTFB',  start: e.requestStart,        end: e.responseStart,          color: 'bar-ttfb' },
+        { label: 'Content Download',start: e.responseStart,       end: e.responseEnd,            color: 'bar-dl' },
+        { label: 'DOM Processing',  start: e.responseEnd,         end: e.domInteractive,         color: 'bar-dom' },
+        { label: 'DOM Interactive → Complete', start: e.domInteractive, end: e.domComplete,      color: 'bar-other' },
+        { label: 'Load Event',      start: e.loadEventStart,      end: e.loadEventEnd,           color: 'bar-dns' }
+      ];
+
+      var totalDuration = e.loadEventEnd || e.duration || 1;
+      var tbody = document.getElementById('nav-tbody');
+      tbody.innerHTML = '';
+
+      phases.forEach(function (ph) {
+        if (ph.start == null || ph.end == null || ph.start < 0 || ph.end < 0) return;
+        var dur = ph.end - ph.start;
+        if (dur < 0) dur = 0;
+        var startPct = (ph.start / totalDuration) * 100;
+        var widthPct = (dur / totalDuration) * 100;
+
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + ph.label + '</td>' +
+          '<td>' + fmt(ph.start) + '</td>' +
+          '<td>' + fmt(dur) + '</td>';
+        var td = document.createElement('td');
+        td.className = 'bar-cell';
+        var track = document.createElement('div');
+        track.className = 'bar-track';
+        // spacer
+        var spacer = document.createElement('div');
+        spacer.style.cssText = 'display:inline-block;width:' + startPct.toFixed(1) + '%;';
+        var fill = document.createElement('div');
+        fill.className = 'bar-fill ' + ph.color;
+        fill.style.cssText = 'display:inline-block;width:' + Math.max(widthPct, 0.5).toFixed(1) + '%;height:14px;border-radius:3px;';
+        track.appendChild(spacer);
+        track.appendChild(fill);
+        td.appendChild(track);
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      });
+
+      // Metrics summary cards
+      var ttfb = e.responseStart - e.requestStart;
+      var domTime = e.domComplete - e.responseEnd;
+      var loadTime = e.loadEventEnd;
+      var dlTime = e.responseEnd - e.responseStart;
+
+      var metricsEl = document.getElementById('nav-metrics');
+      var cards = [
+        { label: 'Page Load', value: fmt(loadTime) + 'ms', rating: ratingClass('load', loadTime) },
+        { label: 'TTFB', value: fmt(ttfb) + 'ms', rating: ratingClass('ttfb', ttfb) },
+        { label: 'DOM Processing', value: fmt(domTime) + 'ms', rating: '' },
+        { label: 'DNS Lookup', value: fmt(e.domainLookupEnd - e.domainLookupStart) + 'ms', rating: '' },
+        { label: 'TCP Connect', value: fmt(e.connectEnd - e.connectStart) + 'ms', rating: '' },
+        { label: 'Content Download', value: fmt(dlTime) + 'ms', rating: '' }
+      ];
+      metricsEl.innerHTML = cards.map(function (c) {
+        return '<div class="metric-card ' + c.rating + '">' +
+          '<div class="metric-value">' + c.value + '</div>' +
+          '<div class="metric-label">' + c.label + (c.rating ? ' — ' + ratingLabel(c.rating) : '') + '</div></div>';
+      }).join('');
+
+      // Status bar
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar ' + (ttfb < 800 ? 'valid' : 'invalid');
+      sb.textContent = 'Page load: ' + fmt(loadTime) + 'ms — TTFB: ' + fmt(ttfb) + 'ms — DOM: ' + fmt(domTime) + 'ms — Protocol: ' + (e.nextHopProtocol || 'unknown');
+
+      // Legend
+      var legendData = [
+        { label: 'DNS', cls: 'bar-dns' }, { label: 'TCP', cls: 'bar-tcp' }, { label: 'TLS', cls: 'bar-tls' },
+        { label: 'TTFB', cls: 'bar-ttfb' }, { label: 'Download', cls: 'bar-dl' }, { label: 'DOM', cls: 'bar-dom' }
+      ];
+      document.getElementById('nav-legend').innerHTML = legendData.map(function (l) {
+        return '<span class="legend-item"><span class="legend-dot" style="background:var(--color);" class="' + l.cls + '"></span>' + l.label + '</span>';
+      }).join('');
+      // inline the colors since CSS vars won't work for dynamic style
+      var dots = document.querySelectorAll('#nav-legend .legend-dot');
+      var colors = ['#f59e0b','#3b82f6','#8b5cf6','#ef4444','#10b981','#06b6d4'];
+      dots.forEach(function (d, i) { d.style.background = colors[i] || '#94a3b8'; });
+    }
+
+    // ── Resource Timing ──────────────────────────────────────────────────────
+    function renderResources(filterType) {
+      var entries = performance.getEntriesByType('resource');
+      resRaw = entries;
+      if (!entries || !entries.length) {
+        document.getElementById('res-tbody').innerHTML = '<tr><td colspan="5" style="color:var(--text-muted);padding:16px;">No resource entries found.</td></tr>';
+        return;
+      }
+
+      var filtered = filterType
+        ? entries.filter(function (e) {
+            if (filterType === 'fetch') return e.initiatorType === 'fetch' || e.initiatorType === 'xmlhttprequest';
+            if (filterType === 'other') return !['script','css','img','fetch','xmlhttprequest','font'].includes(e.initiatorType);
+            return e.initiatorType === filterType;
+          })
+        : entries;
+
+      document.getElementById('resCount').textContent = filtered.length + ' / ' + entries.length + ' resources';
+
+      // Sort by duration descending
+      var sorted = filtered.slice().sort(function (a, b) { return b.duration - a.duration; });
+      var maxDur = sorted.length ? sorted[0].duration || 1 : 1;
+
+      var tbody = document.getElementById('res-tbody');
+      tbody.innerHTML = '';
+
+      sorted.forEach(function (e) {
+        var name = e.name.split('/').pop().split('?')[0] || e.name;
+        var tr = document.createElement('tr');
+        var nameTd = document.createElement('td');
+        var nameSpan = document.createElement('span');
+        nameSpan.className = 'resource-name';
+        nameSpan.title = e.name;
+        nameSpan.textContent = name || e.name;
+        nameTd.appendChild(nameSpan);
+
+        tr.appendChild(nameTd);
+        tr.insertAdjacentHTML('beforeend',
+          '<td>' + (e.initiatorType || '—') + '</td>' +
+          '<td>' + (e.transferSize ? fmtBytes(e.transferSize) : (e.decodedBodySize ? fmtBytes(e.decodedBodySize) : '—')) + '</td>' +
+          '<td>' + fmt(e.duration) + '</td>'
+        );
+        var barTd = document.createElement('td');
+        barTd.className = 'bar-cell';
+        barTd.appendChild(makeBar((e.duration / maxDur) * 100, resourceColorClass(e.initiatorType)));
+        tr.appendChild(barTd);
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ── Core Web Vitals ──────────────────────────────────────────────────────
+    function renderCWV() {
+      var metricsEl = document.getElementById('cwv-metrics');
+      var detailsEl = document.getElementById('cwv-details');
+
+      var lcpRating = ratingClass('lcp', cwvData.lcp);
+      var clsRating = ratingClass('cls', cwvData.cls);
+      var inpRating = ratingClass('inp', cwvData.inp);
+
+      metricsEl.innerHTML = [
+        { label: 'LCP', value: cwvData.lcp != null ? fmt(cwvData.lcp) + 'ms' : 'Pending…', rating: cwvData.lcp != null ? lcpRating : '', desc: 'Largest Contentful Paint' },
+        { label: 'CLS', value: cwvData.cls != null ? cwvData.cls.toFixed(4) : '0.0000', rating: clsRating, desc: 'Cumulative Layout Shift' },
+        { label: 'INP', value: cwvData.inp != null ? fmt(cwvData.inp) + 'ms' : 'Pending…', rating: cwvData.inp != null ? inpRating : '', desc: 'Interaction to Next Paint' }
+      ].map(function (c) {
+        return '<div class="metric-card ' + c.rating + '">' +
+          '<div class="metric-value">' + c.value + '</div>' +
+          '<div class="metric-label">' + c.label + ' — ' + c.desc + (c.rating ? ' (' + ratingLabel(c.rating) + ')' : '') + '</div></div>';
+      }).join('');
+
+      var thresholds = [
+        { name: 'LCP', value: cwvData.lcp, good: 2500, ni: 4000, unit: 'ms', note: 'Trigger an interaction or wait for the page to stabilize for a reading.' },
+        { name: 'CLS', value: cwvData.cls, good: 0.1, ni: 0.25, unit: '', note: 'Scroll the page to trigger any deferred layout shifts.' },
+        { name: 'INP', value: cwvData.inp, good: 200, ni: 500, unit: 'ms', note: 'Interact with the page (click, tap, type) to record an INP value.' }
+      ];
+
+      detailsEl.innerHTML = thresholds.map(function (t) {
+        var rating = ratingClass(t.name.toLowerCase(), t.value);
+        var valueStr = t.value != null ? (t.value.toFixed(t.unit ? 1 : 4) + t.unit) : 'Not yet observed';
+        return '<p><strong>' + t.name + ':</strong> <span style="color:var(--accent);">' + valueStr + '</span>' +
+          (rating ? ' — <strong>' + ratingLabel(rating) + '</strong>' : '') +
+          ' | Good: &lt;' + t.good + t.unit + ' | Needs Improvement: &lt;' + t.ni + t.unit + '<br>' +
+          '<span style="color:var(--text-muted);font-size:0.85em;">' + t.note + '</span></p>';
+      }).join('');
+    }
+
+    // ── PerformanceObserver ───────────────────────────────────────────────────
+    function initObservers() {
+      try {
+        new PerformanceObserver(function (list) {
+          var entries = list.getEntries();
+          var last = entries[entries.length - 1];
+          cwvData.lcp = last.startTime;
+          if (currentTab === 'cwv') renderCWV();
+        }).observe({ type: 'largest-contentful-paint', buffered: true });
+      } catch (e) { /* not supported */ }
+
+      try {
+        new PerformanceObserver(function (list) {
+          list.getEntries().forEach(function (entry) {
+            if (!entry.hadRecentInput) cwvData.cls += entry.value;
+          });
+          if (currentTab === 'cwv') renderCWV();
+        }).observe({ type: 'layout-shift', buffered: true });
+      } catch (e) { /* not supported */ }
+
+      try {
+        new PerformanceObserver(function (list) {
+          list.getEntries().forEach(function (entry) {
+            if (cwvData.inp == null || entry.duration > cwvData.inp) {
+              cwvData.inp = entry.duration;
+            }
+          });
+          if (currentTab === 'cwv') renderCWV();
+        }).observe({ type: 'event', buffered: true, durationThreshold: 16 });
+      } catch (e) { /* not supported */ }
+    }
+
+    // ── Tab switching ─────────────────────────────────────────────────────────
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var tab = chip.getAttribute('data-tab');
+        currentTab = tab;
+        document.querySelectorAll('.tab-content').forEach(function (t) { t.classList.remove('active'); });
+        document.getElementById('tab-' + tab).classList.add('active');
+        if (tab === 'cwv') renderCWV();
+      });
+    });
+
+    // ── Resource filter ───────────────────────────────────────────────────────
+    document.getElementById('resTypeFilter').addEventListener('change', function () {
+      renderResources(this.value);
+    });
+
+    // ── Refresh ───────────────────────────────────────────────────────────────
+    document.getElementById('refreshBtn').addEventListener('click', function () {
+      renderNavigation();
+      renderResources(document.getElementById('resTypeFilter').value);
+      if (currentTab === 'cwv') renderCWV();
+    });
+
+    // ── Copy JSON ─────────────────────────────────────────────────────────────
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var data = {
+        navigation: navRaw ? {
+          dns: navRaw.domainLookupEnd - navRaw.domainLookupStart,
+          tcp: navRaw.connectEnd - navRaw.connectStart,
+          ttfb: navRaw.responseStart - navRaw.requestStart,
+          download: navRaw.responseEnd - navRaw.responseStart,
+          domProcessing: navRaw.domComplete - navRaw.responseEnd,
+          load: navRaw.loadEventEnd,
+          protocol: navRaw.nextHopProtocol
+        } : null,
+        cwv: { lcp: cwvData.lcp, cls: cwvData.cls, inp: cwvData.inp },
+        resources: resRaw.slice(0, 50).map(function (e) {
+          return { name: e.name, type: e.initiatorType, duration: e.duration, transferSize: e.transferSize };
+        })
+      };
+      DT.copyToClipboard(JSON.stringify(data, null, 2), this);
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    function init() {
+      initObservers();
+      renderNavigation();
+      renderResources('');
+      renderCWV();
+      DT.trackTool('performance-timing');
+    }
+
+    if (document.readyState === 'complete') {
+      init();
+    } else {
+      window.addEventListener('load', init);
+    }
+  })();
+  </script>
+</body>
+</html>

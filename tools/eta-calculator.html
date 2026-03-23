@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Download ETA Calculator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Calculate download time from file size and transfer speed. Supports B/KB/MB/GB and Kbps/Mbps/Gbps/KB/s/MB/s. Batch mode, progress simulator, and common speed reference. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/eta-calculator.html">
+  <meta property="og:title" content="Download ETA Calculator — ThisDevTool">
+  <meta property="og:description" content="Instantly calculate download/upload time from file size and speed. Supports all units, batch mode, and a built-in progress simulator.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/eta-calculator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Download ETA Calculator",
+    "url": "https://thisdevtool.com/tools/eta-calculator.html",
+    "description": "Calculate estimated download or upload time from file size and transfer speed. Supports all common units. 100% client-side.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I calculate download time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Download time = file size in bits ÷ transfer speed in bits per second. For example, a 1 GB file (8,000,000,000 bits) over a 100 Mbps connection (100,000,000 bits/s) takes 80 seconds, which is 1 minute 20 seconds. Remember that quoted ISP speeds are in megabits per second (Mbps), not megabytes per second (MB/s). Divide by 8 to convert: 100 Mbps = 12.5 MB/s."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between Mbps and MB/s?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Mbps (megabits per second) and MB/s (megabytes per second) are both measures of data transfer speed, but they differ by a factor of 8. One megabyte contains 8 megabits, so 100 Mbps equals 12.5 MB/s. Internet service providers advertise speeds in Mbps, while download managers and file transfer apps typically show progress in MB/s. This tool handles both units — just select the correct one from the speed unit dropdown."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why is my actual download speed slower than my plan speed?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Your ISP's quoted speed is a theoretical maximum under ideal conditions. Real-world speeds are lower due to network congestion, Wi-Fi overhead (typically 40–60% of wired speed), distance from the router, server-side throttling, protocol overhead (TCP/QUIC headers), and shared bandwidth on cable networks. A realistic rule of thumb: expect 60–80% of your plan speed on a wired connection, 40–60% over Wi-Fi."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the progress simulator work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The progress simulator animates a download progress bar in real time at your specified speed. It counts bytes from 0 to the file size, updating the display every 200 ms and showing the current downloaded amount, percentage, and estimated time remaining. Use it to visualise how long a download will feel at a given speed. The simulation runs entirely in your browser — no actual data is transferred."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What speeds do 3G, 4G, 5G, and Wi-Fi typically deliver?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Typical real-world download speeds: 3G averages 1–8 Mbps, 4G LTE averages 15–50 Mbps with peaks to 150 Mbps, 5G Sub-6GHz averages 100–400 Mbps, 5G mmWave can reach 1–4 Gbps. Wi-Fi 5 (802.11ac) delivers 100–400 Mbps in practice, Wi-Fi 6 (802.11ax) 300–600 Mbps. Fast Ethernet is capped at 100 Mbps, Gigabit Ethernet at 940 Mbps effective. Fibre broadband plans vary from 100 Mbps to 10 Gbps."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .eta-form {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 8px 10px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 480px) {
+      .eta-form { grid-template-columns: 1fr 90px; }
+    }
+    .eta-form label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      display: block;
+    }
+    .field-group { display: flex; flex-direction: column; }
+    .eta-form input[type="number"] {
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 1rem;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.15s;
+    }
+    .eta-form input[type="number"]:focus { border-color: #10b981; }
+    .eta-form select {
+      padding: 9px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      outline: none;
+      cursor: pointer;
+      height: 40px;
+    }
+    .eta-result-card {
+      background: var(--bg-secondary);
+      border: 2px solid #10b981;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .eta-result-time {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #10b981;
+      font-variant-numeric: tabular-nums;
+    }
+    .eta-result-meta {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .eta-result-meta strong { color: var(--text-primary); }
+    /* Batch */
+    .batch-row {
+      display: grid;
+      grid-template-columns: 1fr 90px 100px auto;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    @media (max-width: 500px) {
+      .batch-row { grid-template-columns: 1fr 70px 80px auto; }
+    }
+    .batch-row input[type="text"],
+    .batch-row input[type="number"] {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 0.88rem;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .batch-row select {
+      padding: 7px 4px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 0.82rem;
+      width: 100%;
+    }
+    .batch-result-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-top: 12px; }
+    .batch-result-table th { text-align: left; padding: 6px 10px; background: var(--bg-secondary); color: var(--text-secondary); font-weight: 600; border-bottom: 2px solid var(--border); }
+    .batch-result-table td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+    .batch-result-table tr:last-child td { border-bottom: none; }
+    .batch-result-table .eta-val { font-weight: 700; color: #10b981; font-family: var(--font-mono, monospace); }
+    /* Progress sim */
+    .sim-progress-wrap {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .sim-progress-bar-bg {
+      width: 100%;
+      background: var(--border);
+      border-radius: 999px;
+      height: 20px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .sim-progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      border-radius: 999px;
+      width: 0%;
+      transition: width 0.18s linear;
+    }
+    .sim-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .sim-stats span strong { color: var(--text-primary); }
+    /* Reference table */
+    .ref-speed-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .ref-speed-table th { text-align: left; padding: 6px 10px; background: var(--bg-secondary); color: var(--text-secondary); font-weight: 600; border-bottom: 2px solid var(--border); }
+    .ref-speed-table td { padding: 5px 10px; border-bottom: 1px solid var(--border); }
+    .ref-speed-table tr:last-child td { border-bottom: none; }
+    .speed-bar { display: inline-block; height: 8px; background: #10b981; border-radius: 4px; vertical-align: middle; margin-right: 6px; opacity: 0.7; }
+    .panel-hidden { display: none; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+        <a href="/tools/aspect-ratio-calculator.html">Aspect Ratio</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Download ETA Calculator</h1>
+          <p class="tool-subtitle">Enter file size and transfer speed to instantly calculate download time. Supports all units, batch mode, and a live progress simulator.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-panel="single">Single</button>
+            <button class="option-chip" data-panel="batch">Batch</button>
+            <button class="option-chip" data-panel="speedtest">Speed Test</button>
+            <button class="option-chip" data-panel="reference">Reference</button>
+          </div>
+
+          <!-- ── Single Panel ──────────────────────────────────────────── -->
+          <div id="panel-single">
+            <div class="eta-form">
+              <div class="field-group">
+                <label for="fileSize">File Size</label>
+                <input type="number" id="fileSize" min="0" step="any" placeholder="e.g. 1.5" value="1.5">
+              </div>
+              <div class="field-group">
+                <label for="fileSizeUnit">Unit</label>
+                <select id="fileSizeUnit">
+                  <option value="B">B</option>
+                  <option value="KB">KB</option>
+                  <option value="MB">MB</option>
+                  <option value="GB" selected>GB</option>
+                  <option value="TB">TB</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="transferSpeed">Transfer Speed</label>
+                <input type="number" id="transferSpeed" min="0" step="any" placeholder="e.g. 100" value="100">
+              </div>
+              <div class="field-group">
+                <label for="transferSpeedUnit">Unit</label>
+                <select id="transferSpeedUnit">
+                  <option value="Kbps">Kbps</option>
+                  <option value="Mbps" selected>Mbps</option>
+                  <option value="Gbps">Gbps</option>
+                  <option value="KBs">KB/s</option>
+                  <option value="MBs">MB/s</option>
+                  <option value="GBs">GB/s</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="eta-result-card" id="singleResult">
+              <div>
+                <div class="eta-result-time" id="etaTime">2 min 0 sec</div>
+                <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px;" id="etaSeconds">120 seconds</div>
+              </div>
+              <div class="eta-result-meta" id="etaMeta">
+                <strong>1.5 GB</strong> at <strong>100 Mbps</strong><br>
+                Transfer: 12.5 MB/s · Size: 1,536 MB
+              </div>
+            </div>
+
+            <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+              1.5 GB at 100 Mbps — ETA: 2 min 0 sec
+            </div>
+
+            <div style="margin-top:10px;">
+              <label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:6px;">Quick Examples</label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-secondary" data-qs="700,MB,56,Kbps">700 MB @ 56Kbps modem</button>
+                <button class="btn btn-sm btn-secondary" data-qs="4,GB,25,Mbps">4 GB @ 25 Mbps (4G)</button>
+                <button class="btn btn-sm btn-secondary" data-qs="50,GB,1,Gbps">50 GB @ 1 Gbps fibre</button>
+                <button class="btn btn-sm btn-secondary" data-qs="100,MB,10,MBs">100 MB @ 10 MB/s USB</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Batch Panel ───────────────────────────────────────────── -->
+          <div id="panel-batch" class="panel-hidden">
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:10px;">Add multiple files and a shared transfer speed to see total and individual download times.</p>
+
+            <div id="batchFiles"></div>
+
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+              <button class="btn btn-sm btn-secondary" id="addBatchRow">+ Add File</button>
+              <span style="font-size:0.8rem;color:var(--text-secondary);">Shared speed:</span>
+              <input type="number" id="batchSpeed" value="100" min="0" step="any" style="width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-secondary);color:var(--text-primary);font-size:0.88rem;">
+              <select id="batchSpeedUnit" style="padding:6px 6px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg-secondary);color:var(--text-primary);font-size:0.82rem;">
+                <option value="Kbps">Kbps</option>
+                <option value="Mbps" selected>Mbps</option>
+                <option value="Gbps">Gbps</option>
+                <option value="KBs">KB/s</option>
+                <option value="MBs">MB/s</option>
+                <option value="GBs">GB/s</option>
+              </select>
+              <button class="btn btn-sm btn-primary" id="calcBatchBtn">Calculate All</button>
+            </div>
+
+            <div id="batchResultsWrap" style="display:none;">
+              <table class="batch-result-table">
+                <thead><tr><th>File</th><th>Size</th><th>ETA</th><th>Seconds</th></tr></thead>
+                <tbody id="batchResultsBody"></tbody>
+                <tfoot id="batchResultsFoot"></tfoot>
+              </table>
+            </div>
+
+            <div class="status-bar info" id="batchStatusBar" role="status" aria-live="polite">Add files above and click Calculate All.</div>
+          </div>
+
+          <!-- ── Speed Test / Progress Simulator Panel ─────────────────── -->
+          <div id="panel-speedtest" class="panel-hidden">
+            <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px;">Simulate a download in real time to visualise how long it feels at a given speed.</p>
+
+            <div class="eta-form" style="margin-bottom:12px;">
+              <div class="field-group">
+                <label for="simSize">File Size</label>
+                <input type="number" id="simSize" min="0" step="any" value="500" placeholder="500">
+              </div>
+              <div class="field-group">
+                <label for="simSizeUnit">Unit</label>
+                <select id="simSizeUnit">
+                  <option value="B">B</option>
+                  <option value="KB">KB</option>
+                  <option value="MB" selected>MB</option>
+                  <option value="GB">GB</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="simSpeed">Speed</label>
+                <input type="number" id="simSpeed" min="0" step="any" value="25" placeholder="25">
+              </div>
+              <div class="field-group">
+                <label for="simSpeedUnit">Unit</label>
+                <select id="simSpeedUnit">
+                  <option value="Kbps">Kbps</option>
+                  <option value="Mbps" selected>Mbps</option>
+                  <option value="Gbps">Gbps</option>
+                  <option value="KBs">KB/s</option>
+                  <option value="MBs">MB/s</option>
+                  <option value="GBs">GB/s</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="sim-progress-wrap">
+              <div class="sim-stats">
+                <span>Downloaded: <strong id="simDownloaded">0 B</strong></span>
+                <span>Remaining: <strong id="simRemaining">—</strong></span>
+                <span>ETA: <strong id="simEta">—</strong></span>
+                <span>Progress: <strong id="simPct">0%</strong></span>
+              </div>
+              <div class="sim-progress-bar-bg">
+                <div class="sim-progress-bar-fill" id="simBar"></div>
+              </div>
+              <div class="sim-stats">
+                <span>Speed: <strong id="simSpeedDisplay">—</strong></span>
+                <span>Total Size: <strong id="simTotalDisplay">—</strong></span>
+                <span>Elapsed: <strong id="simElapsed">0s</strong></span>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-primary" id="simStartBtn">Start Simulation</button>
+              <button class="btn btn-secondary" id="simStopBtn" disabled>Stop</button>
+              <button class="btn btn-secondary" id="simResetBtn">Reset</button>
+            </div>
+
+            <div class="status-bar info" id="simStatusBar" role="status" aria-live="polite">Configure size and speed above, then click Start Simulation.</div>
+          </div>
+
+          <!-- ── Reference Panel ──────────────────────────────────────── -->
+          <div id="panel-reference" class="panel-hidden">
+            <table class="ref-speed-table">
+              <thead><tr><th>Connection</th><th>Typical Speed</th><th>1 GB download</th><th>10 GB download</th></tr></thead>
+              <tbody>
+                <tr><td>56K modem</td><td>0.056 Mbps</td><td>~2 hr 0 min</td><td>~20 hr</td></tr>
+                <tr><td>ADSL (basic)</td><td>8 Mbps</td><td>~16 min 40 sec</td><td>~2 hr 47 min</td></tr>
+                <tr><td>3G mobile</td><td>3 Mbps</td><td>~44 min</td><td>~7 hr 24 min</td></tr>
+                <tr><td>3G mobile (fast)</td><td>8 Mbps</td><td>~16 min 40 sec</td><td>~2 hr 47 min</td></tr>
+                <tr><td>4G LTE (avg)</td><td>25 Mbps</td><td>~5 min 20 sec</td><td>~53 min 20 sec</td></tr>
+                <tr><td>4G LTE (good)</td><td>50 Mbps</td><td>~2 min 40 sec</td><td>~26 min 40 sec</td></tr>
+                <tr><td>Wi-Fi 4 (802.11n)</td><td>40 Mbps</td><td>~3 min 20 sec</td><td>~33 min</td></tr>
+                <tr><td>Cable / VDSL2</td><td>100 Mbps</td><td>~1 min 20 sec</td><td>~13 min 20 sec</td></tr>
+                <tr><td>Wi-Fi 5 (802.11ac)</td><td>200 Mbps</td><td>~40 sec</td><td>~6 min 40 sec</td></tr>
+                <tr><td>5G Sub-6 (avg)</td><td>200 Mbps</td><td>~40 sec</td><td>~6 min 40 sec</td></tr>
+                <tr><td>Wi-Fi 6 (802.11ax)</td><td>400 Mbps</td><td>~20 sec</td><td>~3 min 20 sec</td></tr>
+                <tr><td>5G Sub-6 (fast)</td><td>500 Mbps</td><td>~16 sec</td><td>~2 min 40 sec</td></tr>
+                <tr><td>Gigabit Ethernet</td><td>940 Mbps</td><td>~8.5 sec</td><td>~1 min 25 sec</td></tr>
+                <tr><td>Fibre (1 Gbps plan)</td><td>1,000 Mbps</td><td>~8 sec</td><td>~1 min 20 sec</td></tr>
+                <tr><td>5G mmWave</td><td>2,000 Mbps</td><td>~4 sec</td><td>~40 sec</td></tr>
+                <tr><td>10 Gigabit Ethernet</td><td>10,000 Mbps</td><td>&lt;1 sec</td><td>~8 sec</td></tr>
+              </tbody>
+            </table>
+            <p style="font-size:0.78rem;color:var(--text-secondary);margin-top:8px;">Speeds are typical real-world averages, not theoretical maxima. Assumes 1 GB = 1,000 MB = 8,000,000,000 bits (SI decimal).</p>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Download ETA Calculator</h2>
+          <ol>
+            <li><strong>Single mode:</strong> Enter the file size and select its unit (B, KB, MB, GB, TB). Enter the transfer speed and select its unit (Kbps, Mbps, Gbps, KB/s, MB/s, GB/s). The ETA updates instantly.</li>
+            <li><strong>Batch mode:</strong> Add multiple files with individual sizes, then set a shared speed. Click Calculate All to get per-file ETAs and a combined total time.</li>
+            <li><strong>Speed Test (Progress Simulator):</strong> Configure a file size and speed, then click Start Simulation to watch a real-time progress bar count down the transfer at your specified rate.</li>
+            <li><strong>Reference:</strong> View typical download times for popular connection types from 56K modem to 10 Gigabit Ethernet.</li>
+          </ol>
+
+          <h2>The Formula Behind Download ETA</h2>
+          <p>The calculation is straightforward once all units are consistent. Convert the file size to bits, convert the transfer speed to bits per second, then divide:</p>
+          <p><code>Time (seconds) = File Size (bits) ÷ Transfer Speed (bits/second)</code></p>
+          <p>For example: a 1.5 GB file at 100 Mbps. First, convert 1.5 GB to bits: 1.5 × 1,000 × 1,000 × 1,000 × 8 = 12,000,000,000 bits. Then convert 100 Mbps to bps: 100 × 1,000 × 1,000 = 100,000,000 bps. Divide: 12,000,000,000 ÷ 100,000,000 = 120 seconds = 2 minutes 0 seconds. This tool uses SI decimal prefixes (1 GB = 10⁹ bytes), which matches how storage manufacturers and network engineers measure data rates.</p>
+
+          <h3>Why Mbps Is Not the Same as MB/s</h3>
+          <p>This is one of the most common sources of confusion in download time calculations. ISPs and network hardware manufacturers measure speed in <strong>megabits per second (Mbps)</strong>. Download managers, operating system file transfer dialogs, and disk benchmarks measure throughput in <strong>megabytes per second (MB/s)</strong>. Since 1 byte = 8 bits, you divide Mbps by 8 to get MB/s. A 100 Mbps connection transfers data at 12.5 MB/s — not 100 MB/s. When you enter a speed in this calculator, be sure to pick the correct unit from the dropdown to avoid an 8× error in your estimate.</p>
+
+          <h3>Bytes vs. Bits: The Source of Most Errors</h3>
+          <p>File sizes are almost always expressed in <strong>bytes</strong> (B, KB, MB, GB), while network speeds are almost always expressed in <strong>bits per second</strong> (Kbps, Mbps, Gbps). The conversion factor is 8: there are 8 bits in a byte. This tool handles the conversion automatically — just select the right units. The most frequent mistake when estimating download time manually is forgetting this factor and getting an estimate that is 8× too optimistic.</p>
+
+          <h3>Real-World Speed vs. Advertised Speed</h3>
+          <p>Your ISP's advertised speed is a theoretical maximum under ideal conditions with no other users on your node, minimal latency, and a server that can deliver at full speed. In practice, multiple factors reduce real throughput: <strong>Wi-Fi overhead</strong> typically reduces speed to 40–70% of the router's wireless spec. <strong>Network congestion</strong> during peak hours (evenings, weekends) can cut speeds by 30–60% on cable networks. <strong>Server throttling</strong> — many download servers cap per-connection speeds. <strong>TCP slow start</strong> means connections ramp up to full speed gradually, making short-file transfers feel slower proportionally. <strong>VPN overhead</strong> typically adds 10–20% to transfer time. For realistic estimates, use 70–80% of your plan speed for wired connections and 50–60% for Wi-Fi.</p>
+
+          <h3>Batch Downloads and Sequential vs. Parallel Transfers</h3>
+          <p>The Batch mode assumes you are downloading all files sequentially at a fixed shared speed. If you download files in parallel, each connection gets a fraction of your total bandwidth. For example, downloading four 1 GB files simultaneously at 100 Mbps means each file effectively gets ~25 Mbps, so all four finish in approximately the same time as downloading one 4 GB file sequentially. The batch total time is therefore the same whether files are sequential or parallel, assuming bandwidth is evenly shared. The difference is user experience: parallel downloads finish individual files faster but consume more CPU and memory.</p>
+
+          <h3>Using the Progress Simulator</h3>
+          <p>The progress simulator is designed to help you visualise transfer durations that are hard to estimate intuitively. A 500 MB file at 25 Mbps (typical 4G speed) takes 2 minutes 40 seconds — but watching the progress bar helps calibrate your mental model of how fast different connections are. The simulator updates every 200 milliseconds and accelerates internally for large simulations (files that would take hours in real life are compressed to a few seconds of animation) so you always see the full arc of a transfer in a reasonable amount of time. No actual data is transferred.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I calculate download time?</button>
+            <div class="faq-answer">Download time = file size in bits ÷ transfer speed in bits per second. For example, 1 GB (8,000,000,000 bits) over 100 Mbps (100,000,000 bps) = 80 seconds = 1 minute 20 seconds. This tool handles all unit conversions automatically — just enter the size and speed in whatever units you have, select the correct unit from the dropdowns, and the ETA appears instantly.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between Mbps and MB/s?</button>
+            <div class="faq-answer">Mbps (megabits per second) and MB/s (megabytes per second) differ by a factor of 8. One megabyte = 8 megabits, so 100 Mbps = 12.5 MB/s. ISPs advertise speeds in Mbps; download managers show progress in MB/s. Always check the unit — using the wrong one gives an estimate that is 8× too optimistic or pessimistic.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why is my actual download speed slower than my plan speed?</button>
+            <div class="faq-answer">Advertised speeds are theoretical maxima. Real-world speeds are lower due to Wi-Fi overhead (40–60% of wired), network congestion, server throttling, TCP slow-start, and shared cable bandwidth. A realistic rule of thumb: expect 70–80% of plan speed on a wired connection, 50–60% over Wi-Fi.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the progress simulator work?</button>
+            <div class="faq-answer">The simulator animates a download progress bar at your configured speed, updating every 200 ms. It shows downloaded amount, percentage, elapsed time, and estimated time remaining. Large simulations that would take minutes or hours in real life are compressed so the full transfer arc is visible in seconds. No actual data is transferred — it is purely visual.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What speeds do 3G, 4G, 5G, and Wi-Fi typically deliver?</button>
+            <div class="faq-answer">Typical real-world speeds: 3G 1–8 Mbps, 4G LTE 15–50 Mbps (peak 150 Mbps), 5G Sub-6 100–500 Mbps, 5G mmWave 1–4 Gbps, Wi-Fi 5 100–400 Mbps, Wi-Fi 6 300–600 Mbps, Gigabit Ethernet ~940 Mbps effective, Fibre plans from 100 Mbps to 10 Gbps. See the Reference tab for per-connection download time estimates.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Calculators</h4>
+        <a href="/tools/eta-calculator.html">Download ETA</a>
+        <a href="/tools/aspect-ratio-calculator.html">Aspect Ratio</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+        <a href="/tools/math-expression.html">Math Expression</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    // ── Unit conversion to bytes ──────────────────────────────────────────
+    var SIZE_TO_BYTES = {
+      B:  1,
+      KB: 1e3,
+      MB: 1e6,
+      GB: 1e9,
+      TB: 1e12
+    };
+
+    // Speed units → bytes per second
+    var SPEED_TO_BPS = {
+      Kbps: 1e3 / 8,
+      Mbps: 1e6 / 8,
+      Gbps: 1e9 / 8,
+      KBs:  1e3,
+      MBs:  1e6,
+      GBs:  1e9
+    };
+
+    function toBytes(value, unit) { return value * (SIZE_TO_BYTES[unit] || 1); }
+    function toBytesPerSec(value, unit) { return value * (SPEED_TO_BPS[unit] || 1); }
+
+    // ── Format time ────────────────────────────────────────────────────────
+    function formatTime(seconds) {
+      if (!isFinite(seconds) || seconds < 0) return '—';
+      seconds = Math.round(seconds);
+      if (seconds < 60) return seconds + ' sec';
+      var mins = Math.floor(seconds / 60);
+      var secs = seconds % 60;
+      if (mins < 60) return mins + ' min ' + secs + ' sec';
+      var hrs = Math.floor(mins / 60);
+      var remMins = mins % 60;
+      if (hrs < 24) return hrs + ' hr ' + remMins + ' min';
+      var days = Math.floor(hrs / 24);
+      var remHrs = hrs % 24;
+      return days + ' day ' + remHrs + ' hr';
+    }
+
+    // ── Format file size ───────────────────────────────────────────────────
+    function formatSize(bytes) {
+      if (bytes === 0) return '0 B';
+      var units = ['B','KB','MB','GB','TB'];
+      var i = Math.floor(Math.log(bytes) / Math.log(1000));
+      i = Math.min(i, units.length - 1);
+      var val = bytes / Math.pow(1000, i);
+      return (val % 1 === 0 ? val : val.toFixed(2)) + ' ' + units[i];
+    }
+
+    // Format speed as MB/s
+    function fmtSpeedMBs(bytesPerSec) {
+      if (bytesPerSec >= 1e9) return (bytesPerSec / 1e9).toFixed(2) + ' GB/s';
+      if (bytesPerSec >= 1e6) return (bytesPerSec / 1e6).toFixed(2) + ' MB/s';
+      if (bytesPerSec >= 1e3) return (bytesPerSec / 1e3).toFixed(1) + ' KB/s';
+      return bytesPerSec.toFixed(0) + ' B/s';
+    }
+
+    // ── Single panel ────────────────────────────────────────────────────────
+    function calcSingle() {
+      var sizeVal   = parseFloat(document.getElementById('fileSize').value);
+      var sizeUnit  = document.getElementById('fileSizeUnit').value;
+      var speedVal  = parseFloat(document.getElementById('transferSpeed').value);
+      var speedUnit = document.getElementById('transferSpeedUnit').value;
+      var statusBar = document.getElementById('statusBar');
+      var etaTime   = document.getElementById('etaTime');
+      var etaSec    = document.getElementById('etaSeconds');
+      var etaMeta   = document.getElementById('etaMeta');
+
+      if (!sizeVal || sizeVal <= 0 || !speedVal || speedVal <= 0) {
+        etaTime.textContent = '—';
+        etaSec.textContent  = '';
+        etaMeta.textContent = 'Enter a file size and speed above.';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter a file size and speed to calculate ETA.';
+        return;
+      }
+
+      var bytes    = toBytes(sizeVal, sizeUnit);
+      var bps      = toBytesPerSec(speedVal, speedUnit);
+      var secs     = bytes / bps;
+      var timeStr  = formatTime(secs);
+      var mbsStr   = fmtSpeedMBs(bps);
+      var sizeDisp = sizeVal + ' ' + sizeUnit;
+      var speedDisp = speedVal + ' ' + speedUnit;
+
+      etaTime.textContent = timeStr;
+      etaSec.textContent  = Math.round(secs) + ' seconds';
+      etaMeta.innerHTML   = '<strong>' + sizeDisp + '</strong> at <strong>' + speedDisp + '</strong><br>Transfer: ' + mbsStr + ' · Size: ' + formatSize(bytes);
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = sizeDisp + ' at ' + speedDisp + ' — ETA: ' + timeStr;
+
+      DT.trackTool('eta-calculator');
+    }
+
+    // Wire single panel events
+    ['fileSize','fileSizeUnit','transferSpeed','transferSpeedUnit'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', calcSingle);
+      document.getElementById(id).addEventListener('change', calcSingle);
+    });
+
+    // Quick example buttons
+    document.querySelectorAll('[data-qs]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var parts = btn.getAttribute('data-qs').split(',');
+        document.getElementById('fileSize').value = parts[0];
+        document.getElementById('fileSizeUnit').value = parts[1];
+        document.getElementById('transferSpeed').value = parts[2];
+        document.getElementById('transferSpeedUnit').value = parts[3];
+        calcSingle();
+      });
+    });
+
+    // Initial calc
+    calcSingle();
+
+    // ── Batch panel ─────────────────────────────────────────────────────────
+    var batchRowCount = 0;
+
+    function addBatchRow(name, size, unit) {
+      batchRowCount++;
+      var container = document.getElementById('batchFiles');
+      var div = document.createElement('div');
+      div.className = 'batch-row';
+      div.setAttribute('data-row', batchRowCount);
+      div.innerHTML =
+        '<input type="text" placeholder="File name (optional)" value="' + (name || 'File ' + batchRowCount) + '" class="batch-name">' +
+        '<input type="number" min="0" step="any" value="' + (size || '') + '" placeholder="Size" class="batch-size">' +
+        '<select class="batch-unit">' +
+          '<option value="B">B</option>' +
+          '<option value="KB">KB</option>' +
+          '<option value="MB"' + ((!unit || unit === 'MB') ? ' selected' : '') + '>MB</option>' +
+          '<option value="GB"' + (unit === 'GB' ? ' selected' : '') + '>GB</option>' +
+          '<option value="TB"' + (unit === 'TB' ? ' selected' : '') + '>TB</option>' +
+        '</select>' +
+        '<button class="btn btn-sm btn-secondary" onclick="this.closest(\'.batch-row\').remove()">✕</button>';
+      container.appendChild(div);
+    }
+
+    // Pre-populate 3 rows
+    addBatchRow('Movie.mkv', 4, 'GB');
+    addBatchRow('Game.iso', 15, 'GB');
+    addBatchRow('Album.zip', 250, 'MB');
+
+    document.getElementById('addBatchRow').addEventListener('click', function () {
+      addBatchRow('', '', 'MB');
+    });
+
+    document.getElementById('calcBatchBtn').addEventListener('click', function () {
+      var speedVal  = parseFloat(document.getElementById('batchSpeed').value);
+      var speedUnit = document.getElementById('batchSpeedUnit').value;
+      var statusBar = document.getElementById('batchStatusBar');
+
+      if (!speedVal || speedVal <= 0) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Please enter a valid transfer speed.';
+        return;
+      }
+
+      var bps = toBytesPerSec(speedVal, speedUnit);
+      var rows = document.querySelectorAll('#batchFiles .batch-row');
+      var tbody = document.getElementById('batchResultsBody');
+      var tfoot = document.getElementById('batchResultsFoot');
+      tbody.innerHTML = '';
+
+      var totalBytes = 0;
+      var validRows = 0;
+
+      rows.forEach(function (row) {
+        var name = row.querySelector('.batch-name').value || 'File';
+        var sz   = parseFloat(row.querySelector('.batch-size').value);
+        var unit = row.querySelector('.batch-unit').value;
+
+        if (!sz || sz <= 0) {
+          var tr = document.createElement('tr');
+          tr.innerHTML = '<td>' + name + '</td><td>—</td><td colspan="2" style="color:var(--text-secondary);">No size entered</td>';
+          tbody.appendChild(tr);
+          return;
+        }
+
+        var bytes = toBytes(sz, unit);
+        var secs  = bytes / bps;
+        totalBytes += bytes;
+        validRows++;
+
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + name + '</td><td>' + sz + ' ' + unit + '</td>' +
+          '<td class="eta-val">' + formatTime(secs) + '</td>' +
+          '<td>' + Math.round(secs) + 's</td>';
+        tbody.appendChild(tr);
+      });
+
+      if (validRows > 0) {
+        var totalSecs = totalBytes / bps;
+        tfoot.innerHTML = '<tr style="font-weight:700;background:var(--bg-secondary);">' +
+          '<td>TOTAL (' + validRows + ' files)</td><td>' + formatSize(totalBytes) + '</td>' +
+          '<td class="eta-val">' + formatTime(totalSecs) + '</td>' +
+          '<td>' + Math.round(totalSecs) + 's</td></tr>';
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = validRows + ' files · ' + formatSize(totalBytes) + ' at ' + speedVal + ' ' + speedUnit + ' — Total ETA: ' + formatTime(totalSecs);
+      } else {
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'No valid files found. Enter a size for at least one file.';
+      }
+
+      document.getElementById('batchResultsWrap').style.display = 'block';
+      DT.trackTool('eta-calculator');
+    });
+
+    // ── Progress Simulator ──────────────────────────────────────────────────
+    var simTimer = null;
+    var simState = { running: false, downloaded: 0, total: 0, bps: 0, startTime: 0, elapsed: 0 };
+    var SIM_INTERVAL = 200; // ms
+    var SIM_MAX_REAL_SECS = 12; // compress simulations longer than 12s real time
+
+    function simReset() {
+      if (simTimer) { clearInterval(simTimer); simTimer = null; }
+      simState = { running: false, downloaded: 0, total: 0, bps: 0, startTime: 0, elapsed: 0 };
+      document.getElementById('simBar').style.width = '0%';
+      document.getElementById('simDownloaded').textContent = '0 B';
+      document.getElementById('simRemaining').textContent = '—';
+      document.getElementById('simEta').textContent = '—';
+      document.getElementById('simPct').textContent = '0%';
+      document.getElementById('simElapsed').textContent = '0s';
+      document.getElementById('simSpeedDisplay').textContent = '—';
+      document.getElementById('simTotalDisplay').textContent = '—';
+      document.getElementById('simStartBtn').disabled = false;
+      document.getElementById('simStopBtn').disabled = true;
+      var sb = document.getElementById('simStatusBar');
+      sb.className = 'status-bar info';
+      sb.textContent = 'Configure size and speed above, then click Start Simulation.';
+    }
+
+    function simStart() {
+      var sizeVal   = parseFloat(document.getElementById('simSize').value);
+      var sizeUnit  = document.getElementById('simSizeUnit').value;
+      var speedVal  = parseFloat(document.getElementById('simSpeed').value);
+      var speedUnit = document.getElementById('simSpeedUnit').value;
+      var sb = document.getElementById('simStatusBar');
+
+      if (!sizeVal || sizeVal <= 0 || !speedVal || speedVal <= 0) {
+        sb.className = 'status-bar invalid';
+        sb.textContent = 'Please enter a valid file size and speed.';
+        return;
+      }
+
+      var totalBytes = toBytes(sizeVal, sizeUnit);
+      var bps = toBytesPerSec(speedVal, speedUnit);
+      var realDuration = totalBytes / bps; // seconds to complete in reality
+
+      // Compression factor: if real duration > SIM_MAX_REAL_SECS, speed up the sim
+      var compressionFactor = realDuration > SIM_MAX_REAL_SECS ? realDuration / SIM_MAX_REAL_SECS : 1;
+      var simBps = bps * compressionFactor; // simulated bytes-per-second (for progress bar)
+
+      simState.total = totalBytes;
+      simState.bps   = bps;
+      simState.simBps = simBps;
+      simState.downloaded = 0;
+      simState.startTime = Date.now();
+      simState.running = true;
+
+      document.getElementById('simTotalDisplay').textContent = sizeVal + ' ' + sizeUnit;
+      document.getElementById('simSpeedDisplay').textContent = speedVal + ' ' + speedUnit + (compressionFactor > 1 ? ' (sim ×' + compressionFactor.toFixed(0) + ')' : '');
+      document.getElementById('simStartBtn').disabled = true;
+      document.getElementById('simStopBtn').disabled = false;
+      sb.className = 'status-bar info';
+      sb.textContent = 'Simulation running…' + (compressionFactor > 1 ? ' (compressed ×' + compressionFactor.toFixed(0) + ' for display)' : '');
+
+      simTimer = setInterval(function () {
+        if (!simState.running) return;
+
+        var elapsed = (Date.now() - simState.startTime) / 1000;
+        simState.downloaded = Math.min(simState.simBps * elapsed, simState.total);
+        var pct = simState.downloaded / simState.total;
+        var remaining = simState.total - simState.downloaded;
+        var etaSecs = remaining / simState.bps; // real ETA
+
+        document.getElementById('simBar').style.width = (pct * 100).toFixed(1) + '%';
+        document.getElementById('simDownloaded').textContent = formatSize(simState.downloaded);
+        document.getElementById('simRemaining').textContent  = formatSize(remaining);
+        document.getElementById('simEta').textContent        = formatTime(etaSecs);
+        document.getElementById('simPct').textContent        = (pct * 100).toFixed(1) + '%';
+        document.getElementById('simElapsed').textContent    = (elapsed * compressionFactor).toFixed(1) + 's';
+
+        if (pct >= 1) {
+          clearInterval(simTimer);
+          simTimer = null;
+          simState.running = false;
+          document.getElementById('simBar').style.width = '100%';
+          document.getElementById('simEta').textContent = '0 sec';
+          document.getElementById('simRemaining').textContent = '0 B';
+          document.getElementById('simStartBtn').disabled = false;
+          document.getElementById('simStopBtn').disabled = true;
+          sb.className = 'status-bar valid';
+          sb.textContent = 'Simulation complete — ' + sizeVal + ' ' + sizeUnit + ' transferred at ' + speedVal + ' ' + speedUnit + '.';
+        }
+      }, SIM_INTERVAL);
+
+      DT.trackTool('eta-calculator');
+    }
+
+    document.getElementById('simStartBtn').addEventListener('click', simStart);
+    document.getElementById('simStopBtn').addEventListener('click', function () {
+      if (simTimer) { clearInterval(simTimer); simTimer = null; }
+      simState.running = false;
+      this.disabled = true;
+      document.getElementById('simStartBtn').disabled = false;
+      var sb = document.getElementById('simStatusBar');
+      sb.className = 'status-bar info';
+      sb.textContent = 'Simulation stopped.';
+    });
+    document.getElementById('simResetBtn').addEventListener('click', simReset);
+
+    // ── Panel switching ────────────────────────────────────────────────────
+    function switchPanel(panel) {
+      ['single','batch','speedtest','reference'].forEach(function (p) {
+        var el = document.getElementById('panel-' + p);
+        if (el) el.classList.toggle('panel-hidden', p !== panel);
+      });
+      document.querySelectorAll('.option-chip[data-panel]').forEach(function (chip) {
+        chip.classList.toggle('active', chip.getAttribute('data-panel') === panel);
+      });
+      // Stop sim if leaving speed test panel
+      if (panel !== 'speedtest' && simTimer) {
+        clearInterval(simTimer);
+        simTimer = null;
+        simState.running = false;
+      }
+    }
+
+    document.querySelectorAll('.option-chip[data-panel]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        switchPanel(chip.getAttribute('data-panel'));
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
