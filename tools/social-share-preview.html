@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Social Share Preview — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Preview how your links look when shared on Facebook, Twitter/X, LinkedIn, Discord, and Slack. Enter title, description, image URL, and page URL to see accurate social card simulations.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/social-share-preview.html">
+  <meta property="og:title" content="Social Share Preview — ThisDevTool">
+  <meta property="og:description" content="Free social share preview tool. See how your links appear on Facebook, Twitter/X, LinkedIn, Discord, and Slack before you publish.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/social-share-preview.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Social Share Preview",
+    "url": "https://thisdevtool.com/tools/social-share-preview.html",
+    "description": "Preview how your links appear when shared on Facebook, Twitter/X, LinkedIn, Discord, and Slack with accurate CSS-styled card simulations.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are Open Graph tags?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Open Graph (OG) tags are HTML meta tags that control how your pages appear when shared on social media. Defined by Facebook, they are now used by most platforms including LinkedIn, Twitter (as fallback), Discord, and Slack. Key tags are og:title, og:description, og:image, and og:url. Without them, platforms scrape page content and guess what to display."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What image size should I use for social sharing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For maximum compatibility: use 1200x630 pixels for Facebook and LinkedIn (1.91:1 ratio), 1200x628 for Twitter/X summary_large_image, and 1200x630 for Discord and Slack. Keep the file size under 5 MB (prefer under 300 KB for fast loading). JPG works for photos; PNG for graphics with text or transparency. Avoid important content in the edges, which may be cropped on some platforms."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my social card show old content after I update?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Social platforms cache og:image and other meta tags for hours to days. To force an update: use Facebook's Sharing Debugger (developers.facebook.com/tools/debug), LinkedIn's Post Inspector (linkedin.com/post-inspector), or Twitter's Card Validator (cards-dev.twitter.com/validator). These tools clear the cache and re-scrape your page. After publishing changes, wait 5-10 minutes then use these debuggers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between Twitter:card summary and summary_large_image?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The twitter:card meta tag controls card size. 'summary' shows a small thumbnail image (144x144 max) beside the text — compact, used for news and short posts. 'summary_large_image' shows a large banner image above the text — better for articles and blog posts with compelling hero images. App cards and player cards are for apps and embedded video respectively."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do Discord and Slack use Open Graph tags?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Both Discord and Slack read standard Open Graph meta tags (og:title, og:description, og:image) to generate link previews. Discord also reads twitter:card and twitter:image as fallbacks. Slack uses og:title, og:description, og:image, and the page title. Setting correct OG tags ensures consistent, attractive previews across all platforms."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .ss-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 600px) { .ss-form-grid { grid-template-columns: 1fr; } }
+    .ss-form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary, #64748b);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .ss-form-group input, .ss-form-group textarea {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .ss-form-group.full { grid-column: 1 / -1; }
+    .ss-preview-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-size: 0.82rem;
+    }
+    .ss-preview-toggle label { color: var(--text-secondary, #64748b); }
+    .ss-cards-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    @media (min-width: 700px) {
+      .ss-cards-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .ss-card-wrapper {}
+    .ss-platform-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary, #64748b);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ss-platform-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ---- Facebook Card ---- */
+    .fb-card {
+      border: 1px solid #ccd0d5;
+      border-radius: 4px;
+      overflow: hidden;
+      font-family: Helvetica, Arial, sans-serif;
+      background: #fff;
+      max-width: 500px;
+    }
+    .fb-card-img { width: 100%; aspect-ratio: 1.91/1; object-fit: cover; background: #e4e6eb; display: flex; align-items: center; justify-content: center; color: #bec3c9; font-size: 0.75rem; }
+    .fb-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .fb-card-body { padding: 10px 12px 14px; border-top: 1px solid #ccd0d5; background: #f2f3f5; }
+    .fb-card-domain { font-size: 12px; text-transform: uppercase; color: #606770; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fb-card-title { font-size: 14px; font-weight: 600; color: #1c1e21; line-height: 1.3; margin-bottom: 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .fb-card-desc { font-size: 13px; color: #606770; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+    /* ---- Twitter/X Card ---- */
+    .tw-card {
+      border: 1px solid #e1e8ed;
+      border-radius: 14px;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #fff;
+      max-width: 500px;
+    }
+    .tw-card-img { width: 100%; aspect-ratio: 1.91/1; background: #e7e7e7; display: flex; align-items: center; justify-content: center; color: #8899a6; font-size: 0.75rem; overflow: hidden; }
+    .tw-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .tw-card-body { padding: 10px 14px 12px; }
+    .tw-card-domain { font-size: 12px; color: #8899a6; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tw-card-title { font-size: 14px; font-weight: 700; color: #14171a; line-height: 1.3; margin-bottom: 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .tw-card-desc { font-size: 13px; color: #657786; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+    /* Dark mode for cards */
+    .ss-dark .fb-card { background: #242526; border-color: #3a3b3c; }
+    .ss-dark .fb-card-body { background: #3a3b3c; border-color: #555; }
+    .ss-dark .fb-card-domain { color: #b0b3b8; }
+    .ss-dark .fb-card-title { color: #e4e6eb; }
+    .ss-dark .fb-card-desc { color: #b0b3b8; }
+    .ss-dark .fb-card-img { background: #3a3b3c; }
+    .ss-dark .tw-card { background: #15202b; border-color: #38444d; }
+    .ss-dark .tw-card-domain { color: #8899a6; }
+    .ss-dark .tw-card-title { color: #ffffff; }
+    .ss-dark .tw-card-desc { color: #8899a6; }
+    .ss-dark .tw-card-img { background: #38444d; }
+
+    /* ---- LinkedIn Card ---- */
+    .li-card {
+      border: 1px solid #d0d7de;
+      border-radius: 2px;
+      overflow: hidden;
+      font-family: -apple-system, system-ui, sans-serif;
+      background: #fff;
+      max-width: 500px;
+    }
+    .li-card-img { width: 100%; aspect-ratio: 1.91/1; background: #eef3f8; display: flex; align-items: center; justify-content: center; color: #a0abc0; font-size: 0.75rem; overflow: hidden; }
+    .li-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .li-card-body { padding: 12px 14px; background: #eef3f8; }
+    .li-card-title { font-size: 14px; font-weight: 600; color: #000000e6; line-height: 1.4; margin-bottom: 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .li-card-desc { font-size: 12px; color: #00000099; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .li-card-domain { font-size: 12px; color: #00000066; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ss-dark .li-card { background: #1b1f23; border-color: #30363d; }
+    .ss-dark .li-card-body { background: #161b22; }
+    .ss-dark .li-card-title { color: #e6edf3; }
+    .ss-dark .li-card-desc { color: #8b949e; }
+    .ss-dark .li-card-domain { color: #8b949e; }
+    .ss-dark .li-card-img { background: #21262d; }
+
+    /* ---- Discord Card ---- */
+    .dc-card {
+      border-left: 4px solid #5865f2;
+      border-radius: 4px;
+      overflow: hidden;
+      font-family: "gg sans", DiscordFont, sans-serif;
+      background: #2b2d31;
+      padding: 12px 16px;
+      max-width: 432px;
+    }
+    .dc-card-site { font-size: 12px; color: #b5bac1; margin-bottom: 4px; }
+    .dc-card-title { font-size: 14px; font-weight: 600; color: #00b0f4; margin-bottom: 6px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .dc-card-desc { font-size: 13px; color: #dbdee1; line-height: 1.4; margin-bottom: 8px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+    .dc-card-img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 4px; background: #1e1f22; display: flex; align-items: center; justify-content: center; color: #4e5058; font-size: 0.75rem; overflow: hidden; }
+    .dc-card-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+    /* Discord is always dark */
+
+    /* ---- Slack Card ---- */
+    .sl-card {
+      border: 1px solid #ddd;
+      border-left: 4px solid #4a154b;
+      border-radius: 4px;
+      overflow: hidden;
+      font-family: Slack-Lato, appleLogo, sans-serif;
+      background: #fff;
+      padding: 8px 12px;
+      max-width: 460px;
+    }
+    .sl-card-site { font-size: 12px; font-weight: 700; color: #1d1c1d; margin-bottom: 4px; }
+    .sl-card-title { font-size: 14px; font-weight: 700; color: #1264a3; margin-bottom: 4px; text-decoration: underline; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .sl-card-desc { font-size: 13px; color: #616061; line-height: 1.4; margin-bottom: 6px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+    .sl-card-img { width: 100%; max-height: 160px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 0.75rem; overflow: hidden; }
+    .sl-card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .ss-dark .sl-card { background: #1a1d21; border-color: #383b41; border-left-color: #7c3085; }
+    .ss-dark .sl-card-site { color: #e8e8e8; }
+    .ss-dark .sl-card-title { color: #1d9bd1; }
+    .ss-dark .sl-card-desc { color: #a6a6a6; }
+    .ss-dark .sl-card-img { background: #2c2d30; }
+
+    .ss-preview-bg {
+      background: var(--bg-secondary, #f8fafc);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .ss-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .ss-toggle-btn {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 16px;
+      border: 1px solid var(--border, #e2e8f0);
+      background: transparent;
+      color: var(--text-secondary, #64748b);
+      cursor: pointer;
+    }
+    .ss-toggle-btn.active { background: #10b981; color: #fff; border-color: #10b981; }
+    .ss-toggle-label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary, #64748b); }
+    .ss-dark-toggle {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-secondary, #64748b);
+      cursor: pointer;
+    }
+    .card-hidden { display: none; }
+    .img-placeholder { min-height: 100px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/og-preview.html">OG Preview</a>
+        <a href="/tools/meta-tag-generator.html">Meta Tags</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Social Share Preview</h1>
+          <p class="tool-subtitle">Preview how your link appears when shared on Facebook, Twitter/X, LinkedIn, Discord, and Slack — accurate CSS simulations, dark/light toggle.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="all">All</button>
+            <button class="option-chip" data-mode="facebook">Facebook</button>
+            <button class="option-chip" data-mode="twitter">Twitter/X</button>
+            <button class="option-chip" data-mode="linkedin">LinkedIn</button>
+            <button class="option-chip" data-mode="discord">Discord</button>
+          </div>
+
+          <!-- Input Form -->
+          <div style="margin-top:14px;">
+            <div class="ss-form-grid">
+              <div class="ss-form-group full">
+                <label>Page URL</label>
+                <input type="url" id="inputUrl" placeholder="https://yoursite.com/article" autocomplete="off">
+              </div>
+              <div class="ss-form-group full">
+                <label>Title</label>
+                <input type="text" id="inputTitle" placeholder="Your page title here" maxlength="200">
+              </div>
+              <div class="ss-form-group full">
+                <label>Description</label>
+                <textarea id="inputDesc" rows="2" placeholder="A concise description of this page (150–160 characters recommended)." style="resize:vertical;"></textarea>
+              </div>
+              <div class="ss-form-group full">
+                <label>Image URL (1200x630 recommended)</label>
+                <input type="url" id="inputImage" placeholder="https://yoursite.com/og-image.jpg" autocomplete="off">
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" id="previewBtn">Preview</button>
+              <button class="btn btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            </div>
+          </div>
+
+          <!-- Preview Area -->
+          <div id="previewArea" style="display:none; margin-top:20px;">
+            <div class="ss-preview-bg">
+              <div class="ss-toggle-row">
+                <span class="ss-toggle-label">Preview mode:</span>
+                <button class="ss-toggle-btn active" data-theme="light">Light</button>
+                <button class="ss-toggle-btn" data-theme="dark">Dark</button>
+              </div>
+              <div class="ss-cards-grid" id="cardsGrid"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter page details above and click Preview.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Social Share Preview Tool</h2>
+          <ol>
+            <li><strong>Enter your page details</strong> — paste your page URL, title, description, and image URL into the form fields. These correspond to the <code>og:url</code>, <code>og:title</code>, <code>og:description</code>, and <code>og:image</code> meta tags.</li>
+            <li><strong>Click Preview</strong> — the tool renders simulated share cards for Facebook, Twitter/X, LinkedIn, Discord, and Slack using accurate CSS that mirrors each platform's actual card styles.</li>
+            <li><strong>Filter platforms</strong> — use the option chips to focus on a specific platform's card.</li>
+            <li><strong>Toggle dark/light mode</strong> — preview cards in both light and dark mode to ensure your image and text are readable in both contexts. Discord always displays in dark mode.</li>
+            <li><strong>Adjust until satisfied</strong> — if text gets cut off or the image looks wrong, update your meta tags and preview again before publishing.</li>
+          </ol>
+
+          <h2>Why Social Share Previews Matter</h2>
+          <p>When someone shares a link on social media, the platform generates a preview card by reading your page's Open Graph meta tags. These cards are often the first thing potential visitors see before deciding whether to click — making them one of the most impactful elements of your click-through rate. A compelling card with a striking image, clear title, and engaging description can significantly increase the traffic you get from social sharing.</p>
+
+          <h3>Open Graph Meta Tags</h3>
+          <p>Open Graph (OG) is a protocol developed by Facebook that defines how web pages are represented when shared on social platforms. The four most important tags are: <code>og:title</code> (the headline shown in the card, typically the page title), <code>og:description</code> (a 1–2 sentence summary, 150–200 characters), <code>og:image</code> (the preview image URL — should be 1200x630 pixels), and <code>og:url</code> (the canonical URL of the page). LinkedIn, Discord, Slack, and many other platforms read these same tags.</p>
+
+          <h3>Twitter Cards</h3>
+          <p>Twitter has its own <code>twitter:card</code> meta tag that controls the card format. Use <code>summary_large_image</code> for a large banner image (best for articles and blog posts) or <code>summary</code> for a compact card with a small thumbnail. If Twitter-specific tags are missing, Twitter falls back to Open Graph tags. Set <code>twitter:site</code> to your Twitter handle and <code>twitter:creator</code> to the author's handle to attribute cards correctly.</p>
+
+          <h3>Platform-Specific Image Sizes</h3>
+          <p>Facebook and LinkedIn both prefer 1200x630 pixels (1.91:1 aspect ratio). Twitter's <code>summary_large_image</code> uses 1200x628 (almost identical). Discord and Slack also respect 1200x630. Some platforms crop images on the sides on mobile, so keep important content (text, logos) centered. File size should be under 5 MB, preferably under 300 KB for fast loading. Use JPG for photographs and PNG for graphics that include text.</p>
+
+          <h3>Cache Busting Social Previews</h3>
+          <p>After updating your Open Graph tags, social platforms will continue showing the old preview for hours or days because they cache the scraped data. To force an update: use <a href="https://developers.facebook.com/tools/debug/" rel="noopener noreferrer" target="_blank">Facebook's Sharing Debugger</a>, <a href="https://www.linkedin.com/post-inspector/" rel="noopener noreferrer" target="_blank">LinkedIn's Post Inspector</a>, or Twitter's Card Validator. These tools re-scrape your page and clear the cache immediately. For Discord, simply sharing the link again in a server usually pulls a fresh preview. For Slack, unfurling can be refreshed via the message options menu.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What are Open Graph tags?</button>
+            <div class="faq-answer">Open Graph (OG) tags are HTML meta tags that control how pages appear when shared on social media. Defined by Facebook, they are now used by LinkedIn, Discord, Slack, and Twitter as a fallback. Key tags are og:title, og:description, og:image, and og:url. Without them, platforms scrape and guess what to display.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What image size should I use for social sharing?</button>
+            <div class="faq-answer">Use 1200x630 pixels for Facebook and LinkedIn (1.91:1 ratio), 1200x628 for Twitter summary_large_image, and 1200x630 for Discord and Slack. Keep file size under 300 KB. JPG for photos, PNG for graphics with text. Keep important content centered to avoid cropping on mobile.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why does my social card show old content after I update?</button>
+            <div class="faq-answer">Social platforms cache og:image and meta tags for hours to days. To force an update: use Facebook's Sharing Debugger (developers.facebook.com/tools/debug), LinkedIn's Post Inspector, or Twitter's Card Validator. These tools clear the cache and re-scrape your page.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between Twitter:card summary and summary_large_image?</button>
+            <div class="faq-answer">'summary' shows a small thumbnail (144x144 max) beside the text — compact, for news and short posts. 'summary_large_image' shows a large banner image above the text — better for articles and blog posts with compelling hero images.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Do Discord and Slack use Open Graph tags?</button>
+            <div class="faq-answer">Yes. Both Discord and Slack read og:title, og:description, and og:image. Discord also reads twitter:card and twitter:image as fallbacks. Slack uses og:title, og:description, og:image, and the page title. Setting correct OG tags ensures consistent previews across all platforms.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>SEO & Social</h4>
+        <a href="/tools/og-preview.html">OG Preview</a>
+        <a href="/tools/meta-tag-generator.html">Meta Tag Generator</a>
+        <a href="/tools/serp-preview.html">SERP Preview</a>
+        <a href="/tools/schema-generator.html">Schema Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/utm-builder.html">UTM Builder</a>
+        <a href="/tools/qr-code.html">QR Code Generator</a>
+        <a href="/tools/email-signature.html">Email Signature</a>
+        <a href="/tools/favicon-generator.html">Favicon Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var statusBar = document.getElementById('statusBar');
+    var previewArea = document.getElementById('previewArea');
+    var cardsGrid = document.getElementById('cardsGrid');
+    var currentMode = 'all';
+    var isDark = false;
+
+    var EXAMPLE = {
+      url: 'https://thisdevtool.com/tools/json-formatter.html',
+      title: 'JSON Formatter & Validator — Free Online Tool | ThisDevTool',
+      desc: 'Format, validate, and minify JSON online. Free JSON beautifier with error detection, syntax highlighting, copy and download. No signup required.',
+      image: 'https://thisdevtool.com/images/og-default.png'
+    };
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('inputUrl').value = EXAMPLE.url;
+      document.getElementById('inputTitle').value = EXAMPLE.title;
+      document.getElementById('inputDesc').value = EXAMPLE.desc;
+      document.getElementById('inputImage').value = EXAMPLE.image;
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('inputUrl').value = '';
+      document.getElementById('inputTitle').value = '';
+      document.getElementById('inputDesc').value = '';
+      document.getElementById('inputImage').value = '';
+      previewArea.style.display = 'none';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Enter page details above and click Preview.';
+    });
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        updateVisibility();
+      });
+    });
+
+    // Theme toggle
+    document.querySelectorAll('.ss-toggle-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.ss-toggle-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        isDark = btn.dataset.theme === 'dark';
+        var bg = document.getElementById('previewArea').querySelector('.ss-preview-bg');
+        if (isDark) { bg.classList.add('ss-dark'); } else { bg.classList.remove('ss-dark'); }
+        // Discord is always dark — keep its card dark
+        var dcWrapper = document.querySelector('.dc-card-wrapper');
+        if (dcWrapper) dcWrapper.querySelector('.dc-card').style.background = '#2b2d31';
+      });
+    });
+
+    document.getElementById('previewBtn').addEventListener('click', doPreview);
+
+    function doPreview() {
+      var url = document.getElementById('inputUrl').value.trim();
+      var title = document.getElementById('inputTitle').value.trim();
+      var desc = document.getElementById('inputDesc').value.trim();
+      var image = document.getElementById('inputImage').value.trim();
+
+      if (!title && !url) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Enter at least a title or URL to preview.';
+        return;
+      }
+
+      var domain = '';
+      if (url) {
+        try { domain = new URL(url).hostname; } catch (e) { domain = url; }
+      }
+
+      cardsGrid.innerHTML = buildCards(title, desc, image, domain, url);
+
+      // Attach image load/error handlers
+      cardsGrid.querySelectorAll('img[data-src]').forEach(function (img) {
+        img.src = img.dataset.src;
+        img.onerror = function () {
+          img.parentElement.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:0.75rem;min-height:80px;">Image not loaded</div>';
+        };
+      });
+
+      previewArea.style.display = '';
+      updateVisibility();
+      var bg = document.querySelector('.ss-preview-bg');
+      if (isDark) bg.classList.add('ss-dark'); else bg.classList.remove('ss-dark');
+
+      var count = currentMode === 'all' ? 5 : 1;
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Previewing ' + count + ' platform' + (count !== 1 ? 's' : '');
+      DT.trackTool('social-share-preview');
+    }
+
+    function buildCards(title, desc, image, domain, url) {
+      var safeTitle = esc(title || 'No title set');
+      var safeDesc = esc(desc || '');
+      var safeDomain = esc(domain || url || 'yoursite.com');
+      var imgEl = image
+        ? '<img data-src="' + esc(image) + '" alt="Preview" loading="lazy" style="width:100%;height:100%;object-fit:cover;">'
+        : '<div style="width:100%;height:100%;min-height:80px;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:0.75rem;">No image URL set</div>';
+
+      var fbHtml =
+        '<div class="ss-card-wrapper" data-platform="facebook">' +
+        '<div class="ss-platform-label"><div class="ss-platform-dot" style="background:#1877f2"></div>Facebook</div>' +
+        '<div class="fb-card">' +
+        '<div class="fb-card-img img-placeholder">' + imgEl + '</div>' +
+        '<div class="fb-card-body">' +
+        '<div class="fb-card-domain">' + safeDomain + '</div>' +
+        '<div class="fb-card-title">' + safeTitle + '</div>' +
+        (safeDesc ? '<div class="fb-card-desc">' + safeDesc + '</div>' : '') +
+        '</div></div></div>';
+
+      var twHtml =
+        '<div class="ss-card-wrapper" data-platform="twitter">' +
+        '<div class="ss-platform-label"><div class="ss-platform-dot" style="background:#000"></div>Twitter / X</div>' +
+        '<div class="tw-card">' +
+        '<div class="tw-card-img img-placeholder">' + imgEl + '</div>' +
+        '<div class="tw-card-body">' +
+        '<div class="tw-card-domain">' + safeDomain + '</div>' +
+        '<div class="tw-card-title">' + safeTitle + '</div>' +
+        (safeDesc ? '<div class="tw-card-desc">' + safeDesc + '</div>' : '') +
+        '</div></div></div>';
+
+      var liHtml =
+        '<div class="ss-card-wrapper" data-platform="linkedin">' +
+        '<div class="ss-platform-label"><div class="ss-platform-dot" style="background:#0a66c2"></div>LinkedIn</div>' +
+        '<div class="li-card">' +
+        '<div class="li-card-img img-placeholder">' + imgEl + '</div>' +
+        '<div class="li-card-body">' +
+        '<div class="li-card-title">' + safeTitle + '</div>' +
+        (safeDesc ? '<div class="li-card-desc">' + safeDesc + '</div>' : '') +
+        '<div class="li-card-domain">' + safeDomain + '</div>' +
+        '</div></div></div>';
+
+      var dcHtml =
+        '<div class="ss-card-wrapper dc-card-wrapper" data-platform="discord">' +
+        '<div class="ss-platform-label"><div class="ss-platform-dot" style="background:#5865f2"></div>Discord</div>' +
+        '<div class="dc-card">' +
+        '<div class="dc-card-site">' + safeDomain + '</div>' +
+        '<div class="dc-card-title">' + safeTitle + '</div>' +
+        (safeDesc ? '<div class="dc-card-desc">' + safeDesc + '</div>' : '') +
+        '<div class="dc-card-img img-placeholder">' + imgEl + '</div>' +
+        '</div></div>';
+
+      var slHtml =
+        '<div class="ss-card-wrapper" data-platform="slack">' +
+        '<div class="ss-platform-label"><div class="ss-platform-dot" style="background:#4a154b"></div>Slack</div>' +
+        '<div class="sl-card">' +
+        '<div class="sl-card-site">' + safeDomain + '</div>' +
+        '<div class="sl-card-title">' + safeTitle + '</div>' +
+        (safeDesc ? '<div class="sl-card-desc">' + safeDesc + '</div>' : '') +
+        '<div class="sl-card-img img-placeholder">' + imgEl + '</div>' +
+        '</div></div>';
+
+      return fbHtml + twHtml + liHtml + dcHtml + slHtml;
+    }
+
+    function updateVisibility() {
+      if (!cardsGrid.children.length) return;
+      var count = 0;
+      cardsGrid.querySelectorAll('.ss-card-wrapper').forEach(function (card) {
+        var platform = card.dataset.platform;
+        var show = currentMode === 'all' || currentMode === platform;
+        card.style.display = show ? '' : 'none';
+        if (show) count++;
+      });
+      if (previewArea.style.display !== 'none') {
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Previewing ' + count + ' platform' + (count !== 1 ? 's' : '');
+      }
+    }
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>AMP HTML Validator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Validate AMP HTML in your browser. Check for banned tags, missing required elements, custom JavaScript, and get fix suggestions. 100% client-side, no server required.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/amp-validator.html">
+  <meta property="og:title" content="AMP HTML Validator — ThisDevTool">
+  <meta property="og:description" content="Free AMP HTML validator. Paste HTML to check for banned tags, missing amp-boilerplate, custom JS, and other AMP compliance issues.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/amp-validator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "AMP HTML Validator",
+    "url": "https://thisdevtool.com/tools/amp-validator.html",
+    "description": "Validate AMP HTML for banned tags, missing required elements, and custom JavaScript. Get pass/fail per rule with fix suggestions.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is AMP HTML?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AMP (Accelerated Mobile Pages) is an open-source HTML framework developed by Google to create fast-loading mobile web pages. AMP HTML is a restricted subset of HTML that disallows certain tags and requires specific elements like the amp-boilerplate and the AMP JavaScript library. Pages that pass AMP validation can be served from the Google AMP Cache, reducing load times significantly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which HTML tags are banned in AMP?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AMP bans several standard HTML tags that can slow down pages or cause layout issues: script (except the AMP runtime and JSON-LD), iframe (use amp-iframe instead), object, embed, frame, frameset, applet, base, form with a non-AMP action, and most HTML event handlers. Images must use amp-img instead of img, and video must use amp-video."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is amp-boilerplate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The amp-boilerplate is a required CSS snippet that must appear in the head of every AMP page. It hides the page content until the AMP runtime loads and applies styles, preventing a flash of unstyled content. Without it, the AMP validator will fail the page. The boilerplate includes specific animation code that reveals content once AMP has finished loading."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use custom JavaScript in AMP pages?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Custom JavaScript is not allowed in AMP pages. This is one of AMP's core restrictions — all interactivity must be implemented using AMP components (amp-accordion, amp-carousel, amp-form, amp-bind, etc.) or the AMP actions and events system. The only allowed script tags are the AMP runtime (cdn.ampproject.org), AMP component scripts, and JSON-LD structured data."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my HTML sent to a server when using this validator?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This AMP validator runs 100% in your browser using JavaScript. Your HTML code is never transmitted to any external server. The validation rules are built into the tool itself, so it works offline once the page has loaded. There is no data collection, no logging, and no server processing."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .amp-results { margin-top: 14px; }
+    .amp-rule {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-size: 0.84rem;
+      border: 1px solid transparent;
+    }
+    .amp-rule.pass {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      color: #166534;
+    }
+    .amp-rule.fail {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #991b1b;
+    }
+    .amp-rule.warn {
+      background: #fffbeb;
+      border-color: #fde68a;
+      color: #92400e;
+    }
+    body.dark-mode .amp-rule.pass { background: #052e16; border-color: #14532d; color: #86efac; }
+    body.dark-mode .amp-rule.fail { background: #2d1515; border-color: #7f1d1d; color: #fca5a5; }
+    body.dark-mode .amp-rule.warn { background: #2d2209; border-color: #78350f; color: #fcd34d; }
+    .amp-rule-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .amp-rule-body { flex: 1; }
+    .amp-rule-title { font-weight: 600; margin-bottom: 2px; }
+    .amp-rule-detail { font-size: 0.78rem; opacity: 0.8; }
+    .amp-summary {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .amp-summary-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .amp-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .amp-dot-pass { background: #10b981; }
+    .amp-dot-fail { background: #ef4444; }
+    .amp-dot-warn { background: #f59e0b; }
+    .amp-ref-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .amp-ref-card {
+      background: var(--bg-secondary, #f8fafc);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .amp-ref-card h4 { font-size: 0.82rem; font-weight: 700; margin: 0 0 6px; color: #10b981; }
+    .amp-ref-card ul { margin: 0; padding-left: 16px; font-size: 0.78rem; color: var(--text-secondary, #64748b); }
+    .amp-ref-card li { margin-bottom: 3px; }
+    code { font-size: 0.82em; background: var(--bg-secondary, #f1f5f9); padding: 1px 4px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/html-markdown.html">HTML Tools</a>
+        <a href="/tools/schema-generator.html">Schema Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>AMP HTML Validator</h1>
+          <p class="tool-subtitle">Paste HTML to check AMP compliance — banned tags, missing boilerplate, custom JS, and more. Pass/fail per rule with fix suggestions.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="validate">Validate</button>
+            <button class="option-chip" data-mode="fixes">Fix Suggestions</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <!-- Validate Panel -->
+          <div id="panel-validate">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>HTML Input</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                    <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                  </div>
+                </div>
+                <textarea id="htmlInput" rows="18" placeholder="Paste your AMP HTML here..." spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Validation Results</span>
+                  <button class="btn btn-sm btn-primary" id="validateBtn">Validate</button>
+                </div>
+                <div id="resultsPanel" style="min-height:360px; padding:10px 0;">
+                  <div style="color:var(--text-secondary,#64748b);font-size:0.88rem;padding:16px;">Paste HTML and click Validate.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fix Suggestions Panel -->
+          <div id="panel-fixes" style="display:none;">
+            <div class="pane-label"><span>Common Fix Suggestions</span></div>
+            <div id="fixPanel" style="min-height:200px; padding:8px 0;">
+              <div style="color:var(--text-secondary,#64748b);font-size:0.88rem;">Validate your HTML first to see tailored fix suggestions.</div>
+            </div>
+          </div>
+
+          <!-- Reference Panel -->
+          <div id="panel-reference" style="display:none;">
+            <div class="pane-label"><span>AMP Quick Reference</span></div>
+            <div class="amp-ref-grid">
+              <div class="amp-ref-card">
+                <h4>Banned Tags</h4>
+                <ul>
+                  <li><code>script</code> (custom JS)</li>
+                  <li><code>iframe</code> — use <code>amp-iframe</code></li>
+                  <li><code>object</code></li>
+                  <li><code>embed</code></li>
+                  <li><code>frame</code> / <code>frameset</code></li>
+                  <li><code>applet</code></li>
+                  <li><code>base</code></li>
+                  <li>HTML event attributes (onclick, etc.)</li>
+                </ul>
+              </div>
+              <div class="amp-ref-card">
+                <h4>Required Elements</h4>
+                <ul>
+                  <li><code>amp-boilerplate</code> style in head</li>
+                  <li><code>&lt;link rel="canonical"&gt;</code></li>
+                  <li><code>&lt;meta charset="utf-8"&gt;</code></li>
+                  <li><code>&lt;meta name="viewport"&gt;</code></li>
+                  <li>AMP runtime script</li>
+                  <li><code>&lt;html amp&gt;</code> or <code>⚡</code> attribute</li>
+                </ul>
+              </div>
+              <div class="amp-ref-card">
+                <h4>AMP Replacements</h4>
+                <ul>
+                  <li><code>img</code> → <code>amp-img</code></li>
+                  <li><code>video</code> → <code>amp-video</code></li>
+                  <li><code>audio</code> → <code>amp-audio</code></li>
+                  <li><code>iframe</code> → <code>amp-iframe</code></li>
+                  <li>Lightbox → <code>amp-lightbox</code></li>
+                  <li>Carousel → <code>amp-carousel</code></li>
+                </ul>
+              </div>
+              <div class="amp-ref-card">
+                <h4>Allowed Script Tags</h4>
+                <ul>
+                  <li>AMP runtime (cdn.ampproject.org)</li>
+                  <li>AMP component scripts</li>
+                  <li>JSON-LD (<code>type="application/ld+json"</code>)</li>
+                  <li>No other script tags permitted</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste HTML and click Validate to check AMP compliance.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the AMP HTML Validator</h2>
+          <ol>
+            <li><strong>Paste your HTML</strong> — copy the full source of your AMP page and paste it into the input area. Click "Try Example" to see a sample AMP page with common errors.</li>
+            <li><strong>Click Validate</strong> — the tool checks your HTML against AMP compliance rules: banned tags, required elements, custom JavaScript, form usage, and more.</li>
+            <li><strong>Review results</strong> — each rule shows a pass or fail status with a description. Failed rules include the specific element that caused the error.</li>
+            <li><strong>Switch to Fix Suggestions</strong> — after validating, click "Fix Suggestions" to see tailored recommendations based on the errors found in your HTML.</li>
+            <li><strong>Use the Reference panel</strong> — view a quick reference of banned tags, required elements, AMP replacements, and allowed script types.</li>
+          </ol>
+
+          <h2>What is AMP and Why Does It Matter?</h2>
+          <p>AMP (Accelerated Mobile Pages) is an open-source HTML framework created by Google to build fast-loading mobile web pages. AMP HTML is a restricted subset of standard HTML with specific rules designed to eliminate the most common causes of slow page loads: render-blocking scripts, custom JavaScript, unoptimized images, and complex CSS animations.</p>
+
+          <h3>AMP Validation Rules Explained</h3>
+          <p>The AMP specification has several categories of rules. First, banned tags: regular HTML tags like <code>script</code> (for custom JavaScript), <code>iframe</code>, <code>object</code>, <code>embed</code>, <code>frame</code>, and <code>applet</code> are not allowed because they can introduce performance and security issues. These must be replaced with AMP-specific components that implement the same functionality in a controlled, performance-optimized way.</p>
+
+          <p>Second, required elements: every valid AMP page must include the <code>amp-boilerplate</code> CSS in the head (which hides content until AMP is ready), a canonical link pointing to the original non-AMP page (or itself for AMP-only pages), proper charset and viewport meta tags, and the AMP runtime script from cdn.ampproject.org. The html tag must have the <code>amp</code> attribute or the lightning bolt emoji ⚡.</p>
+
+          <h3>Custom JavaScript in AMP</h3>
+          <p>One of AMP's strictest requirements is the complete prohibition of custom JavaScript. No inline <code>onclick</code> handlers, no external script files, and no inline script blocks (except for the AMP runtime, AMP components, and JSON-LD structured data). Instead, AMP provides a rich set of components that handle interactivity declaratively: <code>amp-bind</code> for state management, <code>amp-form</code> for forms, <code>amp-accordion</code> for expandable sections, and hundreds more. This constraint is what makes AMP pages predictably fast — the browser never has to execute unknown JavaScript before rendering the page.</p>
+
+          <h3>When to Use AMP</h3>
+          <p>AMP is most beneficial for news articles, blog posts, and editorial content where the primary goal is reading. For highly interactive applications, e-commerce with complex cart logic, or pages requiring custom JavaScript, AMP may be too restrictive. Google no longer requires AMP for Top Stories eligibility (as of 2021), but AMP pages can still benefit from serving via the Google AMP Cache, which delivers content from Google's CDN at very low latency. Pair AMP validation with our <a href="/tools/schema-generator.html">Schema Generator</a> to add structured data to your AMP pages and maximize rich result eligibility.</p>
+
+          <h3>AMP vs. Standard HTML Performance</h3>
+          <p>The performance benefits of AMP come from several mechanisms: pre-rendering in Google Search (pages load before the user clicks), delivery via Google's CDN (reducing server round-trip time), and the structural constraints that prevent slow patterns. Standard HTML pages can match or exceed AMP performance when properly optimized using Core Web Vitals best practices — but AMP provides a validation framework that makes performance compliance easier to enforce across a content team. If you are building a new content site and want guaranteed fast performance with minimal effort, AMP remains a viable choice.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is AMP HTML?</button>
+            <div class="faq-answer">AMP (Accelerated Mobile Pages) is an open-source HTML framework to create fast-loading mobile web pages. AMP HTML is a restricted subset of HTML that disallows certain tags and requires specific elements like the amp-boilerplate. Pages that pass AMP validation can be served from the Google AMP Cache, reducing load times significantly.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Which HTML tags are banned in AMP?</button>
+            <div class="faq-answer">AMP bans: script (custom JS), iframe (use amp-iframe), object, embed, frame, frameset, applet, base, form with non-AMP action, and HTML event handlers. Images must use amp-img instead of img, and video must use amp-video.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is amp-boilerplate?</button>
+            <div class="faq-answer">The amp-boilerplate is required CSS that must appear in the head of every AMP page. It hides the page until the AMP runtime loads, preventing a flash of unstyled content. Without it, the page fails AMP validation. The boilerplate includes animation code that reveals content once AMP has finished loading.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I use custom JavaScript in AMP pages?</button>
+            <div class="faq-answer">No. Custom JavaScript is prohibited in AMP. All interactivity must use AMP components (amp-accordion, amp-carousel, amp-form, amp-bind, etc.). The only allowed script tags are the AMP runtime, AMP component scripts, and JSON-LD structured data.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my HTML sent to a server when using this validator?</button>
+            <div class="faq-answer">No. This AMP validator runs 100% in your browser using JavaScript. Your HTML code is never transmitted to any server. The validation rules are built into the tool itself. There is no data collection, no logging, and no server processing.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>HTML Tools</h4>
+        <a href="/tools/html-minifier.html">HTML Minifier</a>
+        <a href="/tools/html-markdown.html">HTML to Markdown</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+        <a href="/tools/schema-generator.html">Schema Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/meta-tag-generator.html">Meta Tag Generator</a>
+        <a href="/tools/og-preview.html">OG Preview</a>
+        <a href="/tools/serp-preview.html">SERP Preview</a>
+        <a href="/tools/robots-txt.html">Robots.txt Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var htmlInput = document.getElementById('htmlInput');
+    var statusBar = document.getElementById('statusBar');
+    var currentMode = 'validate';
+    var lastResults = null;
+
+    var EXAMPLE_AMP = '<!DOCTYPE html>\n<html amp lang="en">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">\n  <link rel="canonical" href="https://example.com/article">\n  <title>Example AMP Article</title>\n  <!-- Missing amp-boilerplate -->\n  <!-- Custom script (banned) -->\n  <script>console.log("hello world");</scr' + 'ipt>\n  <!-- AMP runtime (correct) -->\n  <script async src="https://cdn.ampproject.org/v0.js"></scr' + 'ipt>\n</head>\n<body>\n  <h1>My AMP Article</h1>\n  <!-- iframe (banned - should be amp-iframe) -->\n  <iframe src="https://example.com/embed"></iframe>\n  <!-- img (should be amp-img) -->\n  <img src="photo.jpg" alt="photo">\n  <!-- object (banned) -->\n  <object data="file.swf"></object>\n  <p onclick="doSomething()">Click me</p>\n  <p>Content here</p>\n</body>\n</html>';
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      htmlInput.value = EXAMPLE_AMP;
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      htmlInput.value = '';
+      document.getElementById('resultsPanel').innerHTML = '<div style="color:var(--text-secondary,#64748b);font-size:0.88rem;padding:16px;">Paste HTML and click Validate.</div>';
+      document.getElementById('fixPanel').innerHTML = '<div style="color:var(--text-secondary,#64748b);font-size:0.88rem;">Validate your HTML first to see tailored fix suggestions.</div>';
+      lastResults = null;
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Paste HTML and click Validate to check AMP compliance.';
+    });
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        document.getElementById('panel-validate').style.display = currentMode === 'validate' ? '' : 'none';
+        document.getElementById('panel-fixes').style.display = currentMode === 'fixes' ? '' : 'none';
+        document.getElementById('panel-reference').style.display = currentMode === 'reference' ? '' : 'none';
+        if (currentMode === 'fixes' && lastResults) renderFixes(lastResults);
+      });
+    });
+
+    document.getElementById('validateBtn').addEventListener('click', doValidate);
+
+    function doValidate() {
+      var html = htmlInput.value.trim();
+      if (!html) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Paste HTML first.';
+        return;
+      }
+
+      var results = runValidation(html);
+      lastResults = results;
+      renderResults(results);
+      if (currentMode === 'fixes') renderFixes(results);
+
+      var errors = results.filter(function (r) { return r.status === 'fail'; }).length;
+      var warns = results.filter(function (r) { return r.status === 'warn'; }).length;
+      var passes = results.filter(function (r) { return r.status === 'pass'; }).length;
+
+      if (errors === 0 && warns === 0) {
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'AMP Valid — all ' + passes + ' checks passed';
+      } else {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = errors + ' error' + (errors !== 1 ? 's' : '') + ' found — ' +
+          (warns > 0 ? warns + ' warning' + (warns !== 1 ? 's' : '') + ', ' : '') +
+          passes + ' passed';
+      }
+      DT.trackTool('amp-validator');
+    }
+
+    function runValidation(html) {
+      var lower = html.toLowerCase();
+      var results = [];
+
+      // Helper: find tag occurrences
+      function findTag(tag) {
+        var re = new RegExp('<' + tag + '[\\s>]', 'gi');
+        return (html.match(re) || []).length;
+      }
+      function findAttr(attr) {
+        var re = new RegExp('\\b' + attr + '\\s*=', 'gi');
+        return (html.match(re) || []).length;
+      }
+
+      // 1. AMP attribute on html tag
+      var hasAmpAttr = /<html[^>]*(amp|\u26a1)[^>]*>/i.test(html);
+      results.push({
+        id: 'amp-attr',
+        title: 'HTML amp attribute',
+        status: hasAmpAttr ? 'pass' : 'fail',
+        detail: hasAmpAttr ? 'Found <html amp> or <html ⚡>.' : 'Missing: <html amp> or <html ⚡> attribute on html tag.',
+        fix: 'Change <html> to <html amp lang="en"> or <html ⚡ lang="en">.'
+      });
+
+      // 2. amp-boilerplate
+      var hasBoilerplate = /amp-boilerplate/i.test(html);
+      results.push({
+        id: 'boilerplate',
+        title: 'amp-boilerplate CSS',
+        status: hasBoilerplate ? 'pass' : 'fail',
+        detail: hasBoilerplate ? 'amp-boilerplate found in head.' : 'Missing: amp-boilerplate style block required in <head>.',
+        fix: 'Add the official AMP boilerplate CSS: <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;...}</style><noscript>...</noscript>'
+      });
+
+      // 3. AMP runtime script
+      var hasRuntime = /cdn\.ampproject\.org\/v0\.js/i.test(html);
+      results.push({
+        id: 'runtime',
+        title: 'AMP runtime script',
+        status: hasRuntime ? 'pass' : 'fail',
+        detail: hasRuntime ? 'AMP runtime script found.' : 'Missing: <script async src="https://cdn.ampproject.org/v0.js"></script>',
+        fix: 'Add <script async src="https://cdn.ampproject.org/v0.js"></script> in <head>.'
+      });
+
+      // 4. Canonical link
+      var hasCanonical = /<link[^>]+rel=["']canonical["']/i.test(html);
+      results.push({
+        id: 'canonical',
+        title: 'Canonical link',
+        status: hasCanonical ? 'pass' : 'fail',
+        detail: hasCanonical ? 'Canonical link tag found.' : 'Missing: <link rel="canonical" href="..."> in <head>.',
+        fix: 'Add <link rel="canonical" href="https://yoursite.com/original-page"> in <head>.'
+      });
+
+      // 5. Charset meta
+      var hasCharset = /<meta[^>]+charset\s*=\s*["']?utf-?8/i.test(html);
+      results.push({
+        id: 'charset',
+        title: 'UTF-8 charset meta',
+        status: hasCharset ? 'pass' : 'fail',
+        detail: hasCharset ? 'UTF-8 charset meta found.' : 'Missing: <meta charset="utf-8"> as first child of <head>.',
+        fix: 'Add <meta charset="utf-8"> as the very first tag inside <head>.'
+      });
+
+      // 6. Viewport meta
+      var hasViewport = /<meta[^>]+name=["']viewport["']/i.test(html);
+      results.push({
+        id: 'viewport',
+        title: 'Viewport meta tag',
+        status: hasViewport ? 'pass' : 'fail',
+        detail: hasViewport ? 'Viewport meta tag found.' : 'Missing: <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">.',
+        fix: 'Add <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1"> in <head>.'
+      });
+
+      // 7. Custom script tags (banned — exclude AMP runtime, AMP components, and JSON-LD)
+      var scriptMatches = html.match(/<script[^>]*>/gi) || [];
+      var customScripts = scriptMatches.filter(function (s) {
+        return !/cdn\.ampproject\.org/i.test(s) &&
+               !/type=["']application\/ld\+json["']/i.test(s) &&
+               !/application\/json/i.test(s);
+      });
+      results.push({
+        id: 'custom-script',
+        title: 'No custom script tags',
+        status: customScripts.length === 0 ? 'pass' : 'fail',
+        detail: customScripts.length === 0
+          ? 'No unauthorized script tags found.'
+          : 'Found ' + customScripts.length + ' banned script tag(s). Custom JavaScript is not allowed in AMP.',
+        fix: 'Remove all custom <script> tags. Use AMP components (amp-bind, amp-form, etc.) for interactivity.'
+      });
+
+      // 8. iframe (banned)
+      var iframeCount = findTag('iframe');
+      results.push({
+        id: 'iframe',
+        title: 'No <iframe> tags',
+        status: iframeCount === 0 ? 'pass' : 'fail',
+        detail: iframeCount === 0 ? 'No banned <iframe> tags found.' : 'Found ' + iframeCount + ' <iframe> tag(s). Use <amp-iframe> instead.',
+        fix: 'Replace <iframe> with <amp-iframe> and add the amp-iframe script: <script async custom-element="amp-iframe" src="https://cdn.ampproject.org/v0/amp-iframe-0.1.js"></script>'
+      });
+
+      // 9. object tag (banned)
+      var objCount = findTag('object');
+      results.push({
+        id: 'object',
+        title: 'No <object> tags',
+        status: objCount === 0 ? 'pass' : 'fail',
+        detail: objCount === 0 ? 'No banned <object> tags found.' : 'Found ' + objCount + ' <object> tag(s). The <object> tag is not allowed in AMP.',
+        fix: 'Remove <object> tags. Use AMP-compliant media components instead.'
+      });
+
+      // 10. embed tag (banned)
+      var embedCount = findTag('embed');
+      results.push({
+        id: 'embed',
+        title: 'No <embed> tags',
+        status: embedCount === 0 ? 'pass' : 'fail',
+        detail: embedCount === 0 ? 'No banned <embed> tags found.' : 'Found ' + embedCount + ' <embed> tag(s). The <embed> tag is not allowed in AMP.',
+        fix: 'Remove <embed> tags. Use amp-video or amp-audio for media content.'
+      });
+
+      // 11. frame/frameset (banned)
+      var frameCount = findTag('frame') + findTag('frameset');
+      results.push({
+        id: 'frame',
+        title: 'No frame/frameset tags',
+        status: frameCount === 0 ? 'pass' : 'fail',
+        detail: frameCount === 0 ? 'No <frame> or <frameset> tags found.' : 'Found ' + frameCount + ' frame tag(s). These are banned in AMP.',
+        fix: 'Remove all <frame> and <frameset> tags. These are deprecated in HTML5 and banned in AMP.'
+      });
+
+      // 12. HTML event attributes (banned)
+      var eventAttrs = ['onclick', 'onmouseover', 'onmouseout', 'onload', 'onerror', 'onchange', 'onsubmit', 'onkeyup', 'onkeydown', 'onfocus', 'onblur'];
+      var foundEvents = eventAttrs.filter(function (a) { return findAttr(a) > 0; });
+      results.push({
+        id: 'events',
+        title: 'No HTML event attributes',
+        status: foundEvents.length === 0 ? 'pass' : 'fail',
+        detail: foundEvents.length === 0 ? 'No inline event attributes found.' : 'Found banned event attributes: ' + foundEvents.join(', ') + '. Use AMP actions/events instead.',
+        fix: 'Replace onclick="fn()" with AMP on="tap:element.action". See AMP actions & events documentation.'
+      });
+
+      // 13. img tag warning (should use amp-img)
+      var imgCount = findTag('img');
+      var ampImgCount = findTag('amp-img');
+      results.push({
+        id: 'img',
+        title: 'Use amp-img instead of img',
+        status: imgCount === 0 ? 'pass' : 'warn',
+        detail: imgCount === 0
+          ? 'No plain <img> tags found' + (ampImgCount > 0 ? ' — ' + ampImgCount + ' <amp-img> found.' : '.')
+          : 'Found ' + imgCount + ' <img> tag(s). AMP requires <amp-img> with explicit width and height attributes.',
+        fix: 'Replace <img src="..." alt="..."> with <amp-img src="..." alt="..." width="600" height="400" layout="responsive"></amp-img>.'
+      });
+
+      // 14. form action warning
+      var formCount = findTag('form');
+      var ampFormCount = findTag('amp-form');
+      var hasFormAction = /<form[^>]+action\s*=/i.test(html) && !/<form[^>]+action-xhr\s*=/i.test(html);
+      if (formCount > 0) {
+        results.push({
+          id: 'form',
+          title: 'Form uses AMP-compatible action',
+          status: hasFormAction ? 'warn' : 'pass',
+          detail: hasFormAction
+            ? 'Found form with action= (non-AJAX). AMP forms should use action-xhr= for async submission.'
+            : formCount + ' form(s) found. Ensure they use action-xhr for async or target="_top" for sync.',
+          fix: 'Replace action="url" with action-xhr="url" for AJAX submission. Add the amp-form component script.'
+        });
+      }
+
+      return results;
+    }
+
+    function renderResults(results) {
+      var errors = results.filter(function (r) { return r.status === 'fail'; }).length;
+      var warns = results.filter(function (r) { return r.status === 'warn'; }).length;
+      var passes = results.filter(function (r) { return r.status === 'pass'; }).length;
+
+      var html = '<div class="amp-summary">';
+      html += '<div class="amp-summary-item"><div class="amp-dot amp-dot-pass"></div>' + passes + ' passed</div>';
+      if (errors > 0) html += '<div class="amp-summary-item"><div class="amp-dot amp-dot-fail"></div>' + errors + ' error' + (errors !== 1 ? 's' : '') + '</div>';
+      if (warns > 0) html += '<div class="amp-summary-item"><div class="amp-dot amp-dot-warn"></div>' + warns + ' warning' + (warns !== 1 ? 's' : '') + '</div>';
+      html += '</div><div class="amp-results">';
+
+      results.forEach(function (r) {
+        var icon = r.status === 'pass' ? '&#10003;' : r.status === 'warn' ? '&#9888;' : '&#10007;';
+        html += '<div class="amp-rule ' + r.status + '">' +
+          '<div class="amp-rule-icon">' + icon + '</div>' +
+          '<div class="amp-rule-body">' +
+          '<div class="amp-rule-title">' + escHtml(r.title) + '</div>' +
+          '<div class="amp-rule-detail">' + escHtml(r.detail) + '</div>' +
+          '</div></div>';
+      });
+      html += '</div>';
+      document.getElementById('resultsPanel').innerHTML = html;
+    }
+
+    function renderFixes(results) {
+      var failed = results.filter(function (r) { return r.status === 'fail' || r.status === 'warn'; });
+      if (failed.length === 0) {
+        document.getElementById('fixPanel').innerHTML = '<div style="color:#10b981;font-size:0.88rem;padding:16px;font-weight:600;">No fixes needed — all checks passed!</div>';
+        return;
+      }
+      var html = '<div class="amp-results">';
+      failed.forEach(function (r) {
+        html += '<div class="amp-rule ' + r.status + '">' +
+          '<div class="amp-rule-icon">' + (r.status === 'warn' ? '&#9888;' : '&#10007;') + '</div>' +
+          '<div class="amp-rule-body">' +
+          '<div class="amp-rule-title">' + escHtml(r.title) + '</div>' +
+          '<div class="amp-rule-detail"><strong>Fix:</strong> ' + escHtml(r.fix || r.detail) + '</div>' +
+          '</div></div>';
+      });
+      html += '</div>';
+      document.getElementById('fixPanel').innerHTML = html;
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+  })();
+  </script>
+</body>
+</html>

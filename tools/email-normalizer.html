@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Email List Normalizer — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Clean and deduplicate email lists online. Strip Gmail dots and plus aliases, lowercase, validate format, and remove duplicates. Free email normalizer tool. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/email-normalizer.html">
+  <meta property="og:title" content="Email List Normalizer — ThisDevTool">
+  <meta property="og:description" content="Free online email list cleaner. Deduplicate, strip Gmail dots/plus aliases, lowercase, and validate email format. Paste your list and download clean results.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/email-normalizer.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Email List Normalizer",
+    "url": "https://thisdevtool.com/tools/email-normalizer.html",
+    "description": "Deduplicate and normalize email lists. Strip Gmail dots and plus aliases, lowercase all addresses, validate format, and remove duplicates. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Gmail dot aliasing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Gmail ignores dots in the local part of an email address. So john.doe@gmail.com, johndoe@gmail.com, and j.o.h.n.d.o.e@gmail.com all deliver to the same inbox. This means a user can sign up multiple times using dot variants of their address. This tool removes dots from the local part of Gmail addresses to normalize them."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Gmail plus aliasing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Gmail supports subaddressing with the plus sign: anything after a '+' in the local part is ignored for delivery. So john+newsletter@gmail.com and john+offers@gmail.com both deliver to john@gmail.com. This is commonly used to create throw-away addresses, filter emails, or abuse free trials. This tool strips the plus alias suffix."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which email providers support plus aliasing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Gmail, Outlook/Hotmail, Yahoo Mail, ProtonMail, Fastmail, and many others support plus aliasing (subaddressing). The RFC 5321 specification permits it, and most major providers have implemented it. However, some providers allow plus signs as part of the address without treating them as aliases."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does Compare mode do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Compare mode accepts two email lists (A and B) and shows emails that are in A only, in B only, and in both lists. This is useful for finding subscribers who unsubscribed, comparing import files, or identifying overlap between customer segments."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my email list data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All processing happens entirely in your browser using JavaScript. Your email addresses never leave your device. There is no server, no logging, and no data storage of any kind. You can use this tool safely with sensitive contact lists."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .opt-row { display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; margin-bottom:0.75rem; }
+    .opt-row label { display:flex; align-items:center; gap:0.35rem; font-size:0.85rem; cursor:pointer; }
+    .opt-row input[type=checkbox] { width:15px; height:15px; cursor:pointer; }
+    .stats-row { display:flex; flex-wrap:wrap; gap:0.75rem; margin-top:0.75rem; }
+    .stat-card { background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:0.6rem 1rem; flex:1; min-width:100px; text-align:center; }
+    .stat-card .stat-val { font-size:1.5rem; font-weight:700; color:#10b981; }
+    .stat-card .stat-label { font-size:0.75rem; color:var(--text-muted); margin-top:0.1rem; }
+    .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem; }
+    @media (max-width:640px) { .compare-grid { grid-template-columns:1fr; } }
+    .compare-grid textarea { width:100%; padding:0.5rem; border:1px solid var(--border); border-radius:8px; background:var(--bg-secondary); color:var(--text); font-size:0.85rem; resize:vertical; }
+    .compare-results { display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.5rem; margin-top:0.75rem; }
+    @media (max-width:640px) { .compare-results { grid-template-columns:1fr; } }
+    .compare-col { background:var(--bg-secondary); border:1px solid var(--border); border-radius:8px; padding:0.6rem; }
+    .compare-col h4 { font-size:0.8rem; margin:0 0 0.4rem; color:var(--text-muted); }
+    .compare-col ul { list-style:none; padding:0; margin:0; max-height:200px; overflow-y:auto; }
+    .compare-col ul li { font-size:0.78rem; font-family:monospace; padding:0.2rem 0; border-bottom:1px solid var(--border); word-break:break-all; }
+    .invalid-list { list-style:none; padding:0; margin-top:0.5rem; }
+    .invalid-list li { font-size:0.8rem; font-family:monospace; color:#ef4444; padding:0.2rem 0; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/list-deduper.html">List Deduper</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Email List Normalizer</h1>
+          <p class="tool-subtitle">Paste a list of email addresses to deduplicate, strip Gmail dots and plus aliases, lowercase, and validate format. Download the cleaned list.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="normalize">Normalize</button>
+            <button class="option-chip" data-mode="validate">Validate</button>
+            <button class="option-chip" data-mode="compare">Compare</button>
+          </div>
+
+          <!-- Normalize / Validate mode -->
+          <div id="normalizePanel">
+            <div class="opt-row" id="optionsRow">
+              <label><input type="checkbox" id="optLowercase" checked> Lowercase</label>
+              <label><input type="checkbox" id="optDedup" checked> Deduplicate</label>
+              <label><input type="checkbox" id="optGmailDots" checked> Strip Gmail dots</label>
+              <label><input type="checkbox" id="optGmailPlus" checked> Strip plus aliases</label>
+              <label><input type="checkbox" id="optRemoveInvalid"> Remove invalid</label>
+            </div>
+
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Input (one email per line)</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                    <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                  </div>
+                </div>
+                <textarea id="emailInput" rows="14" placeholder="Paste emails here, one per line:&#10;john.doe@gmail.com&#10;JANE+news@gmail.com&#10;user@example.com" spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Cleaned Output</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                  </div>
+                </div>
+                <div class="code-output" id="emailOutput" style="min-height:300px;"></div>
+              </div>
+            </div>
+
+            <div class="stats-row" id="statsRow" style="display:none;">
+              <div class="stat-card"><div class="stat-val" id="statTotal">0</div><div class="stat-label">Total input</div></div>
+              <div class="stat-card"><div class="stat-val" id="statClean">0</div><div class="stat-label">After clean</div></div>
+              <div class="stat-card"><div class="stat-val" id="statDupes">0</div><div class="stat-label">Duplicates removed</div></div>
+              <div class="stat-card"><div class="stat-val" id="statInvalid">0</div><div class="stat-label">Invalid format</div></div>
+            </div>
+
+            <div id="invalidListDiv" style="display:none;">
+              <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.75rem;">Invalid addresses detected:</p>
+              <ul class="invalid-list" id="invalidList"></ul>
+            </div>
+          </div>
+
+          <!-- Compare mode -->
+          <div id="comparePanel" style="display:none;">
+            <div class="compare-grid">
+              <div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem;">List A</div>
+                <textarea id="compareA" rows="10" placeholder="Paste list A emails here..." spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem;">List B</div>
+                <textarea id="compareB" rows="10" placeholder="Paste list B emails here..." spellcheck="false"></textarea>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="compareBtn">Compare Lists</button>
+            <div class="compare-results" id="compareResults" style="display:none;">
+              <div class="compare-col">
+                <h4>Only in A (<span id="countA">0</span>)</h4>
+                <ul id="listOnlyA"></ul>
+              </div>
+              <div class="compare-col">
+                <h4>In both (<span id="countBoth">0</span>)</h4>
+                <ul id="listBoth"></ul>
+              </div>
+              <div class="compare-col">
+                <h4>Only in B (<span id="countB">0</span>)</h4>
+                <ul id="listOnlyB"></ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a list of email addresses to normalize and deduplicate.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Email Normalizer</h2>
+          <ol>
+            <li><strong>Paste your email list</strong> — one email per line in the input area. The tool also handles comma-separated and semicolon-separated lists.</li>
+            <li><strong>Choose normalization options</strong> — toggle Lowercase, Deduplicate, Strip Gmail dots, Strip plus aliases, and Remove invalid as needed.</li>
+            <li><strong>View results</strong> — the cleaned list appears on the right with statistics showing how many duplicates and invalid addresses were found.</li>
+            <li><strong>Copy or download</strong> — use the buttons to export your cleaned list.</li>
+          </ol>
+
+          <h2>Why Normalize Email Lists?</h2>
+          <p>Raw email lists collected from forms, spreadsheets, CRMs, or data exports frequently contain duplicates, case variations, and format inconsistencies that can cause problems when importing into email marketing platforms, databases, or analytics systems. Duplicate emails result in the same person receiving multiple copies of your emails, which increases unsubscribe rates and spam complaints. Case inconsistencies (User@Gmail.com vs user@gmail.com) cause duplicate entries when email addresses are used as unique identifiers or primary keys.</p>
+
+          <h3>Gmail Dot Aliasing</h3>
+          <p>Gmail treats dots in the local part of an address as insignificant. The addresses john.doe@gmail.com, johndoe@gmail.com, and j.o.h.n.d.o.e@gmail.com all deliver to the same inbox. Users who want to create multiple accounts with slight variations often exploit this. When building a list of unique users, you need to normalize Gmail addresses by removing all dots from the local part. This tool applies that normalization only to Gmail domains (gmail.com and googlemail.com) since dots are meaningful for other providers.</p>
+
+          <h3>Plus Aliasing (Subaddressing)</h3>
+          <p>Email subaddressing (RFC 5321) allows adding a "+tag" suffix to the local part: john+newsletter@gmail.com delivers to john@gmail.com. This feature is supported by Gmail, Outlook, Yahoo, ProtonMail, Fastmail, and many others. While it is a legitimate way to filter emails, it is also commonly used to sign up for free trials multiple times or to create multiple accounts. Stripping the plus suffix normalizes these aliases back to their canonical form.</p>
+
+          <h3>Email Validation</h3>
+          <p>The Validate mode checks each address against a standard email format regex (RFC 5322-compliant pattern). It identifies addresses that are clearly invalid due to missing @ symbols, missing domains, invalid characters, or other format errors. Note that format validation cannot determine if an address is active or if the mailbox exists — for that, you would need SMTP verification, which requires a server. Related tools: <a href="/tools/list-deduper.html">List Deduper</a>, <a href="/tools/word-counter.html">Word Counter</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is Gmail dot aliasing?</button>
+            <div class="faq-answer">Gmail ignores dots in the local part. So john.doe@gmail.com, johndoe@gmail.com, and j.o.h.n.d.o.e@gmail.com all go to the same inbox. This tool removes dots from Gmail local parts to normalize them to a canonical form.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is Gmail plus aliasing?</button>
+            <div class="faq-answer">Gmail (and many other providers) ignore everything after a "+" in the local part. So john+newsletter@gmail.com and john+offers@gmail.com both deliver to john@gmail.com. This tool strips the plus alias suffix to reveal the canonical address.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Which email providers support plus aliasing?</button>
+            <div class="faq-answer">Gmail, Outlook/Hotmail, Yahoo Mail, ProtonMail, Fastmail, and many others support plus aliasing (subaddressing). The RFC 5321 specification permits it and most major providers have implemented it.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does Compare mode do?</button>
+            <div class="faq-answer">Compare mode accepts two email lists and shows emails in A only, in B only, and in both. Useful for finding subscribers who unsubscribed, comparing import files, or identifying overlap between customer segments.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my email list data sent to a server?</button>
+            <div class="faq-answer">No. All processing happens entirely in your browser. Your email addresses never leave your device. There is no server, no logging, and no data storage of any kind.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/email-normalizer.html">Email Normalizer</a>
+        <a href="/tools/list-deduper.html">List Deduper</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/slug-normalizer.html">Slug Normalizer</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/csv-json.html">CSV ↔ JSON</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/email-signature.html">Email Signature</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var currentMode = 'normalize';
+    var statusBar = document.getElementById('statusBar');
+    var emailInput = document.getElementById('emailInput');
+    var emailOutput = document.getElementById('emailOutput');
+
+    var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    var GMAIL_DOMAINS = ['gmail.com', 'googlemail.com'];
+
+    var EXAMPLE = [
+      'John.Doe@gmail.com',
+      'john.doe@gmail.com',
+      'johndoe@gmail.com',
+      'john+newsletter@gmail.com',
+      'JANE@example.com',
+      'jane@example.com',
+      'bob@company.org',
+      'invalid-email',
+      'also@invalid',
+      'good@domain.co.uk',
+      'duplicate@test.com',
+      'Duplicate@Test.com'
+    ].join('\n');
+
+    function parseEmails(raw) {
+      // Split on newlines, commas, semicolons
+      return raw.split(/[\n,;]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+    }
+
+    function normalizeEmail(email) {
+      var lower = email.toLowerCase().trim();
+      var parts = lower.split('@');
+      if (parts.length !== 2) return lower;
+      var local = parts[0];
+      var domain = parts[1];
+
+      // Strip plus alias if option enabled
+      if (document.getElementById('optGmailPlus').checked) {
+        local = local.replace(/\+.*$/, '');
+      }
+
+      // Strip dots only for Gmail domains
+      if (document.getElementById('optGmailDots').checked && GMAIL_DOMAINS.indexOf(domain) !== -1) {
+        local = local.replace(/\./g, '');
+      }
+
+      return local + '@' + domain;
+    }
+
+    function isValidEmail(email) {
+      return EMAIL_RE.test(email);
+    }
+
+    function process() {
+      var raw = emailInput.value.trim();
+      var statsRow = document.getElementById('statsRow');
+      var invalidListDiv = document.getElementById('invalidListDiv');
+      if (!raw) {
+        emailOutput.textContent = '';
+        statsRow.style.display = 'none';
+        invalidListDiv.style.display = 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste a list of email addresses to normalize and deduplicate.';
+        return;
+      }
+
+      var emails = parseEmails(raw);
+      var total = emails.length;
+      var invalid = [];
+      var processed = [];
+
+      emails.forEach(function (e) {
+        var norm = document.getElementById('optLowercase').checked ? e.toLowerCase().trim() : e.trim();
+        if (currentMode === 'normalize' || currentMode === 'validate') {
+          norm = normalizeEmail(e);
+        }
+        if (!isValidEmail(norm)) {
+          invalid.push(e);
+          if (document.getElementById('optRemoveInvalid') && document.getElementById('optRemoveInvalid').checked) return;
+        }
+        processed.push(norm);
+      });
+
+      // Deduplicate
+      var dupeCount = 0;
+      var result = processed;
+      if (document.getElementById('optDedup').checked) {
+        var seen = {};
+        result = processed.filter(function (e) {
+          var key = e.toLowerCase();
+          if (seen[key]) { dupeCount++; return false; }
+          seen[key] = true; return true;
+        });
+      }
+
+      emailOutput.textContent = result.join('\n');
+
+      // Stats
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statClean').textContent = result.length;
+      document.getElementById('statDupes').textContent = dupeCount;
+      document.getElementById('statInvalid').textContent = invalid.length;
+      statsRow.style.display = 'flex';
+
+      if (invalid.length > 0 && currentMode === 'validate') {
+        document.getElementById('invalidList').innerHTML = invalid.map(function (e) {
+          return '<li>' + escHtml(e) + '</li>';
+        }).join('');
+        invalidListDiv.style.display = 'block';
+      } else {
+        invalidListDiv.style.display = 'none';
+      }
+
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Cleaned ' + total + ' emails \u2014 ' + dupeCount + ' duplicates removed \u2014 ' + invalid.length + ' invalid';
+      if (DT && DT.trackTool) DT.trackTool('email-normalizer');
+    }
+
+    function compareEmails() {
+      var rawA = document.getElementById('compareA').value;
+      var rawB = document.getElementById('compareB').value;
+      var aList = parseEmails(rawA).map(function (e) { return e.toLowerCase().trim(); }).filter(isValidEmail);
+      var bList = parseEmails(rawB).map(function (e) { return e.toLowerCase().trim(); }).filter(isValidEmail);
+      var setA = {};
+      var setB = {};
+      aList.forEach(function (e) { setA[e] = true; });
+      bList.forEach(function (e) { setB[e] = true; });
+
+      var onlyA = aList.filter(function (e) { return !setB[e]; });
+      var onlyB = bList.filter(function (e) { return !setA[e]; });
+      var both = aList.filter(function (e) { return setB[e]; });
+
+      function renderList(id, arr) {
+        document.getElementById(id).innerHTML = arr.map(function (e) {
+          return '<li>' + escHtml(e) + '</li>';
+        }).join('') || '<li style="color:var(--text-muted)">None</li>';
+      }
+
+      document.getElementById('countA').textContent = onlyA.length;
+      document.getElementById('countBoth').textContent = both.length;
+      document.getElementById('countB').textContent = onlyB.length;
+      renderList('listOnlyA', onlyA);
+      renderList('listBoth', both);
+      renderList('listOnlyB', onlyB);
+      document.getElementById('compareResults').style.display = 'grid';
+
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'A only: ' + onlyA.length + ' \u2014 Both: ' + both.length + ' \u2014 B only: ' + onlyB.length;
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.option-chip').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+      document.getElementById('normalizePanel').style.display = (mode === 'normalize' || mode === 'validate') ? '' : 'none';
+      document.getElementById('comparePanel').style.display = mode === 'compare' ? '' : 'none';
+      var optRemove = document.getElementById('optRemoveInvalid').parentElement;
+      optRemove.style.display = mode === 'validate' ? '' : 'none';
+      if (mode !== 'compare') process();
+      else { statusBar.className = 'status-bar info'; statusBar.textContent = 'Paste two email lists to compare them.'; }
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function (b) {
+      b.addEventListener('click', function () { setMode(b.dataset.mode); });
+    });
+
+    emailInput.addEventListener('input', DT ? DT.debounce(process, 250) : process);
+    document.querySelectorAll('#optionsRow input').forEach(function (cb) {
+      cb.addEventListener('change', process);
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () { emailInput.value = EXAMPLE; process(); });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      emailInput.value = ''; emailOutput.textContent = '';
+      document.getElementById('statsRow').style.display = 'none';
+      document.getElementById('invalidListDiv').style.display = 'none';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Paste a list of email addresses to normalize and deduplicate.';
+    });
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      if (DT && DT.copyToClipboard) DT.copyToClipboard(emailOutput.textContent, document.getElementById('copyBtn'));
+      else navigator.clipboard && navigator.clipboard.writeText(emailOutput.textContent);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      if (DT && DT.downloadText) DT.downloadText(emailOutput.textContent, 'emails-clean.txt', 'text/plain');
+    });
+    document.getElementById('compareBtn').addEventListener('click', compareEmails);
+
+    // Hide remove-invalid option initially
+    document.getElementById('optRemoveInvalid').parentElement.style.display = 'none';
+    process();
+  })();
+  </script>
+</body>
+</html>

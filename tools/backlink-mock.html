@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Backlink Profile Dashboard — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Visualize your backlink profile from CSV data. Import domain authority scores and link types to see distribution charts, breakdowns, and top referring domains.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/backlink-mock.html">
+  <meta property="og:title" content="Backlink Profile Dashboard — ThisDevTool">
+  <meta property="og:description" content="Free backlink profile visualizer. Paste CSV data to see domain authority distribution, link type breakdown, and top referring domains.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/backlink-mock.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Backlink Profile Dashboard",
+    "url": "https://thisdevtool.com/tools/backlink-mock.html",
+    "description": "Visualize backlink profile data from CSV. See domain authority distribution, link type breakdown, and top referring domains.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a backlink profile?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A backlink profile is the complete collection of external links pointing to your website. It includes the number of links, the domain authority of linking sites, the anchor text used, and whether links are dofollow or nofollow. A healthy backlink profile has links from high-authority, relevant domains using varied, natural anchor text."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What CSV format does this tool accept?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool expects a CSV with three columns: domain (the referring domain), authority (a numeric score from 0-100), and type (dofollow, nofollow, or sponsored). A header row is optional. Example row: example.com,45,dofollow"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is domain authority?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Domain Authority (DA) is a search engine ranking score developed by Moz that predicts how likely a website is to rank in search engine results. It scores on a logarithmic scale from 1 to 100. Higher scores mean greater authority. Tools like Ahrefs (Domain Rating), SEMrush (Authority Score), and Moz (Domain Authority) each have their own metrics but all measure similar concepts."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between dofollow and nofollow links?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A dofollow link passes PageRank (link equity) from the linking site to your site, directly contributing to your search rankings. A nofollow link includes rel='nofollow' and historically passed no link equity, though Google now treats it as a hint. Nofollow links still drive referral traffic and add diversity to your backlink profile. A natural profile contains a mix of both."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my backlink data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool runs 100% in your browser. Your CSV data is parsed locally using JavaScript and never transmitted to any server. There is no storage, no logging, and no data collection of any kind."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .bl-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .bl-stat-card {
+      background: var(--bg-secondary, #f8fafc);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .bl-stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #10b981;
+      line-height: 1.2;
+    }
+    .bl-stat-label {
+      font-size: 0.72rem;
+      color: var(--text-secondary, #64748b);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .bl-chart-section { margin: 20px 0; }
+    .bl-chart-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary, #64748b);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 10px;
+    }
+    .bl-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 7px;
+      font-size: 0.82rem;
+    }
+    .bl-bar-label { width: 80px; flex-shrink: 0; color: var(--text-secondary, #64748b); text-align: right; }
+    .bl-bar-track { flex: 1; background: var(--border, #e2e8f0); border-radius: 4px; height: 18px; overflow: hidden; }
+    .bl-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; background: #10b981; }
+    .bl-bar-count { width: 36px; flex-shrink: 0; color: var(--text-secondary, #64748b); font-size: 0.78rem; }
+    .bl-type-dofollow { background: #10b981; }
+    .bl-type-nofollow { background: #6366f1; }
+    .bl-type-sponsored { background: #f59e0b; }
+    .bl-type-ugc { background: #ec4899; }
+    .bl-type-other { background: #94a3b8; }
+    .bl-table-wrap { overflow-x: auto; margin-top: 6px; }
+    .bl-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .bl-table th {
+      background: var(--bg-secondary, #f1f5f9);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-secondary, #64748b);
+      border-bottom: 2px solid var(--border, #e2e8f0);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .bl-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border, #e2e8f0);
+      color: var(--text, #1e293b);
+    }
+    .bl-table tr:hover td { background: var(--bg-secondary, #f8fafc); }
+    .da-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .da-high { background: #10b981; }
+    .da-mid { background: #f59e0b; }
+    .da-low { background: #ef4444; }
+    .bl-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+    .bl-legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.78rem; }
+    .bl-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .bl-viz-panels { display: flex; flex-direction: column; gap: 20px; }
+    @media (min-width: 700px) {
+      .bl-viz-panels { flex-direction: row; }
+      .bl-viz-panels > div { flex: 1; }
+    }
+    .export-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/meta-tag-generator.html">Meta Tags</a>
+        <a href="/tools/serp-preview.html">SERP Preview</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Backlink Profile Dashboard</h1>
+          <p class="tool-subtitle">Paste CSV data (domain, authority score, link type) to visualize your backlink profile with charts and tables.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="import">Import</button>
+            <button class="option-chip" data-mode="visualize">Visualize</button>
+            <button class="option-chip" data-mode="export">Export</button>
+          </div>
+
+          <!-- Import Panel -->
+          <div id="panel-import">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>CSV Input (domain, authority, type)</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                    <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                  </div>
+                </div>
+                <textarea id="csvInput" rows="16" placeholder="domain,authority,type&#10;ahrefs.com,92,dofollow&#10;reddit.com,91,nofollow&#10;medium.com,88,dofollow&#10;..." spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Parse Preview</span>
+                  <button class="btn btn-sm btn-primary" id="importBtn">Import &amp; Visualize</button>
+                </div>
+                <div class="code-output" id="parsePreview" style="min-height:340px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visualize Panel -->
+          <div id="panel-visualize" style="display:none;">
+            <div id="statsRow" class="bl-stats-grid"></div>
+            <div class="bl-viz-panels">
+              <div class="bl-chart-section">
+                <div class="bl-chart-title">Domain Authority Distribution</div>
+                <div id="daDistChart"></div>
+              </div>
+              <div class="bl-chart-section">
+                <div class="bl-chart-title">Link Type Breakdown</div>
+                <div id="typeChart"></div>
+                <div id="typeLegend" class="bl-legend"></div>
+              </div>
+            </div>
+            <div class="bl-chart-section">
+              <div class="bl-chart-title">Top Referring Domains</div>
+              <div class="bl-table-wrap">
+                <table class="bl-table" id="domainsTable">
+                  <thead>
+                    <tr><th>#</th><th>Domain</th><th>Authority</th><th>Type</th></tr>
+                  </thead>
+                  <tbody id="domainsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Export Panel -->
+          <div id="panel-export" style="display:none;">
+            <div class="pane-label"><span>Export Options</span></div>
+            <div class="export-row">
+              <button class="btn btn-primary" id="exportCsvBtn">Download CSV</button>
+              <button class="btn btn-secondary" id="exportJsonBtn">Download JSON</button>
+              <button class="btn btn-secondary" id="copyJsonBtn">Copy JSON</button>
+            </div>
+            <div class="code-output" id="exportPreview" style="min-height:200px; margin-top:12px;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste CSV data above then click "Import &amp; Visualize".
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Backlink Profile Dashboard</h2>
+          <ol>
+            <li><strong>Prepare your CSV</strong> — export backlink data from Ahrefs, SEMrush, Moz, or any SEO tool. The tool expects three columns: <code>domain</code> (referring domain), <code>authority</code> (numeric DA/DR/AS score, 0–100), and <code>type</code> (dofollow, nofollow, or sponsored).</li>
+            <li><strong>Paste the CSV</strong> — click "Try Example" to see the format, or paste your own data into the input area.</li>
+            <li><strong>Click Import &amp; Visualize</strong> — the dashboard will parse your CSV, calculate statistics, and render distribution charts.</li>
+            <li><strong>Switch to Visualize</strong> — use the option chips to jump directly to charts and the top-domains table.</li>
+            <li><strong>Export</strong> — download cleaned CSV or JSON, or copy to clipboard for use in spreadsheets.</li>
+          </ol>
+
+          <h2>Understanding Your Backlink Profile</h2>
+          <p>A backlink profile is the complete picture of all external links pointing to your website. Search engines like Google use backlinks as one of their strongest ranking signals — links from authoritative, relevant sites signal that your content is trustworthy and worth ranking. However, not all backlinks are created equal. A single link from a high-authority domain (DA 80+) can outweigh hundreds of links from low-authority spam sites.</p>
+
+          <h3>Domain Authority Distribution</h3>
+          <p>The DA distribution chart breaks your backlinks into five buckets: Low (0–20), Below Average (21–40), Average (41–60), Good (61–80), and Excellent (81–100). A healthy profile for a mature site typically has a bell curve slightly skewed toward the higher end. If most of your links come from low-DA domains, it may indicate link spam or an early-stage site that has not yet earned editorial links from authoritative sources. Over time, as you publish high-quality content and earn mentions from industry publications and directories, your DA distribution will shift right.</p>
+
+          <h3>Link Type Analysis</h3>
+          <p>The link type breakdown distinguishes dofollow links (which pass PageRank and directly influence rankings) from nofollow links (which historically did not, though Google now treats the attribute as a hint). A natural backlink profile contains a mix of both — typically 60–70% dofollow and 30–40% nofollow. A profile with 100% dofollow links can look manipulated to search engines, suggesting paid links or link schemes. Sponsored links use <code>rel="sponsored"</code> to disclose paid placements, and UGC (User Generated Content) links come from comments, forums, and community posts.</p>
+
+          <h3>Top Referring Domains</h3>
+          <p>The top referring domains table ranks backlinks by authority score, showing which high-value sites link to you. When analyzing this list, look for: domain relevance (links from topically related sites carry more weight than random links), link placement (editorial links in body content are stronger than footer or sidebar links), and link velocity (a sudden spike in new high-DA links can look unnatural). Use this table to identify your strongest link-building wins and to prioritize future outreach targets.</p>
+
+          <h3>Exporting and Sharing Data</h3>
+          <p>The Export panel lets you download your parsed and cleaned backlink data as CSV (for spreadsheets) or JSON (for programmatic use). This is useful for tracking changes over time, sharing with teammates, or importing into other SEO workflows. Since this tool runs entirely in your browser, your data stays private — it is never sent to a server or stored anywhere outside your local machine.</p>
+
+          <h3>Related SEO Tools</h3>
+          <p>For a complete SEO workflow, pair this dashboard with our <a href="/tools/meta-tag-generator.html">Meta Tag Generator</a> to optimize on-page SEO, the <a href="/tools/serp-preview.html">SERP Preview</a> to see how your pages appear in search results, and the <a href="/tools/canonical-checker.html">Canonical Checker</a> to ensure your canonicals are correctly configured. Building a strong backlink profile is one of the most effective long-term SEO strategies — focus on earning links naturally through high-quality content, original research, and genuine relationships with other site owners in your niche.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a backlink profile?</button>
+            <div class="faq-answer">A backlink profile is the complete collection of external links pointing to your website. It includes the number of links, the domain authority of linking sites, the anchor text used, and whether links are dofollow or nofollow. A healthy backlink profile has links from high-authority, relevant domains using varied, natural anchor text.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What CSV format does this tool accept?</button>
+            <div class="faq-answer">The tool expects a CSV with three columns: domain (the referring domain), authority (a numeric score from 0–100), and type (dofollow, nofollow, or sponsored). A header row is optional. Example row: example.com,45,dofollow</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is domain authority?</button>
+            <div class="faq-answer">Domain Authority (DA) is a search engine ranking score that predicts how likely a website is to rank in search results. It scores on a logarithmic scale from 1 to 100. Tools like Ahrefs (Domain Rating), SEMrush (Authority Score), and Moz (Domain Authority) each have their own metrics but all measure similar concepts of site credibility.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between dofollow and nofollow links?</button>
+            <div class="faq-answer">A dofollow link passes PageRank (link equity) from the linking site to your site, directly contributing to your search rankings. A nofollow link includes rel="nofollow" and historically passed no link equity. Nofollow links still drive referral traffic and add diversity to your backlink profile. A natural profile contains a mix of both.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my backlink data sent to a server?</button>
+            <div class="faq-answer">No. This tool runs 100% in your browser. Your CSV data is parsed locally using JavaScript and never transmitted to any server. There is no storage, no logging, and no data collection of any kind.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>SEO Tools</h4>
+        <a href="/tools/meta-tag-generator.html">Meta Tag Generator</a>
+        <a href="/tools/serp-preview.html">SERP Preview</a>
+        <a href="/tools/robots-txt.html">Robots.txt Generator</a>
+        <a href="/tools/canonical-checker.html">Canonical Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/voice-search-suggester.html">Voice Search Keywords</a>
+        <a href="/tools/utm-builder.html">UTM Builder</a>
+        <a href="/tools/og-preview.html">OG Preview</a>
+        <a href="/tools/schema-generator.html">Schema Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var csvInput = document.getElementById('csvInput');
+    var parsePreview = document.getElementById('parsePreview');
+    var statusBar = document.getElementById('statusBar');
+    var currentMode = 'import';
+    var parsedData = [];
+
+    var EXAMPLE_CSV = 'domain,authority,type\nahrefs.com,92,dofollow\nreddit.com,91,nofollow\nmedium.com,88,dofollow\ngithub.com,96,dofollow\nhackernews.com,82,nofollow\ndev.to,85,dofollow\nsmashingmagazine.com,78,dofollow\ncss-tricks.com,74,dofollow\nwebdesignerdepot.com,68,dofollow\nsitepoint.com,72,dofollow\ncodrops.com,65,dofollow\ntechcrunch.com,93,nofollow\nproducthunt.com,89,dofollow\nindiemakers.co,42,dofollow\nnews.ycombinator.com,90,nofollow\ntwitter.com,99,nofollow\nlinkedin.com,98,nofollow\nblogspot.com,77,nofollow\nwordpress.com,96,dofollow\nmedium.com,88,nofollow\nquora.com,92,nofollow\nstackoverflow.com,96,dofollow\nfreecodecamp.org,86,dofollow\nw3schools.com,89,dofollow\nmdn.io,88,dofollow\nnpm.js.com,82,dofollow\ngitlab.com,91,dofollow\nbitbucket.org,83,dofollow\ncodepen.io,84,dofollow\nrepl.it,70,dofollow\nglitch.com,72,dofollow\nvercel.com,85,dofollow\nnetlify.com,86,dofollow\nheroku.com,88,dofollow\ndigitalocean.com,87,dofollow\nvultr.com,73,sponsored\nlinode.com,75,dofollow\ncloudflare.com,91,dofollow\nawsdocs.amazon.com,95,nofollow\ndocs.microsoft.com,96,nofollow\nblogmyway.co,18,dofollow\nspamlinks.ru,8,dofollow\nfreelinks99.com,5,dofollow\n';
+
+    // Mode chip switching
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        document.getElementById('panel-import').style.display = currentMode === 'import' ? '' : 'none';
+        document.getElementById('panel-visualize').style.display = currentMode === 'visualize' ? '' : 'none';
+        document.getElementById('panel-export').style.display = currentMode === 'export' ? '' : 'none';
+        if (currentMode === 'visualize' && parsedData.length > 0) renderViz();
+        if (currentMode === 'export' && parsedData.length > 0) renderExport();
+      });
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      csvInput.value = EXAMPLE_CSV;
+      livePreview();
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      csvInput.value = '';
+      parsePreview.textContent = '';
+      parsedData = [];
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Paste CSV data above then click "Import & Visualize".';
+    });
+
+    csvInput.addEventListener('input', DT.debounce(livePreview, 200));
+
+    function parseCSV(text) {
+      var lines = text.trim().split('\n');
+      var rows = [];
+      lines.forEach(function (line, idx) {
+        var parts = line.split(',');
+        if (parts.length < 2) return;
+        var domain = (parts[0] || '').trim().toLowerCase();
+        var auth = parseInt((parts[1] || '').trim(), 10);
+        var type = (parts[2] || 'dofollow').trim().toLowerCase();
+        if (!domain || isNaN(auth)) return;
+        if (idx === 0 && (domain === 'domain' || isNaN(parseInt(domain)))) return; // skip header
+        rows.push({ domain: domain, authority: Math.min(100, Math.max(0, auth)), type: type });
+      });
+      return rows;
+    }
+
+    function livePreview() {
+      var raw = csvInput.value.trim();
+      if (!raw) { parsePreview.textContent = ''; return; }
+      var rows = parseCSV(raw);
+      if (rows.length === 0) {
+        parsePreview.textContent = 'No valid rows found. Check CSV format.';
+        return;
+      }
+      var preview = rows.slice(0, 20).map(function (r) {
+        return r.domain + '  |  DA:' + r.authority + '  |  ' + r.type;
+      }).join('\n');
+      if (rows.length > 20) preview += '\n... and ' + (rows.length - 20) + ' more rows';
+      parsePreview.textContent = preview;
+    }
+
+    document.getElementById('importBtn').addEventListener('click', function () {
+      var raw = csvInput.value.trim();
+      if (!raw) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Paste CSV data first.';
+        return;
+      }
+      parsedData = parseCSV(raw);
+      if (parsedData.length === 0) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'No valid rows found. Expected format: domain,authority,type';
+        return;
+      }
+      var avgDA = Math.round(parsedData.reduce(function (s, r) { return s + r.authority; }, 0) / parsedData.length);
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = parsedData.length + ' backlinks imported — Avg DA: ' + avgDA;
+      // Switch to visualize
+      document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      document.querySelector('[data-mode="visualize"]').classList.add('active');
+      currentMode = 'visualize';
+      document.getElementById('panel-import').style.display = 'none';
+      document.getElementById('panel-visualize').style.display = '';
+      document.getElementById('panel-export').style.display = 'none';
+      renderViz();
+      DT.trackTool('backlink-mock');
+    });
+
+    function renderViz() {
+      if (parsedData.length === 0) return;
+      var total = parsedData.length;
+      var avgDA = Math.round(parsedData.reduce(function (s, r) { return s + r.authority; }, 0) / total);
+      var maxDA = Math.max.apply(null, parsedData.map(function (r) { return r.authority; }));
+      var dofollow = parsedData.filter(function (r) { return r.type === 'dofollow'; }).length;
+
+      // Stats
+      document.getElementById('statsRow').innerHTML =
+        statCard(total, 'Total Backlinks') +
+        statCard(avgDA, 'Avg. Authority') +
+        statCard(maxDA, 'Max Authority') +
+        statCard(dofollow, 'Dofollow') +
+        statCard(total - dofollow, 'Nofollow/Other');
+
+      // DA distribution
+      var daBuckets = [
+        { label: '81-100', min: 81, max: 100, color: '#10b981' },
+        { label: '61-80',  min: 61, max: 80,  color: '#34d399' },
+        { label: '41-60',  min: 41, max: 60,  color: '#f59e0b' },
+        { label: '21-40',  min: 21, max: 40,  color: '#f97316' },
+        { label: '0-20',   min: 0,  max: 20,  color: '#ef4444' }
+      ];
+      var maxBucket = 0;
+      daBuckets.forEach(function (b) {
+        b.count = parsedData.filter(function (r) { return r.authority >= b.min && r.authority <= b.max; }).length;
+        if (b.count > maxBucket) maxBucket = b.count;
+      });
+      var daHtml = '';
+      daBuckets.forEach(function (b) {
+        var pct = maxBucket > 0 ? Math.round((b.count / maxBucket) * 100) : 0;
+        daHtml += '<div class="bl-bar-row">' +
+          '<span class="bl-bar-label">DA ' + b.label + '</span>' +
+          '<div class="bl-bar-track"><div class="bl-bar-fill" style="width:' + pct + '%;background:' + b.color + '"></div></div>' +
+          '<span class="bl-bar-count">' + b.count + '</span>' +
+          '</div>';
+      });
+      document.getElementById('daDistChart').innerHTML = daHtml;
+
+      // Link type
+      var typeMap = {};
+      parsedData.forEach(function (r) {
+        typeMap[r.type] = (typeMap[r.type] || 0) + 1;
+      });
+      var typeColors = { dofollow: '#10b981', nofollow: '#6366f1', sponsored: '#f59e0b', ugc: '#ec4899' };
+      var typeHtml = '';
+      var legendHtml = '';
+      var maxType = Math.max.apply(null, Object.values(typeMap));
+      Object.entries(typeMap).sort(function (a, b) { return b[1] - a[1]; }).forEach(function (entry) {
+        var t = entry[0], c = entry[1];
+        var color = typeColors[t] || '#94a3b8';
+        var pct = maxType > 0 ? Math.round((c / maxType) * 100) : 0;
+        typeHtml += '<div class="bl-bar-row">' +
+          '<span class="bl-bar-label">' + t + '</span>' +
+          '<div class="bl-bar-track"><div class="bl-bar-fill" style="width:' + pct + '%;background:' + color + '"></div></div>' +
+          '<span class="bl-bar-count">' + c + '</span>' +
+          '</div>';
+        legendHtml += '<div class="bl-legend-item"><div class="bl-legend-dot" style="background:' + color + '"></div>' + t + ' (' + c + ')</div>';
+      });
+      document.getElementById('typeChart').innerHTML = typeHtml;
+      document.getElementById('typeLegend').innerHTML = legendHtml;
+
+      // Top domains table
+      var sorted = parsedData.slice().sort(function (a, b) { return b.authority - a.authority; });
+      var tbodyHtml = '';
+      sorted.slice(0, 25).forEach(function (r, i) {
+        var cls = r.authority >= 70 ? 'da-high' : r.authority >= 40 ? 'da-mid' : 'da-low';
+        tbodyHtml += '<tr><td>' + (i + 1) + '</td><td>' + escHtml(r.domain) + '</td>' +
+          '<td><span class="da-badge ' + cls + '">' + r.authority + '</span></td>' +
+          '<td>' + escHtml(r.type) + '</td></tr>';
+      });
+      document.getElementById('domainsBody').innerHTML = tbodyHtml;
+    }
+
+    function renderExport() {
+      var jsonStr = JSON.stringify(parsedData, null, 2);
+      document.getElementById('exportPreview').textContent = jsonStr.slice(0, 2000) + (jsonStr.length > 2000 ? '\n...' : '');
+    }
+
+    document.getElementById('exportCsvBtn').addEventListener('click', function () {
+      if (parsedData.length === 0) return;
+      var csv = 'domain,authority,type\n' + parsedData.map(function (r) {
+        return r.domain + ',' + r.authority + ',' + r.type;
+      }).join('\n');
+      DT.downloadText(csv, 'backlinks.csv', 'text/csv');
+    });
+    document.getElementById('exportJsonBtn').addEventListener('click', function () {
+      if (parsedData.length === 0) return;
+      DT.downloadText(JSON.stringify(parsedData, null, 2), 'backlinks.json', 'application/json');
+    });
+    document.getElementById('copyJsonBtn').addEventListener('click', function () {
+      if (parsedData.length === 0) return;
+      DT.copyToClipboard(JSON.stringify(parsedData, null, 2), document.getElementById('copyJsonBtn'));
+    });
+
+    function statCard(val, label) {
+      return '<div class="bl-stat-card"><div class="bl-stat-value">' + val + '</div><div class="bl-stat-label">' + label + '</div></div>';
+    }
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+  })();
+  </script>
+</body>
+</html>

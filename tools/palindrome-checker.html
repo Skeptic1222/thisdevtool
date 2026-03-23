@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Palindrome Checker — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Check if a word or phrase is a palindrome online. Free palindrome checker with batch mode, cleaned string display, and famous palindromes reference. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/palindrome-checker.html">
+  <meta property="og:title" content="Palindrome Checker — ThisDevTool">
+  <meta property="og:description" content="Free online palindrome checker. Test single words, phrases, or batch lists. Shows cleaned string and reversed form. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/palindrome-checker.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Palindrome Checker",
+    "url": "https://thisdevtool.com/tools/palindrome-checker.html",
+    "description": "Check if a word or phrase is a palindrome. Supports batch mode and famous palindromes reference. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a palindrome?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A palindrome is a word, phrase, number, or sequence that reads the same forwards and backwards. Classic examples include 'racecar', 'level', 'madam', and the phrase 'A man, a plan, a canal: Panama'. The term comes from the Greek 'palindromos' meaning 'running back again'."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does this palindrome checker work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The checker strips all non-alphanumeric characters from the input and converts it to lowercase. It then compares the cleaned string to its reverse. If they match, the input is a palindrome. Both the cleaned string and its reversed form are displayed for transparency."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does it check numbers and mixed content?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The palindrome checker keeps alphanumeric characters (letters and digits) and discards everything else. So '1001' is a palindrome, '1 2 1' is a palindrome, and 'A1b1A' (cleaned to 'a1b1a') is a palindrome."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Batch mode?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Batch mode lets you paste a list of words or phrases (one per line) and checks all of them at once. Each result is shown in a table with a pass/fail indicator, the cleaned form, and whether it's a palindrome. This is useful for testing large word lists or generating puzzle content."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the longest known palindromes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Some of the longest palindromes include: 'A man, a plan, a canal: Panama' (originally by Leigh Mercer), 'Was it a car or a cat I saw?', and the famous Emordnilap poem by Nick Montfort. The word 'tattarrattat' coined by James Joyce in Ulysses is often cited as the longest palindromic word in the Oxford English Dictionary."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .palindrome-result { font-size:1.5rem; text-align:center; padding:1.25rem; border-radius:8px; margin:0.75rem 0; font-weight:700; }
+    .palindrome-result.yes { background:#d1fae5; color:#065f46; }
+    .palindrome-result.no { background:#fee2e2; color:#991b1b; }
+    .dark .palindrome-result.yes { background:#064e3b; color:#6ee7b7; }
+    .dark .palindrome-result.no { background:#450a0a; color:#fca5a5; }
+    .cleaned-row { display:flex; flex-direction:column; gap:0.5rem; margin-top:0.5rem; }
+    .cleaned-card { font-family:monospace; font-size:0.9rem; padding:0.5rem 0.75rem; background:var(--bg-secondary); border-radius:6px; word-break:break-all; }
+    .cleaned-card span { display:block; font-size:0.7rem; color:var(--text-muted); margin-bottom:0.15rem; font-family:inherit; }
+    .batch-table { width:100%; border-collapse:collapse; font-size:0.85rem; margin-top:0.75rem; }
+    .batch-table th { background:var(--bg-secondary); padding:0.4rem 0.6rem; text-align:left; border-bottom:2px solid var(--border); }
+    .batch-table td { padding:0.35rem 0.6rem; border-bottom:1px solid var(--border); }
+    .batch-table td.yes { color:#10b981; font-weight:700; }
+    .batch-table td.no { color:#ef4444; }
+    .famous-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    .famous-table th { background:var(--bg-secondary); padding:0.4rem 0.6rem; text-align:left; border-bottom:2px solid var(--border); }
+    .famous-table td { padding:0.4rem 0.6rem; border-bottom:1px solid var(--border); }
+    .famous-table td:first-child { font-family:monospace; font-weight:600; }
+    .char-highlight { display:inline-flex; gap:2px; flex-wrap:wrap; font-family:monospace; font-size:0.9rem; }
+    .char-highlight .ch { width:1.4rem; height:1.4rem; display:inline-flex; align-items:center; justify-content:center; border-radius:3px; border:1px solid var(--border); }
+    .char-highlight .ch.matched { background:#d1fae5; color:#065f46; }
+    .dark .char-highlight .ch.matched { background:#064e3b; color:#6ee7b7; }
+    .char-highlight .ch.center { background:#fef9c3; color:#854d0e; border-color:#fbbf24; }
+    .dark .char-highlight .ch.center { background:#422006; color:#fde68a; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/anagram-solver.html">Anagram</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Palindrome Checker</h1>
+          <p class="tool-subtitle">Check if a word or phrase reads the same forwards and backwards. Supports batch mode and includes a famous palindromes reference.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="check">Check</button>
+            <button class="option-chip" data-mode="batch">Batch</button>
+            <button class="option-chip" data-mode="famous">Famous Palindromes</button>
+          </div>
+
+          <!-- Check mode -->
+          <div id="checkPanel">
+            <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem; flex-wrap:wrap; align-items:center;">
+              <input type="text" id="checkInput" placeholder="e.g. A man a plan a canal Panama" style="flex:1; min-width:200px; padding:0.5rem 0.75rem; border:1px solid var(--border); border-radius:8px; background:var(--bg-secondary); color:var(--text); font-size:1rem;" autocomplete="off" spellcheck="false">
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+
+            <div id="resultBox"></div>
+            <div id="cleanedBox" style="display:none;" class="cleaned-row">
+              <div class="cleaned-card"><span>Cleaned string</span><span id="cleanedVal"></span></div>
+              <div class="cleaned-card"><span>Reversed</span><span id="reversedVal"></span></div>
+            </div>
+            <div id="charViz" style="display:none; margin-top:0.75rem;">
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.35rem;">Character map (matching pairs highlighted)</div>
+              <div class="char-highlight" id="charHighlight"></div>
+            </div>
+          </div>
+
+          <!-- Batch mode -->
+          <div id="batchPanel" style="display:none;">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Input (one per line)</span>
+                  <button class="btn btn-sm btn-secondary" id="batchExampleBtn">Try Example</button>
+                </div>
+                <textarea id="batchInput" rows="12" placeholder="racecar&#10;level&#10;hello&#10;A man a plan a canal Panama&#10;python" spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label"><span>Results</span></div>
+                <div id="batchResults" style="min-height:260px; overflow-y:auto;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Famous palindromes -->
+          <div id="famousPanel" style="display:none;">
+            <table class="famous-table" id="famousTable">
+              <thead><tr><th>Palindrome</th><th>Type</th><th>Notes</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a word or phrase above to check if it is a palindrome.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Palindrome Checker</h2>
+          <ol>
+            <li><strong>Check mode</strong> — Type or paste any word or phrase. The tool instantly shows whether it is a palindrome, displays the cleaned and reversed strings, and highlights matching character pairs.</li>
+            <li><strong>Batch mode</strong> — Paste a list of words or phrases (one per line) to check them all at once. Results appear in a table with pass/fail indicators.</li>
+            <li><strong>Famous Palindromes</strong> — Browse a reference list of well-known palindromes organized by type.</li>
+          </ol>
+
+          <h2>What Is a Palindrome?</h2>
+          <p>A palindrome is a word, phrase, number, or sequence that reads the same forwards and backwards when you ignore spacing, punctuation, and capitalization. The term comes from the Greek "palindromos" (πᾰλίνδρομος) meaning "running back again." Single-word palindromes include "racecar," "level," "madam," "civic," "radar," and "rotator." Sentence palindromes — sometimes called semordnilaps or phonetic palindromes — include classics like "A man, a plan, a canal: Panama" and "Was it a car or a cat I saw?"</p>
+
+          <h3>How Palindrome Detection Works</h3>
+          <p>The algorithm is straightforward: (1) Remove all non-alphanumeric characters from the string, (2) Convert to lowercase, (3) Compare the cleaned string to its reverse. In code, the two-pointer technique is commonly used — starting a pointer at each end and moving them toward the center, comparing characters at each step. If any pair of characters does not match, the string is not a palindrome. The two-pointer approach runs in O(n) time and O(1) space. The sort-based approach requires O(n) space but is equivalent in correctness. This tool uses the reverse-and-compare method for clarity.</p>
+
+          <h3>Palindromic Numbers</h3>
+          <p>Palindromic numbers read the same in both directions: 121, 1331, 12321, 99, 11. They appear frequently in combinatorics and recreational mathematics. The problem of finding the next palindromic number after a given number is a common coding exercise. Palindromic primes (primes that are also palindromes) include 2, 3, 5, 7, 11, 101, 131, 151, 181, 191.</p>
+
+          <h3>Palindromes in Computer Science</h3>
+          <p>Palindrome problems are a staple of technical interviews and competitive programming. Common variants include: checking if a linked list is a palindrome (in O(n) time, O(1) space using the fast/slow pointer technique), finding the longest palindromic substring (Manacher's algorithm runs in O(n)), counting palindromic substrings, and generating all partitions of a string where every partition is a palindrome. These problems test understanding of two-pointer techniques, dynamic programming, and string manipulation. Related tools: <a href="/tools/anagram-solver.html">Anagram Checker</a>, <a href="/tools/diff-checker.html">Diff Checker</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a palindrome?</button>
+            <div class="faq-answer">A palindrome is a word, phrase, number, or sequence that reads the same forwards and backwards. Examples include "racecar", "level", and "A man, a plan, a canal: Panama". Spacing and punctuation are ignored when checking phrases.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does this palindrome checker work?</button>
+            <div class="faq-answer">The checker strips all non-alphanumeric characters and converts to lowercase. It then compares the cleaned string to its reverse. If they match, the input is a palindrome. Both the cleaned string and reversed form are shown for verification.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does it check numbers and mixed content?</button>
+            <div class="faq-answer">Yes. The checker keeps alphanumeric characters (letters and digits) and discards everything else. So "1001" is a palindrome, "1 2 1" is a palindrome, and "A1b1A" (cleaned to "a1b1a") is a palindrome.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is Batch mode?</button>
+            <div class="faq-answer">Batch mode lets you paste a list of words or phrases (one per line) and checks all of them at once. Results appear in a table with a pass/fail indicator for each entry. Useful for testing large word lists.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What are the longest known palindromes?</button>
+            <div class="faq-answer">Some of the longest palindromes include "A man, a plan, a canal: Panama" and "Was it a car or a cat I saw?". The word "tattarrattat" coined by James Joyce is often cited as the longest palindromic word in the Oxford English Dictionary.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/palindrome-checker.html">Palindrome Checker</a>
+        <a href="/tools/anagram-solver.html">Anagram Checker</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/list-deduper.html">List Deduper</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/string-escape.html">String Escape</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var currentMode = 'check';
+    var statusBar = document.getElementById('statusBar');
+
+    var FAMOUS_DATA = [
+      ['racecar', 'Word', 'Classic single-word palindrome'],
+      ['level', 'Word', 'Common English palindrome'],
+      ['madam', 'Word', 'Formal address'],
+      ['civic', 'Word', 'Latin-origin word'],
+      ['radar', 'Word', 'Acronym that happens to be a palindrome'],
+      ['rotator', 'Word', 'Mechanical term'],
+      ['deified', 'Word', 'Religious term, 7 letters'],
+      ['tattarrattat', 'Word', 'James Joyce — Ulysses; longest in OED'],
+      ['noon', 'Word', 'Time of day'],
+      ['kayak', 'Word', 'Inuit watercraft'],
+      ['A man a plan a canal Panama', 'Phrase', 'Leigh Mercer, 1948'],
+      ['Was it a car or a cat I saw', 'Phrase', 'Classic phrase palindrome'],
+      ['Never odd or even', 'Phrase', 'Mathematical-sounding'],
+      ['Do geese see God', 'Phrase', 'Philosophical question'],
+      ['Rise to vote sir', 'Phrase', 'Political palindrome'],
+      ['Step on no pets', 'Phrase', 'Animal-themed'],
+      ['No lemon no melon', 'Phrase', 'Fruit-themed'],
+      ['Too hot to hoot', 'Phrase', 'Owl reference'],
+      ['11011', 'Number', 'Binary palindrome'],
+      ['12321', 'Number', 'Numeric pyramid'],
+      ['1001', 'Number', 'Four-digit palindrome']
+    ];
+
+    function sanitize(s) {
+      return s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
+    function isPalindrome(s) {
+      var c = sanitize(s);
+      if (!c) return null;
+      return c === c.split('').reverse().join('') ? c : false;
+    }
+
+    function buildCharViz(cleaned) {
+      var n = cleaned.length;
+      var html = '';
+      for (var i = 0; i < n; i++) {
+        var cls = 'ch';
+        if (n % 2 === 1 && i === Math.floor(n / 2)) cls += ' center';
+        else if (i < Math.floor(n / 2) || (n % 2 === 0 && i >= n / 2)) cls += ' matched';
+        html += '<span class="' + cls + '">' + cleaned[i] + '</span>';
+      }
+      return html;
+    }
+
+    function check() {
+      var val = document.getElementById('checkInput').value;
+      var resultBox = document.getElementById('resultBox');
+      var cleanedBox = document.getElementById('cleanedBox');
+      var charViz = document.getElementById('charViz');
+
+      if (!val.trim()) {
+        resultBox.innerHTML = ''; cleanedBox.style.display = 'none'; charViz.style.display = 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter a word or phrase above to check if it is a palindrome.';
+        return;
+      }
+      var cleaned = sanitize(val);
+      if (!cleaned) {
+        resultBox.innerHTML = ''; cleanedBox.style.display = 'none'; charViz.style.display = 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'No alphanumeric characters found.';
+        return;
+      }
+      var rev = cleaned.split('').reverse().join('');
+      var isP = cleaned === rev;
+
+      resultBox.innerHTML = '<div class="palindrome-result ' + (isP ? 'yes' : 'no') + '">' +
+        '\u201C' + val.trim() + '\u201D \u2014 ' + (isP ? '\u2713 Palindrome!' : '\u2717 Not a palindrome') + '</div>';
+
+      document.getElementById('cleanedVal').textContent = cleaned;
+      document.getElementById('reversedVal').textContent = rev;
+      cleanedBox.style.display = 'flex';
+
+      if (isP && cleaned.length <= 60) {
+        document.getElementById('charHighlight').innerHTML = buildCharViz(cleaned);
+        charViz.style.display = 'block';
+      } else {
+        charViz.style.display = 'none';
+      }
+
+      statusBar.className = 'status-bar ' + (isP ? 'valid' : 'invalid');
+      statusBar.textContent = '\u201C' + val.trim() + '\u201D \u2014 ' + (isP ? 'Palindrome!' : 'Not a palindrome (cleaned: \u201C' + cleaned + '\u201D)');
+      if (DT && DT.trackTool) DT.trackTool('palindrome-checker');
+    }
+
+    function runBatch() {
+      var lines = document.getElementById('batchInput').value.split('\n');
+      var valid = lines.filter(function (l) { return l.trim(); });
+      if (!valid.length) { document.getElementById('batchResults').innerHTML = ''; return; }
+      var rows = valid.map(function (line) {
+        var l = line.trim();
+        var c = sanitize(l);
+        var isP = c && c === c.split('').reverse().join('');
+        return '<tr><td>' + escHtml(l) + '</td><td class="' + (isP ? 'yes' : 'no') + '">' + (isP ? '\u2713 Yes' : '\u2717 No') + '</td><td style="font-family:monospace;font-size:0.78rem;">' + escHtml(c) + '</td></tr>';
+      });
+      var html = '<table class="batch-table"><thead><tr><th>Input</th><th>Palindrome?</th><th>Cleaned</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>';
+      document.getElementById('batchResults').innerHTML = html;
+      var yesCount = valid.filter(function (l) { var c = sanitize(l.trim()); return c && c === c.split('').reverse().join(''); }).length;
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Checked ' + valid.length + ' entries \u2014 ' + yesCount + ' palindromes found';
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function buildFamous() {
+      var tbody = document.querySelector('#famousTable tbody');
+      tbody.innerHTML = FAMOUS_DATA.map(function (row) {
+        return '<tr><td>' + escHtml(row[0]) + '</td><td>' + row[1] + '</td><td>' + row[2] + '</td></tr>';
+      }).join('');
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.option-chip').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+      document.getElementById('checkPanel').style.display = mode === 'check' ? '' : 'none';
+      document.getElementById('batchPanel').style.display = mode === 'batch' ? '' : 'none';
+      document.getElementById('famousPanel').style.display = mode === 'famous' ? '' : 'none';
+      if (mode === 'famous') { buildFamous(); statusBar.className = 'status-bar info'; statusBar.textContent = 'Reference list of famous palindromes by type.'; }
+      else if (mode === 'batch') { statusBar.className = 'status-bar info'; statusBar.textContent = 'Paste a list of words or phrases (one per line) to batch-check.'; }
+      else check();
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function (b) {
+      b.addEventListener('click', function () { setMode(b.dataset.mode); });
+    });
+
+    document.getElementById('checkInput').addEventListener('input', DT ? DT.debounce(check, 150) : check);
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('checkInput').value = 'A man a plan a canal Panama'; check();
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('checkInput').value = '';
+      document.getElementById('resultBox').innerHTML = '';
+      document.getElementById('cleanedBox').style.display = 'none';
+      document.getElementById('charViz').style.display = 'none';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Enter a word or phrase above to check if it is a palindrome.';
+    });
+    document.getElementById('batchInput').addEventListener('input', DT ? DT.debounce(runBatch, 250) : runBatch);
+    document.getElementById('batchExampleBtn').addEventListener('click', function () {
+      document.getElementById('batchInput').value = 'racecar\nlevel\nhello\nA man a plan a canal Panama\npython\nradar\nworld\nmadam';
+      runBatch();
+    });
+  })();
+  </script>
+</body>
+</html>

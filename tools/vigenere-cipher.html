@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Vigenère Cipher — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encrypt and decrypt text using the Vigenère polyalphabetic cipher online. Free Vigenère cipher tool with brute force analysis and tabula recta reference. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/vigenere-cipher.html">
+  <meta property="og:title" content="Vigenère Cipher — ThisDevTool">
+  <meta property="og:description" content="Free online Vigenère cipher encoder/decoder with brute force key analysis and tabula recta visual. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/vigenere-cipher.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Vigenère Cipher",
+    "url": "https://thisdevtool.com/tools/vigenere-cipher.html",
+    "description": "Encrypt and decrypt text using the Vigenère polyalphabetic cipher. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the Vigenère cipher?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Vigenère cipher is a polyalphabetic substitution cipher that uses a keyword to shift each letter of the plaintext by a different amount. Each letter of the key determines the Caesar shift applied to the corresponding plaintext letter. This makes it significantly harder to break than a simple Caesar cipher."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does Vigenère encryption work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "To encrypt, the keyword is repeated to match the length of the plaintext. Each plaintext letter is shifted forward in the alphabet by the position of the corresponding keyword letter (A=0, B=1, ... Z=25). Non-alphabetic characters are passed through unchanged. Decryption reverses this by shifting backwards."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the Vigenère cipher secure?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No — the Vigenère cipher is not secure by modern standards. It was considered unbreakable for centuries but was cracked in 1863 by Friedrich Kasiski. The Kasiski test and index of coincidence analysis can recover the key length and then the key itself. It should only be used for educational purposes."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a tabula recta?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A tabula recta is a 26x26 grid of letters used as a reference table for the Vigenère cipher. Each row represents one of the 26 Caesar shifts. To encrypt, find the plaintext column and key row; the intersection is the ciphertext letter. To decrypt, find the ciphertext in the key row and read the column header."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is brute force mode?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Brute force mode tries all single-character keys (26 Caesar shifts) and shows the decrypted output for each. This is useful when you have a short ciphertext and want to find the most readable decryption without knowing the key. For multi-character keys, use the Kasiski or index of coincidence method."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .key-input-row { display:flex; gap:0.75rem; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; }
+    .key-input-row label { font-size:0.875rem; color:var(--text-muted); white-space:nowrap; }
+    .key-input-row input { flex:1; min-width:120px; max-width:260px; padding:0.4rem 0.65rem; border:1px solid var(--border); border-radius:6px; background:var(--bg-secondary); color:var(--text); font-size:0.9rem; }
+    .tabula-recta { overflow-x:auto; margin-top:1rem; }
+    .tabula-recta table { border-collapse:collapse; font-size:0.65rem; font-family:monospace; }
+    .tabula-recta th, .tabula-recta td { width:1.3rem; height:1.3rem; text-align:center; border:1px solid var(--border); padding:0; }
+    .tabula-recta th { background:var(--bg-secondary); color:var(--text-muted); font-weight:700; }
+    .tabula-recta td { color:var(--text); }
+    .tabula-recta td.highlight { background:#10b981; color:#fff; font-weight:700; }
+    .brute-table { width:100%; border-collapse:collapse; font-size:0.8rem; }
+    .brute-table th { background:var(--bg-secondary); padding:0.35rem 0.5rem; text-align:left; border-bottom:2px solid var(--border); }
+    .brute-table td { padding:0.3rem 0.5rem; border-bottom:1px solid var(--border); font-family:monospace; word-break:break-all; }
+    .brute-table tr:hover td { background:var(--bg-secondary); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hash-generator.html">Hash</a>
+        <a href="/tools/base64.html">Base64</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Vigenère Cipher</h1>
+          <p class="tool-subtitle">Encrypt and decrypt text using the Vigenère polyalphabetic substitution cipher. Enter a keyword to shift each letter.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encrypt">Encrypt</button>
+            <button class="option-chip" data-mode="decrypt">Decrypt</button>
+            <button class="option-chip" data-mode="bruteforce">Brute Force</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <div class="key-input-row" id="keyRow">
+            <label for="keyInput">Keyword:</label>
+            <input type="text" id="keyInput" placeholder="e.g. SECRET" maxlength="64" value="SECRET" autocomplete="off" spellcheck="false">
+            <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+          </div>
+
+          <div class="split-pane" id="splitPane">
+            <div>
+              <div class="pane-label"><span id="inputLabel">Plaintext</span></div>
+              <textarea id="mainInput" rows="12" placeholder="Type or paste text here..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Ciphertext</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="mainOutput" style="min-height:260px;"></div>
+            </div>
+          </div>
+
+          <!-- Brute force panel -->
+          <div id="brutePanel" style="display:none; margin-top:0.75rem;">
+            <div class="pane-label" style="margin-bottom:0.5rem;"><span>All 26 Caesar Shifts</span></div>
+            <div style="overflow-x:auto;"><table class="brute-table" id="bruteTable">
+              <thead><tr><th>Key</th><th>Decrypted Output</th></tr></thead>
+              <tbody></tbody>
+            </table></div>
+          </div>
+
+          <!-- Reference panel -->
+          <div id="referencePanel" style="display:none; margin-top:0.75rem;">
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.5rem;">Tabula Recta — row = key letter, column = plaintext letter, cell = ciphertext letter.</p>
+            <div class="tabula-recta" id="tabulaRecta"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter text and a keyword above to encrypt.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Vigenère Cipher Tool</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — Encrypt converts plaintext to ciphertext, Decrypt reverses it, Brute Force tries all single-letter keys, Reference shows the full tabula recta.</li>
+            <li><strong>Enter your keyword</strong> — the keyword should contain only letters (A–Z). Numbers and special characters are ignored.</li>
+            <li><strong>Paste or type your text</strong> — the result appears instantly on the right.</li>
+            <li><strong>Copy or download</strong> — use the buttons to save your result.</li>
+          </ol>
+
+          <h2>What Is the Vigenère Cipher?</h2>
+          <p>The Vigenère cipher is one of the most famous classical ciphers in cryptography. Invented in the 16th century and popularized by Blaise de Vigenère (though actually created by Giovan Battista Bellaso), it extends the simple Caesar cipher by using a keyword to apply multiple different shifts throughout the message. This polyalphabetic approach means that the same plaintext letter can map to different ciphertext letters depending on its position, making frequency analysis far more difficult than with a monoalphabetic cipher.</p>
+
+          <h3>How Vigenère Encryption Works</h3>
+          <p>The encryption algorithm is straightforward: repeat the keyword over the plaintext (aligning only with alphabetic characters), then shift each plaintext letter by the position of the corresponding keyword letter in the alphabet (A=0, B=1, C=2, ... Z=25). For example, with key "KEY" and plaintext "HELLO": H+K=R, E+E=I, L+Y=J, L+K=V, O+E=S — producing "RIJVS". Non-alphabetic characters like spaces, punctuation, and digits pass through unchanged.</p>
+
+          <h3>Decryption</h3>
+          <p>Decryption is the reverse: shift each ciphertext letter backward by the keyword letter's position. The same keyword is required. This tool handles both uppercase and lowercase letters while preserving the original case of the input text.</p>
+
+          <h3>The Tabula Recta</h3>
+          <p>The tabula recta is a 26×26 grid that serves as a visual lookup table for the Vigenère cipher. Each row is one of the 26 Caesar-shifted alphabets. To encrypt, find the column for your plaintext letter and the row for your keyword letter — the intersection is the ciphertext letter. The Reference mode in this tool displays the full tabula recta for learning and manual verification.</p>
+
+          <h3>Brute Force and Cryptanalysis</h3>
+          <p>The Brute Force mode tries all 26 possible single-character keys (equivalent to all 26 Caesar shifts) and displays the results. This is useful for cracking short messages encrypted with a single-character Vigenère key. For longer keys, the Kasiski examination identifies repeated sequences in the ciphertext to estimate the key length, and the Index of Coincidence is then used to recover each key character. Despite its historical reputation as "le chiffre indéchiffrable," the Vigenère cipher is completely insecure for modern use.</p>
+
+          <h3>Modern Context</h3>
+          <p>The Vigenère cipher is purely of historical and educational interest today. Modern encryption standards like AES-256 are computationally infeasible to break and are what you should use for any real security needs. However, studying the Vigenère cipher is an excellent introduction to cryptographic concepts: key management, polyalphabetic substitution, and the relationship between key length and cipher strength. Related tools: <a href="/tools/hash-generator.html">Hash Generator</a> for modern one-way hashing and <a href="/tools/base64.html">Base64 Encoder</a> for encoding (not encryption).</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the Vigenère cipher?</button>
+            <div class="faq-answer">The Vigenère cipher is a polyalphabetic substitution cipher that uses a keyword to shift each letter of the plaintext by a different amount. Each letter of the key determines the Caesar shift applied to the corresponding plaintext letter, making it harder to break than a simple Caesar cipher.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does Vigenère encryption work?</button>
+            <div class="faq-answer">The keyword is repeated to match the length of the plaintext. Each plaintext letter is shifted forward in the alphabet by the position of the corresponding keyword letter (A=0, B=1, ... Z=25). Non-alphabetic characters pass through unchanged. Decryption reverses this by shifting backwards.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is the Vigenère cipher secure?</button>
+            <div class="faq-answer">No — the Vigenère cipher is not secure by modern standards. It was broken in 1863 by Friedrich Kasiski. The Kasiski test and index of coincidence analysis can recover the key length and then the key itself. Use it only for educational purposes; use AES for real encryption.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a tabula recta?</button>
+            <div class="faq-answer">A tabula recta is a 26×26 grid of letters used as a reference table for the Vigenère cipher. Each row represents one of the 26 Caesar shifts. To encrypt, find the plaintext column and key row; the intersection is the ciphertext letter.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is brute force mode?</button>
+            <div class="faq-answer">Brute force mode tries all 26 single-character keys (Caesar shifts) and shows each decrypted output. This is useful when you have a short ciphertext and want to find the most readable decryption. The most human-readable result is likely the correct key.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Crypto Tools</h4>
+        <a href="/tools/vigenere-cipher.html">Vigenère Cipher</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/string-obfuscator.html">String Obfuscator</a>
+        <a href="/tools/hex-ascii.html">Hex ↔ ASCII</a>
+        <a href="/tools/binary-text.html">Binary ↔ Text</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var modeEl = document.querySelectorAll('.option-chip');
+    var currentMode = 'encrypt';
+    var keyInput = document.getElementById('keyInput');
+    var mainInput = document.getElementById('mainInput');
+    var mainOutput = document.getElementById('mainOutput');
+    var statusBar = document.getElementById('statusBar');
+    var brutePanel = document.getElementById('brutePanel');
+    var referencePanel = document.getElementById('referencePanel');
+    var splitPane = document.getElementById('splitPane');
+    var keyRow = document.getElementById('keyRow');
+    var inputLabel = document.getElementById('inputLabel');
+    var outputLabel = document.getElementById('outputLabel');
+
+    var EXAMPLE_PLAIN = 'The quick brown fox jumps over the lazy dog.';
+
+    // --- Vigenère core ---
+    function sanitizeKey(k) {
+      return k.toUpperCase().replace(/[^A-Z]/g, '');
+    }
+
+    function vigenere(text, key, encrypt) {
+      var k = sanitizeKey(key);
+      if (!k.length) return text;
+      var out = [];
+      var ki = 0;
+      for (var i = 0; i < text.length; i++) {
+        var c = text.charCodeAt(i);
+        var isUpper = c >= 65 && c <= 90;
+        var isLower = c >= 97 && c <= 122;
+        if (isUpper || isLower) {
+          var base = isUpper ? 65 : 97;
+          var shift = k.charCodeAt(ki % k.length) - 65;
+          if (!encrypt) shift = (26 - shift) % 26;
+          out.push(String.fromCharCode(((c - base + shift) % 26 + 26) % 26 + base));
+          ki++;
+        } else {
+          out.push(text[i]);
+        }
+      }
+      return out.join('');
+    }
+
+    function caesarDecrypt(text, shift) {
+      var out = [];
+      for (var i = 0; i < text.length; i++) {
+        var c = text.charCodeAt(i);
+        var isUpper = c >= 65 && c <= 90;
+        var isLower = c >= 97 && c <= 122;
+        if (isUpper || isLower) {
+          var base = isUpper ? 65 : 97;
+          out.push(String.fromCharCode(((c - base - shift + 26) % 26) + base));
+        } else {
+          out.push(text[i]);
+        }
+      }
+      return out.join('');
+    }
+
+    // --- Tabula Recta ---
+    function buildTabulaRecta() {
+      var container = document.getElementById('tabulaRecta');
+      var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      var html = '<table><thead><tr><th></th>';
+      for (var c = 0; c < 26; c++) html += '<th>' + letters[c] + '</th>';
+      html += '</tr></thead><tbody>';
+      for (var r = 0; r < 26; r++) {
+        html += '<tr><th>' + letters[r] + '</th>';
+        for (var cc = 0; cc < 26; cc++) {
+          html += '<td>' + letters[(r + cc) % 26] + '</td>';
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    // --- Brute force ---
+    function runBrute(text) {
+      var tbody = document.querySelector('#bruteTable tbody');
+      var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      var rows = [];
+      for (var i = 0; i < 26; i++) {
+        var dec = caesarDecrypt(text, i);
+        rows.push('<tr><td>' + letters[i] + '</td><td>' + escHtml(dec.substring(0, 120)) + '</td></tr>');
+      }
+      tbody.innerHTML = rows.join('');
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // --- Modes ---
+    function setMode(mode) {
+      currentMode = mode;
+      modeEl.forEach(function (b) {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+      brutePanel.style.display = mode === 'bruteforce' ? 'block' : 'none';
+      referencePanel.style.display = mode === 'reference' ? 'block' : 'none';
+      splitPane.style.display = (mode === 'bruteforce' || mode === 'reference') ? 'none' : '';
+      keyRow.style.display = mode === 'reference' ? 'none' : '';
+
+      if (mode === 'encrypt') { inputLabel.textContent = 'Plaintext'; outputLabel.textContent = 'Ciphertext'; }
+      else if (mode === 'decrypt') { inputLabel.textContent = 'Ciphertext'; outputLabel.textContent = 'Plaintext'; }
+      else if (mode === 'bruteforce') { keyRow.style.display = 'none'; splitPane.style.display = 'none'; }
+
+      if (mode === 'reference') { buildTabulaRecta(); statusBar.className = 'status-bar info'; statusBar.textContent = 'Tabula recta: row = key letter, column = plaintext. Cell = ciphertext.'; }
+      else if (mode === 'bruteforce') {
+        var txt = mainInput.value.trim();
+        if (txt) { runBrute(txt); statusBar.className = 'status-bar info'; statusBar.textContent = 'Showing all 26 Caesar-shift decryptions.'; }
+        else { statusBar.className = 'status-bar info'; statusBar.textContent = 'Enter ciphertext in the input above, then switch to Brute Force.'; }
+      }
+      else process();
+    }
+
+    function process() {
+      if (currentMode === 'bruteforce' || currentMode === 'reference') return;
+      var text = mainInput.value;
+      if (!text.trim()) {
+        mainOutput.textContent = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter text and a keyword to ' + (currentMode === 'encrypt' ? 'encrypt' : 'decrypt') + '.';
+        return;
+      }
+      var key = sanitizeKey(keyInput.value);
+      if (!key) {
+        mainOutput.textContent = '';
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Please enter a keyword (letters only).';
+        return;
+      }
+      var encrypt = currentMode === 'encrypt';
+      var result = vigenere(text, key, encrypt);
+      mainOutput.textContent = result;
+
+      var alphaCount = (text.match(/[a-zA-Z]/g) || []).length;
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = (encrypt ? 'Encrypted' : 'Decrypted') + " with key \u2018" + key + "\u2019 \u2014 " + alphaCount + " letters transformed";
+      if (DT && DT.trackTool) DT.trackTool('vigenere-cipher');
+    }
+
+    modeEl.forEach(function (b) {
+      b.addEventListener('click', function () { setMode(b.dataset.mode); });
+    });
+    mainInput.addEventListener('input', DT ? DT.debounce(function () {
+      if (currentMode === 'bruteforce') runBrute(mainInput.value.trim());
+      else process();
+    }, 150) : function () { process(); });
+    keyInput.addEventListener('input', DT ? DT.debounce(process, 150) : process);
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      mainInput.value = currentMode === 'decrypt' ? vigenere(EXAMPLE_PLAIN, 'SECRET', true) : EXAMPLE_PLAIN;
+      if (currentMode !== 'bruteforce') process();
+      else runBrute(mainInput.value.trim());
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      mainInput.value = ''; mainOutput.textContent = '';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Enter text and a keyword above.';
+    });
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      if (DT && DT.copyToClipboard) DT.copyToClipboard(mainOutput.textContent, document.getElementById('copyBtn'));
+      else { navigator.clipboard && navigator.clipboard.writeText(mainOutput.textContent); }
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      if (DT && DT.downloadText) DT.downloadText(mainOutput.textContent, 'vigenere-output.txt', 'text/plain');
+    });
+
+    setMode('encrypt');
+  })();
+  </script>
+</body>
+</html>
