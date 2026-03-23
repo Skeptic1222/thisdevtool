@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Playfair Cipher — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encrypt and decrypt text with the Playfair cipher online. 5x5 key square, digraph substitution, double-letter handling. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/playfair-cipher.html">
+  <meta property="og:title" content="Playfair Cipher Encrypt/Decrypt — ThisDevTool">
+  <meta property="og:description" content="Free online Playfair cipher tool. Digraph substitution with 5x5 key square, double-letter X insertion, visual grid display.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/playfair-cipher.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Playfair Cipher",
+    "url": "https://thisdevtool.com/tools/playfair-cipher.html",
+    "description": "Encrypt and decrypt text using the Playfair digraph substitution cipher with a 5x5 key square.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the Playfair cipher?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The Playfair cipher is a digraph substitution cipher invented by Charles Wheatstone in 1854 and popularized by Lord Playfair. It encrypts pairs of letters (digraphs) using a 5x5 grid built from a keyword. It was the first practical digraph substitution cipher and was used by the British during WWI and WWII." }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the Playfair cipher handle repeated letters?",
+        "acceptedAnswer": { "@type": "Answer", "text": "If a digraph pair contains two identical letters (e.g., LL in HELLO), a filler letter X is inserted between them (HE LX LO). This is why decryption may produce extra X letters that need to be removed from the plaintext. If the message length is odd, a padding X is added at the end." }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the three rules for encrypting a digraph in Playfair?",
+        "acceptedAnswer": { "@type": "Answer", "text": "1. Same row: shift both letters one position right (wrapping). 2. Same column: shift both letters one position down (wrapping). 3. Rectangle: each letter is replaced by the letter in the same row but in the other letter's column." }
+      },
+      {
+        "@type": "Question",
+        "name": "Why are I and J treated as the same letter in Playfair?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The 5x5 grid has 25 cells but the English alphabet has 26 letters. The traditional solution is to combine I and J into one cell, since they are phonetically similar. During decoding, I is typically assumed unless context suggests J." }
+      },
+      {
+        "@type": "Question",
+        "name": "How secure is the Playfair cipher?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The Playfair cipher was considered unbreakable when introduced in 1854. It resists simple frequency analysis because it encrypts pairs of letters, not individual letters. However, it is still a historical cipher and can be broken with about 200 or more characters of ciphertext using modern frequency analysis of digraph pairs." }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .playfair-grid { border-collapse: collapse; margin: 0.5rem 0; font-family: monospace; }
+    .playfair-grid td { width: 2.2rem; height: 2.2rem; text-align: center; border: 1px solid var(--border); font-size: 0.95rem; font-weight: 600; }
+    .playfair-grid td.hl { background: #10b981; color: #fff; }
+    .key-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .key-row input { flex: 1; min-width: 8rem; font-family: monospace; padding: 0.35rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); text-transform: uppercase; }
+    .digraph-steps { font-family: monospace; font-size: 0.8rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem; max-height: 6rem; overflow-y: auto; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/enigma-simulator.html">Enigma</a>
+        <a href="/tools/polybius-square.html">Polybius</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Playfair Cipher</h1>
+          <p class="tool-subtitle">Digraph substitution cipher with a 5×5 keyword square — encrypt and decrypt paired letters.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" id="chipEncrypt">Encrypt</button>
+            <button class="option-chip" id="chipDecrypt">Decrypt</button>
+            <button class="option-chip" id="chipKeySquare">Key Square</button>
+          </div>
+
+          <div class="key-row">
+            <label style="font-weight:600;white-space:nowrap;">Keyword:</label>
+            <input type="text" id="keyword" placeholder="e.g. MONARCHY" value="MONARCHY">
+            <button class="btn btn-sm btn-primary" id="applyKey">Apply</button>
+          </div>
+
+          <div id="keySquarePanel">
+            <div class="pane-label"><span>Key Square</span></div>
+            <table class="playfair-grid" id="pfGrid"><tbody id="pfBody"></tbody></table>
+          </div>
+
+          <div class="split-pane" style="margin-top:0.75rem;">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">Plaintext</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="inputText" rows="6" spellcheck="false" placeholder="Enter plaintext to encrypt..."></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Ciphertext</span>
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              </div>
+              <div class="code-output" id="outputText" style="min-height:130px;font-family:monospace;letter-spacing:0.15em;"></div>
+            </div>
+          </div>
+
+          <div id="stepsPanel" style="display:none;margin-top:0.5rem;">
+            <div class="pane-label"><span>Digraph Steps</span></div>
+            <div class="digraph-steps" id="stepsText"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter plaintext and click Encrypt.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Playfair Cipher Tool</h2>
+          <ol>
+            <li><strong>Enter a keyword</strong> — type any keyword (e.g., MONARCHY) and click Apply. The 5×5 key square updates automatically.</li>
+            <li><strong>Choose Encrypt or Decrypt</strong> — select the direction with the option chips.</li>
+            <li><strong>Enter your text</strong> — type or paste plaintext. Letters only; spaces and punctuation are ignored.</li>
+            <li><strong>View the output</strong> — the encrypted (or decrypted) text appears on the right.</li>
+            <li><strong>Key Square tab</strong> — see the current 5×5 grid used for encryption.</li>
+          </ol>
+
+          <h2>About the Playfair Cipher</h2>
+          <p>The Playfair cipher was invented by Sir Charles Wheatstone in 1854 but popularized by Lord Lyon Playfair, who advocated its use to the British Foreign Office, giving the cipher its name. It was the first practical digraph substitution cipher in widespread use. Unlike simple monoalphabetic ciphers, Playfair encrypts pairs of letters, making simple frequency analysis much harder to apply.</p>
+
+          <h3>Building the Key Square</h3>
+          <p>The 5×5 key square is built from a keyword: write the unique letters of the keyword left-to-right, top-to-bottom in the grid, then fill in the remaining unused letters of the alphabet in alphabetical order. I and J share one cell (typically both mapped to I). For the keyword MONARCHY, the grid starts: M, O, N, A, R, C, H, Y then continues B, D, E, F, G, I/J, K, L, P, Q, S, T, U, V, W, X, Z.</p>
+
+          <h3>The Three Encryption Rules</h3>
+          <p>The plaintext is divided into digraphs (pairs). If a pair has the same letter, an X is inserted between them. If the message has an odd length, X is appended. Then for each digraph:</p>
+          <ul>
+            <li><strong>Same row:</strong> replace each letter with the letter immediately to its right in the row (wrapping around).</li>
+            <li><strong>Same column:</strong> replace each letter with the letter immediately below it in the column (wrapping around).</li>
+            <li><strong>Rectangle (different row and column):</strong> each letter is replaced by the letter in the same row but in the column of the other letter of the pair.</li>
+          </ul>
+          <p>Decryption uses the same rules in reverse: shift left instead of right, shift up instead of down, and the rectangle rule is the same (it is symmetric).</p>
+
+          <h3>Historical Use</h3>
+          <p>The Playfair cipher was used extensively by the British military during World War I and was also used by the Australians and British in World War II. It was considered secure enough for tactical communications but not for high-level strategic messages, which used more complex cipher systems. The cipher gained cultural fame when John F. Kennedy, stranded after the sinking of PT-109, used a Playfair cipher to encode a rescue message scratched onto a coconut shell.</p>
+
+          <h3>Cryptanalysis</h3>
+          <p>With sufficient ciphertext (around 200 characters), Playfair can be broken using frequency analysis of digraphs rather than individual letters. The cipher produces 676 possible digraphs (26×26), but since I and J are merged and certain rules apply, patterns emerge. Importantly, Playfair never maps a digraph to the same reversed digraph: if AB encrypts to XY, then XY encrypts to AB, giving a known relationship that aids breaking. Modern computer-based attacks can break Playfair quickly using simulated annealing or hill-climbing algorithms.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is the Playfair cipher?</button>
+            <div class="faq-answer">The Playfair cipher is a digraph substitution cipher invented by Charles Wheatstone in 1854. It encrypts pairs of letters using a 5x5 keyword grid. It was used by the British in WWI and WWII and is famous partly because JFK used it to encode a rescue message after the sinking of PT-109.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does Playfair handle repeated letters?</button>
+            <div class="faq-answer">If a digraph pair has identical letters (like LL in HELLO), an X is inserted between them (HE LX LO). This is why decrypted text may contain extra X letters that should be removed by the reader using context.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are the three Playfair encryption rules?</button>
+            <div class="faq-answer">1. Same row: shift right (wrapping). 2. Same column: shift down (wrapping). 3. Rectangle: swap to the opposite corner of the rectangle formed by the two letters in the grid.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why are I and J the same in Playfair?</button>
+            <div class="faq-answer">The 5x5 grid has 25 cells but the English alphabet has 26 letters. I and J share one cell since they're phonetically similar. Context usually makes the correct letter clear during decryption.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How secure is the Playfair cipher?</button>
+            <div class="faq-answer">Playfair resists simple letter frequency analysis because it encrypts pairs. However, with about 200+ characters of ciphertext, modern digraph frequency analysis or computer search can break it. It's a historical cipher, not suitable for modern security needs.</div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/playfair-cipher.html">Playfair Cipher</a>
+        <a href="/tools/enigma-simulator.html">Enigma Simulator</a>
+        <a href="/tools/adfgvx-cipher.html">ADFGVX Cipher</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Ciphers</h4>
+        <a href="/tools/polybius-square.html">Polybius Square</a>
+        <a href="/tools/columnar-transposition.html">Columnar Transposition</a>
+        <a href="/tools/one-time-pad.html">One-Time Pad</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var mode = 'encrypt';
+    var grid = []; // 25 chars
+
+    function buildGrid(keyword) {
+      var kw = (keyword || '').toUpperCase().replace(/J/g, 'I').replace(/[^A-Z]/g, '');
+      var seen = {}, order = '';
+      for (var i = 0; i < kw.length; i++) {
+        if (!seen[kw[i]]) { seen[kw[i]] = true; order += kw[i]; }
+      }
+      for (var j = 0; j < 26; j++) {
+        var c = String.fromCharCode(65 + j);
+        if (c === 'J') continue;
+        if (!seen[c]) { seen[c] = true; order += c; }
+      }
+      return order.split('');
+    }
+
+    function renderGrid(g) {
+      var tbody = document.getElementById('pfBody');
+      tbody.innerHTML = '';
+      for (var r = 0; r < 5; r++) {
+        var tr = document.createElement('tr');
+        for (var c = 0; c < 5; c++) {
+          var td = document.createElement('td');
+          td.textContent = g[r * 5 + c];
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+    }
+
+    function findPos(g, c) {
+      var idx = g.indexOf(c);
+      return { row: Math.floor(idx / 5), col: idx % 5 };
+    }
+
+    function prepPlaintext(text) {
+      text = text.toUpperCase().replace(/J/g, 'I').replace(/[^A-Z]/g, '');
+      var result = '';
+      var i = 0;
+      while (i < text.length) {
+        var a = text[i];
+        var b = text[i + 1];
+        if (!b) { result += a + 'X'; i++; }
+        else if (a === b) { result += a + 'X'; i++; }
+        else { result += a + b; i += 2; }
+      }
+      return result;
+    }
+
+    function encryptDigraph(g, a, b, dir) {
+      var pa = findPos(g, a), pb = findPos(g, b);
+      var d = dir === 1 ? 1 : -1;
+      if (pa.row === pb.row) {
+        return g[pa.row * 5 + ((pa.col + d + 5) % 5)] + g[pb.row * 5 + ((pb.col + d + 5) % 5)];
+      } else if (pa.col === pb.col) {
+        return g[((pa.row + d + 5) % 5) * 5 + pa.col] + g[((pb.row + d + 5) % 5) * 5 + pb.col];
+      } else {
+        return g[pa.row * 5 + pb.col] + g[pb.row * 5 + pa.col];
+      }
+    }
+
+    function encrypt(text, g) {
+      var prepared = prepPlaintext(text);
+      var result = '', steps = [];
+      for (var i = 0; i < prepared.length; i += 2) {
+        var enc = encryptDigraph(g, prepared[i], prepared[i + 1], 1);
+        result += enc;
+        steps.push(prepared[i] + prepared[i + 1] + ' → ' + enc);
+      }
+      return { result: result, steps: steps, prepared: prepared };
+    }
+
+    function decrypt(text, g) {
+      text = text.toUpperCase().replace(/[^A-Z]/g, '');
+      var result = '', steps = [];
+      for (var i = 0; i < text.length; i += 2) {
+        if (i + 1 >= text.length) break;
+        var dec = encryptDigraph(g, text[i], text[i + 1], -1);
+        result += dec;
+        steps.push(text[i] + text[i + 1] + ' → ' + dec);
+      }
+      return { result: result, steps: steps };
+    }
+
+    function process() {
+      var input = document.getElementById('inputText').value;
+      if (!input.trim()) {
+        document.getElementById('outputText').textContent = '';
+        document.getElementById('stepsText').textContent = '';
+        setStatus('Enter text and click Encrypt.', 'info');
+        return;
+      }
+      var res = mode === 'encrypt' ? encrypt(input, grid) : decrypt(input, grid);
+      var groups = (res.result || '').match(/.{1,5}/g) || [];
+      document.getElementById('outputText').textContent = groups.join(' ');
+      document.getElementById('stepsText').textContent = res.steps.join('  ');
+      var keyword = document.getElementById('keyword').value.toUpperCase();
+      setStatus((mode === 'encrypt' ? 'Encrypted' : 'Decrypted') + ' \'' + input.substring(0, 15).toUpperCase().replace(/[^A-Z]/g, '') + '\' with key \'' + keyword + '\' — ' + (res.steps.length) + ' digraphs', 'valid');
+      DT && DT.trackTool && DT.trackTool('playfair-cipher');
+    }
+
+    function setStatus(msg, type) {
+      var el = document.getElementById('statusBar');
+      el.className = 'status-bar ' + (type || 'info');
+      el.textContent = msg;
+    }
+
+    document.getElementById('applyKey').addEventListener('click', function () {
+      grid = buildGrid(document.getElementById('keyword').value);
+      renderGrid(grid);
+      process();
+    });
+
+    document.getElementById('chipEncrypt').addEventListener('click', function () {
+      mode = 'encrypt'; setChip(this);
+      document.getElementById('inputLabel').textContent = 'Plaintext';
+      document.getElementById('outputLabel').textContent = 'Ciphertext';
+      document.getElementById('inputText').placeholder = 'Enter plaintext to encrypt...';
+      process();
+    });
+
+    document.getElementById('chipDecrypt').addEventListener('click', function () {
+      mode = 'decrypt'; setChip(this);
+      document.getElementById('inputLabel').textContent = 'Ciphertext';
+      document.getElementById('outputLabel').textContent = 'Plaintext';
+      document.getElementById('inputText').placeholder = 'Enter ciphertext to decrypt...';
+      process();
+    });
+
+    document.getElementById('chipKeySquare').addEventListener('click', function () {
+      setChip(this);
+      var p = document.getElementById('keySquarePanel');
+      p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.getElementById('inputText').addEventListener('input', process);
+    document.getElementById('keyword').addEventListener('input', function () {
+      grid = buildGrid(this.value);
+      renderGrid(grid);
+      process();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('keyword').value = 'MONARCHY';
+      document.getElementById('inputText').value = 'HELLO WORLD';
+      mode = 'encrypt'; setChip(document.getElementById('chipEncrypt'));
+      grid = buildGrid('MONARCHY');
+      renderGrid(grid);
+      process();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('inputText').value = '';
+      document.getElementById('outputText').textContent = '';
+      document.getElementById('stepsText').textContent = '';
+      setStatus('Enter text and click Encrypt.', 'info');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var txt = document.getElementById('outputText').textContent;
+      DT && DT.copyToClipboard ? DT.copyToClipboard(txt, this) : navigator.clipboard.writeText(txt);
+    });
+
+    function setChip(el) {
+      document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      el.classList.add('active');
+    }
+
+    // Initialize
+    grid = buildGrid('MONARCHY');
+    renderGrid(grid);
+    setStatus('Enter plaintext and click Encrypt.', 'info');
+  })();
+  </script>
+</body>
+</html>

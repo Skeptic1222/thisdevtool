@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>T9 Phone Decoder — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encode text to T9 keypad sequences or decode T9 presses back to letters. Classic multi-tap SMS cipher. 100% free, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/t9-phone-decoder.html">
+  <meta property="og:title" content="T9 Phone Decoder — ThisDevTool">
+  <meta property="og:description" content="Convert text to old-school T9 multi-tap phone keypad sequences and decode them back. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/t9-phone-decoder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "T9 Phone Decoder",
+    "url": "https://thisdevtool.com/tools/t9-phone-decoder.html",
+    "description": "Encode text to T9 keypad sequences or decode T9 presses back to letters.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is T9 multi-tap input?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "T9 multi-tap is a text input method used on old mobile phones before smartphones. Each number key (2-9) maps to several letters. You press a key multiple times to cycle through its letters: 2=A, 22=B, 222=C, 3=D, 33=E, etc. The '0' key represents a space."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I separate letters on the same key in T9?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When two consecutive letters share the same key, a separator is needed. On physical phones this was a short pause. In text notation, a space or dash separates them: '44 4' means 'HG' — first letter H (key 4 twice), then G (key 4 once after a pause). This tool uses a space as the separator in the encoded output."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the T9 keypad layout?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The standard T9 / ITU E.161 keypad layout is: 2=ABC, 3=DEF, 4=GHI, 5=JKL, 6=MNO, 7=PQRS, 8=TUV, 9=WXYZ, 0=space. Key 1 is typically for punctuation and special characters, not letters."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between T9 and multi-tap?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Multi-tap (also called ABC mode) requires pressing a key multiple times to select a letter — 44=H, 444=I. T9 predictive text is different: you press each key once and the phone uses a dictionary to predict the word. This tool implements multi-tap (ABC mode), not T9 predictive text."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I decode T9 sequences back to text?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Switch to Decode mode and enter the T9 keypad sequences. Use spaces to separate letters that share the same key. Use '0' or a forward slash for word spaces. The tool maps each key sequence back to its letter."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      max-width: 280px;
+      margin: 16px auto;
+    }
+    .keypad-key {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 6px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .keypad-key:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .keypad-key:hover .key-letters { color: #fff; }
+    .keypad-key.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .key-num { font-size: 20px; font-weight: 700; line-height: 1; }
+    .key-letters { font-size: 9px; color: var(--text-secondary); letter-spacing: 1px; margin-top: 2px; }
+    .key-star { grid-column: 1; }
+    .key-zero { grid-column: 2; }
+    .key-hash { grid-column: 3; }
+    .t9-display {
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      min-height: 48px;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .ref-table th { background: var(--accent); color: #fff; padding: 6px 10px; text-align: left; }
+    .ref-table td { padding: 5px 10px; border-bottom: 1px solid var(--border); }
+    .ref-table tr:nth-child(even) td { background: var(--bg-secondary); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/vanity-phone.html">Vanity Phone</a>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>T9 Phone Decoder</h1>
+          <p class="tool-subtitle">Convert text to old-school multi-tap SMS sequences and back. 44 33 555 555 666 = HELLO.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Encode</button>
+            <button class="option-chip" data-mode="decode">Decode</button>
+            <button class="option-chip" data-mode="keypad">Visual Keypad</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <div id="encodeSection">
+            <div class="pane-label">
+              <span>Plain Text</span>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            </div>
+            <textarea id="encodeInput" rows="4" placeholder="Type a message to encode to T9..." spellcheck="false"></textarea>
+            <div class="pane-label" style="margin-top:10px;">
+              <span>T9 Sequence</span>
+              <button class="btn btn-sm btn-primary" id="copyEncBtn">Copy</button>
+            </div>
+            <div class="code-output" id="encodeOutput" style="min-height:60px;"></div>
+          </div>
+
+          <div id="decodeSection" style="display:none;">
+            <div class="pane-label">
+              <span>T9 Sequence (space separates letters on same key, 0 = space)</span>
+              <button class="btn btn-sm btn-secondary" id="decExampleBtn">Try Example</button>
+            </div>
+            <textarea id="decodeInput" rows="4" placeholder="e.g. 44 33 555 555 666 0 9 666 777 555 3" spellcheck="false"></textarea>
+            <div class="pane-label" style="margin-top:10px;"><span>Decoded Text</span></div>
+            <div class="code-output" id="decodeOutput" style="min-height:60px;"></div>
+          </div>
+
+          <div id="keypadSection" style="display:none;">
+            <div class="t9-display" id="kpDisplay">Start pressing keys below...</div>
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+              <button class="btn btn-sm btn-secondary" id="kpBackspace">⌫ Backspace</button>
+              <button class="btn btn-sm btn-secondary" id="kpSpace">Space</button>
+              <button class="btn btn-sm btn-secondary" id="kpClear">Clear</button>
+              <button class="btn btn-sm btn-primary" id="kpCopy">Copy Text</button>
+            </div>
+            <div class="keypad-grid" id="keypadGrid"></div>
+          </div>
+
+          <div id="referenceSection" style="display:none;">
+            <table class="ref-table">
+              <thead><tr><th>Key</th><th>Letters</th><th>Example: H = ?</th></tr></thead>
+              <tbody id="refBody"></tbody>
+            </table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type a message above to convert to T9 keypad sequences.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the T9 Decoder</h2>
+          <ol>
+            <li><strong>Encode mode</strong> — type plain text. The tool converts each letter to its multi-tap sequence (A=2, B=22, C=222, etc.).</li>
+            <li><strong>Decode mode</strong> — paste a T9 sequence. Use spaces to separate letters that share the same key (e.g. "44 4" = HG). Use <code>0</code> for spaces between words.</li>
+            <li><strong>Visual Keypad</strong> — click buttons to simulate pressing phone keys. The decoded text appears live above the keypad.</li>
+            <li><strong>Reference tab</strong> — see the complete key-to-letter mapping table.</li>
+          </ol>
+
+          <h2>About T9 Multi-Tap Encoding</h2>
+          <p>Before smartphones and touchscreens dominated mobile communication, billions of people typed text messages using a standard 12-key telephone keypad. This input method, called multi-tap or ABC mode, required pressing each key one to four times to cycle through its assigned letters. The number 2 key was assigned A, B, and C — so pressing it once gave A, twice gave B, and three times gave C. Messages like "HELLO" required the key sequence 44 33 555 555 666, which represents H (4 pressed twice), E (3 pressed twice), L (5 pressed three times), L (5 pressed three times again), O (6 pressed three times).</p>
+          <p>The method that most people call "T9" is technically a different system — T9 (Text on 9 keys) is predictive text that uses a dictionary to guess the intended word from a single press of each key. For example, pressing 4663 once and having the phone predict "home" vs. "good." The multi-tap approach in this tool is strictly the sequential letter selection method, also called ABC mode or multi-tap mode.</p>
+
+          <h3>The ITU E.161 Standard</h3>
+          <p>The letter assignments on telephone keypads are defined by the ITU E.161 standard. The mapping is: 2=ABC, 3=DEF, 4=GHI, 5=JKL, 6=MNO, 7=PQRS, 8=TUV, 9=WXYZ. Note that keys 7 and 9 each have four letters (PQRS and WXYZ respectively), while keys 2-6 and 8 have three letters each. Key 1 is traditionally reserved for special characters and punctuation, and key 0 represents a space.</p>
+
+          <h3>Encoding Rules</h3>
+          <p>When the same key is needed for consecutive letters, a brief pause distinguishes them. For example, to type "CB" (both on key 2), you press 222 (C), pause, then 22 (B). In text notation, this is written as "222 22" — a space separates the two sequences. The tool automatically handles this when encoding: consecutive same-key letters are separated by a pipe or space in the output for clarity.</p>
+
+          <h3>Cultural Impact</h3>
+          <p>Multi-tap input shaped how a generation communicated. SMS abbreviations like "cu l8r" (see you later) were partly driven by the tedium of entering full words via multi-tap. The style influenced internet slang long after touchscreens made full-keyboard input effortless. T9 and multi-tap coding also appear as educational tools in cryptography classes and escape room puzzles, where a sequence of numbers must be decoded back to a hidden word.</p>
+
+          <h3>Related Tools</h3>
+          <p>Try our <a href="/tools/vanity-phone.html">Vanity Phone Number Converter</a> to turn 1-800-FLOWERS into its dialable number. For other number-letter conversions, see the <a href="/tools/letters-to-numbers.html">A1Z26 Cipher</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is T9 multi-tap input?</button>
+            <div class="faq-answer">T9 multi-tap is a text input method used on old mobile phones. Each number key (2-9) maps to several letters. You press a key multiple times to cycle through its letters: 2=A, 22=B, 222=C, 3=D, 33=E, etc. The '0' key represents a space.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I separate letters on the same key?</button>
+            <div class="faq-answer">When two consecutive letters share the same key, use a space separator in the sequence. For example, "44 4" means H then G — H is key 4 twice, then a pause/space, then G which is key 4 once.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the T9 keypad layout?</button>
+            <div class="faq-answer">The standard layout is: 2=ABC, 3=DEF, 4=GHI, 5=JKL, 6=MNO, 7=PQRS, 8=TUV, 9=WXYZ, 0=space. Key 1 is for punctuation, not letters.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between T9 and multi-tap?</button>
+            <div class="faq-answer">Multi-tap (ABC mode) requires pressing a key multiple times to select a letter. T9 predictive text is different — you press each key once and the phone uses a dictionary to predict the word. This tool implements multi-tap, not T9 predictive text.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I decode T9 sequences back to text?</button>
+            <div class="faq-answer">Yes. Switch to Decode mode and enter the T9 keypad sequences. Use spaces to separate letters on the same key. Use '0' for word spaces. The tool maps each sequence back to its letter.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/t9-phone-decoder.html">T9 Decoder</a>
+        <a href="/tools/vanity-phone.html">Vanity Phone</a>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Tools</h4>
+        <a href="/tools/pig-latin.html">Pig Latin</a>
+        <a href="/tools/scytale-cipher.html">Scytale Cipher</a>
+        <a href="/tools/baudot-decoder.html">Baudot Code</a>
+        <a href="/tools/dna-sequence.html">DNA Sequence</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+
+    var KEYMAP = {
+      '2': 'ABC', '3': 'DEF', '4': 'GHI', '5': 'JKL',
+      '6': 'MNO', '7': 'PQRS', '8': 'TUV', '9': 'WXYZ'
+    };
+
+    // Build letter->key+count map
+    var LETTER_MAP = {};
+    Object.keys(KEYMAP).forEach(function(key) {
+      KEYMAP[key].split('').forEach(function(letter, idx) {
+        LETTER_MAP[letter] = { key: key, count: idx + 1 };
+      });
+    });
+    LETTER_MAP[' '] = { key: '0', count: 1 };
+
+    function encodeText(text) {
+      var result = [];
+      var upper = text.toUpperCase();
+      for (var i = 0; i < upper.length; i++) {
+        var ch = upper[i];
+        if (ch === ' ') {
+          result.push('0');
+        } else if (LETTER_MAP[ch]) {
+          var m = LETTER_MAP[ch];
+          var seq = m.key.repeat(m.count);
+          // If previous sequence uses same key, separate with space
+          if (result.length > 0) {
+            var prev = result[result.length - 1];
+            if (prev !== '0' && prev.charAt(0) === m.key) {
+              result.push(' ');
+            } else {
+              result.push(' ');
+            }
+          }
+          result.push(seq);
+        }
+      }
+      return result.join('').replace(/^ /, '').replace(/ {2,}/g, ' ');
+    }
+
+    function decodeSeq(seq) {
+      if (!seq.trim()) return '';
+      var result = '';
+      // Split by spaces, each token is a run of same digit
+      var tokens = seq.trim().split(/\s+/);
+      tokens.forEach(function(token) {
+        if (token === '0') {
+          result += ' ';
+        } else if (/^\d+$/.test(token)) {
+          var key = token.charAt(0);
+          var count = token.length;
+          if (KEYMAP[key]) {
+            var letters = KEYMAP[key];
+            var idx = (count - 1) % letters.length;
+            result += letters[idx];
+          }
+        }
+      });
+      return result;
+    }
+
+    var currentMode = 'encode';
+    var statusBar = document.getElementById('statusBar');
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.mode === mode); });
+      ['encode','decode','keypad','reference'].forEach(function(m){
+        document.getElementById(m+'Section').style.display = mode === m ? '' : 'none';
+      });
+      if (mode === 'reference') buildRef();
+      if (mode === 'keypad') buildKeypad();
+      updateStatus();
+    }
+
+    function updateStatus() {
+      if (currentMode === 'encode') {
+        var t = document.getElementById('encodeInput').value;
+        var enc = encodeText(t);
+        document.getElementById('encodeOutput').textContent = enc;
+        if (!t) { statusBar.className='status-bar info'; statusBar.textContent='Type a message above to convert to T9 keypad sequences.'; }
+        else { statusBar.className='status-bar valid'; statusBar.textContent='"'+t.substring(0,20)+(t.length>20?'...':'')+'" \u2192 '+enc.replace(/\s/g,'').length+' key presses'; }
+      } else if (currentMode === 'decode') {
+        var seq = document.getElementById('decodeInput').value;
+        var dec = decodeSeq(seq);
+        document.getElementById('decodeOutput').textContent = dec;
+        if (!seq.trim()) { statusBar.className='status-bar info'; statusBar.textContent='Enter T9 sequences above to decode.'; }
+        else { statusBar.className='status-bar valid'; statusBar.textContent='Decoded: "'+dec+'"'; }
+      }
+    }
+
+    function buildRef() {
+      var tbody = document.getElementById('refBody');
+      if (!tbody || tbody.children.length > 0) return;
+      var keys = ['2','3','4','5','6','7','8','9','0'];
+      keys.forEach(function(key) {
+        var letters = key === '0' ? 'SPACE' : KEYMAP[key] || '';
+        var example = '';
+        if (key === '4') example = '44 = H, 444 = I, 4 = G';
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td><strong>' + key + '</strong></td><td>' + letters + '</td><td style="font-size:11px;color:var(--text-secondary)">' + example + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Visual keypad
+    var kpState = { lastKey: null, lastCount: 0, result: [], sequence: [] };
+
+    function buildKeypad() {
+      var grid = document.getElementById('keypadGrid');
+      if (grid.children.length > 0) return;
+      var keys = [
+        { num: '1', letters: '' }, { num: '2', letters: 'ABC' }, { num: '3', letters: 'DEF' },
+        { num: '4', letters: 'GHI' }, { num: '5', letters: 'JKL' }, { num: '6', letters: 'MNO' },
+        { num: '7', letters: 'PQRS' }, { num: '8', letters: 'TUV' }, { num: '9', letters: 'WXYZ' },
+        { num: '*', letters: '' }, { num: '0', letters: 'SPC' }, { num: '#', letters: '' }
+      ];
+      keys.forEach(function(k) {
+        var btn = document.createElement('button');
+        btn.className = 'keypad-key';
+        btn.innerHTML = '<div class="key-num">' + k.num + '</div><div class="key-letters">' + k.letters + '</div>';
+        btn.addEventListener('click', function(){ handleKeyPress(k.num); });
+        grid.appendChild(btn);
+      });
+
+      document.getElementById('kpBackspace').addEventListener('click', function() {
+        kpState.result.pop();
+        kpState.lastKey = null; kpState.lastCount = 0;
+        updateKpDisplay();
+      });
+      document.getElementById('kpSpace').addEventListener('click', function() {
+        kpState.result.push(' ');
+        kpState.lastKey = null; kpState.lastCount = 0;
+        updateKpDisplay();
+      });
+      document.getElementById('kpClear').addEventListener('click', function() {
+        kpState.result = []; kpState.lastKey = null; kpState.lastCount = 0;
+        updateKpDisplay();
+      });
+      document.getElementById('kpCopy').addEventListener('click', function() {
+        var text = kpState.result.join('');
+        if (DT) DT.copyToClipboard(text, document.getElementById('kpCopy'));
+        else navigator.clipboard.writeText(text);
+      });
+    }
+
+    function handleKeyPress(key) {
+      if (key === '0') { kpState.result.push(' '); kpState.lastKey=null; kpState.lastCount=0; }
+      else if (KEYMAP[key]) {
+        var letters = KEYMAP[key];
+        if (kpState.lastKey === key) {
+          kpState.lastCount = (kpState.lastCount % letters.length) + 1;
+          kpState.result[kpState.result.length - 1] = letters[kpState.lastCount - 1];
+        } else {
+          kpState.lastKey = key;
+          kpState.lastCount = 1;
+          kpState.result.push(letters[0]);
+        }
+      }
+      updateKpDisplay();
+    }
+
+    function updateKpDisplay() {
+      var disp = document.getElementById('kpDisplay');
+      var text = kpState.result.join('') || 'Start pressing keys below...';
+      disp.textContent = text;
+      if (currentMode === 'keypad') {
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Typed: "' + kpState.result.join('') + '" — ' + kpState.result.length + ' characters';
+      }
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function(c){ c.addEventListener('click', function(){ setMode(c.dataset.mode); }); });
+    document.getElementById('encodeInput').addEventListener('input', DT ? DT.debounce(updateStatus,150) : updateStatus);
+    document.getElementById('decodeInput').addEventListener('input', DT ? DT.debounce(updateStatus,150) : updateStatus);
+    document.getElementById('exampleBtn').addEventListener('click', function(){ document.getElementById('encodeInput').value='HELLO'; updateStatus(); });
+    document.getElementById('decExampleBtn').addEventListener('click', function(){ document.getElementById('decodeInput').value='44 33 555 555 666'; updateStatus(); });
+    document.getElementById('copyEncBtn').addEventListener('click', function(){
+      var t = document.getElementById('encodeOutput').textContent;
+      if (DT) DT.copyToClipboard(t, this); else navigator.clipboard.writeText(t);
+    });
+
+    if (DT) DT.trackTool('t9-phone-decoder');
+    updateStatus();
+  })();
+  </script>
+</body>
+</html>

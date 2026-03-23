@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Fibonacci Sequence Generator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Generate Fibonacci sequences up to N terms or a maximum value. Calculate any Nth term. Show golden ratio convergence. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/fibonacci-generator.html">
+  <meta property="og:title" content="Fibonacci Sequence Generator — ThisDevTool">
+  <meta property="og:description" content="Generate Fibonacci numbers, calculate the Nth term, and visualize golden ratio convergence. Free online math tool.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/fibonacci-generator.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Fibonacci Sequence Generator",
+    "url": "https://thisdevtool.com/tools/fibonacci-generator.html",
+    "description": "Generate Fibonacci sequences, compute Nth terms, and show golden ratio convergence. Uses BigInt for arbitrary precision.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the Fibonacci sequence?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Fibonacci sequence is a series where each number is the sum of the two preceding ones, starting with 0 and 1: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34... It was described by Fibonacci in his 1202 book Liber Abaci and appears in many natural phenomena including plant growth patterns, spiral shells, and flower petal counts."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the golden ratio and how is it related to Fibonacci?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The golden ratio (φ, phi) is approximately 1.6180339887. As you compute consecutive Fibonacci numbers and divide each by its predecessor, the ratio converges toward φ. For example, 89/55 = 1.6181, 144/89 = 1.6179. This relationship is why Fibonacci spirals and the golden ratio appear together in nature and art."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I calculate the Nth Fibonacci number without computing all previous terms?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Binet's formula gives F(n) = (φⁿ - ψⁿ) / √5, where φ = (1+√5)/2 and ψ = (1-√5)/2. For very large n, φⁿ dominates and F(n) ≈ round(φⁿ / √5). However, for exact large integer results, iterative computation or matrix exponentiation is more precise than floating-point Binet."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where does the Fibonacci sequence appear in nature?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Fibonacci numbers appear in the spiral arrangement of sunflower seeds (typically 34 and 55 spirals), the number of petals on many flowers (3, 5, 8, 13, 21), the branching patterns of trees, the arrangement of leaves around a stem (phyllotaxis), and the spiral structure of nautilus shells."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the largest Fibonacci number this tool can compute?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool uses JavaScript BigInt for the sequence generator, providing arbitrary-precision integers with no overflow limit. You can compute F(1000) — a 209-digit number — or even larger terms. The Nth Term calculator also uses BigInt for exact results."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .fib-output { max-height:240px;overflow-y:auto;font-family:monospace;font-size:.85rem;line-height:1.6;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem;white-space:pre-wrap;word-break:break-all; }
+    .ratio-table { width:100%;border-collapse:collapse;font-family:monospace;font-size:.85rem;margin-top:.5rem; }
+    .ratio-table th { text-align:left;padding:.3rem .5rem;border-bottom:2px solid var(--border);color:var(--text-muted); }
+    .ratio-table td { padding:.25rem .5rem;border-bottom:1px solid var(--border); }
+    .ratio-bar { height:6px;background:#10b981;border-radius:3px;transition:width .3s; }
+    .big-result { font-size:1.5rem;font-weight:700;font-family:monospace;color:#10b981;word-break:break-all;margin:.5rem 0; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/prime-tester.html">Prime Tester</a>
+        <a href="/tools/golden-ratio.html">Golden Ratio</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Fibonacci Sequence Generator</h1>
+          <p class="tool-subtitle">Generate Fibonacci sequences, compute any Nth term with BigInt precision, and explore golden ratio convergence.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="sequence">Sequence</button>
+            <button class="option-chip" data-mode="nth">Nth Term</button>
+            <button class="option-chip" data-mode="golden">Golden Ratio</button>
+          </div>
+
+          <!-- Sequence view -->
+          <div id="sequenceView">
+            <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem;">
+              <label style="font-size:.9rem;">
+                First <input type="number" id="seqCount" min="1" max="500" value="50" style="width:72px;margin:0 .3rem;"> terms
+              </label>
+              <button class="btn btn-primary" id="genSeqBtn">Generate</button>
+              <button class="btn btn-sm btn-secondary" id="copySeqBtn">Copy</button>
+              <button class="btn btn-sm btn-secondary" id="dlSeqBtn">Download</button>
+            </div>
+            <div class="fib-output" id="seqOutput">Click Generate to produce the sequence.</div>
+          </div>
+
+          <!-- Nth term view -->
+          <div id="nthView" style="display:none;">
+            <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem;">
+              <label style="font-size:.9rem;">
+                Find F( <input type="number" id="nthInput" min="0" max="10000" value="50" style="width:80px;margin:0 .3rem;"> )
+              </label>
+              <button class="btn btn-primary" id="calcNthBtn">Calculate</button>
+            </div>
+            <div class="big-result" id="nthResult">F(50) = ?</div>
+            <p id="nthDigits" style="color:var(--text-muted);font-size:.85rem;"></p>
+          </div>
+
+          <!-- Golden ratio view -->
+          <div id="goldenView" style="display:none;">
+            <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:.75rem;">Ratio F(n)/F(n-1) converges toward φ = 1.6180339887…</p>
+            <table class="ratio-table" id="ratioTable">
+              <thead><tr><th>n</th><th>F(n)</th><th>F(n)/F(n-1)</th><th>Error from φ</th><th>Convergence</th></tr></thead>
+              <tbody id="ratioBody"></tbody>
+            </table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Click Generate to produce the Fibonacci sequence.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Fibonacci Generator</h2>
+          <ol>
+            <li><strong>Sequence mode</strong> — enter how many terms you want (up to 500) and click Generate. The output uses BigInt so large numbers are exact.</li>
+            <li><strong>Nth Term mode</strong> — enter any index n and compute F(n) directly. F(1000) is a 209-digit number displayed in full.</li>
+            <li><strong>Golden Ratio mode</strong> — see a table of consecutive ratios F(n)/F(n-1) converging toward φ ≈ 1.6180339887 with visual precision bars.</li>
+          </ol>
+
+          <h2>The Fibonacci Sequence Explained</h2>
+          <p>The Fibonacci sequence begins 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144… Each term is the sum of the two before it. The sequence is named after Leonardo of Pisa (nicknamed Fibonacci), who described it in his 1202 book <em>Liber Abaci</em> in the context of rabbit population growth. The sequence had been described centuries earlier by Indian mathematicians including Virahanka and Gopāla in the context of Sanskrit prosody.</p>
+
+          <h3>The Golden Ratio Connection</h3>
+          <p>Divide any Fibonacci number by the one before it: 5/3 = 1.667, 8/5 = 1.6, 13/8 = 1.625, 21/13 = 1.615, 34/21 = 1.619, 55/34 = 1.6176... The ratios oscillate above and below φ = 1.6180339887... and converge toward it rapidly. This relationship follows from the closed-form Binet's formula: F(n) = (φⁿ − ψⁿ) / √5, where ψ = (1 − √5)/2 ≈ −0.618. Since |ψ| < 1, ψⁿ → 0, so F(n) ≈ φⁿ / √5 for large n.</p>
+
+          <h3>Fibonacci in Nature</h3>
+          <p>The Fibonacci spiral — constructed by drawing quarter circles in squares whose sizes follow the sequence — approximates the golden spiral seen in nautilus shells. Sunflowers have 34 clockwise and 55 counterclockwise spirals of seeds, both Fibonacci numbers. Pinecone scales, pineapple skins, and artichoke leaves all display Fibonacci spiral patterns. This occurs because Fibonacci spacing minimizes packing waste — each new leaf or seed grows at approximately 137.5° (the golden angle, derived from φ) from the previous one, resulting in no two leaves directly above each other competing for sunlight.</p>
+
+          <h3>Fibonacci in Computer Science</h3>
+          <p>The Fibonacci sequence appears throughout algorithm analysis. Fibonacci heaps (a data structure) achieve better amortized complexity for priority queues. The Fibonacci search technique divides arrays using Fibonacci numbers rather than halving. The recursive Fibonacci function is the classic example of exponential time complexity (O(2ⁿ) naive) vs. efficient dynamic programming (O(n)), making it a standard teaching example for memoization and iterative solutions. Matrix exponentiation reduces Fibonacci computation to O(log n) time.</p>
+
+          <h3>Fibonacci Numbers and Art</h3>
+          <p>The golden ratio derived from Fibonacci appears throughout classical art and architecture. The Parthenon's facade dimensions approximate the golden rectangle. Leonardo da Vinci's illustrations for <em>De Divina Proportione</em> explore φ in human anatomy. Many painters, including Salvador Dalí, consciously used the golden spiral in their compositions. Whether or not these historical uses were intentional, the human perception system does find proportions near φ aesthetically pleasing — possibly because so much of the natural world follows these patterns.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the Fibonacci sequence?</button>
+            <div class="faq-answer">The Fibonacci sequence is a series where each number is the sum of the two preceding ones, starting with 0 and 1: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34... It appears in many natural phenomena including plant growth patterns, spiral shells, and flower petal counts.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the golden ratio and how is it related to Fibonacci?</button>
+            <div class="faq-answer">The golden ratio (φ ≈ 1.6180339887) is the limit of consecutive Fibonacci ratios. F(n+1)/F(n) → φ as n → ∞. This relationship arises from Binet's formula: F(n) = (φⁿ − ψⁿ) / √5, where ψ ≈ −0.618.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I calculate the Nth Fibonacci number without computing all previous terms?</button>
+            <div class="faq-answer">Binet's formula gives F(n) = (φⁿ − ψⁿ) / √5. For exact large integer results, iterative computation or matrix exponentiation is more precise than floating-point Binet. This tool uses iterative BigInt for exact results.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Where does the Fibonacci sequence appear in nature?</button>
+            <div class="faq-answer">Fibonacci numbers appear in sunflower seed spirals (34 and 55), flower petal counts (3, 5, 8, 13), tree branching patterns, leaf arrangements (phyllotaxis), and the spiral structure of nautilus shells — all because Fibonacci spacing minimizes overlap.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the largest Fibonacci number this tool can compute?</button>
+            <div class="faq-answer">This tool uses JavaScript BigInt, providing arbitrary-precision integers. You can compute F(1000) — a 209-digit number — or F(10000) and beyond. The Nth Term calculator iterates to find exact results with no floating-point error.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Math Tools</h4>
+        <a href="/tools/prime-tester.html">Prime Number Tester</a>
+        <a href="/tools/digital-root.html">Digital Root</a>
+        <a href="/tools/golden-ratio.html">Golden Ratio</a>
+        <a href="/tools/fraction-approximator.html">Fraction Approximator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Number Tools</h4>
+        <a href="/tools/number-base.html">Base Converter</a>
+        <a href="/tools/clock-angle.html">Clock Angle</a>
+        <a href="/tools/bitwise-calculator.html">Bitwise Calculator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var statusBar = document.getElementById('statusBar');
+    var currentMode = 'sequence';
+    var PHI = (1 + Math.sqrt(5)) / 2;
+
+    function fibSequence(n) {
+      var seq = [];
+      var a = 0n, b = 1n;
+      for (var i = 0; i < n; i++) { seq.push(a); var c = a + b; a = b; b = c; }
+      return seq;
+    }
+
+    function fibNth(n) {
+      if (n === 0) return 0n;
+      var a = 0n, b = 1n;
+      for (var i = 1; i < n; i++) { var c = a + b; a = b; b = c; }
+      return b;
+    }
+
+    // Sequence
+    document.getElementById('genSeqBtn').addEventListener('click', function () {
+      var count = Math.min(500, Math.max(1, parseInt(document.getElementById('seqCount').value, 10) || 50));
+      var seq = fibSequence(count);
+      var last = seq[seq.length - 1];
+      document.getElementById('seqOutput').textContent = seq.map(function (v, i) { return 'F(' + i + ') = ' + v; }).join('\n');
+      setStatus('valid', 'First ' + count + ' terms — F(' + (count-1) + ') = ' + last.toString().slice(0,30) + (String(last).length > 30 ? '…' : ''));
+      if (DT && DT.trackTool) DT.trackTool('fibonacci-generator');
+    });
+
+    document.getElementById('copySeqBtn').addEventListener('click', function () {
+      DT.copyToClipboard(document.getElementById('seqOutput').textContent, document.getElementById('copySeqBtn'));
+    });
+    document.getElementById('dlSeqBtn').addEventListener('click', function () {
+      DT.downloadText(document.getElementById('seqOutput').textContent, 'fibonacci.txt', 'text/plain');
+    });
+
+    // Nth
+    document.getElementById('calcNthBtn').addEventListener('click', function () {
+      var n = Math.max(0, parseInt(document.getElementById('nthInput').value, 10) || 0);
+      var t0 = performance.now();
+      var val = fibNth(n);
+      var elapsed = (performance.now() - t0).toFixed(1);
+      var str = String(val);
+      document.getElementById('nthResult').textContent = 'F(' + n + ') = ' + str;
+      document.getElementById('nthDigits').textContent = str.length + ' digits — computed in ' + elapsed + 'ms';
+      setStatus('valid', 'F(' + n + ') has ' + str.length + ' digit' + (str.length !== 1 ? 's' : ''));
+    });
+
+    // Golden ratio
+    function buildGoldenTable() {
+      var seq = fibSequence(25);
+      var tbody = document.getElementById('ratioBody');
+      tbody.innerHTML = '';
+      for (var i = 2; i < seq.length; i++) {
+        var ratio = Number(seq[i]) / Number(seq[i-1]);
+        var err = Math.abs(ratio - PHI);
+        var errStr = err.toExponential(3);
+        var pct = Math.max(0, 100 - err * 10000);
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + i + '</td>' +
+          '<td>' + seq[i] + '</td>' +
+          '<td>' + ratio.toFixed(10) + '</td>' +
+          '<td>' + errStr + '</td>' +
+          '<td><div class="ratio-bar" style="width:' + pct.toFixed(1) + '%"></div></td>';
+        tbody.appendChild(tr);
+      }
+      setStatus('info', 'Ratio F(n)/F(n-1) converges to φ = 1.6180339887…');
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        document.getElementById('sequenceView').style.display = currentMode === 'sequence' ? '' : 'none';
+        document.getElementById('nthView').style.display = currentMode === 'nth' ? '' : 'none';
+        document.getElementById('goldenView').style.display = currentMode === 'golden' ? '' : 'none';
+        if (currentMode === 'golden') buildGoldenTable();
+      });
+    });
+
+    function setStatus(type, msg) {
+      statusBar.className = 'status-bar ' + type;
+      statusBar.textContent = msg;
+    }
+
+    // Auto-generate on load
+    document.getElementById('genSeqBtn').click();
+  })();
+  </script>
+</body>
+</html>

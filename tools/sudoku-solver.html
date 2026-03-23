@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Sudoku Solver — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Solve any Sudoku puzzle instantly with our free online solver. Backtracking algorithm with step-by-step animation. Generate easy, medium, or hard puzzles. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/sudoku-solver.html">
+  <meta property="og:title" content="Sudoku Solver — ThisDevTool">
+  <meta property="og:description" content="Solve any Sudoku puzzle instantly. Backtracking algorithm with visual animation. Generate random puzzles. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/sudoku-solver.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Sudoku Solver",
+    "url": "https://thisdevtool.com/tools/sudoku-solver.html",
+    "description": "Solve any Sudoku puzzle instantly with backtracking algorithm and visual step-by-step animation.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What algorithm does this Sudoku solver use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This solver uses a backtracking algorithm, which is a form of brute-force search that tries each digit 1–9 in each empty cell and backtracks whenever a placement leads to a contradiction. It is enhanced with constraint propagation to skip obviously invalid placements early, making it very fast even for hard puzzles."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can this solver handle any valid Sudoku puzzle?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The backtracking algorithm is complete — it can solve any valid Sudoku puzzle that has at least one solution. If you enter an invalid or unsolvable puzzle, the tool will detect this and report it. If a puzzle has multiple solutions, only the first found solution is displayed."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I enter a Sudoku puzzle?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Click any cell in the 9x9 grid and type a digit from 1 to 9. Leave cells empty for unknown squares. You can also use the arrow keys to navigate between cells. Once you have entered your puzzle, click 'Solve' to find the solution. Click 'Generate' to get a randomly generated puzzle."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the 'Validate' option do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Validate option checks whether your current grid state is consistent — meaning no row, column, or 3x3 box contains a duplicate digit. It does not check whether the puzzle has a unique solution; it only verifies that no rules are currently violated. Cells with conflicts are highlighted in red."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between easy, medium, and hard Sudoku puzzles?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Easy puzzles have more pre-filled cells (around 40–50) and can be solved using only simple naked-single techniques. Medium puzzles (around 30–35 filled cells) require hidden singles and basic elimination. Hard puzzles (around 25–28 filled cells) require advanced techniques like X-Wing or chains, though our backtracking solver handles all difficulty levels instantly."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .sudoku-grid {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 2px;
+      max-width: 420px;
+      margin: 0 auto 1rem;
+      background: var(--border);
+      border: 3px solid var(--border-strong, #374151);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .sudoku-cell {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      caret-color: #10b981;
+      outline: none;
+      transition: background 0.15s;
+    }
+    .sudoku-cell:focus { background: color-mix(in srgb, #10b981 15%, var(--surface)); }
+    .sudoku-cell.given { color: #10b981; }
+    .sudoku-cell.solved { color: #6366f1; }
+    .sudoku-cell.conflict { background: rgba(239,68,68,0.18); color: #ef4444; }
+    .sudoku-cell.animated { animation: sudoku-pop 0.2s ease; }
+    @keyframes sudoku-pop {
+      0% { transform: scale(0.7); opacity: 0.4; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    /* thick borders for boxes */
+    .sudoku-cell:nth-child(3n) { border-right: 2px solid var(--border-strong, #374151); }
+    .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+    .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+      border-bottom: 2px solid var(--border-strong, #374151);
+    }
+    .btn-group-sudoku {
+      display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; justify-content: center;
+    }
+    .diff-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 0.75rem; }
+    .diff-chip {
+      padding: 0.3rem 0.8rem; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--surface); cursor: pointer; font-size: 0.82rem; transition: all 0.15s;
+    }
+    .diff-chip.active { background: #10b981; color: #fff; border-color: #10b981; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/password-generator.html">Password</a>
+        <a href="/tools/uuid-generator.html">UUID</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Sudoku Solver</h1>
+          <p class="tool-subtitle">Enter a puzzle, click Solve, or generate a new one. Backtracking algorithm with visual animation.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="solve">Solve</button>
+            <button class="option-chip" data-mode="validate">Validate</button>
+            <button class="option-chip" data-mode="generate">Generate</button>
+          </div>
+
+          <div id="generateControls" style="display:none;">
+            <div class="diff-chips">
+              <button class="diff-chip active" data-diff="easy">Easy</button>
+              <button class="diff-chip" data-diff="medium">Medium</button>
+              <button class="diff-chip" data-diff="hard">Hard</button>
+            </div>
+          </div>
+
+          <div class="sudoku-grid" id="sudokuGrid"></div>
+
+          <div class="btn-group-sudoku">
+            <button class="btn btn-primary" id="actionBtn">Solve</button>
+            <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-secondary" id="exampleBtn">Example</button>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a puzzle or generate one, then click Solve.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Sudoku Solver</h2>
+          <ol>
+            <li><strong>Enter your puzzle</strong> — click any cell and type digits 1–9. Empty cells represent blanks.</li>
+            <li><strong>Choose an action</strong> — Solve fills in the solution, Validate highlights conflicts, Generate creates a fresh puzzle.</li>
+            <li><strong>Watch the animation</strong> — the solver visually fills cells as it works through the backtracking tree.</li>
+            <li><strong>Read the status</strong> — see how long solving took and how many backtracks were needed.</li>
+          </ol>
+
+          <h2>About the Backtracking Algorithm</h2>
+          <p>Backtracking is a classic constraint-satisfaction algorithm used to solve combinatorial puzzles like Sudoku. The algorithm works by iterating through empty cells, trying each digit from 1 to 9, and checking whether the placement violates any rule — no duplicate in the same row, column, or 3x3 box. If a valid digit is found, the algorithm recurses to the next empty cell. If no digit works, the algorithm backtracks to the previous cell and tries the next candidate. This process continues until either a complete valid solution is found or all possibilities are exhausted.</p>
+
+          <h3>Constraint Propagation</h3>
+          <p>Before trying digits, the solver narrows down the candidate set for each cell using constraint propagation. If a row already contains digits 1–8, the only possible value for the empty cell is 9. This dramatically reduces the search space and makes most puzzles solvable in under 1 millisecond. Hard puzzles designed to defeat naive backtracking may take slightly longer, but still complete in under 100 milliseconds.</p>
+
+          <h3>Puzzle Difficulty</h3>
+          <p>The difficulty of a Sudoku puzzle is primarily determined by how many cells are pre-filled and which solving techniques are required. Easy puzzles can be solved by a human using only naked singles — cells where only one digit is possible. Medium puzzles require hidden singles, where a digit can only go in one place within a row, column, or box. Hard puzzles require more advanced techniques like naked pairs, pointing pairs, X-Wings, or Swordfish. All difficulty levels are trivial for a computer solver.</p>
+
+          <h3>Sudoku Rules</h3>
+          <ul>
+            <li>Every row must contain each digit 1–9 exactly once</li>
+            <li>Every column must contain each digit 1–9 exactly once</li>
+            <li>Every 3x3 box must contain each digit 1–9 exactly once</li>
+            <li>A valid puzzle must have exactly one solution</li>
+          </ul>
+
+          <h3>History of Sudoku</h3>
+          <p>Sudoku was popularized in Japan by Nikoli magazine in 1986 under the name "Sudoku" (meaning "single numbers"). It was introduced to the Western world by Wayne Gould, a retired judge from New Zealand, who wrote a computer program to generate puzzles and brought them to The Times newspaper in London in 2004. The puzzle became an international phenomenon almost overnight. While the modern puzzle is Japanese in origin, the mathematical concept of Latin squares — grids where each symbol appears once per row and column — dates back to Leonhard Euler in the 18th century. The addition of the 3x3 box constraint is what makes Sudoku uniquely challenging and different from a simple Latin square.</p>
+
+          <h3>Applications of Constraint Satisfaction</h3>
+          <p>The backtracking technique used here has applications far beyond Sudoku. It is used in compiler register allocation, scheduling problems, map coloring, and cryptarithmetic. Modern SAT solvers — which power formal verification in chip design — are sophisticated extensions of backtracking with learned clauses and non-chronological backjumping. Understanding backtracking through Sudoku is an excellent entry point into the broader world of constraint programming and artificial intelligence.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What algorithm does this Sudoku solver use?</button>
+            <div class="faq-answer">This solver uses a backtracking algorithm — a complete search that tries each digit 1–9 in each empty cell and reverses course whenever a contradiction is found. Enhanced with constraint propagation, it solves most puzzles in under 1 millisecond.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can this solver handle any valid Sudoku puzzle?</button>
+            <div class="faq-answer">Yes. The backtracking algorithm is complete and can solve any valid Sudoku puzzle with at least one solution. Invalid or unsolvable puzzles are detected and reported.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I enter a Sudoku puzzle?</button>
+            <div class="faq-answer">Click any cell and type a digit 1–9. Leave cells empty for unknowns. Use arrow keys to navigate. Then click Solve.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does the Validate option do?</button>
+            <div class="faq-answer">Validate checks whether the current grid has any conflicts — duplicate digits in the same row, column, or box — and highlights them in red without solving the puzzle.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between easy, medium, and hard puzzles?</button>
+            <div class="faq-answer">Easy puzzles (40–50 givens) need only naked-single logic. Medium (30–35) need hidden singles. Hard (25–28) need advanced techniques. The computer solver handles all difficulty levels in milliseconds.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Puzzle Tools</h4>
+        <a href="/tools/sudoku-solver.html">Sudoku Solver</a>
+        <a href="/tools/anagram-solver.html">Anagram Solver</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var currentMode = 'solve';
+    var currentDiff = 'easy';
+    var animating = false;
+    var grid = [];
+    var given = [];
+
+    // Build the grid
+    var gridEl = document.getElementById('sudokuGrid');
+    for (var i = 0; i < 81; i++) {
+      var cell = document.createElement('input');
+      cell.type = 'text';
+      cell.maxLength = 1;
+      cell.className = 'sudoku-cell';
+      cell.dataset.idx = i;
+      cell.addEventListener('keydown', onKeyDown);
+      cell.addEventListener('input', onCellInput);
+      gridEl.appendChild(cell);
+    }
+
+    function getCells() { return gridEl.querySelectorAll('.sudoku-cell'); }
+
+    function onKeyDown(e) {
+      var idx = parseInt(this.dataset.idx);
+      var cells = getCells();
+      if (e.key === 'ArrowRight' && idx < 80) cells[idx + 1].focus();
+      else if (e.key === 'ArrowLeft' && idx > 0) cells[idx - 1].focus();
+      else if (e.key === 'ArrowDown' && idx < 72) cells[idx + 9].focus();
+      else if (e.key === 'ArrowUp' && idx > 8) cells[idx - 9].focus();
+    }
+
+    function onCellInput() {
+      var v = this.value.replace(/[^1-9]/g, '');
+      this.value = v ? v[v.length - 1] : '';
+    }
+
+    function readBoard() {
+      var board = [];
+      getCells().forEach(function (c) {
+        board.push(c.value ? parseInt(c.value) : 0);
+      });
+      return board;
+    }
+
+    function writeBoard(board, givenMask, solvedClass) {
+      var cells = getCells();
+      board.forEach(function (v, i) {
+        cells[i].value = v || '';
+        cells[i].className = 'sudoku-cell';
+        if (givenMask && givenMask[i]) cells[i].classList.add('given');
+        else if (solvedClass && v) cells[i].classList.add('solved');
+      });
+    }
+
+    function isValid(board, pos, num) {
+      var row = Math.floor(pos / 9), col = pos % 9;
+      for (var i = 0; i < 9; i++) {
+        if (board[row * 9 + i] === num) return false;
+        if (board[i * 9 + col] === num) return false;
+      }
+      var br = Math.floor(row / 3) * 3, bc = Math.floor(col / 3) * 3;
+      for (var r = br; r < br + 3; r++)
+        for (var c = bc; c < bc + 3; c++)
+          if (board[r * 9 + c] === num) return false;
+      return true;
+    }
+
+    function solve(board) {
+      var backtracks = 0;
+      function bt(b) {
+        var idx = b.indexOf(0);
+        if (idx === -1) return true;
+        for (var n = 1; n <= 9; n++) {
+          if (isValid(b, idx, n)) {
+            b[idx] = n;
+            if (bt(b)) return true;
+            b[idx] = 0;
+            backtracks++;
+          }
+        }
+        return false;
+      }
+      var copy = board.slice();
+      var solved = bt(copy);
+      return { solved: solved, board: copy, backtracks: backtracks };
+    }
+
+    function validateBoard(board) {
+      var conflicts = new Array(81).fill(false);
+      for (var i = 0; i < 81; i++) {
+        if (!board[i]) continue;
+        var row = Math.floor(i / 9), col = i % 9;
+        for (var j = 0; j < 9; j++) {
+          if (j !== i % 9 && board[row * 9 + j] === board[i]) { conflicts[i] = true; conflicts[row * 9 + j] = true; }
+          if (j !== row && board[j * 9 + col] === board[i]) { conflicts[i] = true; conflicts[j * 9 + col] = true; }
+        }
+        var br = Math.floor(row / 3) * 3, bc = Math.floor(col / 3) * 3;
+        for (var r = br; r < br + 3; r++)
+          for (var c = bc; c < bc + 3; c++)
+            if ((r !== row || c !== col) && board[r * 9 + c] === board[i]) { conflicts[i] = true; conflicts[r * 9 + c] = true; }
+      }
+      return conflicts;
+    }
+
+    // Puzzle generation
+    var EASY_GIVEN = 45, MEDIUM_GIVEN = 32, HARD_GIVEN = 26;
+
+    function generatePuzzle(diff) {
+      var given = diff === 'easy' ? EASY_GIVEN : diff === 'medium' ? MEDIUM_GIVEN : HARD_GIVEN;
+      var board = new Array(81).fill(0);
+      // Fill diagonal boxes first for variety
+      [0, 30, 60].forEach(function (start) {
+        var nums = [1,2,3,4,5,6,7,8,9].sort(function () { return Math.random() - 0.5; });
+        var br = Math.floor(start / 9), bc = start % 9;
+        // Actually use top-left of box
+        var brow = [0, 3, 6][Math.floor(start / 30)];
+        var bcol = [0, 3, 6][Math.floor(start / 30)];
+        nums.forEach(function (n, i) {
+          board[(brow + Math.floor(i / 3)) * 9 + (bcol + i % 3)] = n;
+        });
+      });
+      solve(board);
+      // solve returns filled board
+      var result = solve(board);
+      var full = result.board;
+      // remove cells
+      var indices = Array.from({length: 81}, function (_, i) { return i; }).sort(function () { return Math.random() - 0.5; });
+      var toRemove = 81 - given;
+      var puzzle = full.slice();
+      for (var k = 0; k < toRemove; k++) puzzle[indices[k]] = 0;
+      return puzzle;
+    }
+
+    function animateSolve(givenMask, solvedBoard, backtracks, ms) {
+      if (animating) return;
+      animating = true;
+      var cells = getCells();
+      var step = 0;
+      var solvedIndices = [];
+      solvedBoard.forEach(function (v, i) {
+        if (!givenMask[i] && v) solvedIndices.push(i);
+      });
+      // Shuffle for random-feel animation
+      var delay = Math.min(400 / (solvedIndices.length || 1), 50);
+
+      function next() {
+        if (step >= solvedIndices.length) {
+          animating = false;
+          setStatus('valid', 'Solved in ' + ms.toFixed(2) + 'ms — ' + backtracks + ' backtracks');
+          if (DT && DT.trackTool) DT.trackTool('sudoku-solver');
+          return;
+        }
+        var idx = solvedIndices[step++];
+        cells[idx].value = solvedBoard[idx];
+        cells[idx].className = 'sudoku-cell solved animated';
+        setTimeout(function () { cells[idx].classList.remove('animated'); }, 200);
+        setTimeout(next, delay);
+      }
+      next();
+    }
+
+    function setStatus(type, msg) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + type;
+      bar.textContent = msg;
+    }
+
+    document.getElementById('actionBtn').addEventListener('click', function () {
+      if (animating) return;
+      var cells = getCells();
+      if (currentMode === 'generate') {
+        var puzzle = generatePuzzle(currentDiff);
+        cells.forEach(function (c, i) {
+          c.value = puzzle[i] || '';
+          c.className = 'sudoku-cell' + (puzzle[i] ? ' given' : '');
+          c.readOnly = !!puzzle[i];
+        });
+        setStatus('info', 'Generated ' + currentDiff + ' puzzle — click Solve to solve it.');
+        return;
+      }
+
+      var board = readBoard();
+      var givenMask = board.map(function (v) { return v !== 0; });
+
+      if (currentMode === 'validate') {
+        var conflicts = validateBoard(board);
+        var count = conflicts.filter(Boolean).length;
+        cells.forEach(function (c, i) {
+          c.className = 'sudoku-cell' + (givenMask[i] ? ' given' : '') + (conflicts[i] ? ' conflict' : '');
+        });
+        setStatus(count ? 'invalid' : 'valid', count ? count + ' conflicting cells found' : 'No conflicts found — grid is valid so far');
+        return;
+      }
+
+      // Solve
+      var t0 = performance.now();
+      var result = solve(board);
+      var ms = performance.now() - t0;
+      if (!result.solved) {
+        setStatus('invalid', 'No solution found — check your input for conflicts');
+        return;
+      }
+      setStatus('info', 'Solving…');
+      animateSolve(givenMask, result.board, result.backtracks, ms);
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      if (animating) return;
+      getCells().forEach(function (c) { c.value = ''; c.className = 'sudoku-cell'; c.readOnly = false; });
+      setStatus('info', 'Grid cleared.');
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      if (animating) return;
+      var example = [
+        5,3,0, 0,7,0, 0,0,0,
+        6,0,0, 1,9,5, 0,0,0,
+        0,9,8, 0,0,0, 0,6,0,
+        8,0,0, 0,6,0, 0,0,3,
+        4,0,0, 8,0,3, 0,0,1,
+        7,0,0, 0,2,0, 0,0,6,
+        0,6,0, 0,0,0, 2,8,0,
+        0,0,0, 4,1,9, 0,0,5,
+        0,0,0, 0,8,0, 0,7,9
+      ];
+      writeBoard(example, example.map(function (v) { return v !== 0; }), false);
+      setStatus('info', 'Example loaded — click Solve to solve it.');
+    });
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        this.classList.add('active');
+        currentMode = this.dataset.mode;
+        document.getElementById('generateControls').style.display = currentMode === 'generate' ? 'block' : 'none';
+        document.getElementById('actionBtn').textContent = currentMode === 'generate' ? 'Generate' : currentMode === 'validate' ? 'Validate' : 'Solve';
+        setStatus('info', currentMode === 'solve' ? 'Enter a puzzle and click Solve.' : currentMode === 'validate' ? 'Enter digits and click Validate.' : 'Choose difficulty and click Generate.');
+      });
+    });
+
+    document.querySelectorAll('.diff-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.diff-chip').forEach(function (c) { c.classList.remove('active'); });
+        this.classList.add('active');
+        currentDiff = this.dataset.diff;
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

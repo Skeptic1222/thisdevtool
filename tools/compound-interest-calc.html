@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Compound Interest Calculator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Calculate compound interest: A = P(1+r/n)^(nt). Year-over-year growth table, visual chart, and regular contributions. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/compound-interest-calc.html">
+  <meta property="og:title" content="Compound Interest Calculator — ThisDevTool">
+  <meta property="og:description" content="A = P(1+r/n)^(nt). Calculate compound interest with regular contributions. Year-over-year table and growth chart. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/compound-interest-calc.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Compound Interest Calculator",
+    "url": "https://thisdevtool.com/tools/compound-interest-calc.html",
+    "description": "Calculate compound interest using A = P(1+r/n)^(nt) with regular contributions, year-over-year table, and visual growth chart.",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the compound interest formula?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The compound interest formula is A = P(1 + r/n)^(nt), where A is the final amount, P is the principal (initial investment), r is the annual interest rate (as a decimal), n is the number of times interest is compounded per year, and t is the time in years. With regular contributions C added each period, the formula extends to account for the future value of each contribution."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does compounding frequency affect returns?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "More frequent compounding slightly increases returns. For example, $10,000 at 10% annual rate for 10 years: annually gives $25,937; monthly gives $27,070; daily gives $27,179. The difference between monthly and daily is small, but the difference between annual and monthly can be significant for large amounts or long time horizons."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the Rule of 72?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Rule of 72 is a quick mental math shortcut to estimate how long it takes for an investment to double. Divide 72 by the annual interest rate: at 6% per year, an investment doubles in approximately 72 ÷ 6 = 12 years. At 10%, it doubles in about 7.2 years."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the calculator account for taxes or inflation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This calculator shows nominal returns without adjusting for taxes or inflation. To estimate real (inflation-adjusted) returns, subtract the expected inflation rate from your interest rate. For example, if you expect 7% returns and 3% inflation, use a 4% rate for real purchasing power calculations."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do regular contributions affect compound growth?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Regular contributions dramatically accelerate wealth accumulation through the power of compound interest on those contributions. Each contribution earns compound interest from the moment it is added. Even small monthly contributions — $100/month at 7% for 30 years — grow to about $117,000, more than double the $36,000 total contributed."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .ci-form {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+    }
+    @media (max-width: 640px) { .ci-form { grid-template-columns: 1fr; } }
+    .ci-form label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.25rem; }
+    .ci-form input, .ci-form select {
+      width: 100%; padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border); border-radius: 6px;
+      background: var(--surface); color: var(--text); font-size: 1rem;
+    }
+    .ci-form input:focus, .ci-form select:focus { outline: 2px solid #10b981; }
+    .result-hero {
+      text-align: center; padding: 1.25rem;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-radius: 12px; margin: 1rem 0; color: #fff;
+    }
+    .result-hero .amount { font-size: 2.2rem; font-weight: 800; }
+    .result-hero .label { font-size: 0.85rem; opacity: 0.85; margin-top: 0.25rem; }
+    .result-cards {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin: 0.75rem 0;
+    }
+    @media (max-width: 520px) { .result-cards { grid-template-columns: 1fr 1fr; } }
+    .result-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.75rem; text-align: center;
+    }
+    .result-card .val { font-size: 1.1rem; font-weight: 700; color: #10b981; }
+    .result-card .lbl { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .growth-chart {
+      margin: 1rem 0; padding: 0.75rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    }
+    .chart-bars { display: flex; align-items: flex-end; gap: 3px; height: 120px; }
+    .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .chart-bar { width: 100%; border-radius: 3px 3px 0 0; transition: height 0.3s; min-height: 2px; }
+    .chart-bar.principal { background: #6366f1; }
+    .chart-bar.contributions { background: #f59e0b; }
+    .chart-bar.interest { background: #10b981; }
+    .chart-label { font-size: 0.6rem; color: var(--text-muted); }
+    .chart-legend { display: flex; gap: 1rem; margin-top: 0.5rem; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+    .year-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.75rem; }
+    .year-table th, .year-table td { padding: 0.4rem 0.6rem; border: 1px solid var(--border); text-align: right; }
+    .year-table th { background: var(--surface); font-weight: 700; text-align: center; }
+    .year-table td:first-child { text-align: center; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/password-entropy.html">Entropy</a>
+        <a href="/tools/unit-converter.html">Units</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Compound Interest Calculator</h1>
+          <p class="tool-subtitle">A = P(1+r/n)<sup>nt</sup> — Calculate future value with regular contributions and see year-over-year growth.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="calculate">Calculate</button>
+            <button class="option-chip" data-mode="compare">Compare</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <div id="calculateSection">
+            <div class="ci-form" id="ciForm">
+              <div>
+                <label for="principal">Principal ($)</label>
+                <input type="number" id="principal" value="10000" min="0" step="100">
+              </div>
+              <div>
+                <label for="rate">Annual Rate (%)</label>
+                <input type="number" id="rate" value="7" min="0" max="100" step="0.1">
+              </div>
+              <div>
+                <label for="years">Time (Years)</label>
+                <input type="number" id="years" value="20" min="1" max="100" step="1">
+              </div>
+              <div>
+                <label for="compound">Compound Frequency</label>
+                <select id="compound">
+                  <option value="1">Annually (1×/year)</option>
+                  <option value="2">Semi-annually (2×/year)</option>
+                  <option value="4">Quarterly (4×/year)</option>
+                  <option value="12" selected>Monthly (12×/year)</option>
+                  <option value="365">Daily (365×/year)</option>
+                </select>
+              </div>
+              <div>
+                <label for="contribution">Regular Contribution ($)</label>
+                <input type="number" id="contribution" value="0" min="0" step="10">
+              </div>
+              <div>
+                <label for="contribFreq">Contribution Frequency</label>
+                <select id="contribFreq">
+                  <option value="12" selected>Monthly</option>
+                  <option value="4">Quarterly</option>
+                  <option value="2">Semi-annually</option>
+                  <option value="1">Annually</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="calcBtn" style="margin:0.75rem 0; width:100%;">Calculate</button>
+
+            <div id="results" style="display:none;">
+              <div class="result-hero" id="resultHero"></div>
+              <div class="result-cards" id="resultCards"></div>
+              <div class="growth-chart">
+                <div style="font-size:0.8rem; font-weight:600; margin-bottom:0.5rem;">Year-by-Year Growth</div>
+                <div class="chart-bars" id="chartBars"></div>
+                <div class="chart-legend">
+                  <div class="legend-item"><div class="legend-dot" style="background:#6366f1;"></div>Principal</div>
+                  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;"></div>Contributions</div>
+                  <div class="legend-item"><div class="legend-dot" style="background:#10b981;"></div>Interest</div>
+                </div>
+              </div>
+              <h3 style="margin:0.75rem 0 0.4rem;">Year-over-Year Table</h3>
+              <div style="overflow-x:auto;"><table class="year-table" id="yearTable"></table></div>
+            </div>
+          </div>
+
+          <div id="compareSection" style="display:none;">
+            <p style="font-size:0.85rem; color:var(--text-muted);">Compare up to 3 investment scenarios side by side.</p>
+            <div style="overflow-x:auto;">
+              <table class="year-table" id="compareTable">
+                <thead>
+                  <tr>
+                    <th>Field</th>
+                    <th>Scenario A</th>
+                    <th>Scenario B</th>
+                    <th>Scenario C</th>
+                  </tr>
+                  <tr>
+                    <td>Principal ($)</td>
+                    <td><input type="number" class="sc-p" value="10000" style="width:100%;padding:0.3rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;"></td>
+                    <td><input type="number" class="sc-p" value="10000" style="width:100%;padding:0.3rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;"></td>
+                    <td><input type="number" class="sc-p" value="10000" style="width:100%;padding:0.3rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;"></td>
+                  </tr>
+                  <tr>
+                    <td>Rate (%)</td>
+                    <td><input type="number" class="sc-r" value="5" style="width:100%;padding:0.3rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;"></td>
+                    <td><input type="number" class="sc-r" value="7" style="width:100%;padding:0.3rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;"></td>
+                    <td><input type="number" class="sc-r" value="10" style="width:100%;padding:0.3rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;"></td>
+                  </tr>
+                  <tr>
+                    <td>Years</td>
+                    <td><input type="number" class="sc-t" value="20" style="width:100%;padding:0.3rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;"></td>
+                    <td><input type="number" class="sc-t" value="20" style="width:100%;padding:0.3rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;"></td>
+                    <td><input type="number" class="sc-t" value="20" style="width:100%;padding:0.3rem;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px;"></td>
+                  </tr>
+                </thead>
+                <tbody id="compareBody"></tbody>
+              </table>
+            </div>
+            <button class="btn btn-primary" id="compareCalcBtn" style="margin:0.75rem 0;">Compare</button>
+          </div>
+
+          <div id="referenceSection" style="display:none;">
+            <h3>Rule of 72 — Doubling Times</h3>
+            <table class="year-table" style="margin-top:0.5rem;">
+              <thead><tr><th>Rate</th><th>Years to Double (Rule of 72)</th><th>Actual Years</th></tr></thead>
+              <tbody id="r72Body"></tbody>
+            </table>
+            <h3 style="margin-top:1rem;">$10,000 at 7% for 30 Years</h3>
+            <table class="year-table">
+              <thead><tr><th>Compounding</th><th>Final Value</th><th>Total Interest</th></tr></thead>
+              <tbody>
+                <tr><td>Annually</td><td>$76,122.55</td><td>$66,122.55</td></tr>
+                <tr><td>Quarterly</td><td>$79,272.18</td><td>$69,272.18</td></tr>
+                <tr><td>Monthly</td><td>$81,136.70</td><td>$71,136.70</td></tr>
+                <tr><td>Daily</td><td>$81,648.86</td><td>$71,648.86</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter your values and click Calculate.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>Understanding Compound Interest</h2>
+          <p>Compound interest is the process of earning interest not only on your initial principal but also on all previously earned interest. Albert Einstein reportedly called it "the eighth wonder of the world." The mathematical formula is <strong>A = P(1 + r/n)<sup>nt</sup></strong>, where:</p>
+          <ul>
+            <li><strong>A</strong> — the final amount (principal + all interest)</li>
+            <li><strong>P</strong> — the principal (initial investment)</li>
+            <li><strong>r</strong> — the annual interest rate (expressed as a decimal: 7% = 0.07)</li>
+            <li><strong>n</strong> — the number of times interest is compounded per year</li>
+            <li><strong>t</strong> — the time period in years</li>
+          </ul>
+
+          <h2>The Impact of Time</h2>
+          <p>Time is the most powerful variable in compound interest. A $10,000 investment at 7% annual return grows to $19,672 after 10 years, $38,697 after 20 years, and $76,123 after 30 years. The money more than doubles every decade because the interest is itself earning interest. Starting early — even with a smaller amount — consistently outperforms starting late with a larger amount.</p>
+
+          <h3>Regular Contributions</h3>
+          <p>Adding regular contributions dramatically accelerates wealth accumulation. This calculator uses the future value of annuity formula to account for each contribution earning compound interest from the moment it is added. A $200/month contribution to a 7% account over 30 years adds an additional $242,000 in growth — on total contributions of only $72,000. The remaining $170,000 is pure compound growth on those contributions.</p>
+
+          <h3>Compounding Frequency</h3>
+          <p>More frequent compounding means interest is calculated and added to the principal more often, giving more opportunities for the new, higher balance to earn interest. For most practical purposes, the difference between monthly and daily compounding is small (a few tenths of a percent per year). The more significant choice is ensuring you are in an account that compounds at all — some savings products use simple interest.</p>
+
+          <h3>Real-World Returns</h3>
+          <p>Historical data shows the US stock market (S&P 500) has returned about 10% annually over the long term before inflation, or about 7% after inflation. High-yield savings accounts currently offer 4–5%. These rates fluctuate significantly year to year — the power of this calculator is in comparing scenarios, not predicting exact outcomes. Always consider that investment returns are variable and past performance does not guarantee future results.</p>
+
+          <h3>The Rule of 72</h3>
+          <p>A handy rule of thumb: divide 72 by the annual interest rate to estimate how many years it takes to double your money. At 6%, money doubles in approximately 12 years (72 ÷ 6). At 12%, it doubles in 6 years. At 4%, it takes 18 years. This works because the exact formula for doubling time is ln(2) / ln(1+r), which approximates to 0.693 / r ≈ 72 / (100r) for common interest rates.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is the compound interest formula?</button>
+            <div class="faq-answer">A = P(1 + r/n)^(nt). A = final amount, P = principal, r = annual rate (decimal), n = compounding periods per year, t = years. With regular contributions, the annuity formula is added to account for each payment's compound growth.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does compounding frequency affect returns?</button>
+            <div class="faq-answer">More frequent compounding slightly increases returns. $10,000 at 10% for 10 years: annually = $25,937; monthly = $27,070; daily = $27,179. The difference between monthly and daily is small, but annual vs. monthly can be significant.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the Rule of 72?</button>
+            <div class="faq-answer">Divide 72 by the annual interest rate to estimate doubling time. At 6%, money doubles in ~12 years. At 10%, ~7.2 years. At 4%, ~18 years.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does the calculator account for taxes or inflation?</button>
+            <div class="faq-answer">No — it shows nominal returns. For real (inflation-adjusted) returns, subtract the inflation rate from your interest rate before calculating.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do regular contributions affect compound growth?</button>
+            <div class="faq-answer">Each contribution earns compound interest from the day it is added. Small regular contributions (e.g. $200/month at 7% for 30 years) can grow to $242,000 — on $72,000 total paid in. The rest is pure compound growth.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Finance Tools</h4>
+        <a href="/tools/compound-interest-calc.html">Compound Interest</a>
+        <a href="/tools/password-entropy.html">Password Entropy</a>
+        <a href="/tools/unit-converter.html">Unit Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/timestamp-converter.html">Timestamp</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var currentMode = 'calculate';
+
+    function fmt(n) {
+      return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+    function fmtn(n) {
+      return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function calcCompound(P, r, n, t, C, cf) {
+      // Year-by-year calculation
+      var rows = [];
+      var balance = P;
+      var totalContributed = P;
+      var annualRate = r / 100;
+      var periodsPerYear = n;
+      var contribPerYear = cf; // how many contributions per year
+      var contribPerPeriod = C / (contribPerYear || 1); // amount per contribution
+      var periodsPerContrib = periodsPerYear / contribPerYear; // compounding periods between contributions
+
+      for (var year = 1; year <= t; year++) {
+        var startBalance = balance;
+        for (var period = 1; period <= periodsPerYear; period++) {
+          balance *= (1 + annualRate / periodsPerYear);
+          // Add contribution at the start of each contribution period
+          if (C > 0 && period % (periodsPerYear / contribPerYear) === 0) {
+            balance += C;
+            totalContributed += C;
+          }
+        }
+        var yearInterest = balance - startBalance - (C > 0 ? C * contribPerYear : 0);
+        rows.push({
+          year: year,
+          balance: balance,
+          contributed: totalContributed,
+          interest: balance - totalContributed
+        });
+      }
+      return rows;
+    }
+
+    function calculate() {
+      var P = parseFloat(document.getElementById('principal').value) || 0;
+      var r = parseFloat(document.getElementById('rate').value) || 0;
+      var t = parseInt(document.getElementById('years').value) || 1;
+      var n = parseInt(document.getElementById('compound').value) || 12;
+      var C = parseFloat(document.getElementById('contribution').value) || 0;
+      var cf = parseInt(document.getElementById('contribFreq').value) || 12;
+
+      if (P < 0 || r < 0 || t < 1) { setStatus('invalid', 'Please enter valid positive values.'); return; }
+
+      var rows = calcCompound(P, r, n, t, C, cf);
+      var final = rows[rows.length - 1];
+
+      document.getElementById('results').style.display = 'block';
+      document.getElementById('resultHero').innerHTML =
+        '<div class="amount">' + fmt(final.balance) + '</div>' +
+        '<div class="label">Future Value after ' + t + ' years at ' + r + '% ' + getFreqLabel(n) + '</div>';
+
+      var totalInterest = final.balance - final.contributed;
+      var totalContribs = final.contributed - P;
+      document.getElementById('resultCards').innerHTML =
+        '<div class="result-card"><div class="val">' + fmt(P) + '</div><div class="lbl">Principal</div></div>' +
+        '<div class="result-card"><div class="val">' + fmt(totalContribs) + '</div><div class="lbl">Total Contributions</div></div>' +
+        '<div class="result-card"><div class="val">' + fmt(totalInterest) + '</div><div class="lbl">Total Interest</div></div>';
+
+      // Chart
+      var maxVal = final.balance;
+      var sample = rows.filter(function (_, i) { return rows.length <= 20 || i % Math.ceil(rows.length / 20) === 0 || i === rows.length - 1; });
+      var barsHtml = '';
+      sample.forEach(function (row) {
+        var pct = row.balance / maxVal;
+        var pPct = P / maxVal;
+        var cPct = (row.contributed - P) / maxVal;
+        var iPct = Math.max(0, pct - pPct - cPct);
+        var totalH = 110;
+        barsHtml += '<div class="chart-bar-wrap">' +
+          '<div style="display:flex;flex-direction:column;justify-content:flex-end;height:110px;width:100%;">' +
+          '<div class="chart-bar interest" style="height:' + (iPct * totalH) + 'px;"></div>' +
+          '<div class="chart-bar contributions" style="height:' + (cPct * totalH) + 'px;"></div>' +
+          '<div class="chart-bar principal" style="height:' + (pPct * totalH) + 'px;"></div>' +
+          '</div>' +
+          '<div class="chart-label">' + row.year + '</div>' +
+          '</div>';
+      });
+      document.getElementById('chartBars').innerHTML = barsHtml;
+
+      // Year table
+      var tableRows = '<thead><tr><th>Year</th><th>Balance</th><th>Contributed</th><th>Interest</th></tr></thead><tbody>';
+      rows.forEach(function (row) {
+        tableRows += '<tr><td>' + row.year + '</td><td>' + fmt(row.balance) + '</td><td>' + fmt(row.contributed) + '</td><td>' + fmt(row.balance - row.contributed) + '</td></tr>';
+      });
+      tableRows += '</tbody>';
+      document.getElementById('yearTable').innerHTML = tableRows;
+
+      setStatus('valid', fmt(P) + ' at ' + r + '% for ' + t + ' years = ' + fmt(final.balance));
+      if (DT && DT.trackTool) DT.trackTool('compound-interest-calc');
+    }
+
+    function getFreqLabel(n) {
+      return { 1: 'annually', 2: 'semi-annually', 4: 'quarterly', 12: 'monthly', 365: 'daily' }[n] || n + 'x/year';
+    }
+
+    function setStatus(type, msg) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + type;
+      bar.textContent = msg;
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', calculate);
+
+    // Auto-calculate on enter
+    document.querySelectorAll('.ci-form input, .ci-form select').forEach(function (el) {
+      el.addEventListener('keydown', function (e) { if (e.key === 'Enter') calculate(); });
+    });
+
+    document.getElementById('compareCalcBtn').addEventListener('click', function () {
+      var ps = document.querySelectorAll('.sc-p');
+      var rs = document.querySelectorAll('.sc-r');
+      var ts = document.querySelectorAll('.sc-t');
+      var html = '<tr><th>Result</th>';
+      for (var i = 0; i < 3; i++) html += '<th>Scenario ' + ['A','B','C'][i] + '</th>';
+      html += '</tr>';
+      var finals = [];
+      for (var i = 0; i < 3; i++) {
+        var P = parseFloat(ps[i].value) || 0;
+        var r = parseFloat(rs[i].value) || 0;
+        var t = parseInt(ts[i].value) || 1;
+        var rows = calcCompound(P, r, 12, t, 0, 12);
+        finals.push(rows[rows.length - 1]);
+      }
+      var labels = ['Future Value', 'Total Interest', 'Multiplier'];
+      finals[0] && (html += '<tr><td><strong>Future Value</strong></td>' + finals.map(function (f) { return '<td>' + fmt(f.balance) + '</td>'; }).join('') + '</tr>');
+      finals[0] && (html += '<tr><td><strong>Total Interest</strong></td>' + finals.map(function (f) { return '<td>' + fmt(f.balance - f.contributed) + '</td>'; }).join('') + '</tr>');
+      finals[0] && (html += '<tr><td><strong>×P Growth</strong></td>' + finals.map(function (f, i) { var P = parseFloat(document.querySelectorAll('.sc-p')[i].value) || 1; return '<td>' + (f.balance / P).toFixed(2) + '×</td>'; }).join('') + '</tr>');
+      document.getElementById('compareBody').innerHTML = html;
+      setStatus('valid', 'Comparison complete');
+    });
+
+    // Reference table
+    function buildR72() {
+      var rates = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20];
+      var html = '';
+      rates.forEach(function (r) {
+        var rule72 = (72 / r).toFixed(1);
+        var actual = (Math.log(2) / Math.log(1 + r / 100)).toFixed(1);
+        html += '<tr><td>' + r + '%</td><td>' + rule72 + ' years</td><td>' + actual + ' years</td></tr>';
+      });
+      document.getElementById('r72Body').innerHTML = html;
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        this.classList.add('active');
+        currentMode = this.dataset.mode;
+        document.getElementById('calculateSection').style.display = currentMode === 'calculate' ? 'block' : 'none';
+        document.getElementById('compareSection').style.display = currentMode === 'compare' ? 'block' : 'none';
+        document.getElementById('referenceSection').style.display = currentMode === 'reference' ? 'block' : 'none';
+        if (currentMode === 'reference') buildR72();
+      });
+    });
+
+    // Initial calculation
+    calculate();
+  })();
+  </script>
+</body>
+</html>

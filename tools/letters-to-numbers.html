@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Letters to Numbers (A1Z26) Cipher — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Convert letters to numbers with the A1Z26 cipher. A=1, B=2...Z=26. Encode, decode, reverse (Z=1), sum mode, and custom offset. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/letters-to-numbers.html">
+  <meta property="og:title" content="A1Z26 Letters to Numbers Cipher — ThisDevTool">
+  <meta property="og:description" content="A=1, B=2...Z=26 encoder and decoder. Reverse, offset variants, and sum mode. Free, runs in browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/letters-to-numbers.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "A1Z26 Letters to Numbers Cipher",
+    "url": "https://thisdevtool.com/tools/letters-to-numbers.html",
+    "description": "Convert letters to numbers (A=1, B=2...Z=26) and back. Encode, decode, reverse, offset, and sum modes.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the A1Z26 cipher?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The A1Z26 cipher (also called Letter-Number cipher or Letter-to-Number cipher) is a simple substitution cipher where each letter of the alphabet is replaced by its ordinal position: A=1, B=2, C=3 ... Z=26. It is one of the most basic ciphers and is widely used in puzzles, escape rooms, and games like Gravity Falls."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the reverse A1Z26 work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In reverse A1Z26, the mapping is inverted: Z=1, Y=2, X=3 ... A=26. This is sometimes called 'A26Z1' or 'reverse alphabetical.' It is a simple variant that requires the same brute-force resistance as A1Z26 — essentially none — but adds a small layer of obscurity."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the letter sum (numerology) mode?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sum mode adds up all the A1Z26 values in a word to produce a single number. For example, HELLO = 8+5+12+12+15 = 52. This is sometimes called 'word numerology' or 'letter sum' and appears in puzzles, number games, and some numerological traditions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is an offset cipher?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An offset cipher shifts the starting value. Instead of A=1, you might use A=0 (zero-indexed) or A=65 (ASCII values). A custom offset lets you set any starting number. This is used in some programming puzzles and custom code systems."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where is the A1Z26 cipher used?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A1Z26 appears in the animated series Gravity Falls as a cipher used in episode end credits. It is also common in escape rooms, puzzle books, and online ARGs (alternate reality games). Because it is so simple, it is never used for real security — only for entertainment and learning purposes."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .num-output { letter-spacing: 1px; }
+    .sum-display {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+      padding: 12px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      border: 2px solid var(--accent);
+      margin: 10px 0;
+    }
+    .breakdown-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 10px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .breakdown-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px 6px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      min-width: 30px;
+    }
+    .bd-letter { font-weight: 700; font-size: 15px; color: var(--accent); }
+    .bd-num { font-size: 11px; color: var(--text-secondary); }
+    .offset-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+    .offset-row label { font-size: 13px; color: var(--text-secondary); }
+    .offset-row input[type=number] { width: 70px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); }
+    .sep-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 13px; }
+    .sep-row label { color: var(--text-secondary); }
+    .sep-row select { padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <a href="/tools/pig-latin.html">Pig Latin</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Letters to Numbers — A1Z26 Cipher</h1>
+          <p class="tool-subtitle">A=1, B=2 ... Z=26. Encode, decode, reverse, offset, and sum letter values.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Encode</button>
+            <button class="option-chip" data-mode="decode">Decode</button>
+            <button class="option-chip" data-mode="sum">Sum</button>
+            <button class="option-chip" data-mode="reverse">Reverse (Z=1)</button>
+          </div>
+
+          <div class="offset-row">
+            <label>Starting offset (A=?):</label>
+            <input type="number" id="offsetInput" value="1" min="0" max="100">
+            <span style="font-size:12px;color:var(--text-secondary);">Default: 1 (standard A1Z26)</span>
+          </div>
+          <div class="sep-row">
+            <label>Separator:</label>
+            <select id="sepSelect">
+              <option value=" ">Space</option>
+              <option value="-">Hyphen</option>
+              <option value=",">Comma</option>
+              <option value="/">Slash</option>
+              <option value=".">Dot</option>
+            </select>
+            <label style="margin-left:16px;">Word separator:</label>
+            <select id="wordSepSelect">
+              <option value="  ">Double space</option>
+              <option value=" / ">" / "</option>
+              <option value=" | ">" | "</option>
+              <option value=" _ ">" _ "</option>
+            </select>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">Plain Text</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="mainInput" rows="5" placeholder="Type a message..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Number Codes</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output num-output" id="mainOutput" style="min-height:120px;"></div>
+            </div>
+          </div>
+
+          <div id="sumSection" style="display:none;">
+            <div class="pane-label"><span>Per-Word Sums</span></div>
+            <div class="sum-display" id="sumDisplay">—</div>
+            <div class="pane-label" style="margin-top:8px;"><span>Letter Breakdown</span></div>
+            <div class="breakdown-grid" id="breakdownGrid"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type a message above to convert letters to numbers.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the A1Z26 Cipher Tool</h2>
+          <ol>
+            <li><strong>Encode</strong> — type plain text. Each letter becomes its position number (A=1 … Z=26, or use a custom offset).</li>
+            <li><strong>Decode</strong> — enter numbers separated by spaces. Each number is mapped back to its letter.</li>
+            <li><strong>Sum mode</strong> — see the total numerical value for each word and the full letter-by-letter breakdown.</li>
+            <li><strong>Reverse (Z=1)</strong> — invert the mapping so Z=1, Y=2 … A=26.</li>
+            <li><strong>Adjust offset</strong> — change the starting value (e.g. A=0 for zero-indexed, A=65 for ASCII).</li>
+            <li><strong>Adjust separators</strong> — choose how numbers within a word and between words are separated.</li>
+          </ol>
+
+          <h2>What is the A1Z26 Cipher?</h2>
+          <p>The A1Z26 cipher is the simplest of all substitution ciphers. Rather than replacing one letter with another letter (as Caesar cipher does), it replaces each letter with its numerical position in the alphabet: A becomes 1, B becomes 2, C becomes 3, and so on up to Z which becomes 26. The cipher is fully symmetric — encoding and decoding use the same table. To decode, simply look up each number in the table and write down the corresponding letter.</p>
+          <p>The cipher is named A1Z26 because A maps to 1 and Z maps to 26, which succinctly describes the entire encoding scheme. It appears under many names: the Letter-Number cipher, Numbered Alphabet, Letter Code, or simply "A=1 B=2."</p>
+
+          <h3>Offset Variants</h3>
+          <p>The standard A1Z26 uses offset 1, but several variants shift this baseline. The zero-indexed version (A=0, B=1 … Z=25) is common in computer science contexts where arrays are zero-based. ASCII values (A=65, B=66 … Z=90) are used in programming and represent the Unicode code points for uppercase letters. Some puzzle designers use arbitrary offsets — for example A=10 — to produce larger numbers that are harder to guess.</p>
+
+          <h3>Sum / Numerology Mode</h3>
+          <p>Sum mode adds up the A1Z26 values for every letter in a word. For example, HELLO = 8+5+12+12+15 = 52. This calculation is sometimes called "word numerology" or a "letter sum." It appears in puzzles, crossword clues ("This word has a letter sum of 52"), and in some numerological traditions that assign meaning to the numerical value of names. Note that many different words share the same sum — EHLLO, HMILO, and dozens of others also sum to 52 — so the sum alone cannot uniquely identify a word.</p>
+
+          <h3>Gravity Falls and Pop Culture</h3>
+          <p>The A1Z26 cipher gained wide recognition through the animated TV series Gravity Falls (2012–2016), created by Alex Hirsch. The show used A1Z26 as one of its end-credits ciphers, hidden in messages for viewers to decode. Along with Caesar cipher and Atbash, A1Z26 formed part of the show's evolving code system that viewers enthusiastically decoded, contributing to one of television's most engaged fandoms. As a result, A1Z26 is now one of the first ciphers many young people encounter.</p>
+
+          <h3>Security</h3>
+          <p>A1Z26 provides no meaningful security. An attacker who sees a sequence of numbers can immediately guess the encoding scheme and decode the message in seconds without any key. For actual secure communication, use modern encryption like AES-256, which this tool does not implement. A1Z26 is exclusively for puzzles, games, and educational purposes. For related historical ciphers, see <a href="/tools/dancing-men-cipher.html">Dancing Men</a>, <a href="/tools/scytale-cipher.html">Scytale</a>, and <a href="/tools/baudot-decoder.html">Baudot Code</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is the A1Z26 cipher?</button>
+            <div class="faq-answer">The A1Z26 cipher replaces each letter with its position number: A=1, B=2, C=3 … Z=26. It is one of the simplest ciphers and appears widely in puzzles, escape rooms, and games like Gravity Falls.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does the reverse A1Z26 work?</button>
+            <div class="faq-answer">In reverse A1Z26, the mapping is inverted: Z=1, Y=2, X=3 … A=26. Sometimes called "A26Z1." It is a simple variant that adds a small layer of obscurity but no real security.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the letter sum (numerology) mode?</button>
+            <div class="faq-answer">Sum mode adds up all A1Z26 values in a word to produce a single number. For example HELLO = 8+5+12+12+15 = 52. This is sometimes called "word numerology" and appears in puzzles and number games.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is an offset cipher?</button>
+            <div class="faq-answer">An offset cipher shifts the starting value. Instead of A=1 you might use A=0 (zero-indexed) or A=65 (ASCII). The offset control lets you set any starting number for use in custom code systems.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Where is the A1Z26 cipher used?</button>
+            <div class="faq-answer">A1Z26 appears in Gravity Falls end-credits ciphers, escape rooms, puzzle books, and online ARGs. It is never used for real security — only for entertainment and learning purposes.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <a href="/tools/scytale-cipher.html">Scytale Cipher</a>
+        <a href="/tools/baudot-decoder.html">Baudot Code</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Tools</h4>
+        <a href="/tools/pig-latin.html">Pig Latin</a>
+        <a href="/tools/t9-phone-decoder.html">T9 Decoder</a>
+        <a href="/tools/vanity-phone.html">Vanity Phone</a>
+        <a href="/tools/dna-sequence.html">DNA Sequence</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var currentMode = 'encode';
+    var statusBar = document.getElementById('statusBar');
+    var mainInput = document.getElementById('mainInput');
+    var mainOutput = document.getElementById('mainOutput');
+
+    function getOffset() { return parseInt(document.getElementById('offsetInput').value) || 1; }
+    function getSep() { return document.getElementById('sepSelect').value; }
+    function getWordSep() { return document.getElementById('wordSepSelect').value; }
+
+    function letterToNum(letter, offset, reverse) {
+      var pos = letter.charCodeAt(0) - 65; // 0-25
+      if (reverse) pos = 25 - pos;
+      return pos + offset;
+    }
+
+    function numToLetter(num, offset, reverse) {
+      var pos = num - offset; // 0-25
+      if (reverse) pos = 25 - pos;
+      if (pos < 0 || pos > 25) return '?';
+      return String.fromCharCode(65 + pos);
+    }
+
+    function encodeText(text, offset, reverse, sep, wordSep) {
+      var words = text.toUpperCase().split(' ');
+      return words.map(function(word) {
+        return word.split('').filter(function(c){ return /[A-Z]/.test(c); }).map(function(c){ return letterToNum(c, offset, reverse); }).join(sep);
+      }).join(wordSep);
+    }
+
+    function decodeText(text, offset, reverse) {
+      var sep = getSep();
+      var wordSep = getWordSep().trim();
+      var words = text.trim().split(wordSep.trim() || '  ');
+      return words.map(function(word) {
+        return word.trim().split(/[\s,\-\/\.]+/).filter(function(n){ return n; }).map(function(n){ return numToLetter(parseInt(n), offset, reverse); }).join('');
+      }).join(' ');
+    }
+
+    function computeSum(text, offset, reverse) {
+      var upper = text.toUpperCase();
+      var total = 0;
+      var breakdown = [];
+      for (var i = 0; i < upper.length; i++) {
+        if (/[A-Z]/.test(upper[i])) {
+          var v = letterToNum(upper[i], offset, reverse);
+          total += v;
+          breakdown.push({ letter: upper[i], value: v });
+        }
+      }
+      return { total: total, breakdown: breakdown };
+    }
+
+    function updateBreakdown(breakdown) {
+      var grid = document.getElementById('breakdownGrid');
+      grid.innerHTML = '';
+      breakdown.forEach(function(item) {
+        var cell = document.createElement('div');
+        cell.className = 'breakdown-cell';
+        cell.innerHTML = '<span class="bd-letter">' + item.letter + '</span><span class="bd-num">' + item.value + '</span>';
+        grid.appendChild(cell);
+      });
+    }
+
+    function process() {
+      var text = mainInput.value;
+      var offset = getOffset();
+      var reverse = currentMode === 'reverse';
+      var sep = getSep();
+      var wordSep = getWordSep();
+      var result = '';
+
+      if (currentMode === 'encode' || currentMode === 'reverse') {
+        result = encodeText(text, offset, reverse, sep, wordSep);
+        mainOutput.textContent = result;
+        document.getElementById('sumSection').style.display = 'none';
+        var letterCount = text.replace(/[^A-Za-z]/g,'').length;
+        if (!text.trim()) { statusBar.className='status-bar info'; statusBar.textContent='Type a message to convert letters to numbers.'; }
+        else {
+          var sumResult = computeSum(text, offset, reverse);
+          statusBar.className='status-bar valid';
+          statusBar.textContent='"'+text.substring(0,15)+(text.length>15?'...':'')+'" \u2192 '+result.substring(0,40)+(result.length>40?'...':'')+' (sum: '+sumResult.total+')';
+        }
+      } else if (currentMode === 'decode') {
+        result = decodeText(text, offset, false);
+        mainOutput.textContent = result;
+        document.getElementById('sumSection').style.display = 'none';
+        if (!text.trim()) { statusBar.className='status-bar info'; statusBar.textContent='Enter numbers to decode to letters.'; }
+        else { statusBar.className='status-bar valid'; statusBar.textContent='Decoded: "'+result+'"'; }
+      } else if (currentMode === 'sum') {
+        var s = computeSum(text, offset, false);
+        mainOutput.textContent = encodeText(text, offset, false, sep, wordSep);
+        document.getElementById('sumSection').style.display = '';
+        document.getElementById('sumDisplay').textContent = 'Total sum: ' + s.total;
+        updateBreakdown(s.breakdown);
+        if (!text.trim()) { statusBar.className='status-bar info'; statusBar.textContent='Enter a word to compute its letter sum.'; }
+        else { statusBar.className='status-bar valid'; statusBar.textContent='"'+text.toUpperCase().replace(/[^A-Z]/g,'')+'" sum = '+s.total+' ('+s.breakdown.length+' letters)'; }
+      }
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.mode===mode); });
+      document.getElementById('inputLabel').textContent = mode==='decode' ? 'Number Codes' : 'Plain Text';
+      document.getElementById('outputLabel').textContent = mode==='decode' ? 'Decoded Text' : 'Number Codes';
+      if (mode==='sum') document.getElementById('sumSection').style.display = '';
+      else document.getElementById('sumSection').style.display = 'none';
+      process();
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function(c){ c.addEventListener('click', function(){ setMode(c.dataset.mode); }); });
+    mainInput.addEventListener('input', DT?DT.debounce(process,150):process);
+    document.getElementById('offsetInput').addEventListener('input', DT?DT.debounce(process,150):process);
+    document.getElementById('sepSelect').addEventListener('change', process);
+    document.getElementById('wordSepSelect').addEventListener('change', process);
+    document.getElementById('exampleBtn').addEventListener('click', function(){ mainInput.value = currentMode==='decode' ? '8 5 12 12 15' : 'HELLO WORLD'; process(); });
+    document.getElementById('clearBtn').addEventListener('click', function(){ mainInput.value=''; process(); });
+    document.getElementById('copyBtn').addEventListener('click', function(){
+      var t = mainOutput.textContent;
+      if (DT) DT.copyToClipboard(t, this); else navigator.clipboard.writeText(t);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function(){
+      if (DT) DT.downloadText(mainOutput.textContent, 'a1z26.txt', 'text/plain');
+    });
+
+    if (DT) DT.trackTool('letters-to-numbers');
+    process();
+  })();
+  </script>
+</body>
+</html>

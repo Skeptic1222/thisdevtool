@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Golden Ratio Calculator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Apply the golden ratio (Phi = 1.618) to any dimension. Input width → get height, or vice versa. Fibonacci spiral visualization. Design and reference modes.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/golden-ratio.html">
+  <meta property="og:title" content="Golden Ratio Calculator — ThisDevTool">
+  <meta property="og:description" content="Calculate golden ratio dimensions from any value. Visualize the Fibonacci spiral. Apply Phi to design, typography, and layout. Free online tool.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/golden-ratio.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Golden Ratio Calculator",
+    "url": "https://thisdevtool.com/tools/golden-ratio.html",
+    "description": "Calculate golden ratio dimensions, visualize the Fibonacci spiral, and apply Phi to design work.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the golden ratio?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The golden ratio (φ, phi) is the irrational number (1 + √5) / 2 ≈ 1.6180339887. A line is divided in the golden ratio when the ratio of the whole to the larger part equals the ratio of the larger part to the smaller part. It appears in nature, art, architecture, and mathematics."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I apply the golden ratio to dimensions?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "If your larger dimension (e.g., width) is A, the smaller dimension (e.g., height) should be A ÷ φ ≈ A × 0.618. Conversely, if your smaller dimension is B, the larger should be B × φ ≈ B × 1.618. This produces a 'golden rectangle' with proportions considered aesthetically optimal."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a golden rectangle?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A golden rectangle has sides in the ratio 1:φ (approximately 1:1.618). When you remove the largest square from a golden rectangle, the remaining piece is itself a golden rectangle. Repeating this process creates the golden spiral — an approximation of the logarithmic spiral found in nautilus shells."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is the golden ratio used in typography?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In typography, the golden ratio is used to set line-height relative to font size (multiply font size by φ ≈ 1.618 for ideal line-height), scale heading sizes (multiply each smaller size by φ), and set the ratio of content column width to sidebar width. These proportions create visual harmony across a design."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the golden ratio really used in famous buildings and artworks?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The historical evidence is mixed. The Parthenon and Great Pyramid are often cited but their golden ratio proportions depend on which measurements you choose. Leonardo da Vinci's work was deliberately influenced by the ratio through his collaborator Luca Pacioli. Modern designers such as Le Corbusier and Jan Tschichold explicitly used the golden ratio in their modular systems."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .phi-value { font-size:2rem;font-weight:700;font-family:monospace;color:#10b981; }
+    .calc-row { display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem; }
+    .calc-row input[type=number] { font-size:1.1rem;font-family:monospace;text-align:center;padding:.4rem;width:100px; }
+    .result-pair { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:.75rem 0; }
+    .result-block { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;text-align:center; }
+    .result-block .rb-val { font-size:1.6rem;font-weight:700;font-family:monospace;color:#10b981; }
+    .result-block .rb-label { font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-top:.2rem; }
+    .result-block .rb-formula { font-family:monospace;font-size:.8rem;color:var(--text-muted);margin-top:.25rem; }
+    .spiral-canvas { border:1px solid var(--border);border-radius:8px;background:var(--surface); }
+    .design-grid { display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:.75rem 0; }
+    @media(max-width:560px){.design-grid{grid-template-columns:1fr;}.result-pair{grid-template-columns:1fr;}}
+    .design-card { background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem; }
+    .design-card h5 { font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:.5rem; }
+    .design-row { display:flex;align-items:baseline;gap:.5rem;font-family:monospace;font-size:.9rem;margin:.25rem 0; }
+    .design-row .dv { color:#10b981;font-weight:700; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/fibonacci-generator.html">Fibonacci</a>
+        <a href="/tools/typography-scale.html">Typography Scale</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Golden Ratio Calculator</h1>
+          <p class="tool-subtitle">Apply the golden ratio (φ = 1.6180339887…) to any dimension. Get the golden pair, visualize the Fibonacci spiral, and explore design applications.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="calculate">Calculate</button>
+            <button class="option-chip" data-mode="design">Design</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <div id="calculateView">
+            <div style="margin-bottom:.5rem;">
+              <p style="font-weight:600;font-size:.875rem;margin-bottom:.5rem;">φ (Phi) = <span class="phi-value" style="font-size:1.2rem;">1.6180339887…</span></p>
+            </div>
+            <div class="calc-row">
+              <label style="font-size:.875rem;">
+                <select id="calcMode" style="margin-right:.5rem;">
+                  <option value="larger">Larger dimension (A)</option>
+                  <option value="smaller">Smaller dimension (B)</option>
+                </select>
+                <input type="number" id="inputVal" value="1000" min="0.001" step="any">
+              </label>
+              <select id="unitSel" style="font-size:.875rem;padding:.35rem .5rem;">
+                <option>px</option>
+                <option>em</option>
+                <option>rem</option>
+                <option>pt</option>
+                <option>mm</option>
+                <option>cm</option>
+                <option>in</option>
+                <option>%</option>
+              </select>
+              <button class="btn btn-primary" id="calcGRBtn">Calculate</button>
+            </div>
+
+            <div id="grResult" style="display:none;">
+              <div class="result-pair">
+                <div class="result-block">
+                  <div class="rb-val" id="grA"></div>
+                  <div class="rb-label">Larger (A)</div>
+                  <div class="rb-formula" id="grAFormula"></div>
+                </div>
+                <div class="result-block">
+                  <div class="rb-val" id="grB"></div>
+                  <div class="rb-label">Smaller (B = A ÷ φ)</div>
+                  <div class="rb-formula" id="grBFormula"></div>
+                </div>
+              </div>
+
+              <div style="margin:.5rem 0;">
+                <canvas id="spiralCanvas" class="spiral-canvas" width="480" height="300"></canvas>
+              </div>
+              <p style="font-size:.8rem;color:var(--text-muted);">The golden rectangle and its nested sub-rectangles, each formed by removing the largest square.</p>
+            </div>
+          </div>
+
+          <div id="designView" style="display:none;">
+            <div class="calc-row">
+              <label style="font-size:.875rem;">Base value: <input type="number" id="baseVal" value="16" min="1" step="any" style="width:80px;font-size:1rem;font-family:monospace;margin-left:.3rem;"></label>
+              <select id="baseUnit" style="font-size:.875rem;padding:.35rem .5rem;">
+                <option>px</option><option>em</option><option>rem</option><option>pt</option>
+              </select>
+              <button class="btn btn-primary" id="calcDesignBtn">Apply Phi</button>
+            </div>
+            <div class="design-grid" id="designGrid"></div>
+          </div>
+
+          <div id="referenceView" style="display:none;">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;">
+              <h4 style="margin-bottom:.75rem;">Golden Ratio Reference</h4>
+              <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:.85rem;">
+                <thead><tr><th style="text-align:left;padding:.3rem .5rem;border-bottom:2px solid var(--border);">Constant</th><th style="text-align:left;padding:.3rem .5rem;border-bottom:2px solid var(--border);">Value</th><th style="text-align:left;padding:.3rem .5rem;border-bottom:2px solid var(--border);">Notes</th></tr></thead>
+                <tbody id="refTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a value and click Calculate to apply the golden ratio.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Golden Ratio Calculator</h2>
+          <ol>
+            <li><strong>Enter a dimension</strong> — choose whether your value is the larger or smaller dimension of the pair, enter the number, and select a unit (px, em, mm, etc.).</li>
+            <li><strong>Click Calculate</strong> — the golden pair appears with the Fibonacci spiral visualization showing your dimensions as a golden rectangle.</li>
+            <li><strong>Design mode</strong> — enter a base value (e.g., 16px font size) to get a full typographic scale and layout dimensions derived from Phi.</li>
+            <li><strong>Reference</strong> — see all key constants derived from the golden ratio including the golden angle, conjugate, and reciprocal.</li>
+          </ol>
+
+          <h2>What Is the Golden Ratio?</h2>
+          <p>The golden ratio φ (phi) is the positive solution to the equation φ² = φ + 1, giving φ = (1 + √5) / 2 ≈ 1.6180339887. A line segment is divided in the golden ratio when the ratio of the whole line to the larger part equals the ratio of the larger part to the smaller part: (A+B)/A = A/B = φ. This self-similar property makes φ unique — it's the only number where its reciprocal equals itself minus 1: 1/φ = φ − 1 ≈ 0.618.</p>
+
+          <h3>The Golden Rectangle</h3>
+          <p>A golden rectangle has sides in the proportion 1:φ. Its unique property: remove a square (with side equal to the shorter dimension), and the remaining rectangle is another golden rectangle with the same proportions. This nesting can continue infinitely. Drawing a quarter-circle arc through each successively smaller square's corners traces the golden spiral — a good approximation of the logarithmic spiral (r = ae^(bθ)) found in nature.</p>
+
+          <h3>Design Applications</h3>
+          <p>Typography: If your body font is 16px, a golden-ratio scale gives headings at 16 × φ = 25.9px, 16 × φ² = 41.9px, etc. Line height: 16 × φ ≈ 26px is often ideal for readability. Column widths: a main content column at 760px paired with a sidebar at 760/φ ≈ 470px creates a golden split. Logo design: placing the focal point at 61.8% of the width and height from the corner places it at the golden point. The iPhone's home button radius, Apple's logo proportions, and Twitter's bird are all frequently cited as using golden ratio geometry.</p>
+
+          <h3>Golden Ratio in Nature</h3>
+          <p>The golden angle (137.5°, derived from 360°/φ²) explains the spiral arrangement of sunflower seeds, pine cone scales, and leaf placement. When a plant grows a new element at the golden angle offset from the previous one, the result is the most efficient packing — no two leaves ever directly overlap to compete for sunlight. Fibonacci numbers appear because any integer near a Fibonacci number has a Fibonacci number as its nearest golden-angle multiple. See our <a href="/tools/fibonacci-generator.html">Fibonacci Generator</a> for the direct mathematical connection.</p>
+
+          <h3>The Mathematics of Phi</h3>
+          <p>Phi is an algebraic irrational number (root of x² − x − 1 = 0). Its continued fraction is [1; 1, 1, 1, ...] — all ones, making it the number hardest to approximate by a rational fraction (explaining why Fibonacci ratios converge to it slowest of all irrationals). Its powers follow Fibonacci: φⁿ = F(n)φ + F(n−1). It appears in the diagonals of a regular pentagon and in the angles of a regular pentagon (36° and 72° are golden-ratio related). The golden gnomon (the thin triangle in a regular pentagram) has golden ratio sides.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the golden ratio?</button>
+            <div class="faq-answer">The golden ratio (φ, phi) is (1 + √5) / 2 ≈ 1.6180339887. A line is divided in the golden ratio when (whole)/(larger part) = (larger part)/(smaller part) = φ. It appears in nature, art, architecture, and mathematics.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I apply the golden ratio to dimensions?</button>
+            <div class="faq-answer">If your larger dimension is A, the smaller should be A ÷ φ ≈ A × 0.618. If your smaller dimension is B, the larger should be B × φ ≈ B × 1.618. This produces a golden rectangle with proportions considered aesthetically optimal.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a golden rectangle?</button>
+            <div class="faq-answer">A golden rectangle has sides in the ratio 1:φ (≈ 1:1.618). When you remove the largest square from a golden rectangle, the remaining piece is itself a golden rectangle. Repeating creates the golden spiral.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How is the golden ratio used in typography?</button>
+            <div class="faq-answer">Multiply font size by φ ≈ 1.618 for ideal line-height. Scale heading sizes by multiplying each smaller size by φ. Set the ratio of content column width to sidebar width as φ:1. These proportions create visual harmony across a design.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is the golden ratio really used in famous buildings and artworks?</button>
+            <div class="faq-answer">The historical evidence is mixed. Some proportions in the Parthenon and Great Pyramid approximate φ depending on measurement choices. Leonardo da Vinci's work was deliberately influenced via Luca Pacioli. Modern designers Le Corbusier and Jan Tschichold explicitly used the golden ratio in their modular systems.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Math Tools</h4>
+        <a href="/tools/fibonacci-generator.html">Fibonacci Generator</a>
+        <a href="/tools/prime-tester.html">Prime Tester</a>
+        <a href="/tools/digital-root.html">Digital Root</a>
+        <a href="/tools/fraction-approximator.html">Fraction Approximator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Design Tools</h4>
+        <a href="/tools/typography-scale.html">Typography Scale</a>
+        <a href="/tools/color-palette-extractor.html">Palette Extractor</a>
+        <a href="/tools/css-variable-theme.html">CSS Theme Builder</a>
+        <a href="/tools/button-style-generator.html">Button Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var statusBar = document.getElementById('statusBar');
+    var currentMode = 'calculate';
+    var PHI = (1 + Math.sqrt(5)) / 2;
+
+    function drawSpiral(canvasEl, A, B) {
+      var W = canvasEl.width, H = canvasEl.height;
+      var ctx = canvasEl.getContext('2d');
+      ctx.clearRect(0, 0, W, H);
+
+      // Scale to fit canvas
+      var scale = Math.min((W - 20) / A, (H - 20) / B);
+      var rW = A * scale, rH = B * scale;
+      var ox = (W - rW) / 2, oy = (H - rH) / 2;
+
+      // Draw outer rectangle
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(ox, oy, rW, rH);
+
+      // Draw nested golden rectangles + spirals
+      var x = ox, y = oy, w = rW, h = rH;
+      var colors = ['#10b981','#6366f1','#f59e0b','#ef4444','#3b82f6','#8b5cf6'];
+      ctx.setLineDash([]);
+      for (var i = 0; i < 7 && w > 4 && h > 4; i++) {
+        var isWide = w > h;
+        var sqSide = isWide ? h : w;
+        ctx.strokeStyle = colors[i % colors.length];
+        ctx.lineWidth = 1.5;
+        if (isWide) {
+          ctx.strokeRect(x, y, sqSide, sqSide);
+          // quarter arc
+          ctx.beginPath();
+          ctx.arc(x + sqSide, y + sqSide, sqSide, Math.PI, 1.5 * Math.PI);
+          ctx.stroke();
+          x += sqSide;
+          w -= sqSide;
+        } else {
+          ctx.strokeRect(x, y, sqSide, sqSide);
+          ctx.beginPath();
+          ctx.arc(x + sqSide, y + sqSide, sqSide, 1.5 * Math.PI, 2 * Math.PI);
+          ctx.stroke();
+          y += sqSide;
+          h -= sqSide;
+        }
+      }
+
+      // Labels
+      ctx.fillStyle = '#10b981';
+      ctx.font = 'bold 13px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('A', ox + rW / 2, oy + rH + 12);
+      ctx.fillText('B', ox - 12, oy + rH / 2);
+    }
+
+    function doCalcGR() {
+      var mode = document.getElementById('calcMode').value;
+      var val = parseFloat(document.getElementById('inputVal').value);
+      var unit = document.getElementById('unitSel').value;
+      if (isNaN(val) || val <= 0) { setStatus('invalid', 'Enter a positive number.'); return; }
+
+      var A, B;
+      if (mode === 'larger') { A = val; B = val / PHI; }
+      else { B = val; A = val * PHI; }
+
+      var prec = A > 10 ? 2 : 6;
+      document.getElementById('grA').textContent = A.toFixed(prec) + unit;
+      document.getElementById('grB').textContent = B.toFixed(prec) + unit;
+      document.getElementById('grAFormula').textContent = mode === 'larger' ? 'Given' : val.toFixed(prec) + ' × φ';
+      document.getElementById('grBFormula').textContent = mode === 'larger' ? A.toFixed(prec) + ' ÷ φ' : 'Given';
+      document.getElementById('grResult').style.display = '';
+
+      drawSpiral(document.getElementById('spiralCanvas'), A, B);
+      setStatus('valid', 'Width ' + A.toFixed(prec) + unit + ' → Height ' + B.toFixed(prec) + unit + ' (Phi ratio)');
+      if (DT && DT.trackTool) DT.trackTool('golden-ratio');
+    }
+
+    document.getElementById('calcGRBtn').addEventListener('click', doCalcGR);
+    document.getElementById('inputVal').addEventListener('keydown', function (e) { if (e.key === 'Enter') doCalcGR(); });
+
+    // Design mode
+    function doDesign() {
+      var base = parseFloat(document.getElementById('baseVal').value);
+      var unit = document.getElementById('baseUnit').value;
+      if (isNaN(base) || base <= 0) return;
+      var grid = document.getElementById('designGrid');
+      grid.innerHTML = '';
+
+      var sections = [
+        { title: 'Typography Scale', rows: [
+          ['Body', base.toFixed(1) + unit],
+          ['Large', (base * PHI).toFixed(1) + unit],
+          ['H3', (base * PHI * PHI).toFixed(1) + unit],
+          ['H2', (base * PHI * PHI * PHI).toFixed(1) + unit],
+          ['H1', (base * Math.pow(PHI, 4)).toFixed(1) + unit],
+          ['Small', (base / PHI).toFixed(1) + unit],
+        ]},
+        { title: 'Line Height', rows: [
+          ['Tight', (base * 1.4).toFixed(1) + unit],
+          ['φ (ideal)', (base * PHI).toFixed(1) + unit],
+          ['Loose', (base * 2).toFixed(1) + unit],
+        ]},
+        { title: 'Spacing Scale', rows: [
+          ['xs', (base / Math.pow(PHI, 2)).toFixed(1) + unit],
+          ['sm', (base / PHI).toFixed(1) + unit],
+          ['md', base.toFixed(1) + unit],
+          ['lg', (base * PHI).toFixed(1) + unit],
+          ['xl', (base * PHI * PHI).toFixed(1) + unit],
+        ]},
+        { title: 'Layout Columns', rows: [
+          ['Sidebar', (base * 10).toFixed(0) + unit],
+          ['Content', (base * 10 * PHI).toFixed(0) + unit],
+          ['Total', (base * 10 * (1 + PHI)).toFixed(0) + unit],
+          ['Content %', (100 / (1 + 1/PHI)).toFixed(1) + '%'],
+        ]},
+      ];
+
+      sections.forEach(function (sec) {
+        var card = document.createElement('div');
+        card.className = 'design-card';
+        card.innerHTML = '<h5>' + sec.title + '</h5>';
+        sec.rows.forEach(function (row) {
+          var div = document.createElement('div');
+          div.className = 'design-row';
+          div.innerHTML = '<span style="color:var(--text-muted);min-width:80px">' + row[0] + '</span><span class="dv">' + row[1] + '</span>';
+          card.appendChild(div);
+        });
+        grid.appendChild(card);
+      });
+
+      setStatus('valid', 'Golden ratio design scale generated from base ' + base + unit);
+    }
+
+    document.getElementById('calcDesignBtn').addEventListener('click', doDesign);
+
+    // Reference
+    var REFS = [
+      ['φ (Phi)', '1.6180339887…', 'Golden ratio'],
+      ['1/φ = φ−1', '0.6180339887…', 'Reciprocal = conjugate'],
+      ['φ²', '2.6180339887…', 'φ² = φ + 1'],
+      ['√5', '2.2360679775…', 'φ = (1 + √5) / 2'],
+      ['Golden angle', '137.507764…°', '360° / φ²'],
+      ['φ − 1', '0.6180339887…', 'Reciprocal of φ'],
+      ['2φ', '3.2360679775…', '2 × Phi'],
+      ['φ × 100', '161.8033…', 'As percentage'],
+    ];
+
+    function buildRefTable() {
+      var tbody = document.getElementById('refTableBody');
+      tbody.innerHTML = '';
+      REFS.forEach(function (row) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td style="padding:.25rem .5rem;border-bottom:1px solid var(--border);font-weight:600">' + row[0] + '</td>' +
+          '<td style="padding:.25rem .5rem;border-bottom:1px solid var(--border);color:#10b981">' + row[1] + '</td>' +
+          '<td style="padding:.25rem .5rem;border-bottom:1px solid var(--border);color:var(--text-muted)">' + row[2] + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        document.getElementById('calculateView').style.display = currentMode === 'calculate' ? '' : 'none';
+        document.getElementById('designView').style.display = currentMode === 'design' ? '' : 'none';
+        document.getElementById('referenceView').style.display = currentMode === 'reference' ? '' : 'none';
+        if (currentMode === 'design') doDesign();
+        if (currentMode === 'reference') buildRefTable();
+      });
+    });
+
+    function setStatus(type, msg) {
+      statusBar.className = 'status-bar ' + type;
+      statusBar.textContent = msg;
+    }
+
+    doCalcGR();
+  })();
+  </script>
+</body>
+</html>

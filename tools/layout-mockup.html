@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Layout Mockup Builder — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Drag-and-drop wireframe block builder. Add header, sidebar, main, footer blocks. Export clean HTML + CSS skeleton instantly.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/layout-mockup.html">
+  <meta property="og:title" content="Layout Mockup Builder — ThisDevTool">
+  <meta property="og:description" content="Build wireframe layouts with drag-and-drop blocks. Export a clean HTML/CSS skeleton. Free, 100% browser-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/layout-mockup.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Layout Mockup Builder",
+    "url": "https://thisdevtool.com/tools/layout-mockup.html",
+    "description": "Drag-and-drop wireframe block builder. Export HTML and CSS skeleton layout code.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a wireframe layout?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A wireframe is a low-fidelity visual guide that represents the skeletal structure of a web page. It shows the placement of structural regions (header, navigation, content, sidebar, footer) without colors or final content. Wireframes communicate layout intent to developers and stakeholders before detailed design begins."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What blocks can I add to the layout?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You can add: Header, Navigation Bar, Hero Section, Sidebar (left or right), Main Content, Card Grid, Footer, and Sticky Footer. Each block generates a corresponding semantic HTML element and CSS rule in the exported code."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I reorder blocks?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Click and drag any block in the canvas to move it up or down. Use the up and down arrow buttons on each block card for keyboard-accessible reordering. The HTML export reflects the current order of blocks."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the exported code look like?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The export produces a complete HTML5 document with semantic tags (header, nav, main, aside, footer) and an embedded CSS block using Flexbox and Grid. The layout is mobile-responsive with sensible defaults you can extend."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use the layout with any CSS framework?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The exported HTML structure uses semantic elements compatible with any CSS framework. You can replace the embedded CSS with Tailwind classes, Bootstrap grid classes, or any other system while keeping the same HTML hierarchy."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .mockup-workspace {
+      display:grid;
+      grid-template-columns:200px 1fr;
+      gap:1rem;
+    }
+    @media(max-width:680px){.mockup-workspace{grid-template-columns:1fr;}}
+    .block-palette { border:1px solid var(--border);border-radius:8px;padding:.75rem;background:var(--surface); }
+    .block-palette h4 { font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:.5rem; }
+    .palette-block {
+      display:flex;align-items:center;gap:.5rem;
+      padding:.45rem .6rem;border-radius:6px;
+      border:1px solid var(--border);background:var(--bg);
+      font-size:.8rem;font-weight:600;cursor:pointer;
+      margin-bottom:.4rem;transition:background .15s;
+      user-select:none;
+    }
+    .palette-block:hover { background:var(--border); }
+    .canvas-area { border:2px dashed var(--border);border-radius:8px;min-height:360px;padding:.75rem;background:var(--surface); }
+    .canvas-area.drag-over { border-color:#10b981;background:rgba(16,185,129,.04); }
+    .canvas-empty { display:flex;align-items:center;justify-content:center;height:240px;color:var(--text-muted);font-size:.9rem;text-align:center; }
+    .layout-block {
+      display:flex;align-items:center;gap:.5rem;
+      padding:.5rem .75rem;border-radius:6px;
+      border:1px solid var(--border);background:var(--bg);
+      margin-bottom:.4rem;cursor:grab;
+      user-select:none;transition:box-shadow .15s;
+    }
+    .layout-block:active { cursor:grabbing; }
+    .layout-block.dragging { opacity:.5; }
+    .layout-block .block-icon { font-size:1.1rem; }
+    .layout-block .block-label { flex:1;font-size:.85rem;font-weight:600; }
+    .block-actions { display:flex;gap:.25rem; }
+    .block-actions button { background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;padding:.15rem .35rem;font-size:.75rem;color:var(--text-muted); }
+    .block-actions button:hover { background:var(--border); }
+    .layout-preview { border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#fff;min-height:300px; }
+    .lp-block { background:#e5e7eb;border-bottom:1px solid #d1d5db;display:flex;align-items:center;justify-content:center;color:#374151;font-size:.8rem;font-weight:600; }
+    .lp-block.header { min-height:48px;background:#10b981;color:#fff; }
+    .lp-block.nav { min-height:36px;background:#0d9668;color:#fff; }
+    .lp-block.hero { min-height:80px;background:#d1fae5; }
+    .lp-block.main-sidebar { display:flex;min-height:200px; }
+    .lp-block.sidebar { width:160px;background:#e9d5ff;border-right:1px solid #d1d5db;flex-shrink:0; }
+    .lp-block.main { flex:1;background:#f3f4f6; }
+    .lp-block.cardgrid { display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;min-height:80px;background:#fff;padding:4px; }
+    .lp-block.cardgrid div { background:#e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#6b7280; }
+    .lp-block.footer { min-height:40px;background:#1f2937;color:#9ca3af; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/css-grid-generator.html">CSS Grid</a>
+        <a href="/tools/css-variable-theme.html">CSS Theme</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Layout Mockup Builder</h1>
+          <p class="tool-subtitle">Drag blocks from the palette onto the canvas to design a page layout. Reorder and remove blocks, then export an HTML + CSS skeleton.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="build">Build</button>
+            <button class="option-chip" data-mode="preview">Preview</button>
+            <button class="option-chip" data-mode="export">Export</button>
+          </div>
+
+          <div id="buildView">
+            <div class="mockup-workspace">
+              <div class="block-palette">
+                <h4>Blocks</h4>
+                <div class="palette-block" data-type="header">📐 Header</div>
+                <div class="palette-block" data-type="nav">🧭 Nav Bar</div>
+                <div class="palette-block" data-type="hero">🦸 Hero</div>
+                <div class="palette-block" data-type="sidebar-main">◧ Sidebar + Main</div>
+                <div class="palette-block" data-type="main-sidebar">◨ Main + Sidebar</div>
+                <div class="palette-block" data-type="main">📄 Main Content</div>
+                <div class="palette-block" data-type="cardgrid">⊞ Card Grid</div>
+                <div class="palette-block" data-type="footer">⬛ Footer</div>
+              </div>
+
+              <div class="canvas-area" id="canvasArea">
+                <div class="canvas-empty" id="canvasEmpty">Click a block from the palette to add it to your layout</div>
+                <div id="blockList"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="previewView" style="display:none;">
+            <div class="layout-preview" id="layoutPreview"></div>
+          </div>
+
+          <div id="exportView" style="display:none;">
+            <div class="pane-label" style="margin-top:.5rem;">
+              <span>HTML + CSS Skeleton</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-primary" id="copyHtmlBtn">Copy HTML</button>
+                <button class="btn btn-sm btn-secondary" id="downloadHtmlBtn">Download</button>
+              </div>
+            </div>
+            <div class="code-output" id="htmlOutput" style="min-height:260px;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Click a block in the palette to add it to your layout.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Layout Mockup Builder</h2>
+          <ol>
+            <li><strong>Click a block</strong> in the left palette to add it to the canvas. Blocks appear in the order you add them.</li>
+            <li><strong>Reorder blocks</strong> using the ↑↓ arrow buttons on each block card, or drag and drop them within the canvas.</li>
+            <li><strong>Remove a block</strong> by clicking the ✕ button on any block card.</li>
+            <li><strong>Preview the layout</strong> by switching to the Preview tab — a color-coded wireframe shows how the blocks will look.</li>
+            <li><strong>Export HTML+CSS</strong> by switching to the Export tab and clicking Copy HTML or Download.</li>
+          </ol>
+
+          <h2>The Importance of Wireframing Before Building</h2>
+          <p>Wireframing is the step between conceptual planning and visual design. A good wireframe answers structural questions before any code is written: Where does navigation go? How wide is the sidebar relative to the main content area? Should the hero span full width? Does the footer need multiple columns? By resolving these questions with low-fidelity blocks, teams avoid expensive rework in visual design and development phases.</p>
+
+          <h3>Common Page Layout Patterns</h3>
+          <p>Most web pages combine a small set of layout patterns. The <strong>Holy Grail layout</strong> (header + left sidebar + main + right sidebar + footer) was historically difficult to implement with floats but is trivially achieved with CSS Grid or Flexbox today. The <strong>magazine layout</strong> uses a full-width hero section, a main-content + sidebar split, and a multi-column card grid. The <strong>single-column layout</strong> (header → hero → content → footer with no sidebar) is popular for marketing pages and blog posts where reading focus is paramount.</p>
+
+          <h3>Semantic HTML Structure</h3>
+          <p>The exported code uses HTML5 semantic elements: <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;footer&gt;</code>. These elements are not just stylistic — they provide meaning to screen readers, search engines, and developer tools. <code>&lt;main&gt;</code> should appear exactly once per page. <code>&lt;aside&gt;</code> contains content related to, but not required for, understanding the main content. <code>&lt;nav&gt;</code> should wrap primary navigation blocks. Using these correctly improves accessibility and SEO from the ground up.</p>
+
+          <h3>CSS Grid vs Flexbox for Layout</h3>
+          <p>For two-dimensional page layouts (rows and columns simultaneously), CSS Grid is the better choice. For one-dimensional layouts (either a row OR a column), Flexbox is simpler. The Holy Grail layout is a perfect Grid use case: define the parent with <code>display: grid; grid-template-areas: "header header" "sidebar main" "footer footer"</code> and assign each child to its named area. Flexbox excels at the navigation bar (horizontal row of links), the card inside a grid cell, and the button group (horizontal cluster of controls). See our <a href="/tools/css-grid-generator.html">CSS Grid Generator</a> and <a href="/tools/flexbox-playground.html">Flexbox Playground</a> for visual editors of those systems.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a wireframe layout?</button>
+            <div class="faq-answer">A wireframe is a low-fidelity visual guide that represents the skeletal structure of a web page. It shows the placement of structural regions (header, navigation, content, sidebar, footer) without colors or final content. Wireframes communicate layout intent before detailed design begins.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What blocks can I add to the layout?</button>
+            <div class="faq-answer">You can add: Header, Navigation Bar, Hero Section, Sidebar + Main, Main + Sidebar, Main Content only, Card Grid (3-column), and Footer. Each block generates a corresponding semantic HTML element and CSS rule in the exported code.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I reorder blocks?</button>
+            <div class="faq-answer">Click and drag any block in the canvas to reorder it. Use the ↑ and ↓ arrow buttons on each block card for accessible reordering. The HTML export reflects the current order of blocks.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does the exported code look like?</button>
+            <div class="faq-answer">The export produces a complete HTML5 document with semantic tags (header, nav, main, aside, footer) and an embedded CSS block using Flexbox and Grid. The layout is mobile-responsive with sensible defaults you can extend.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use the layout with any CSS framework?</button>
+            <div class="faq-answer">Yes. The exported HTML structure uses semantic elements compatible with any CSS framework. You can replace the embedded CSS with Tailwind classes, Bootstrap grid classes, or any other system while keeping the same HTML hierarchy.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Layout Tools</h4>
+        <a href="/tools/css-grid-generator.html">CSS Grid Generator</a>
+        <a href="/tools/flexbox-playground.html">Flexbox Playground</a>
+        <a href="/tools/responsive-tester.html">Responsive Tester</a>
+        <a href="/tools/css-variable-theme.html">CSS Theme Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/button-style-generator.html">Button Generator</a>
+        <a href="/tools/gradient-generator.html">Gradient Generator</a>
+        <a href="/tools/box-shadow-editor.html">Box Shadow</a>
+        <a href="/tools/typography-scale.html">Typography Scale</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var statusBar = document.getElementById('statusBar');
+    var blockList = document.getElementById('blockList');
+    var canvasEmpty = document.getElementById('canvasEmpty');
+    var layoutPreview = document.getElementById('layoutPreview');
+    var htmlOutput = document.getElementById('htmlOutput');
+    var currentMode = 'build';
+    var blocks = [];
+    var dragSrcIdx = null;
+
+    var BLOCK_META = {
+      header: { label: 'Header', icon: '📐', tag: 'header', cssClass: 'site-header' },
+      nav: { label: 'Nav Bar', icon: '🧭', tag: 'nav', cssClass: 'site-nav' },
+      hero: { label: 'Hero Section', icon: '🦸', tag: 'section', cssClass: 'hero' },
+      'sidebar-main': { label: 'Sidebar + Main', icon: '◧', tag: 'div', cssClass: 'layout-sidebar-main', layout: 'sidebar-main' },
+      'main-sidebar': { label: 'Main + Sidebar', icon: '◨', tag: 'div', cssClass: 'layout-main-sidebar', layout: 'main-sidebar' },
+      main: { label: 'Main Content', icon: '📄', tag: 'main', cssClass: 'main-content' },
+      cardgrid: { label: 'Card Grid', icon: '⊞', tag: 'section', cssClass: 'card-grid' },
+      footer: { label: 'Footer', icon: '⬛', tag: 'footer', cssClass: 'site-footer' }
+    };
+
+    document.querySelectorAll('.palette-block').forEach(function (pb) {
+      pb.addEventListener('click', function () {
+        addBlock(pb.dataset.type);
+      });
+    });
+
+    function addBlock(type) {
+      var meta = BLOCK_META[type];
+      if (!meta) return;
+      blocks.push({ type: type, id: Date.now() });
+      renderBlocks();
+      renderPreview();
+      generateHTML();
+      setStatus('valid', blocks.length + ' block' + (blocks.length > 1 ? 's' : '') + ' placed — HTML exported');
+      if (DT && DT.trackTool) DT.trackTool('layout-mockup');
+    }
+
+    function renderBlocks() {
+      blockList.innerHTML = '';
+      canvasEmpty.style.display = blocks.length ? 'none' : 'flex';
+      blocks.forEach(function (b, i) {
+        var meta = BLOCK_META[b.type];
+        var div = document.createElement('div');
+        div.className = 'layout-block';
+        div.draggable = true;
+        div.dataset.idx = i;
+        div.innerHTML =
+          '<span class="block-icon">' + meta.icon + '</span>' +
+          '<span class="block-label">' + meta.label + '</span>' +
+          '<div class="block-actions">' +
+            (i > 0 ? '<button data-action="up" data-idx="' + i + '">↑</button>' : '') +
+            (i < blocks.length - 1 ? '<button data-action="down" data-idx="' + i + '">↓</button>' : '') +
+            '<button data-action="del" data-idx="' + i + '">✕</button>' +
+          '</div>';
+
+        div.addEventListener('dragstart', function () { dragSrcIdx = i; div.classList.add('dragging'); });
+        div.addEventListener('dragend', function () { div.classList.remove('dragging'); });
+        div.addEventListener('dragover', function (e) { e.preventDefault(); });
+        div.addEventListener('drop', function () {
+          if (dragSrcIdx === null || dragSrcIdx === i) return;
+          var removed = blocks.splice(dragSrcIdx, 1)[0];
+          blocks.splice(i, 0, removed);
+          dragSrcIdx = null;
+          renderBlocks(); renderPreview(); generateHTML();
+        });
+
+        div.querySelectorAll('[data-action]').forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var idx = parseInt(btn.dataset.idx, 10);
+            var action = btn.dataset.action;
+            if (action === 'del') { blocks.splice(idx, 1); }
+            else if (action === 'up' && idx > 0) { var tmp = blocks[idx]; blocks[idx] = blocks[idx-1]; blocks[idx-1] = tmp; }
+            else if (action === 'down' && idx < blocks.length - 1) { var tmp2 = blocks[idx]; blocks[idx] = blocks[idx+1]; blocks[idx+1] = tmp2; }
+            renderBlocks(); renderPreview(); generateHTML();
+            setStatus('valid', blocks.length + ' block' + (blocks.length !== 1 ? 's' : '') + ' placed');
+          });
+        });
+
+        blockList.appendChild(div);
+      });
+    }
+
+    function renderPreview() {
+      layoutPreview.innerHTML = '';
+      blocks.forEach(function (b) {
+        var meta = BLOCK_META[b.type];
+        var el;
+        if (b.type === 'sidebar-main' || b.type === 'main-sidebar') {
+          el = document.createElement('div');
+          el.className = 'lp-block main-sidebar';
+          el.style.display = 'flex';
+          el.style.minHeight = '160px';
+          var sideEl = document.createElement('div');
+          sideEl.className = 'lp-block sidebar';
+          sideEl.style.minHeight = '100%';
+          sideEl.style.display = 'flex';
+          sideEl.style.alignItems = 'center';
+          sideEl.style.justifyContent = 'center';
+          sideEl.textContent = 'Sidebar';
+          var mainEl = document.createElement('div');
+          mainEl.className = 'lp-block main';
+          mainEl.style.flex = '1';
+          mainEl.style.display = 'flex';
+          mainEl.style.alignItems = 'center';
+          mainEl.style.justifyContent = 'center';
+          mainEl.textContent = 'Main';
+          if (b.type === 'main-sidebar') { el.appendChild(mainEl); el.appendChild(sideEl); }
+          else { el.appendChild(sideEl); el.appendChild(mainEl); }
+        } else if (b.type === 'cardgrid') {
+          el = document.createElement('div');
+          el.className = 'lp-block cardgrid';
+          for (var i = 0; i < 3; i++) {
+            var card = document.createElement('div');
+            card.textContent = 'Card ' + (i + 1);
+            el.appendChild(card);
+          }
+        } else {
+          el = document.createElement('div');
+          el.className = 'lp-block ' + b.type;
+          el.textContent = meta.label;
+          if (b.type === 'header') el.style.minHeight = '48px';
+          else if (b.type === 'nav') el.style.minHeight = '36px';
+          else if (b.type === 'hero') el.style.minHeight = '80px';
+          else if (b.type === 'main') el.style.minHeight = '160px';
+          else if (b.type === 'footer') el.style.minHeight = '40px';
+        }
+        layoutPreview.appendChild(el);
+      });
+    }
+
+    function generateHTML() {
+      if (!blocks.length) { htmlOutput.textContent = '<!-- Add blocks to generate HTML -->'; return; }
+      var html = ['<!DOCTYPE html>', '<html lang="en">', '<head>', '  <meta charset="UTF-8">',
+        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
+        '  <title>Page Title</title>', '  <style>'];
+
+      html.push('    * { box-sizing: border-box; margin: 0; padding: 0; }');
+      html.push('    body { font-family: system-ui, sans-serif; }');
+
+      blocks.forEach(function (b) {
+        var meta = BLOCK_META[b.type];
+        switch (b.type) {
+          case 'header': html.push('    .site-header { width:100%; padding:1rem 2rem; background:#10b981; color:#fff; }'); break;
+          case 'nav': html.push('    .site-nav { width:100%; padding:.5rem 2rem; background:#0d9668; }'); html.push('    .site-nav a { color:#fff; margin-right:1rem; text-decoration:none; }'); break;
+          case 'hero': html.push('    .hero { width:100%; padding:4rem 2rem; text-align:center; background:#d1fae5; }'); break;
+          case 'sidebar-main': case 'main-sidebar':
+            html.push('    .layout-wrapper { display:flex; min-height:400px; }');
+            html.push('    .layout-wrapper aside { width:240px; flex-shrink:0; padding:1.5rem; background:#f3f4f6; }');
+            html.push('    .layout-wrapper main { flex:1; padding:1.5rem; }'); break;
+          case 'main': html.push('    .main-content { max-width:900px; margin:0 auto; padding:2rem; }'); break;
+          case 'cardgrid': html.push('    .card-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:1rem; padding:2rem; }'); html.push('    .card-grid .card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:1.25rem; }'); break;
+          case 'footer': html.push('    .site-footer { width:100%; padding:2rem; background:#1f2937; color:#9ca3af; margin-top:auto; }'); break;
+        }
+      });
+      html.push('  </style>');
+      html.push('</head>');
+      html.push('<body>');
+
+      blocks.forEach(function (b) {
+        switch (b.type) {
+          case 'header': html.push('  <header class="site-header"><h1>Site Name</h1></header>'); break;
+          case 'nav': html.push('  <nav class="site-nav"><a href="#">Home</a><a href="#">About</a><a href="#">Contact</a></nav>'); break;
+          case 'hero': html.push('  <section class="hero"><h2>Hero Heading</h2><p>Subheading text goes here.</p></section>'); break;
+          case 'sidebar-main':
+            html.push('  <div class="layout-wrapper">');
+            html.push('    <aside><!-- Sidebar content --></aside>');
+            html.push('    <main><!-- Main content --></main>');
+            html.push('  </div>'); break;
+          case 'main-sidebar':
+            html.push('  <div class="layout-wrapper">');
+            html.push('    <main><!-- Main content --></main>');
+            html.push('    <aside><!-- Sidebar content --></aside>');
+            html.push('  </div>'); break;
+          case 'main': html.push('  <main class="main-content"><!-- Content here --></main>'); break;
+          case 'cardgrid':
+            html.push('  <section class="card-grid">');
+            html.push('    <div class="card"><h3>Card Title</h3><p>Description</p></div>');
+            html.push('    <div class="card"><h3>Card Title</h3><p>Description</p></div>');
+            html.push('    <div class="card"><h3>Card Title</h3><p>Description</p></div>');
+            html.push('  </section>'); break;
+          case 'footer': html.push('  <footer class="site-footer"><p>&copy; 2026 Your Site</p></footer>'); break;
+        }
+      });
+
+      html.push('</body>', '</html>');
+      htmlOutput.textContent = html.join('\n');
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        document.getElementById('buildView').style.display = currentMode === 'build' ? '' : 'none';
+        document.getElementById('previewView').style.display = currentMode === 'preview' ? '' : 'none';
+        document.getElementById('exportView').style.display = currentMode === 'export' ? '' : 'none';
+      });
+    });
+
+    document.getElementById('copyHtmlBtn').addEventListener('click', function () {
+      DT.copyToClipboard(htmlOutput.textContent, document.getElementById('copyHtmlBtn'));
+    });
+    document.getElementById('downloadHtmlBtn').addEventListener('click', function () {
+      DT.downloadText(htmlOutput.textContent, 'layout.html', 'text/html');
+    });
+
+    function setStatus(type, msg) {
+      statusBar.className = 'status-bar ' + type;
+      statusBar.textContent = msg;
+    }
+  })();
+  </script>
+</body>
+</html>

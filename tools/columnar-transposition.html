@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Columnar Transposition Cipher — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encrypt and decrypt text with the columnar transposition cipher online. Keyword column reordering, visual grid, step-by-step breakdown. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/columnar-transposition.html">
+  <meta property="og:title" content="Columnar Transposition Cipher — ThisDevTool">
+  <meta property="og:description" content="Free online columnar transposition cipher. Encrypt and decrypt with keyword column reordering. Visual grid shows the transposition steps.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/columnar-transposition.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Columnar Transposition Cipher",
+    "url": "https://thisdevtool.com/tools/columnar-transposition.html",
+    "description": "Encrypt and decrypt text using the columnar transposition cipher with keyword column reordering.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is columnar transposition?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Columnar transposition is a cipher where the plaintext is written in rows under a keyword, then the columns are read out in the alphabetical order of the keyword letters. The keyword determines which columns are read first, second, and so on, effectively permuting the plaintext characters." }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the keyword determine column order?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Number each letter of the keyword in alphabetical order. The letter closest to A is column 1, the next is column 2, etc. If there are duplicate letters, assign numbers left to right. These numbers tell you the order in which to read the columns when forming the ciphertext." }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens if the plaintext doesn't fill the last row?",
+        "acceptedAnswer": { "@type": "Answer", "text": "When the plaintext doesn't perfectly fill the grid, some columns in the last row are shorter than others. This is handled by padding with a null character (X) or by noting which columns have an extra character. Both the sender and receiver need to agree on the padding approach." }
+      },
+      {
+        "@type": "Question",
+        "name": "How secure is columnar transposition?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Columnar transposition alone preserves letter frequencies and can be broken by frequency analysis, anagramming (reordering columns until recognizable text appears), and other techniques. However, double transposition (applying it twice with different keys) is significantly stronger and was used militarily. Combined with substitution, it forms very strong ciphers." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is double columnar transposition?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Double transposition applies columnar transposition twice, with two different keywords. The result of the first transposition becomes the plaintext for the second. This was used by the German Army in WWI and by several other militaries through WWII as a field cipher for top-secret communications." }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .col-grid { border-collapse: collapse; font-family: monospace; font-size: 0.85rem; }
+    .col-grid td, .col-grid th { min-width: 1.8rem; height: 1.8rem; text-align: center; border: 1px solid var(--border); padding: 0.1rem 0.3rem; }
+    .col-grid th { background: var(--bg-secondary); font-weight: 700; }
+    .col-grid th.order { color: #10b981; }
+    .col-grid td.pad { color: var(--text-muted); font-style: italic; }
+    .key-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .key-row input { flex: 1; min-width: 8rem; font-family: monospace; padding: 0.35rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/rail-fence-cipher.html">Rail Fence</a>
+        <a href="/tools/adfgvx-cipher.html">ADFGVX</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Columnar Transposition Cipher</h1>
+          <p class="tool-subtitle">Write in rows, read columns by keyword alphabetical order — keyword permutation cipher.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" id="chipEncrypt">Encrypt</button>
+            <button class="option-chip" id="chipDecrypt">Decrypt</button>
+            <button class="option-chip" id="chipSteps">Step-by-Step</button>
+          </div>
+
+          <div class="key-row">
+            <label style="font-weight:600;white-space:nowrap;">Keyword:</label>
+            <input type="text" id="keyword" placeholder="e.g. ZEBRA" value="ZEBRA">
+            <button class="btn btn-sm btn-primary" id="applyKey">Apply</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">Plaintext</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="inputText" rows="6" spellcheck="false" placeholder="Enter plaintext to encrypt..."></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Ciphertext</span>
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              </div>
+              <div class="code-output" id="outputText" style="min-height:130px;font-family:monospace;letter-spacing:0.1em;"></div>
+            </div>
+          </div>
+
+          <div id="stepsPanel" style="display:none;margin-top:0.75rem;">
+            <div class="pane-label"><span>Grid View</span></div>
+            <div style="overflow-x:auto;"><table class="col-grid" id="colGrid"></table></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter plaintext and set a keyword.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Columnar Transposition Tool</h2>
+          <ol>
+            <li><strong>Enter a keyword</strong> — type any word and click Apply (e.g., ZEBRA, SECRET, KEY).</li>
+            <li><strong>Choose Encrypt or Decrypt</strong> — select the direction.</li>
+            <li><strong>Enter your text</strong> — spaces and punctuation are removed automatically.</li>
+            <li><strong>View the result</strong> — ciphertext appears on the right.</li>
+            <li><strong>Step-by-Step</strong> — click to see the columnar grid with column reading order highlighted.</li>
+          </ol>
+
+          <h2>About Columnar Transposition</h2>
+          <p>Columnar transposition is one of the most widely used historical transposition ciphers. The plaintext is written left-to-right in rows under a keyword. The keyword letters are numbered in alphabetical order, and the columns are then read out in that numerical order to produce the ciphertext. For example, with keyword ZEBRA (Z=5, E=1, B=2, R=3, A=4), the columns are read in the order E, B, R, A, Z — that is, column 2 first, then 3, then 4, then 5, then 1.</p>
+
+          <h3>The Encryption Algorithm</h3>
+          <p>Step 1: Write out the plaintext (stripped of spaces and punctuation) in rows, with as many columns as the keyword length. If the last row is incomplete, pad with X. Step 2: Number each column by the alphabetical position of the keyword letter above it. Step 3: Read each column from top to bottom, in the order determined by the column numbers (1, 2, 3...). Concatenate these column readings to form the ciphertext.</p>
+
+          <h3>Decryption Algorithm</h3>
+          <p>Decryption reverses the process. Given the ciphertext and keyword: calculate the number of rows and which columns are shorter (if the last row is incomplete). Place the ciphertext characters back into columns in the same order used for encryption. Finally, read the grid row by row to recover the plaintext. This tool handles all padding automatically.</p>
+
+          <h3>Historical Significance</h3>
+          <p>Columnar transposition was used by many military organizations throughout the 19th and 20th centuries. The Union Army used a variant during the American Civil War. The German Army used double columnar transposition in WWI — applying the cipher twice with two different keywords — making it one of the most secure field ciphers of that era. The ADFGVX cipher combined a Polybius square substitution with a single columnar transposition. Various navies and intelligence services used columnar transposition through WWII, often combined with substitution. The cipher was eventually replaced by machine ciphers (like Enigma) and later by electronic encryption systems.</p>
+
+          <h3>Double Transposition</h3>
+          <p>Single columnar transposition can be broken by experienced cryptanalysts using column anagramming — trying different column orderings until readable text emerges. Double transposition (applying the cipher twice with different keys) is significantly stronger: the second transposition shuffles the column groups from the first transposition, creating a much more complex permutation that resists anagramming attacks. Double transposition was considered highly secure for manual cipher work and was used for the most sensitive communications in the field.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is columnar transposition?</button>
+            <div class="faq-answer">Columnar transposition is a cipher where plaintext is written in rows under a keyword, then columns are read in the alphabetical order of the keyword letters. The keyword determines which column is read first, second, etc.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does the keyword determine column order?</button>
+            <div class="faq-answer">Number each keyword letter by its alphabetical rank (A=1, Z=last). Columns are read in ascending order of these numbers. Duplicate letters are numbered left to right. For ZEBRA: Z=5, E=1, B=2, R=3, A=4, so read columns in order 5→1→2→3→4.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What happens if the text doesn't fill the last row?</button>
+            <div class="faq-answer">Incomplete last rows are padded with X. Some columns will be one character shorter than others. Both sender and receiver must use the same padding convention to decrypt correctly.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How secure is columnar transposition?</button>
+            <div class="faq-answer">Single columnar transposition preserves letter frequencies and can be broken by column anagramming. Double transposition (applied twice with different keys) is significantly stronger and was used militarily for sensitive communications.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is double columnar transposition?</button>
+            <div class="faq-answer">Double transposition applies columnar transposition twice with two different keywords. It was used by the German Army in WWI and by several militaries in WWII as a strong field cipher for top-secret communications.</div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/columnar-transposition.html">Columnar Transposition</a>
+        <a href="/tools/rail-fence-cipher.html">Rail Fence Cipher</a>
+        <a href="/tools/adfgvx-cipher.html">ADFGVX Cipher</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Ciphers</h4>
+        <a href="/tools/playfair-cipher.html">Playfair Cipher</a>
+        <a href="/tools/enigma-simulator.html">Enigma Simulator</a>
+        <a href="/tools/one-time-pad.html">One-Time Pad</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var mode = 'encrypt', showSteps = false;
+
+    function getKeyword() {
+      return (document.getElementById('keyword').value || 'KEY').toUpperCase().replace(/[^A-Z]/g, '') || 'KEY';
+    }
+
+    function getColumnOrder(key) {
+      return key.split('').map(function (c, i) { return { c: c, i: i }; })
+        .sort(function (a, b) { return a.c < b.c ? -1 : a.c > b.c ? 1 : a.i - b.i; })
+        .map(function (x) { return x.i; });
+    }
+
+    function encrypt(text, key) {
+      text = text.toUpperCase().replace(/[^A-Z]/g, '');
+      var numCols = key.length;
+      var numRows = Math.ceil(text.length / numCols);
+      var padded = text + 'X'.repeat(numRows * numCols - text.length);
+      var order = getColumnOrder(key);
+      var result = '';
+      order.forEach(function (col) {
+        for (var row = 0; row < numRows; row++) {
+          result += padded[row * numCols + col];
+        }
+      });
+      return { result: result, padded: padded, order: order, numCols: numCols, numRows: numRows };
+    }
+
+    function decrypt(text, key) {
+      text = text.toUpperCase().replace(/[^A-Z]/g, '');
+      var numCols = key.length;
+      var numRows = Math.ceil(text.length / numCols);
+      var order = getColumnOrder(key);
+      var fullCols = text.length % numCols;
+      if (fullCols === 0) fullCols = numCols;
+      // How many chars in each column
+      var colLengths = new Array(numCols).fill(numRows);
+      // Some columns may be shorter
+      var totalFull = numRows * numCols;
+      var shortage = totalFull - text.length;
+      // Last `shortage` columns in read order are shorter
+      var shorterCols = order.slice(numCols - shortage);
+      shorterCols.forEach(function (col) { colLengths[col] = numRows - 1; });
+      var colData = [];
+      var idx = 0;
+      order.forEach(function (col) {
+        colData[col] = text.substring(idx, idx + colLengths[col]).split('');
+        idx += colLengths[col];
+      });
+      var colIdx = new Array(numCols).fill(0);
+      var result = '';
+      for (var r = 0; r < numRows; r++) {
+        for (var c = 0; c < numCols; c++) {
+          if (colData[c] && colIdx[c] < colData[c].length) {
+            result += colData[c][colIdx[c]++];
+          }
+        }
+      }
+      return { result: result.replace(/X+$/, ''), numCols: numCols, numRows: numRows };
+    }
+
+    function renderGrid(padded, key, numCols, numRows, order) {
+      var table = document.getElementById('colGrid');
+      var html = '<thead><tr><th>#</th>';
+      // Column header with keyword letters
+      for (var c = 0; c < numCols; c++) {
+        html += '<th>' + key[c] + '</th>';
+      }
+      html += '</tr><tr><th>Order</th>';
+      var orderRanks = new Array(numCols);
+      order.forEach(function (col, rank) { orderRanks[col] = rank + 1; });
+      for (var c2 = 0; c2 < numCols; c2++) {
+        html += '<th class="order">' + orderRanks[c2] + '</th>';
+      }
+      html += '</tr></thead><tbody>';
+      for (var r = 0; r < numRows; r++) {
+        html += '<tr><td>' + (r + 1) + '</td>';
+        for (var c3 = 0; c3 < numCols; c3++) {
+          var ch = padded[r * numCols + c3];
+          var isPad = (r === numRows - 1) && !ch;
+          html += '<td' + (isPad ? ' class="pad"' : '') + '>' + (ch || 'X') + '</td>';
+        }
+        html += '</tr>';
+      }
+      html += '</tbody>';
+      table.innerHTML = html;
+    }
+
+    function process() {
+      var key = getKeyword();
+      var input = document.getElementById('inputText').value;
+      if (!input.trim()) {
+        document.getElementById('outputText').textContent = '';
+        document.getElementById('colGrid').innerHTML = '';
+        setStatus('Enter text and set a keyword.', 'info');
+        return;
+      }
+      if (mode === 'encrypt') {
+        var res = encrypt(input, key);
+        var groups = (res.result || '').match(/.{1,5}/g) || [];
+        document.getElementById('outputText').textContent = groups.join(' ');
+        if (showSteps) renderGrid(res.padded, key, res.numCols, res.numRows, res.order);
+        setStatus('Key: ' + key + ' — ' + res.numCols + ' columns, ' + res.numRows + ' rows', 'valid');
+      } else {
+        var dec = decrypt(input, key);
+        document.getElementById('outputText').textContent = dec.result;
+        setStatus('Decrypted — Key: ' + key + ' — ' + dec.numCols + ' columns', 'valid');
+      }
+      DT && DT.trackTool && DT.trackTool('columnar-transposition');
+    }
+
+    function setStatus(msg, type) {
+      var el = document.getElementById('statusBar');
+      el.className = 'status-bar ' + (type || 'info');
+      el.textContent = msg;
+    }
+
+    document.getElementById('applyKey').addEventListener('click', function () { process(); });
+    document.getElementById('keyword').addEventListener('input', process);
+    document.getElementById('inputText').addEventListener('input', process);
+
+    document.getElementById('chipEncrypt').addEventListener('click', function () {
+      mode = 'encrypt'; setChip(this);
+      document.getElementById('inputLabel').textContent = 'Plaintext';
+      document.getElementById('outputLabel').textContent = 'Ciphertext';
+      document.getElementById('inputText').placeholder = 'Enter plaintext to encrypt...';
+      process();
+    });
+
+    document.getElementById('chipDecrypt').addEventListener('click', function () {
+      mode = 'decrypt'; setChip(this);
+      document.getElementById('inputLabel').textContent = 'Ciphertext';
+      document.getElementById('outputLabel').textContent = 'Plaintext';
+      document.getElementById('inputText').placeholder = 'Enter ciphertext to decrypt...';
+      process();
+    });
+
+    document.getElementById('chipSteps').addEventListener('click', function () {
+      showSteps = !showSteps;
+      var p = document.getElementById('stepsPanel');
+      p.style.display = showSteps ? 'block' : 'none';
+      setChip(this);
+      if (showSteps) process();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('keyword').value = 'ZEBRA';
+      document.getElementById('inputText').value = 'WE ARE DISCOVERED FLEE AT ONCE';
+      mode = 'encrypt'; setChip(document.getElementById('chipEncrypt'));
+      process();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('inputText').value = '';
+      document.getElementById('outputText').textContent = '';
+      document.getElementById('colGrid').innerHTML = '';
+      setStatus('Enter text and set a keyword.', 'info');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var txt = document.getElementById('outputText').textContent;
+      DT && DT.copyToClipboard ? DT.copyToClipboard(txt, this) : navigator.clipboard.writeText(txt);
+    });
+
+    function setChip(el) {
+      document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      el.classList.add('active');
+    }
+
+    setStatus('Enter plaintext and set a keyword.', 'info');
+  })();
+  </script>
+</body>
+</html>

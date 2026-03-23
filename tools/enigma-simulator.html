@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Enigma Machine Simulator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Simulate the WWII Enigma M3 cipher machine online. Accurate rotor wiring, stepping mechanism, plugboard, reflectors B and C. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/enigma-simulator.html">
+  <meta property="og:title" content="Enigma Machine Simulator — ThisDevTool">
+  <meta property="og:description" content="Authentic WWII Enigma M3 simulator. Rotors I–V, Reflectors B/C, plugboard, double-step anomaly. Free, runs in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/enigma-simulator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Enigma Machine Simulator",
+    "url": "https://thisdevtool.com/tools/enigma-simulator.html",
+    "description": "Simulate the WWII Enigma M3 cipher machine with authentic rotor wiring, stepping, and plugboard.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What was the Enigma machine?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The Enigma machine was an electromechanical cipher device used by Nazi Germany during World War II. It scrambled messages using a series of rotating wheels (rotors), a plugboard (Steckerbrett) for letter substitutions, and a reflector. The settings changed daily, creating an astronomically large keyspace that was eventually broken by Allied codebreakers at Bletchley Park." }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does Enigma never encrypt a letter to itself?",
+        "acceptedAnswer": { "@type": "Answer", "text": "This is a fundamental property of the Enigma design: the reflector ensures the signal path is always symmetric. A letter is never encrypted to itself. While this made the machine self-deciphering (same settings for encryption and decryption), it was also a cryptographic weakness that codebreakers at Bletchley Park exploited." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the double-step anomaly?",
+        "acceptedAnswer": { "@type": "Answer", "text": "In a normal odometer mechanism, the middle rotor advances only when the rightmost rotor completes a full revolution. In Enigma, however, when the middle rotor is at its notch position, it advances both itself and the left rotor in the same step. This means the middle rotor sometimes takes two consecutive steps, which is called the double-step anomaly." }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the plugboard (Steckerbrett) work?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The plugboard connects pairs of letters with cables, swapping them before and after the rotors. For example, if A-Z are connected, pressing A sends Z into the rotors, and Z coming out of the rotors is displayed as A. Up to 13 pairs can be connected, though typically 6–10 were used in wartime settings." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this simulator historically accurate?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes. This simulator uses the exact wiring tables published from historical Enigma documentation for Rotors I through V and Reflectors B and C. The stepping mechanism including the double-step anomaly is faithfully implemented. Messages encrypted here can be decrypted by other accurate Enigma simulators using the same settings." }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .enigma-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px) { .enigma-grid { grid-template-columns: 1fr; } }
+    .enigma-settings { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    .enigma-settings h3 { margin: 0 0 0.75rem; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .setting-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem; }
+    .setting-row label { font-size: 0.85rem; font-weight: 600; min-width: 4rem; }
+    .setting-row select, .setting-row input { font-size: 0.85rem; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); text-transform: uppercase; }
+    .plugboard-pairs { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem; }
+    .plug-pair { background: #10b981; color: #fff; border-radius: 4px; padding: 0.15rem 0.4rem; font-size: 0.8rem; font-family: monospace; cursor: pointer; }
+    .rotor-display { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .rotor-window { width: 2.5rem; height: 2.5rem; background: #1a1a2e; color: #10b981; border: 2px solid #10b981; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-family: monospace; font-size: 1.4rem; font-weight: bold; }
+    .history-table { font-family: monospace; font-size: 0.8rem; max-height: 6rem; overflow-y: auto; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 0.5rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/playfair-cipher.html">Playfair</a>
+        <a href="/tools/one-time-pad.html">One-Time Pad</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Enigma Machine Simulator</h1>
+          <p class="tool-subtitle">Authentic WWII Enigma M3 — Rotors I–V, Reflectors B/C, plugboard, double-step anomaly.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" id="chipEncrypt">Encrypt / Decrypt</button>
+            <button class="option-chip" id="chipSettings">Settings</button>
+            <button class="option-chip" id="chipHistory">History</button>
+          </div>
+
+          <!-- Rotor position display -->
+          <div style="margin-bottom:0.75rem;">
+            <div class="pane-label"><span>Current Rotor Positions</span><button class="btn btn-sm btn-secondary" id="resetBtn">Reset</button></div>
+            <div class="rotor-display">
+              <div class="rotor-window" id="posL" title="Left rotor">A</div>
+              <div class="rotor-window" id="posM" title="Middle rotor">A</div>
+              <div class="rotor-window" id="posR" title="Right rotor">A</div>
+            </div>
+          </div>
+
+          <!-- Settings Panel -->
+          <div class="enigma-settings" id="settingsPanel">
+            <h3>Enigma Settings</h3>
+            <div class="setting-row">
+              <label>Reflector</label>
+              <select id="selReflector"><option value="B">B</option><option value="C">C</option></select>
+            </div>
+            <div class="setting-row">
+              <label>Left Rotor</label>
+              <select id="selL"><option value="I">I</option><option value="II">II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option></select>
+              <label>Start</label>
+              <input type="text" id="startL" maxlength="1" value="A" style="width:3rem;">
+              <label>Ring</label>
+              <input type="text" id="ringL" maxlength="1" value="A" style="width:3rem;">
+            </div>
+            <div class="setting-row">
+              <label>Mid Rotor</label>
+              <select id="selM"><option value="I">I</option><option value="II" selected>II</option><option value="III">III</option><option value="IV">IV</option><option value="V">V</option></select>
+              <label>Start</label>
+              <input type="text" id="startM" maxlength="1" value="A" style="width:3rem;">
+              <label>Ring</label>
+              <input type="text" id="ringM" maxlength="1" value="A" style="width:3rem;">
+            </div>
+            <div class="setting-row">
+              <label>Right Rotor</label>
+              <select id="selR"><option value="I">I</option><option value="II">II</option><option value="III" selected>III</option><option value="IV">IV</option><option value="V">V</option></select>
+              <label>Start</label>
+              <input type="text" id="startR" maxlength="1" value="A" style="width:3rem;">
+              <label>Ring</label>
+              <input type="text" id="ringR" maxlength="1" value="A" style="width:3rem;">
+            </div>
+            <div class="setting-row">
+              <label>Plugboard</label>
+              <input type="text" id="plugboard" placeholder="e.g. AB CD EF" style="width:16rem;" value="">
+              <button class="btn btn-sm btn-secondary" id="applySettings">Apply</button>
+            </div>
+            <div class="plugboard-pairs" id="plugPairs"></div>
+          </div>
+
+          <div class="enigma-grid">
+            <div>
+              <div class="pane-label"><span>Plaintext</span><button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button></div>
+              <textarea id="plaintext" rows="8" spellcheck="false" placeholder="Type your message here (A-Z only, spaces ignored)..."></textarea>
+            </div>
+            <div>
+              <div class="pane-label"><span>Ciphertext</span><button class="btn btn-sm btn-primary" id="copyBtn">Copy</button></div>
+              <div class="code-output" id="ciphertext" style="min-height:160px;font-family:monospace;letter-spacing:0.1em;"></div>
+            </div>
+          </div>
+
+          <div id="historyPanel" style="display:none;margin-top:0.75rem;">
+            <div class="pane-label"><span>Keystroke History</span><button class="btn btn-sm btn-secondary" id="clearHistory">Clear</button></div>
+            <div class="history-table" id="historyTable"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Rotor: I-II-III — Reflector: B — 0 plugboard pairs
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Enigma Simulator</h2>
+          <ol>
+            <li><strong>Configure settings</strong> — click Settings to choose rotors, starting positions, ring settings, and plugboard pairs.</li>
+            <li><strong>Apply settings</strong> — click Apply to lock in your configuration. The rotor windows update to show starting positions.</li>
+            <li><strong>Type your message</strong> — enter text in the Plaintext box. The machine encrypts as you type.</li>
+            <li><strong>Copy the ciphertext</strong> — use the Copy button to copy the encrypted message.</li>
+            <li><strong>Decrypt</strong> — reset to the same starting positions and type the ciphertext to recover the original message.</li>
+          </ol>
+
+          <h2>About the Enigma Machine</h2>
+          <p>The Enigma machine was the primary encryption system used by Nazi Germany during World War II. It was an electromechanical device that combined rotating wheels (rotors), a plugboard (Steckerbrett), and a reflector to produce a polyalphabetic substitution cipher. The Wehrmacht, Luftwaffe, and Kriegsmarine all used Enigma, with the naval variant adding a fourth rotor to create the more complex Enigma M4.</p>
+
+          <h3>How Enigma Works</h3>
+          <p>When an operator pressed a key, an electrical signal passed through the plugboard, then through three rotors right-to-left, was reflected by the reflector, passed back through the rotors left-to-right, and lit up a lamp on the lampboard. After each keypress, the rightmost rotor advanced one step — like an odometer. When the rightmost rotor completed a full revolution, it advanced the middle rotor (via the notch mechanism). The notorious double-step anomaly means the middle rotor sometimes advances two steps in a row: once when it carries to the left rotor, and once on the next step when the right rotor is still at the notch position.</p>
+
+          <h3>Ring Settings and Starting Positions</h3>
+          <p>Each rotor has a ring setting (Ringstellung) that offsets the internal wiring relative to the alphabet ring on the rotor's exterior. Starting positions are the visible letters in the rotor windows when the message key is set. In wartime practice, operators used a codebook for daily settings (rotor order, ring settings, plugboard pairs) and then transmitted an encrypted message key at the start of each message to set the starting positions for the actual message.</p>
+
+          <h3>Why Enigma Was Broken</h3>
+          <p>Cryptanalysts at Bletchley Park, led by Alan Turing and Gordon Welchman, exploited several weaknesses: Enigma never encrypted a letter to itself; message keys were initially transmitted twice (later abandoned); operators often used predictable cribs (known plaintext) like weather reports starting with "WETTER"; and the reflector made the cipher reciprocal. Turing's Bombe machine used these properties to rapidly eliminate impossible rotor settings, eventually cracking the daily keys. The intelligence produced, known as Ultra, is credited with shortening the war by up to two years.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What was the Enigma machine?</button>
+            <div class="faq-answer">The Enigma machine was an electromechanical cipher device used by Nazi Germany during WWII. It scrambled messages using rotating wheels (rotors), a plugboard, and a reflector, creating an extremely large keyspace that was eventually broken by Allied codebreakers at Bletchley Park.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why does Enigma never encrypt a letter to itself?</button>
+            <div class="faq-answer">The reflector ensures the signal path is always symmetric. A letter can never encrypt to itself, which made the machine self-deciphering but was also a cryptographic weakness that Bletchley Park exploited.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the double-step anomaly?</button>
+            <div class="faq-answer">When the middle rotor is at its notch position, it advances both itself and the left rotor in the same step, meaning the middle rotor sometimes takes two consecutive steps in a row. This is an anomaly compared to a normal odometer mechanism.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does the plugboard work?</button>
+            <div class="faq-answer">The plugboard connects pairs of letters with cables, swapping them before and after the rotors. If A-Z are connected, pressing A sends Z into the rotors. Up to 13 pairs can be used, though typically 6–10 were used in wartime settings.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is this simulator historically accurate?</button>
+            <div class="faq-answer">Yes. This simulator uses the exact wiring tables for Rotors I–V and Reflectors B and C from historical documentation, with the double-step anomaly faithfully implemented. Messages encrypted here can be decrypted by other accurate Enigma simulators using identical settings.</div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/enigma-simulator.html">Enigma Simulator</a>
+        <a href="/tools/playfair-cipher.html">Playfair Cipher</a>
+        <a href="/tools/one-time-pad.html">One-Time Pad</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Ciphers</h4>
+        <a href="/tools/rail-fence-cipher.html">Rail Fence</a>
+        <a href="/tools/columnar-transposition.html">Columnar Transposition</a>
+        <a href="/tools/adfgvx-cipher.html">ADFGVX Cipher</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+
+    // Historical rotor wirings (right-to-left, A=0)
+    var ROTORS = {
+      'I':   { wire: 'EKMFLGDQVZNTOWYHXUSPAIBRCJ', notch: 'Q' },
+      'II':  { wire: 'AJDKSIRUXBLHWTMCQGZNPYFVOE', notch: 'E' },
+      'III': { wire: 'BDFHJLCPRTXVZNYEIWGAKMUSQO', notch: 'V' },
+      'IV':  { wire: 'ESOVPZJAYQUIRHXLNFTGKDCMWB', notch: 'J' },
+      'V':   { wire: 'VZBRGITYUPSDNHLXAWMJQOFECK', notch: 'Z' }
+    };
+    var REFLECTORS = {
+      'B': 'YRUHQSLDPXNGOKMIEBFZCWVJAT',
+      'C': 'FVPJIAOYEDRZXWGCTKUQSBNMHL'
+    };
+
+    var plugMap = {}; // plugboard substitution map A-Z -> A-Z
+    var state = { L: 0, M: 0, R: 0 };
+    var rotorOrder = ['I', 'II', 'III'];
+    var ringSetting = [0, 0, 0];
+    var reflectorName = 'B';
+    var history = [];
+
+    function charToIdx(c) { return c.charCodeAt(0) - 65; }
+    function idxToChar(i) { return String.fromCharCode(65 + ((i + 26) % 26)); }
+
+    function parsePlugboard(str) {
+      var map = {};
+      for (var i = 0; i < 26; i++) map[idxToChar(i)] = idxToChar(i);
+      var pairs = str.toUpperCase().match(/[A-Z][A-Z]/g) || [];
+      var used = {};
+      pairs.forEach(function (p) {
+        var a = p[0], b = p[1];
+        if (a !== b && !used[a] && !used[b]) {
+          map[a] = b; map[b] = a;
+          used[a] = true; used[b] = true;
+        }
+      });
+      return { map: map, pairs: pairs };
+    }
+
+    function applyPlugboard(c) { return plugMap[c] || c; }
+
+    function rotorForward(rName, pos, ring, c) {
+      var w = ROTORS[rName].wire;
+      var shift = (pos - ring + 26) % 26;
+      var idx = (charToIdx(c) + shift + 26) % 26;
+      var out = w[idx];
+      var outShifted = (charToIdx(out) - shift + 26) % 26;
+      return idxToChar(outShifted);
+    }
+
+    function rotorBackward(rName, pos, ring, c) {
+      var w = ROTORS[rName].wire;
+      var shift = (pos - ring + 26) % 26;
+      var idx = (charToIdx(c) + shift + 26) % 26;
+      var outIdx = w.indexOf(idxToChar(idx));
+      var outShifted = (outIdx - shift + 26) % 26;
+      return idxToChar(outShifted);
+    }
+
+    function reflect(c) {
+      return REFLECTORS[reflectorName][charToIdx(c)];
+    }
+
+    function stepRotors() {
+      var notchR = ROTORS[rotorOrder[2]].notch;
+      var notchM = ROTORS[rotorOrder[1]].notch;
+      var posR = idxToChar(state.R);
+      var posM = idxToChar(state.M);
+      var stepM = posM === notchM; // double step anomaly
+      var stepL = posM === notchM;
+      if (posR === notchR) stepM = true;
+      state.R = (state.R + 1) % 26;
+      if (stepM) state.M = (state.M + 1) % 26;
+      if (stepL) state.L = (state.L + 1) % 26;
+    }
+
+    function encryptChar(c) {
+      c = c.toUpperCase();
+      if (c < 'A' || c > 'Z') return null;
+      stepRotors();
+      c = applyPlugboard(c);
+      c = rotorForward(rotorOrder[2], state.R, ringSetting[2], c);
+      c = rotorForward(rotorOrder[1], state.M, ringSetting[1], c);
+      c = rotorForward(rotorOrder[0], state.L, ringSetting[0], c);
+      c = reflect(c);
+      c = rotorBackward(rotorOrder[0], state.L, ringSetting[0], c);
+      c = rotorBackward(rotorOrder[1], state.M, ringSetting[1], c);
+      c = rotorBackward(rotorOrder[2], state.R, ringSetting[2], c);
+      c = applyPlugboard(c);
+      return c;
+    }
+
+    function getSettings() {
+      return {
+        reflector: document.getElementById('selReflector').value,
+        L: document.getElementById('selL').value,
+        M: document.getElementById('selM').value,
+        R: document.getElementById('selR').value,
+        sL: (document.getElementById('startL').value.toUpperCase()[0] || 'A'),
+        sM: (document.getElementById('startM').value.toUpperCase()[0] || 'A'),
+        sR: (document.getElementById('startR').value.toUpperCase()[0] || 'A'),
+        rL: (document.getElementById('ringL').value.toUpperCase()[0] || 'A'),
+        rM: (document.getElementById('ringM').value.toUpperCase()[0] || 'A'),
+        rR: (document.getElementById('ringR').value.toUpperCase()[0] || 'A'),
+        plug: document.getElementById('plugboard').value
+      };
+    }
+
+    function applySettingsNow() {
+      var s = getSettings();
+      reflectorName = s.reflector;
+      rotorOrder = [s.L, s.M, s.R];
+      state.L = charToIdx(s.sL);
+      state.M = charToIdx(s.sM);
+      state.R = charToIdx(s.sR);
+      ringSetting = [charToIdx(s.rL), charToIdx(s.rM), charToIdx(s.rR)];
+      var pb = parsePlugboard(s.plug);
+      plugMap = pb.map;
+      updateRotorDisplay();
+      renderPlugPairs(pb.pairs);
+      updateStatus();
+    }
+
+    function updateRotorDisplay() {
+      document.getElementById('posL').textContent = idxToChar(state.L);
+      document.getElementById('posM').textContent = idxToChar(state.M);
+      document.getElementById('posR').textContent = idxToChar(state.R);
+    }
+
+    function renderPlugPairs(pairs) {
+      var el = document.getElementById('plugPairs');
+      el.innerHTML = pairs.map(function (p) {
+        return '<span class="plug-pair">' + p[0] + '↔' + p[1] + '</span>';
+      }).join('');
+    }
+
+    function updateStatus() {
+      var plugCount = Object.keys(plugMap).filter(function (k) { return plugMap[k] !== k; }).length / 2;
+      document.getElementById('statusBar').className = 'status-bar info';
+      document.getElementById('statusBar').textContent =
+        'Rotor: ' + rotorOrder.join('-') + ' — Reflector: ' + reflectorName + ' — ' + plugCount + ' plugboard pair' + (plugCount !== 1 ? 's' : '');
+    }
+
+    function encryptText() {
+      var plain = document.getElementById('plaintext').value.toUpperCase().replace(/[^A-Z]/g, '');
+      if (!plain) { document.getElementById('ciphertext').textContent = ''; updateStatus(); return; }
+      // Reset to starting positions
+      applySettingsNow();
+      var result = '';
+      for (var i = 0; i < plain.length; i++) {
+        var enc = encryptChar(plain[i]);
+        if (enc) {
+          result += enc;
+          history.push({ plain: plain[i], cipher: enc, pos: idxToChar(state.R) });
+        }
+        updateRotorDisplay();
+      }
+      // Format in groups of 5
+      var groups = result.match(/.{1,5}/g) || [];
+      document.getElementById('ciphertext').textContent = groups.join(' ');
+      renderHistory();
+      updateStatus();
+      DT && DT.trackTool && DT.trackTool('enigma-simulator');
+    }
+
+    function renderHistory() {
+      var el = document.getElementById('historyTable');
+      var rows = history.slice(-50).map(function (h) {
+        return h.plain + ' → ' + h.cipher;
+      });
+      el.textContent = rows.join('  ');
+    }
+
+    document.getElementById('plaintext').addEventListener('input', encryptText);
+
+    document.getElementById('applySettings').addEventListener('click', function () {
+      applySettingsNow();
+      document.getElementById('plaintext').value = '';
+      document.getElementById('ciphertext').textContent = '';
+      history = [];
+      renderHistory();
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', function () {
+      applySettingsNow();
+      document.getElementById('plaintext').value = '';
+      document.getElementById('ciphertext').textContent = '';
+      history = [];
+      renderHistory();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      applySettingsNow();
+      document.getElementById('plaintext').value = '';
+      document.getElementById('ciphertext').textContent = '';
+      history = [];
+      renderHistory();
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var txt = document.getElementById('ciphertext').textContent;
+      DT && DT.copyToClipboard ? DT.copyToClipboard(txt, this) : navigator.clipboard.writeText(txt);
+    });
+
+    document.getElementById('chipEncrypt').addEventListener('click', function () { setChip(this); });
+    document.getElementById('chipSettings').addEventListener('click', function () {
+      setChip(this);
+      var p = document.getElementById('settingsPanel');
+      p.style.display = p.style.display === 'none' ? 'block' : 'block';
+    });
+    document.getElementById('chipHistory').addEventListener('click', function () {
+      setChip(this);
+      var p = document.getElementById('historyPanel');
+      p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    });
+    document.getElementById('clearHistory').addEventListener('click', function () {
+      history = [];
+      document.getElementById('historyTable').textContent = '';
+    });
+
+    function setChip(el) {
+      document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      el.classList.add('active');
+    }
+
+    // Initialize
+    plugMap = parsePlugboard('').map;
+    applySettingsNow();
+  })();
+  </script>
+</body>
+</html>

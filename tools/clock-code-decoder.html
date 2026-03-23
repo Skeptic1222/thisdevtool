@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Clock Code Decoder — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encode and decode messages using clock face positions. Map 12 clock positions to alphabet letters. Visual clock display. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/clock-code-decoder.html">
+  <meta property="og:title" content="Clock Code Decoder — ThisDevTool">
+  <meta property="og:description" content="Encode or decode secret messages using clock positions. Visual clock face. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/clock-code-decoder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Clock Code Decoder",
+    "url": "https://thisdevtool.com/tools/clock-code-decoder.html",
+    "description": "Encode and decode messages using clock face positions. Map 12 clock positions to the alphabet with AM/PM disambiguation.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does the clock code work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The clock code maps each letter of the alphabet to a clock time. Letters A–L (1–12) use AM hours (1:00 AM to 12:00 AM). Letters M–X (13–24, mapped as 1:00 PM to 12:00 PM) use PM hours. Letter Y uses 12:30 and Z uses 12:45 as extended positions. Each word is separated by a pipe symbol."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does AM and PM mean in the clock cipher?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AM positions (1:00–12:00 AM) represent letters A–L. PM positions (1:00–12:00 PM) represent letters M–X. This allows 26 letters to be encoded across 24 hour positions plus two half-hour positions for Y and Z."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I encode numbers or punctuation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The standard clock cipher maps only the 26 letters A–Z. Numbers and punctuation are passed through unchanged in the output. Spaces between words are preserved as word separators in the encoded output."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this a real historical cipher?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The clock cipher is a novelty steganographic encoding rather than a historically significant military cipher. It has been used in puzzle books, escape rooms, and children's spy kits. Its security is low since the mapping is simple and easily guessed, but it is visually appealing and fun to use."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I read the visual clock display?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When you encode a message, each letter shows as a clock face with hands pointing to the corresponding hour. The clock is drawn as an SVG with a minute hand always at 12 for hour positions, or at 30 or 45 for Y and Z. AM times show a sun icon; PM times show a moon icon."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .clock-display {
+      display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;
+      margin: 1rem 0; min-height: 80px;
+    }
+    .clock-face-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+    .clock-face-wrap span { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+    .clock-svg { filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15)); }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .ref-table th, .ref-table td { padding: 0.35rem 0.6rem; border: 1px solid var(--border); text-align: center; }
+    .ref-table th { background: var(--surface-alt, var(--surface)); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/colored-squares-cipher.html">Color Cipher</a>
+        <a href="/tools/five-needle-telegraph.html">5-Needle</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Clock Code Decoder</h1>
+          <p class="tool-subtitle">Map letters to clock positions. 1–12 AM = A–L, 1–12 PM = M–X, with Y and Z at half positions.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Encode</button>
+            <button class="option-chip" data-mode="decode">Decode</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <div id="ioSection">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span id="inputLabel">Text to Encode</span>
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+                <textarea id="mainInput" rows="5" placeholder="Type text to encode..." spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Output</span>
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                </div>
+                <div class="code-output" id="mainOutput" style="min-height:120px;"></div>
+              </div>
+            </div>
+            <div class="clock-display" id="clockDisplay"></div>
+          </div>
+
+          <div id="referenceSection" style="display:none;">
+            <table class="ref-table" id="refTable"></table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type text above to encode it as clock times.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How the Clock Code Works</h2>
+          <p>The clock cipher uses the 12-hour clock face as a visual encoding system. The alphabet is split into two groups of 13 letters. The first 12 letters (A–L) correspond to hours 1:00 through 12:00 on the AM side. The next 12 letters (M–X) use the same hour positions but on the PM side. The remaining two letters (Y and Z) use the half-hour positions 12:30 and 12:45 respectively.</p>
+          <p>To encode a message, each letter is converted to its clock time. Words are separated with a pipe character (|) for clarity. To decode, each time token is matched back to its letter using the AM/PM mapping. The visual clock face SVG shows the hour and minute hands pointing to the correct position for each letter.</p>
+
+          <h2>History of Clock-Based Ciphers</h2>
+          <p>Clock faces have appeared in puzzles and codes since the 19th century. The visual nature of a clock — divided into 12 equal sections — makes it an intuitive encoding grid. Children's spy kits, escape room designers, and puzzle book authors have all used variations of clock ciphers. While not cryptographically strong, the clock cipher has educational value: it teaches the concept of substitution ciphers and the importance of a shared key (in this case, the AM/PM mapping convention).</p>
+
+          <h3>Substitution Ciphers</h3>
+          <p>The clock cipher is a monoalphabetic substitution cipher — each plaintext letter maps to exactly one clock symbol. This makes it vulnerable to frequency analysis, since the most common letters in English (E, T, A, O, I, N) will appear as the most common clock positions. More secure variants use polyalphabetic substitution (like the Vigenère cipher) or symmetric key encryption (like AES). For real-world encryption needs, see our <a href="/tools/aes-encryption.html">AES Encryption tool</a>.</p>
+
+          <h3>Using This Tool for Puzzle Design</h3>
+          <p>This tool is perfect for creating escape room puzzles, treasure hunts, and educational cryptography exercises. Encode a clue as clock positions, print the clock faces, and challenge participants to decode the message. The visual clock display makes it particularly engaging for children and visual learners. The Reference tab shows the complete mapping table you can share with participants as a decoder key.</p>
+
+          <h3>Encoding Format</h3>
+          <p>Each letter encodes to a time string in the format <code>H:MM AM/PM</code>. Words are separated by spaces in the output (with each letter's time separated by a dash within a word). The AM suffix denotes A–L; PM denotes M–X. Y maps to 12:30 and Z to 12:45 as special cases. Non-letter characters are preserved as-is.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">How does the clock code work?</button>
+            <div class="faq-answer">Letters A–L map to hours 1–12 AM. Letters M–X map to hours 1–12 PM. Y = 12:30, Z = 12:45. Each letter shows as a clock time, and the visual clock face draws the hands in position.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does AM and PM mean in the clock cipher?</button>
+            <div class="faq-answer">AM positions (1:00–12:00 AM) represent letters A–L. PM positions (1:00–12:00 PM) represent letters M–X. This lets all 26 letters fit across 24 hour positions plus two half-hour slots.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I encode numbers or punctuation?</button>
+            <div class="faq-answer">Only the 26 letters A–Z are mapped to clock positions. Numbers and punctuation pass through unchanged.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is this a real historical cipher?</button>
+            <div class="faq-answer">The clock cipher is a novelty encoding used in puzzle books and escape rooms rather than a historically significant military cipher. Its security is low but it is visually appealing and fun.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I read the visual clock display?</button>
+            <div class="faq-answer">Each encoded letter shows as an SVG clock face with hands pointing to the corresponding hour position. The letter label appears below the clock face.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/clock-code-decoder.html">Clock Code</a>
+        <a href="/tools/colored-squares-cipher.html">Color Cipher</a>
+        <a href="/tools/five-needle-telegraph.html">5-Needle Telegraph</a>
+      </div>
+      <div class="footer-col">
+        <h4>Encoding Tools</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/binary-text.html">Binary Text</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var currentMode = 'encode';
+
+    // A=1AM, B=2AM ... L=12AM, M=1PM ... X=12PM, Y=12:30, Z=12:45
+    var ENCODE_MAP = {
+      'A':'1:00 AM','B':'2:00 AM','C':'3:00 AM','D':'4:00 AM','E':'5:00 AM','F':'6:00 AM',
+      'G':'7:00 AM','H':'8:00 AM','I':'9:00 AM','J':'10:00 AM','K':'11:00 AM','L':'12:00 AM',
+      'M':'1:00 PM','N':'2:00 PM','O':'3:00 PM','P':'4:00 PM','Q':'5:00 PM','R':'6:00 PM',
+      'S':'7:00 PM','T':'8:00 PM','U':'9:00 PM','V':'10:00 PM','W':'11:00 PM','X':'12:00 PM',
+      'Y':'12:30','Z':'12:45'
+    };
+    var DECODE_MAP = {};
+    Object.keys(ENCODE_MAP).forEach(function (k) { DECODE_MAP[ENCODE_MAP[k]] = k; });
+
+    function makeClockSVG(timeStr, letter) {
+      // Parse time string
+      var parts = timeStr.split(' ');
+      var timeParts = parts[0].split(':');
+      var h = parseInt(timeParts[0]);
+      var m = parseInt(timeParts[1]);
+      var am = parts[1] === 'AM';
+      var r = 36;
+      var cx = 40, cy = 40;
+      // Hour angle
+      var hAngle = ((h % 12) + m / 60) / 12 * 360 - 90;
+      var mAngle = m / 60 * 360 - 90;
+      var hRad = hAngle * Math.PI / 180;
+      var mRad = mAngle * Math.PI / 180;
+      var hLen = 22, mLen = 30;
+      var hx = cx + Math.cos(hRad) * hLen, hy = cy + Math.sin(hRad) * hLen;
+      var mx = cx + Math.cos(mRad) * mLen, my = cy + Math.sin(mRad) * mLen;
+
+      // Hour markers
+      var markers = '';
+      for (var i = 1; i <= 12; i++) {
+        var a = (i / 12 * 360 - 90) * Math.PI / 180;
+        var mx2 = cx + Math.cos(a) * (r - 4), my2 = cy + Math.sin(a) * (r - 4);
+        markers += '<text x="' + mx2 + '" y="' + (my2 + 3.5) + '" text-anchor="middle" font-size="5" fill="#888">' + i + '</text>';
+      }
+
+      var color = am ? '#10b981' : '#6366f1';
+      return '<svg class="clock-svg" width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">'
+        + '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="var(--surface)" stroke="' + color + '" stroke-width="2.5"/>'
+        + markers
+        + '<line x1="' + cx + '" y1="' + cy + '" x2="' + hx + '" y2="' + hy + '" stroke="' + color + '" stroke-width="3" stroke-linecap="round"/>'
+        + '<line x1="' + cx + '" y1="' + cy + '" x2="' + mx + '" y2="' + my + '" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>'
+        + '<circle cx="' + cx + '" cy="' + cy + '" r="3" fill="' + color + '"/>'
+        + '</svg>';
+    }
+
+    function encode(text) {
+      var result = [];
+      var clocks = [];
+      text.toUpperCase().split('').forEach(function (ch) {
+        if (ENCODE_MAP[ch]) {
+          result.push(ENCODE_MAP[ch]);
+          clocks.push({ time: ENCODE_MAP[ch], letter: ch });
+        } else if (ch === ' ') {
+          result.push('|');
+          clocks.push(null);
+        } else {
+          result.push(ch);
+        }
+      });
+      return { text: result.join('-').replace(/-\|-/g, ' | '), clocks: clocks };
+    }
+
+    function decode(text) {
+      var tokens = text.split(/\s*\|\s*/);
+      var result = tokens.map(function (word) {
+        return word.split('-').map(function (tok) {
+          tok = tok.trim();
+          return DECODE_MAP[tok] || tok;
+        }).join('');
+      }).join(' ');
+      return result;
+    }
+
+    function render() {
+      var input = document.getElementById('mainInput').value;
+      var output = document.getElementById('mainOutput');
+      var display = document.getElementById('clockDisplay');
+      var status = document.getElementById('statusBar');
+
+      if (!input.trim()) {
+        output.textContent = '';
+        display.innerHTML = '';
+        status.className = 'status-bar info';
+        status.textContent = currentMode === 'encode' ? 'Type text to encode.' : 'Paste clock times to decode.';
+        return;
+      }
+
+      if (currentMode === 'encode') {
+        var res = encode(input);
+        output.textContent = res.text;
+        var html = '';
+        var count = 0;
+        res.clocks.forEach(function (c) {
+          if (c) { html += '<div class="clock-face-wrap">' + makeClockSVG(c.time, c.letter) + '<span>' + c.letter + '</span></div>'; count++; }
+        });
+        display.innerHTML = html;
+        status.className = 'status-bar valid';
+        status.textContent = input.replace(/[^a-zA-Z]/g,'').length + ' letters encoded — ' + input.replace(/[^a-zA-Z\s]/g,'').trim().split(/\s+/).length + ' words';
+        if (DT && DT.trackTool) DT.trackTool('clock-code-decoder');
+      } else {
+        var decoded = decode(input);
+        output.textContent = decoded;
+        display.innerHTML = '';
+        var encoded = encode(decoded);
+        var html2 = '';
+        encoded.clocks.forEach(function (c) {
+          if (c) html2 += '<div class="clock-face-wrap">' + makeClockSVG(c.time, c.letter) + '<span>' + c.letter + '</span></div>';
+        });
+        display.innerHTML = html2;
+        status.className = 'status-bar valid';
+        status.textContent = 'Decoded: ' + decoded.replace(/[^a-zA-Z\s]/g,'').trim().split(/\s+/).length + ' words';
+      }
+    }
+
+    function buildRefTable() {
+      var tbl = document.getElementById('refTable');
+      var html = '<tr><th>Letter</th><th>Clock Time</th><th>Letter</th><th>Clock Time</th></tr>';
+      var letters = Object.keys(ENCODE_MAP);
+      for (var i = 0; i < 13; i++) {
+        var l1 = letters[i], l2 = letters[i + 13] || '';
+        html += '<tr><td><strong>' + l1 + '</strong></td><td>' + ENCODE_MAP[l1] + '</td>'
+          + '<td><strong>' + (l2 || '—') + '</strong></td><td>' + (l2 ? ENCODE_MAP[l2] : '—') + '</td></tr>';
+      }
+      tbl.innerHTML = html;
+    }
+
+    document.getElementById('mainInput').addEventListener('input', DT && DT.debounce ? DT.debounce(render, 200) : render);
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        this.classList.add('active');
+        currentMode = this.dataset.mode;
+        document.getElementById('ioSection').style.display = currentMode === 'reference' ? 'none' : 'block';
+        document.getElementById('referenceSection').style.display = currentMode === 'reference' ? 'block' : 'none';
+        document.getElementById('inputLabel').textContent = currentMode === 'encode' ? 'Text to Encode' : 'Clock Times to Decode';
+        document.getElementById('mainInput').placeholder = currentMode === 'encode' ? 'Type text to encode...' : 'e.g. 8:00 AM-5:00 AM-12:00 AM-12:00 AM-3:00 PM';
+        if (currentMode === 'reference') buildRefTable();
+        else render();
+      });
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('mainInput').value = currentMode === 'encode' ? 'HELLO WORLD' : '8:00 AM-5:00 AM-12:00 AM-12:00 AM-3:00 PM | 23:00 AM-3:00 PM-18:00 PM-12:00 AM-4:00 AM';
+      if (currentMode !== 'encode') document.getElementById('mainInput').value = '8:00 AM-5:00 AM-12:00 AM-12:00 AM-3:00 PM';
+      render();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('mainInput').value = '';
+      render();
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var text = document.getElementById('mainOutput').textContent;
+      if (DT && DT.copyToClipboard) DT.copyToClipboard(text, this);
+    });
+
+    buildRefTable();
+    render();
+  })();
+  </script>
+</body>
+</html>

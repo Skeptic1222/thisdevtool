@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Tap Code Encoder/Decoder — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encode and decode messages using the prison Tap Code cipher online. 5x5 Polybius grid, audio tap playback via Web Audio API. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/tap-code.html">
+  <meta property="og:title" content="Tap Code Encoder/Decoder — ThisDevTool">
+  <meta property="og:description" content="Free online Tap Code tool. Encode text to tap patterns, decode taps back to text, and hear audio playback of your message. Used by POWs in Vietnam.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/tap-code.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Tap Code Encoder/Decoder",
+    "url": "https://thisdevtool.com/tools/tap-code.html",
+    "description": "Encode and decode messages using the prison wall Tap Code. Audio playback via Web Audio API.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the Tap Code?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The Tap Code is a cipher based on a 5x5 Polybius square where C and K share a cell. Letters are communicated by tapping the wall twice in sequence: first the row number, then the column number, separated by a short pause. It became famous as the primary communication method used by American POWs held at the Hanoi Hilton during the Vietnam War." }
+      },
+      {
+        "@type": "Question",
+        "name": "Why is K replaced by C in the Tap Code?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The 26-letter alphabet does not fit in a 5x5 grid (25 cells). Instead of combining I/J as in Polybius, Tap Code removes K and uses C for its sound instead. So any K in a word is spelled with C (e.g., LIKE becomes LICE). Context makes the meaning clear." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do you tap a letter?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Find the letter in the 5x5 grid. Tap the row number first, pause briefly, then tap the column number. For example, A is row 1, column 1: one tap, pause, one tap. H is row 2, column 3: two taps, pause, three taps. A longer pause separates one letter from the next." }
+      },
+      {
+        "@type": "Question",
+        "name": "Who used Tap Code and when?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Tap Code was used extensively by American POWs in the Hanoi Hilton (Hoa Lo Prison) during the Vietnam War (1960s–1970s). It was introduced by Smitty Harris and Carlyle 'Smitty' Harris who learned it from a retired Air Force officer. The code allowed prisoners to communicate despite isolation and was crucial for maintaining organization and morale." }
+      },
+      {
+        "@type": "Question",
+        "name": "How is Tap Code different from Morse code?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Morse code uses dots and dashes (two symbols) to encode letters with variable-length sequences. Tap Code uses only taps (one symbol) with pauses to encode letters as fixed two-number coordinates in a 5x5 grid. Tap Code is simpler to learn and produce with just a knuckle on a wall, but slower than Morse code." }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .tap-grid-table { border-collapse: collapse; font-family: monospace; font-size: 0.85rem; }
+    .tap-grid-table td, .tap-grid-table th { width: 2rem; height: 2rem; text-align: center; border: 1px solid var(--border); }
+    .tap-grid-table th { background: var(--bg-secondary); color: #10b981; font-weight: 700; }
+    .tap-output { font-family: monospace; font-size: 0.95rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; min-height: 5rem; white-space: pre-wrap; word-break: break-word; line-height: 1.8; }
+    .audio-controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-top: 0.5rem; }
+    .tempo-label { font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/polybius-square.html">Polybius Square</a>
+        <a href="/tools/baconian-cipher.html">Baconian</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Tap Code Encoder / Decoder</h1>
+          <p class="tool-subtitle">Prison wall cipher used by Vietnam War POWs — 5×5 Polybius grid, audio tap playback.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" id="chipEncode">Encode</button>
+            <button class="option-chip" id="chipDecode">Decode</button>
+            <button class="option-chip" id="chipAudio">&#9654; Audio</button>
+          </div>
+
+          <div style="overflow-x:auto;margin-bottom:0.75rem;">
+            <table class="tap-grid-table" id="tapGrid">
+              <thead><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+              <tbody id="tapBody"></tbody>
+            </table>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">Plaintext</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="inputText" rows="6" spellcheck="false" placeholder="Enter text to encode (K → C automatically)..."></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Tap Pattern (· = tap)</span>
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              </div>
+              <div class="tap-output" id="outputText"></div>
+            </div>
+          </div>
+
+          <div class="audio-controls" id="audioControls" style="display:none;">
+            <button class="btn btn-sm btn-primary" id="playBtn">&#9654; Play Taps</button>
+            <button class="btn btn-sm btn-secondary" id="stopBtn">&#9646;&#9646; Stop</button>
+            <label class="tempo-label">Speed:</label>
+            <select id="speedSel" style="font-size:0.85rem;padding:0.3rem;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);">
+              <option value="0.5">Slow</option>
+              <option value="1" selected>Normal</option>
+              <option value="2">Fast</option>
+            </select>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter text to encode as tap patterns.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Tap Code Tool</h2>
+          <ol>
+            <li><strong>Choose Encode or Decode</strong> — select the direction with the option chips.</li>
+            <li><strong>Enter your message</strong> — type plaintext to encode, or tap patterns (use dots or numbers) to decode.</li>
+            <li><strong>Read the output</strong> — encoded messages show dot patterns; decoded output shows the original text.</li>
+            <li><strong>Audio playback</strong> — click the Audio chip then Play Taps to hear your message tapped out.</li>
+          </ol>
+
+          <h2>About the Tap Code</h2>
+          <p>The Tap Code is a form of communication based on the Polybius square, used primarily by prisoners to communicate through walls. In the Tap Code, the letter K is omitted from the grid and C is used for K's sound, reducing the alphabet to 25 letters that fit in a 5×5 grid. Each letter is represented by two numbers — the row and column — which are communicated as groups of taps separated by pauses.</p>
+
+          <h3>The Vietnam War POWs</h3>
+          <p>The Tap Code became widely known through its use by American prisoners of war held at the Hanoi Hilton (Hoa Lo Prison) during the Vietnam War. Air Force pilot Smitty Harris learned the code from a retired officer who taught it as a historical curiosity. After being shot down in 1965, Harris taught the Tap Code to fellow prisoners. The code spread throughout the prison camp and became the primary means of covert communication between isolated prisoners. Using knuckles, cups, brooms, or even coughs, prisoners could transmit messages through walls, floors, and ceilings. Former Senator John McCain, who spent 5½ years as a POW, later described the Tap Code as crucial for maintaining morale and command structure.</p>
+
+          <h3>The Tap Code Grid</h3>
+          <p>The 5×5 grid arranges 25 letters (C used for K) in five rows and five columns. To tap a letter, you first tap the row number (pausing briefly between each tap), pause longer, then tap the column number. A long pause separates one letter from the next. For example: A = row 1, column 1 = •/• (one tap, pause, one tap). H = row 2, column 3 = ••/••• (two taps, pause, three taps). S = row 4, column 3 = ••••/••• (four taps, pause, three taps).</p>
+
+          <h3>Encoding Tips</h3>
+          <p>In practice, prisoners developed shorthand: certain common words or phrases were abbreviated to save time and reduce noise. "GN" for "good night," "GBU" for "God bless you," and "SHF" for "same here friend" were common. The letters were tapped in bursts — experienced tappers could communicate several words per minute. When guards were near, prisoners might use very subtle signals: scraping a broom, coughing in patterns, or tapping fingernails almost silently on a shared wall.</p>
+
+          <h3>Audio Simulation</h3>
+          <p>This tool uses the Web Audio API to generate realistic tap sounds for your message. Each tap is a brief click sound generated in your browser without any network request. The speed control adjusts the tempo from slow (learning mode) to fast (practiced tapper speed). Try encoding a short message and listening to the audio to get a sense of how information was transmitted through prison walls.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is the Tap Code?</button>
+            <div class="faq-answer">The Tap Code is a cipher based on a 5x5 Polybius square where C and K share a cell. Letters are communicated by tapping row then column numbers through a wall. It became famous as the communication method used by American POWs at the Hanoi Hilton during the Vietnam War.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why is K replaced by C in the Tap Code?</button>
+            <div class="faq-answer">The 26-letter alphabet doesn't fit in a 5x5 grid. Tap Code removes K and uses C for its sound, so LIKE becomes LICE. Context makes the meaning clear to the reader.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do you tap a letter?</button>
+            <div class="faq-answer">Find the letter in the grid. Tap the row number first, pause briefly, then tap the column number. A longer pause separates one letter from the next. A = row 1, column 1 = one tap, pause, one tap.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Who used Tap Code and when?</button>
+            <div class="faq-answer">Tap Code was used by American POWs in the Hanoi Hilton during the Vietnam War (1960s–1970s). It was taught by Smitty Harris and allowed prisoners to communicate despite strict isolation, maintaining morale and command structure.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How is Tap Code different from Morse code?</button>
+            <div class="faq-answer">Morse code uses dots and dashes (two symbols) with variable-length sequences. Tap Code uses only taps with pauses to encode fixed two-number coordinates. Tap Code is simpler to learn and produce with just a knuckle on a wall but slower than Morse.</div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/tap-code.html">Tap Code</a>
+        <a href="/tools/polybius-square.html">Polybius Square</a>
+        <a href="/tools/baconian-cipher.html">Baconian Cipher</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Ciphers</h4>
+        <a href="/tools/enigma-simulator.html">Enigma Simulator</a>
+        <a href="/tools/rail-fence-cipher.html">Rail Fence</a>
+        <a href="/tools/one-time-pad.html">One-Time Pad</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var mode = 'encode';
+
+    // 5x5 grid: A-Z without K (C used for K)
+    var GRID = 'ABCDE FGHIJ LMNOP QRSTU VWXYZ'.replace(/ /g, '').split(''); // 25 chars
+
+    function renderGrid() {
+      var tbody = document.getElementById('tapBody');
+      tbody.innerHTML = '';
+      for (var r = 0; r < 5; r++) {
+        var tr = document.createElement('tr');
+        var th = document.createElement('th');
+        th.textContent = r + 1;
+        tr.appendChild(th);
+        for (var c = 0; c < 5; c++) {
+          var td = document.createElement('td');
+          var ch = GRID[r * 5 + c];
+          td.textContent = ch === 'C' ? 'C/K' : ch;
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+    }
+
+    function charToTap(ch) {
+      ch = ch.toUpperCase();
+      if (ch === 'K') ch = 'C';
+      var idx = GRID.indexOf(ch);
+      if (idx < 0) return null;
+      var row = Math.floor(idx / 5) + 1;
+      var col = idx % 5 + 1;
+      return { row: row, col: col };
+    }
+
+    function tapToChar(row, col) {
+      var idx = (row - 1) * 5 + (col - 1);
+      return (idx >= 0 && idx < 25) ? GRID[idx] : null;
+    }
+
+    function encode(text) {
+      var result = [];
+      text = text.toUpperCase().replace(/[^A-Z ]/g, '');
+      for (var i = 0; i < text.length; i++) {
+        if (text[i] === ' ') { result.push('  '); continue; }
+        var tap = charToTap(text[i]);
+        if (tap) {
+          result.push('·'.repeat(tap.row) + ' ' + '·'.repeat(tap.col));
+        }
+      }
+      return result.join('   ');
+    }
+
+    function decode(text) {
+      // Parse dot patterns: groups separated by 3+ spaces
+      var letterGroups = text.trim().split(/\s{3,}/);
+      var result = '';
+      for (var i = 0; i < letterGroups.length; i++) {
+        var g = letterGroups[i].trim();
+        if (!g) { result += ' '; continue; }
+        // Split row/col by single/double space
+        var parts = g.split(/\s+/);
+        if (parts.length === 2) {
+          var row = parts[0].replace(/[^·.]/g, '').replace(/\./g, '·').length;
+          var col = parts[1].replace(/[^·.]/g, '').replace(/\./g, '·').length;
+          // Also handle numeric input like "2 3"
+          if (row === 0) row = parseInt(parts[0]) || 0;
+          if (col === 0) col = parseInt(parts[1]) || 0;
+          var c = tapToChar(row, col);
+          if (c) result += c;
+        }
+      }
+      return result;
+    }
+
+    function getTapSequence(text) {
+      // Returns array of {type, delay} for audio
+      var seq = [];
+      text = text.toUpperCase().replace(/[^A-Z ]/g, '');
+      for (var i = 0; i < text.length; i++) {
+        if (text[i] === ' ') { seq.push({ type: 'word-gap' }); continue; }
+        var tap = charToTap(text[i]);
+        if (!tap) continue;
+        for (var r = 0; r < tap.row; r++) {
+          seq.push({ type: 'tap' });
+          if (r < tap.row - 1) seq.push({ type: 'tap-gap' });
+        }
+        seq.push({ type: 'letter-gap' }); // gap between row and col
+        for (var c = 0; c < tap.col; c++) {
+          seq.push({ type: 'tap' });
+          if (c < tap.col - 1) seq.push({ type: 'tap-gap' });
+        }
+        if (i < text.length - 1) seq.push({ type: 'char-gap' });
+      }
+      return seq;
+    }
+
+    var audioCtx = null, playTimeout = [];
+
+    function stopAudio() {
+      playTimeout.forEach(function (t) { clearTimeout(t); });
+      playTimeout = [];
+    }
+
+    function playTaps() {
+      stopAudio();
+      var text = document.getElementById('inputText').value;
+      if (!text) return;
+      var speed = parseFloat(document.getElementById('speedSel').value);
+      var seq = getTapSequence(text);
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var tapMs = 80 / speed;
+      var tapGapMs = 60 / speed;
+      var letterGapMs = 200 / speed;
+      var charGapMs = 400 / speed;
+      var wordGapMs = 700 / speed;
+      var t = 0;
+      seq.forEach(function (item) {
+        if (item.type === 'tap') {
+          (function (when) {
+            playTimeout.push(setTimeout(function () {
+              var osc = audioCtx.createOscillator();
+              var gain = audioCtx.createGain();
+              osc.connect(gain);
+              gain.connect(audioCtx.destination);
+              osc.frequency.value = 440;
+              gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+              osc.start(audioCtx.currentTime);
+              osc.stop(audioCtx.currentTime + 0.05);
+            }, when));
+          })(t);
+          t += tapMs;
+        } else if (item.type === 'tap-gap') { t += tapGapMs; }
+        else if (item.type === 'letter-gap') { t += letterGapMs; }
+        else if (item.type === 'char-gap') { t += charGapMs; }
+        else if (item.type === 'word-gap') { t += wordGapMs; }
+      });
+    }
+
+    function process() {
+      var input = document.getElementById('inputText').value;
+      if (!input.trim()) {
+        document.getElementById('outputText').textContent = '';
+        setStatus('Enter text to encode as tap patterns.', 'info');
+        return;
+      }
+      if (mode === 'encode') {
+        var result = encode(input);
+        document.getElementById('outputText').textContent = result;
+        var letters = input.toUpperCase().replace(/[^A-Z]/g, '');
+        setStatus(letters.substring(0, 8) + (letters.length > 8 ? '…' : '') + ' → ' + result.substring(0, 40), 'valid');
+      } else {
+        var decoded = decode(input);
+        document.getElementById('outputText').textContent = decoded;
+        setStatus('Decoded: ' + decoded, 'valid');
+      }
+      DT && DT.trackTool && DT.trackTool('tap-code');
+    }
+
+    function setStatus(msg, type) {
+      var el = document.getElementById('statusBar');
+      el.className = 'status-bar ' + (type || 'info');
+      el.textContent = msg;
+    }
+
+    document.getElementById('chipEncode').addEventListener('click', function () {
+      mode = 'encode'; setChip(this);
+      document.getElementById('inputLabel').textContent = 'Plaintext';
+      document.getElementById('outputLabel').textContent = 'Tap Pattern (· = tap)';
+      document.getElementById('inputText').placeholder = 'Enter text to encode (K → C automatically)...';
+      document.getElementById('audioControls').style.display = 'flex';
+      process();
+    });
+
+    document.getElementById('chipDecode').addEventListener('click', function () {
+      mode = 'decode'; setChip(this);
+      document.getElementById('inputLabel').textContent = 'Tap Pattern';
+      document.getElementById('outputLabel').textContent = 'Decoded Text';
+      document.getElementById('inputText').placeholder = 'Enter tap patterns, e.g. ·· ···   · ····   ...';
+      document.getElementById('audioControls').style.display = 'none';
+      process();
+    });
+
+    document.getElementById('chipAudio').addEventListener('click', function () {
+      mode = 'encode'; setChip(document.getElementById('chipEncode'));
+      document.getElementById('audioControls').style.display = 'flex';
+      process();
+      playTaps();
+    });
+
+    document.getElementById('playBtn').addEventListener('click', playTaps);
+    document.getElementById('stopBtn').addEventListener('click', stopAudio);
+
+    document.getElementById('inputText').addEventListener('input', process);
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('inputText').value = 'HELP';
+      mode = 'encode'; setChip(document.getElementById('chipEncode'));
+      document.getElementById('audioControls').style.display = 'flex';
+      process();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('inputText').value = '';
+      document.getElementById('outputText').textContent = '';
+      stopAudio();
+      setStatus('Enter text to encode as tap patterns.', 'info');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var txt = document.getElementById('outputText').textContent;
+      DT && DT.copyToClipboard ? DT.copyToClipboard(txt, this) : navigator.clipboard.writeText(txt);
+    });
+
+    function setChip(el) {
+      document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      el.classList.add('active');
+    }
+
+    renderGrid();
+    document.getElementById('audioControls').style.display = 'flex';
+    setStatus('Enter text to encode as tap patterns.', 'info');
+  })();
+  </script>
+</body>
+</html>

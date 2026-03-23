@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Color Palette Extractor — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Extract dominant colors from any image using K-Means clustering. Get hex, RGB, and CSS palette code instantly. 100% client-side, no upload.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/color-palette-extractor.html">
+  <meta property="og:title" content="Color Palette Extractor — ThisDevTool">
+  <meta property="og:description" content="Drop an image to extract its dominant colors. K-Means clustering, hex/RGB swatches, export as CSS variables. Free and private.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/color-palette-extractor.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Color Palette Extractor",
+    "url": "https://thisdevtool.com/tools/color-palette-extractor.html",
+    "description": "Extract dominant colors from any image using K-Means clustering. Free, instant, 100% client-side.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does the color palette extractor work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool draws your image onto an HTML5 Canvas element, reads the raw pixel data via getImageData(), samples pixels across the image, and then runs K-Means clustering to group similar colors together. The cluster centroids become the dominant colors shown in the palette."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my image uploaded to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Your image is processed entirely in your browser using the Canvas API. It never leaves your device. There is no server upload, no storage, and no data collection of any kind."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What image formats are supported?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool supports any image format your browser can display, including JPEG, PNG, WebP, GIF, BMP, and SVG. The Canvas API handles decoding, so format support is determined by your browser."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is K-Means clustering?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "K-Means is an algorithm that groups data points into K clusters by iteratively assigning each point to the nearest cluster center and recalculating the centers. Applied to image pixels (treating RGB values as 3D coordinates), it finds the most representative colors in an image."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I export the palette as CSS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Click the 'Export CSS' chip and then the 'Copy CSS' button. The tool generates a CSS :root block with named custom properties (--color-1 through --color-N) containing the hex values of each extracted color, ready to paste into your stylesheet."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+      background: var(--surface);
+    }
+    .drop-zone.drag-over { border-color: #10b981; background: rgba(16,185,129,.06); }
+    .drop-zone input[type=file] { position:absolute;inset:0;opacity:0;cursor:pointer; }
+    .drop-zone-icon { font-size:3rem;margin-bottom:.5rem; }
+    .preview-area { display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start;margin-top:1rem; }
+    .preview-area img { max-width:280px;max-height:220px;border-radius:8px;border:1px solid var(--border);object-fit:contain; }
+    .swatches { display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem; }
+    .swatch-card { display:flex;flex-direction:column;align-items:center;gap:.25rem; }
+    .swatch { width:72px;height:72px;border-radius:10px;border:1px solid rgba(0,0,0,.15);cursor:pointer;transition:transform .15s; }
+    .swatch:hover { transform:scale(1.08); }
+    .swatch-hex { font-size:.75rem;font-family:monospace;color:var(--text-muted);font-weight:600; }
+    .swatch-rgb { font-size:.65rem;font-family:monospace;color:var(--text-muted); }
+    .css-output { background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;font-family:monospace;font-size:.85rem;white-space:pre;overflow-x:auto;margin-top:.75rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/color-contrast-checker.html">Contrast Checker</a>
+        <a href="/tools/color-converter.html">Color Converter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Color Palette Extractor</h1>
+          <p class="tool-subtitle">Drop any image to extract its dominant colors using K-Means clustering. Get hex, RGB, and CSS variables instantly.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="extract">Extract</button>
+            <button class="option-chip" data-mode="palette">Palette</button>
+            <button class="option-chip" data-mode="css">Export CSS</button>
+          </div>
+
+          <div id="extractView">
+            <div class="drop-zone" id="dropZone">
+              <input type="file" id="fileInput" accept="image/*">
+              <div class="drop-zone-icon">🎨</div>
+              <p><strong>Drop an image here</strong> or click to browse</p>
+              <p style="color:var(--text-muted);font-size:.875rem;">JPEG, PNG, WebP, GIF, BMP — processed entirely in your browser</p>
+            </div>
+
+            <div id="countRow" style="display:none;margin-top:1rem;display:none">
+              <label style="font-weight:600;">Number of colors: <span id="countVal">8</span></label>
+              <input type="range" id="colorCount" min="3" max="12" value="8" style="width:180px;margin-left:.75rem;">
+              <button class="btn btn-sm btn-primary" id="reExtractBtn" style="margin-left:.75rem;">Re-Extract</button>
+            </div>
+
+            <div id="previewArea" class="preview-area" style="display:none;">
+              <img id="previewImg" src="" alt="Uploaded image preview">
+              <div>
+                <p style="font-weight:600;margin-bottom:.5rem;">Dominant Colors</p>
+                <div class="swatches" id="swatchContainer"></div>
+                <p style="font-size:.8rem;color:var(--text-muted);margin-top:.5rem;">Click any swatch to copy its hex value</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="paletteView" style="display:none;">
+            <p style="color:var(--text-muted);">Load an image in the Extract tab first, then view an expanded palette here.</p>
+            <div class="swatches" id="paletteSwatches" style="margin-top:1rem;"></div>
+          </div>
+
+          <div id="cssView" style="display:none;">
+            <div class="pane-label" style="margin-top:.5rem;">
+              <span>CSS :root Variables</span>
+              <button class="btn btn-sm btn-primary" id="copyCssBtn">Copy CSS</button>
+            </div>
+            <div class="css-output" id="cssOutput">/* Extract colors from an image first */</div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Drop an image above to begin color extraction.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Color Palette Extractor</h2>
+          <ol>
+            <li><strong>Drop or upload an image</strong> — drag any JPEG, PNG, or WebP onto the drop zone, or click to browse your files.</li>
+            <li><strong>Adjust the color count</strong> — use the slider to choose between 3 and 12 dominant colors and click Re-Extract to recalculate.</li>
+            <li><strong>Copy individual colors</strong> — click any swatch to instantly copy its hex value to your clipboard.</li>
+            <li><strong>Switch to Palette view</strong> — see all colors displayed as large named swatches with hex and RGB values side by side.</li>
+            <li><strong>Export CSS</strong> — switch to the Export CSS tab to get a ready-to-use CSS <code>:root</code> block with custom property names.</li>
+          </ol>
+
+          <h2>What Is Color Palette Extraction?</h2>
+          <p>Color palette extraction is the process of identifying the most visually dominant colors in an image. Designers use it to create cohesive brand color systems from photos, build UI themes inspired by artwork, or ensure visual consistency across a project. Instead of manually picking colors with an eyedropper, extraction algorithms analyze thousands of pixels and mathematically determine which colors represent the image most accurately.</p>
+
+          <h3>How K-Means Clustering Works on Images</h3>
+          <p>K-Means is an unsupervised machine learning algorithm. For image color extraction, each pixel is treated as a point in 3D color space (R, G, B axes). The algorithm randomly places K cluster centers, then repeatedly assigns each pixel to its nearest center and recalculates each center as the average of its assigned pixels. After several iterations the centers stabilize — these final positions are your dominant colors. The more iterations allowed, the more accurate the result, but this tool balances speed and quality by running 20 iterations on a downsampled set of pixels.</p>
+
+          <h3>Applications for Extracted Palettes</h3>
+          <ul>
+            <li><strong>Brand identity</strong> — extract a palette from a company logo or product photo to define official brand colors</li>
+            <li><strong>UI design</strong> — derive a UI color system from a hero image or illustration</li>
+            <li><strong>Data visualization</strong> — generate a natural color scheme from a domain-relevant photograph</li>
+            <li><strong>Art direction</strong> — analyze competitor designs or mood boards to understand their visual language</li>
+            <li><strong>Accessibility testing</strong> — check extracted colors against contrast requirements using our <a href="/tools/color-contrast-checker.html">Contrast Checker</a></li>
+          </ul>
+
+          <h3>Hex vs RGB vs HSL</h3>
+          <p>The extractor shows colors in both hex and RGB formats. Hex (<code>#10b981</code>) is the most common format for web CSS. RGB (<code>rgb(16, 185, 129)</code>) is useful when you need to manipulate channels individually or pass values to JavaScript. HSL (<code>hsl(160, 84%, 39%)</code>) is often most intuitive for design because Hue, Saturation, and Lightness match how humans perceive color differences. Use our <a href="/tools/color-converter.html">Color Converter</a> to translate between formats.</p>
+
+          <h3>Why Client-Side Processing Matters</h3>
+          <p>Many color extraction tools upload your image to a server, process it there, and return results. This tool does everything in your browser using the HTML5 Canvas API. The image data never leaves your machine, which means no privacy risk, no file size limits imposed by server quotas, no latency from upload/download, and no cost. The Canvas <code>getImageData()</code> method gives direct access to raw RGBA pixel values, and the K-Means algorithm runs in a few milliseconds on a modern device even for large images (because we sample rather than process every pixel).</p>
+
+          <h3>Tips for Better Palettes</h3>
+          <p>For photographs with many colors, start with 8 colors and reduce until the palette looks clean. For illustrations and flat-design graphics, 5-6 colors is often ideal. If your image has a very dominant background color that you want to exclude, try cropping the image before uploading. High-contrast images (like posters) tend to produce more distinct, usable palettes than low-contrast photos.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the color palette extractor work?</button>
+            <div class="faq-answer">The tool draws your image onto an HTML5 Canvas element, reads the raw pixel data via getImageData(), samples pixels across the image, and then runs K-Means clustering to group similar colors together. The cluster centroids become the dominant colors shown in the palette.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my image uploaded to a server?</button>
+            <div class="faq-answer">No. Your image is processed entirely in your browser using the Canvas API. It never leaves your device. There is no server upload, no storage, and no data collection of any kind.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What image formats are supported?</button>
+            <div class="faq-answer">The tool supports any image format your browser can display, including JPEG, PNG, WebP, GIF, BMP, and SVG. The Canvas API handles decoding, so format support is determined by your browser.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is K-Means clustering?</button>
+            <div class="faq-answer">K-Means is an algorithm that groups data points into K clusters by iteratively assigning each point to the nearest cluster center and recalculating the centers. Applied to image pixels (treating RGB values as 3D coordinates), it finds the most representative colors in an image.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I export the palette as CSS?</button>
+            <div class="faq-answer">Click the 'Export CSS' chip and then the 'Copy CSS' button. The tool generates a CSS :root block with named custom properties (--color-1 through --color-N) containing the hex values of each extracted color, ready to paste into your stylesheet.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Design Tools</h4>
+        <a href="/tools/color-contrast-checker.html">Contrast Checker</a>
+        <a href="/tools/color-converter.html">Color Converter</a>
+        <a href="/tools/gradient-generator.html">Gradient Generator</a>
+        <a href="/tools/css-variable-theme.html">CSS Theme Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/image-color-picker.html">Image Color Picker</a>
+        <a href="/tools/wcag-palette.html">WCAG Palette</a>
+        <a href="/tools/button-style-generator.html">Button Generator</a>
+        <a href="/tools/font-pairing.html">Font Pairing</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var statusBar = document.getElementById('statusBar');
+    var swatchContainer = document.getElementById('swatchContainer');
+    var paletteSwatches = document.getElementById('paletteSwatches');
+    var cssOutput = document.getElementById('cssOutput');
+    var previewArea = document.getElementById('previewArea');
+    var previewImg = document.getElementById('previewImg');
+    var countRow = document.getElementById('countRow');
+    var colorCountSlider = document.getElementById('colorCount');
+    var countVal = document.getElementById('countVal');
+    var fileInput = document.getElementById('fileInput');
+    var dropZone = document.getElementById('dropZone');
+    var currentMode = 'extract';
+    var currentColors = [];
+    var currentFile = null;
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        document.getElementById('extractView').style.display = currentMode === 'extract' ? '' : 'none';
+        document.getElementById('paletteView').style.display = currentMode === 'palette' ? '' : 'none';
+        document.getElementById('cssView').style.display = currentMode === 'css' ? '' : 'none';
+      });
+    });
+
+    colorCountSlider.addEventListener('input', function () {
+      countVal.textContent = colorCountSlider.value;
+    });
+
+    document.getElementById('reExtractBtn').addEventListener('click', function () {
+      if (currentFile) loadAndExtract(currentFile);
+    });
+
+    document.getElementById('copyCssBtn').addEventListener('click', function () {
+      DT.copyToClipboard(cssOutput.textContent, document.getElementById('copyCssBtn'));
+    });
+
+    // Drag and drop
+    dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('drag-over'); });
+    dropZone.addEventListener('drop', function (e) {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      var file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) loadAndExtract(file);
+    });
+
+    fileInput.addEventListener('change', function () {
+      if (fileInput.files[0]) loadAndExtract(fileInput.files[0]);
+    });
+
+    function loadAndExtract(file) {
+      currentFile = file;
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var img = new Image();
+        img.onload = function () {
+          previewImg.src = e.target.result;
+          previewArea.style.display = 'flex';
+          countRow.style.display = 'block';
+          var k = parseInt(colorCountSlider.value, 10);
+          var t0 = performance.now();
+          var colors = extractColors(img, k);
+          var elapsed = (performance.now() - t0).toFixed(1);
+          currentColors = colors;
+          renderSwatches(swatchContainer, colors, true);
+          renderSwatches(paletteSwatches, colors, false);
+          renderCSS(colors);
+          setStatus('valid', colors.length + ' dominant colors extracted in ' + elapsed + 'ms — click any swatch to copy');
+          if (DT && DT.trackTool) DT.trackTool('color-palette-extractor');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function extractColors(img, k) {
+      var canvas = document.createElement('canvas');
+      var MAX = 200;
+      var scale = Math.min(MAX / img.width, MAX / img.height, 1);
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+      // Sample pixels
+      var pixels = [];
+      var step = 4;
+      for (var i = 0; i < data.length; i += 4 * step) {
+        var a = data[i + 3];
+        if (a < 128) continue;
+        pixels.push([data[i], data[i + 1], data[i + 2]]);
+      }
+
+      // K-Means
+      var centers = [];
+      for (var ci = 0; ci < k; ci++) {
+        centers.push(pixels[Math.floor(Math.random() * pixels.length)].slice());
+      }
+
+      for (var iter = 0; iter < 20; iter++) {
+        var clusters = [];
+        for (var ki = 0; ki < k; ki++) clusters.push([]);
+
+        for (var pi = 0; pi < pixels.length; pi++) {
+          var p = pixels[pi];
+          var best = 0, bestDist = Infinity;
+          for (var cj = 0; cj < k; cj++) {
+            var c = centers[cj];
+            var d = (p[0]-c[0])*(p[0]-c[0]) + (p[1]-c[1])*(p[1]-c[1]) + (p[2]-c[2])*(p[2]-c[2]);
+            if (d < bestDist) { bestDist = d; best = cj; }
+          }
+          clusters[best].push(p);
+        }
+
+        var moved = false;
+        for (var ki2 = 0; ki2 < k; ki2++) {
+          if (!clusters[ki2].length) continue;
+          var sum = [0, 0, 0];
+          clusters[ki2].forEach(function (px) { sum[0] += px[0]; sum[1] += px[1]; sum[2] += px[2]; });
+          var len = clusters[ki2].length;
+          var newC = [Math.round(sum[0]/len), Math.round(sum[1]/len), Math.round(sum[2]/len)];
+          if (newC[0] !== centers[ki2][0] || newC[1] !== centers[ki2][1] || newC[2] !== centers[ki2][2]) moved = true;
+          centers[ki2] = newC;
+        }
+        if (!moved) break;
+      }
+
+      // Sort by luminance descending
+      centers.sort(function (a, b) {
+        var la = 0.299*a[0] + 0.587*a[1] + 0.114*a[2];
+        var lb = 0.299*b[0] + 0.587*b[1] + 0.114*b[2];
+        return lb - la;
+      });
+      return centers;
+    }
+
+    function toHex(rgb) {
+      return '#' + rgb.map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join('');
+    }
+
+    function renderSwatches(container, colors, small) {
+      container.innerHTML = '';
+      colors.forEach(function (rgb, i) {
+        var hex = toHex(rgb);
+        var card = document.createElement('div');
+        card.className = 'swatch-card';
+        var sw = document.createElement('div');
+        sw.className = 'swatch';
+        if (!small) { sw.style.width = '96px'; sw.style.height = '96px'; }
+        sw.style.background = hex;
+        sw.title = 'Click to copy ' + hex;
+        sw.addEventListener('click', function () {
+          DT.copyToClipboard(hex, sw);
+          setStatus('info', 'Copied ' + hex + ' to clipboard');
+        });
+        var hexSpan = document.createElement('div');
+        hexSpan.className = 'swatch-hex';
+        hexSpan.textContent = hex;
+        var rgbSpan = document.createElement('div');
+        rgbSpan.className = 'swatch-rgb';
+        rgbSpan.textContent = 'rgb(' + rgb.join(', ') + ')';
+        card.appendChild(sw);
+        card.appendChild(hexSpan);
+        card.appendChild(rgbSpan);
+        container.appendChild(card);
+      });
+    }
+
+    function renderCSS(colors) {
+      var lines = [':root {'];
+      colors.forEach(function (rgb, i) {
+        lines.push('  --color-' + (i + 1) + ': ' + toHex(rgb) + ';');
+      });
+      lines.push('}');
+      cssOutput.textContent = lines.join('\n');
+    }
+
+    function setStatus(type, msg) {
+      statusBar.className = 'status-bar ' + type;
+      statusBar.textContent = msg;
+    }
+  })();
+  </script>
+</body>
+</html>

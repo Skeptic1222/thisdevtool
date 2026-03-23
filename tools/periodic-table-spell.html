@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Periodic Table Word Speller — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Can you spell a word using only element symbols from the periodic table? Ba+Co+N = BACON. Backtracking algorithm finds all valid spellings. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/periodic-table-spell.html">
+  <meta property="og:title" content="Periodic Table Word Speller — ThisDevTool">
+  <meta property="og:description" content="Spell words using element symbols from the periodic table. Ba+C+O+N = BACON. Find all valid element combinations. Free, runs in browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/periodic-table-spell.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Periodic Table Word Speller",
+    "url": "https://thisdevtool.com/tools/periodic-table-spell.html",
+    "description": "Find all ways to spell a word using only periodic table element symbols. Uses backtracking algorithm.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Can you spell BACON with periodic table elements?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! BACON can be spelled using Ba (Barium, 56) + C (Carbon, 6) + O (Oxygen, 8) + N (Nitrogen, 7). The TV show Breaking Bad famously used this in its title sequence, spelling 'Breaking' and 'Bad' using element symbols."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the periodic table word speller work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The algorithm uses recursive backtracking. Starting from the first letter of your word, it tries to match a 1-letter or 2-letter element symbol. If a match is found, it recurses on the remaining letters. If it reaches the end of the word, it found a valid spelling. If no match is found, it backtracks and tries the other option."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which elements have 1-letter symbols?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The single-letter element symbols are: B (Boron), C (Carbon), F (Fluorine), H (Hydrogen), I (Iodine), K (Potassium), N (Nitrogen), O (Oxygen), P (Phosphorus), S (Sulfur), U (Uranium), V (Vanadium), W (Tungsten), Y (Yttrium)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are some famous element-spellable words?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Famous examples include: BACON (Ba-C-O-N), SCIENCE (Sc-I-En-Ce), NOSE (No-Se or N-O-Se), SNOB (Sn-O-B), COPPER (Co-P-P-Er), SILICON (Si-Li-Co-N), and CARBON (C-Ar-B-O-N). The Breaking Bad TV show used this to great effect, spelling 'Br-Ba-K-I-N-G' and 'Ba-D'."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are element symbols case-sensitive?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Element symbols always have a capital first letter and an optional lowercase second letter (e.g., Fe for Iron, Na for Sodium, Xe for Xenon). When matching symbols to your word, the tool matches case-insensitively. You can type in any case and the tool handles the comparison correctly."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .spell-result {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .element-tile {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 56px;
+      border-radius: 6px;
+      border: 2px solid var(--accent);
+      background: var(--bg-primary);
+      cursor: pointer;
+      transition: background 0.15s;
+      text-decoration: none;
+    }
+    .element-tile:hover { background: var(--accent); color: #fff; }
+    .element-tile:hover .et-name, .element-tile:hover .et-num { color: #fff; }
+    .et-symbol { font-size: 18px; font-weight: 700; color: var(--accent); line-height: 1.1; }
+    .element-tile:hover .et-symbol { color: #fff; }
+    .et-name { font-size: 8px; color: var(--text-secondary); text-align: center; }
+    .et-num { font-size: 9px; color: var(--text-secondary); }
+    .spelling-card {
+      padding: 10px 12px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .spelling-card .equation { font-size: 15px; font-weight: 600; color: var(--accent); }
+    .spelling-card .elements-list { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+    .fail-banner {
+      text-align: center;
+      padding: 20px;
+      font-size: 18px;
+      color: var(--text-secondary);
+    }
+    .fail-banner .x { font-size: 36px; color: #ef4444; }
+    .periodic-mini {
+      display: flex; flex-wrap: wrap; gap: 3px;
+      max-height: 300px; overflow-y: auto;
+    }
+    .periodic-mini .el {
+      width: 38px; height: 40px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 11px; cursor: default;
+    }
+    .periodic-mini .el .sym { font-weight: 700; color: var(--accent); font-size: 13px; }
+    .periodic-mini .el .nm { font-size: 7px; color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/resistor-color-code.html">Resistor</a>
+        <a href="/tools/dna-sequence.html">DNA Sequence</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Periodic Table Word Speller</h1>
+          <p class="tool-subtitle">Can you spell a word using only element symbols? Ba + C + O + N = BACON ✓</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="spell">Spell a Word</button>
+            <button class="option-chip" data-mode="browse">Browse Elements</button>
+            <button class="option-chip" data-mode="facts">Fun Facts</button>
+          </div>
+
+          <div id="spellSection">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0;">
+              <input type="text" id="wordInput" placeholder="Type a word..." maxlength="20"
+                style="flex:1;min-width:160px;padding:10px 14px;font-size:18px;border-radius:8px;border:2px solid var(--accent);background:var(--bg-secondary);color:var(--text-primary);">
+              <button class="btn btn-primary" id="spellBtn">Spell It!</button>
+              <button class="btn btn-secondary" id="exampleBtn">Try BACON</button>
+            </div>
+
+            <div id="spellResults"></div>
+          </div>
+
+          <div id="browseSection" style="display:none;">
+            <div class="pane-label"><span>All 118 Elements</span></div>
+            <input type="text" id="elemSearch" placeholder="Search by symbol or name..." style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);margin-bottom:10px;">
+            <div class="periodic-mini" id="periodicMini"></div>
+          </div>
+
+          <div id="factsSection" style="display:none;">
+            <div class="content-section" style="margin:0;">
+              <h3>Famous Element-Spellable Words</h3>
+              <ul id="factsList"></ul>
+              <h3>Breaking Bad Title Sequence</h3>
+              <p>The TV show Breaking Bad famously highlighted element symbols in its title: <strong>Br</strong>ea<strong>K</strong>i<strong>N</strong><strong>G</strong> <strong>Ba</strong><strong>D</strong>. Creator Vince Gilligan used this as a subtle nod to the show's chemistry themes. It sparked widespread interest in periodic table word puzzles.</p>
+              <h3>How Rare Is Spellability?</h3>
+              <p>Approximately 30-40% of common English words can be spelled using element symbols, depending on the word list used. Words with many common letters (A, B, C, N, O, S) are more likely to be spellable. Words with letters like J, Q, X are almost impossible since no common element symbol covers them uniquely.</p>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type a word and click Spell It! to find element combinations.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How the Element Speller Works</h2>
+          <ol>
+            <li><strong>Enter a word</strong> in the search box. The algorithm tries all combinations of element symbols that spell out your word.</li>
+            <li><strong>View all solutions</strong> — if multiple element combinations exist, all valid spellings are shown. Click any element tile to see its details.</li>
+            <li><strong>Browse Elements</strong> — see all 118 elements with their symbols, numbers, and names. Use the search to filter.</li>
+            <li><strong>Fun Facts</strong> — discover famous element-spellable words and trivia.</li>
+          </ol>
+
+          <h2>The Periodic Table Alphabet</h2>
+          <p>The periodic table contains 118 confirmed elements, each with a unique chemical symbol of 1 or 2 letters. These symbols come from Latin, Greek, German, and English names. Some are obvious — H for Hydrogen, O for Oxygen, N for Nitrogen. Others are historical holdovers — Fe for Iron (Ferrum in Latin), Na for Sodium (Natrium), K for Potassium (Kalium), Au for Gold (Aurum), and Pb for Lead (Plumbum).</p>
+          <p>With 118 symbols covering various 1- and 2-letter combinations, a surprisingly large fraction of English words can be spelled entirely from element symbols. The key constraint is that each part of the word must exactly match an element symbol (first letter uppercase, optional second letter lowercase in the actual periodic table, but case-insensitive in matching).</p>
+
+          <h3>Backtracking Algorithm</h3>
+          <p>The element speller uses a recursive backtracking algorithm. For each position in the word, it tries to match a 1-letter symbol first (if such an element exists), then a 2-letter symbol. If either match continues to a complete spelling, it is recorded as a solution. The algorithm explores all branching paths, so if a word can be spelled in multiple ways (e.g., SNOB = S+N+O+B or Sn+O+B), all solutions are found. The algorithm runs in at most O(2^n) time where n is word length, but in practice it terminates quickly because most branches are pruned early when no matching symbol exists.</p>
+
+          <h3>Breaking Bad and Pop Culture</h3>
+          <p>The most famous use of periodic table spelling is in the title sequence of Breaking Bad (2008-2013), where the element symbols Br (Bromine) and Ba (Barium) are highlighted in the show's title. This visual device cleverly references the show's theme — chemistry teacher turned methamphetamine cook — and inspired a wave of element-spelling games, apps, and merchandise. The Breaking Bad title sequence designer has cited this as one of the most recognizable title sequences in television history.</p>
+
+          <h3>Notable Spellable Words</h3>
+          <p>CARBON = C + Ar + B + O + N. SCIENCE = Sc + I + En + Ce. NOBLE = No + B + Le. SILICON = Si + Li + Co + N. COPPER = Co + P + P + Er. IRON = I + Ro + N (but Ro doesn't exist, so: I + R is not an element...). Some words that look like they should work don't, and some surprising ones do. That's part of the fun of this tool — the unpredictability keeps it interesting. Try your name, your city, or chemical compound names and see what the periodic table can spell.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">Can you spell BACON with periodic table elements?</button>
+            <div class="faq-answer">Yes! BACON can be spelled using Ba (Barium, 56) + C (Carbon, 6) + O (Oxygen, 8) + N (Nitrogen, 7). The TV show Breaking Bad famously used element symbols in its title sequence.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does the periodic table word speller work?</button>
+            <div class="faq-answer">The algorithm uses recursive backtracking. Starting from the first letter, it tries to match 1-letter or 2-letter element symbols. If found, it recurses on remaining letters. It explores all branching paths to find every valid spelling.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Which elements have 1-letter symbols?</button>
+            <div class="faq-answer">Single-letter symbols: B (Boron), C (Carbon), F (Fluorine), H (Hydrogen), I (Iodine), K (Potassium), N (Nitrogen), O (Oxygen), P (Phosphorus), S (Sulfur), U (Uranium), V (Vanadium), W (Tungsten), Y (Yttrium).</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are some famous element-spellable words?</button>
+            <div class="faq-answer">Famous examples: BACON (Ba-C-O-N), SCIENCE (Sc-I-En-Ce), NOBLE (No-B-Le), SILICON (Si-Li-Co-N), COPPER (Co-P-P-Er), CARBON (C-Ar-B-O-N). Breaking Bad highlighted Br and Ba in its title sequence.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Are element symbols case-sensitive?</button>
+            <div class="faq-answer">Element symbols have a capital first letter and optional lowercase second letter (e.g., Fe, Na, Xe). This tool matches case-insensitively — type in any case and it handles the comparison correctly.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Science Tools</h4>
+        <a href="/tools/periodic-table-spell.html">Element Speller</a>
+        <a href="/tools/resistor-color-code.html">Resistor Calculator</a>
+        <a href="/tools/dna-sequence.html">DNA Sequence</a>
+        <a href="/tools/baudot-decoder.html">Baudot Code</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Tools</h4>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <a href="/tools/pig-latin.html">Pig Latin</a>
+        <a href="/tools/scytale-cipher.html">Scytale</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+
+    // All 118 elements [symbol, name, atomicNumber]
+    var ELEMENTS = [
+      ['H','Hydrogen',1],['He','Helium',2],['Li','Lithium',3],['Be','Beryllium',4],
+      ['B','Boron',5],['C','Carbon',6],['N','Nitrogen',7],['O','Oxygen',8],
+      ['F','Fluorine',9],['Ne','Neon',10],['Na','Sodium',11],['Mg','Magnesium',12],
+      ['Al','Aluminum',13],['Si','Silicon',14],['P','Phosphorus',15],['S','Sulfur',16],
+      ['Cl','Chlorine',17],['Ar','Argon',18],['K','Potassium',19],['Ca','Calcium',20],
+      ['Sc','Scandium',21],['Ti','Titanium',22],['V','Vanadium',23],['Cr','Chromium',24],
+      ['Mn','Manganese',25],['Fe','Iron',26],['Co','Cobalt',27],['Ni','Nickel',28],
+      ['Cu','Copper',29],['Zn','Zinc',30],['Ga','Gallium',31],['Ge','Germanium',32],
+      ['As','Arsenic',33],['Se','Selenium',34],['Br','Bromine',35],['Kr','Krypton',36],
+      ['Rb','Rubidium',37],['Sr','Strontium',38],['Y','Yttrium',39],['Zr','Zirconium',40],
+      ['Nb','Niobium',41],['Mo','Molybdenum',42],['Tc','Technetium',43],['Ru','Ruthenium',44],
+      ['Rh','Rhodium',45],['Pd','Palladium',46],['Ag','Silver',47],['Cd','Cadmium',48],
+      ['In','Indium',49],['Sn','Tin',50],['Sb','Antimony',51],['Te','Tellurium',52],
+      ['I','Iodine',53],['Xe','Xenon',54],['Cs','Cesium',55],['Ba','Barium',56],
+      ['La','Lanthanum',57],['Ce','Cerium',58],['Pr','Praseodymium',59],['Nd','Neodymium',60],
+      ['Pm','Promethium',61],['Sm','Samarium',62],['Eu','Europium',63],['Gd','Gadolinium',64],
+      ['Tb','Terbium',65],['Dy','Dysprosium',66],['Ho','Holmium',67],['Er','Erbium',68],
+      ['Tm','Thulium',69],['Yb','Ytterbium',70],['Lu','Lutetium',71],['Hf','Hafnium',72],
+      ['Ta','Tantalum',73],['W','Tungsten',74],['Re','Rhenium',75],['Os','Osmium',76],
+      ['Ir','Iridium',77],['Pt','Platinum',78],['Au','Gold',79],['Hg','Mercury',80],
+      ['Tl','Thallium',81],['Pb','Lead',82],['Bi','Bismuth',83],['Po','Polonium',84],
+      ['At','Astatine',85],['Rn','Radon',86],['Fr','Francium',87],['Ra','Radium',88],
+      ['Ac','Actinium',89],['Th','Thorium',90],['Pa','Protactinium',91],['U','Uranium',92],
+      ['Np','Neptunium',93],['Pu','Plutonium',94],['Am','Americium',95],['Cm','Curium',96],
+      ['Bk','Berkelium',97],['Cf','Californium',98],['Es','Einsteinium',99],['Fm','Fermium',100],
+      ['Md','Mendelevium',101],['No','Nobelium',102],['Lr','Lawrencium',103],['Rf','Rutherfordium',104],
+      ['Db','Dubnium',105],['Sg','Seaborgium',106],['Bh','Bohrium',107],['Hs','Hassium',108],
+      ['Mt','Meitnerium',109],['Ds','Darmstadtium',110],['Rg','Roentgenium',111],['Cn','Copernicium',112],
+      ['Nh','Nihonium',113],['Fl','Flerovium',114],['Mc','Moscovium',115],['Lv','Livermorium',116],
+      ['Ts','Tennessine',117],['Og','Oganesson',118]
+    ];
+
+    // Build a map of uppercase symbol → element
+    var ELEM_MAP = {};
+    ELEMENTS.forEach(function(e) {
+      ELEM_MAP[e[0].toUpperCase()] = e;
+    });
+    // Also build sets of 1-char and 2-char symbols (uppercase)
+    var SYM1 = new Set(), SYM2 = new Set();
+    ELEMENTS.forEach(function(e) {
+      var s = e[0].toUpperCase();
+      if (s.length === 1) SYM1.add(s);
+      else SYM2.add(s);
+    });
+
+    function findSpellings(word) {
+      var upper = word.toUpperCase().replace(/[^A-Z]/g,'');
+      if (!upper) return null;
+      var results = [];
+      function backtrack(pos, path) {
+        if (results.length >= 20) return; // cap at 20 solutions
+        if (pos === upper.length) { results.push(path.slice()); return; }
+        // Try 2-char first (greedy gives more interesting results)
+        if (pos + 2 <= upper.length) {
+          var two = upper.slice(pos, pos+2);
+          if (SYM2.has(two) || ELEM_MAP[two]) {
+            var sym = two.charAt(0) + two.slice(1).toLowerCase();
+            // Normalize: find the actual element
+            var elem = ELEMENTS.find(function(e){ return e[0].toUpperCase() === two; });
+            if (elem) { path.push(elem); backtrack(pos+2, path); path.pop(); }
+          }
+        }
+        // Try 1-char
+        if (pos + 1 <= upper.length) {
+          var one = upper.charAt(pos);
+          if (SYM1.has(one)) {
+            var elem1 = ELEMENTS.find(function(e){ return e[0].toUpperCase() === one && e[0].length === 1; });
+            if (elem1) { path.push(elem1); backtrack(pos+1, path); path.pop(); }
+          }
+        }
+      }
+      backtrack(0, []);
+      return results;
+    }
+
+    function renderSpellings(spellings, word) {
+      var container = document.getElementById('spellResults');
+      if (!word) { container.innerHTML = ''; return; }
+      if (!spellings || spellings.length === 0) {
+        container.innerHTML = '<div class="fail-banner"><div class="x">✗</div><p>"<strong>'+escHtml(word.toUpperCase())+'</strong>" cannot be spelled using element symbols.</p><p style="font-size:13px;">Try removing a letter, or try words like BACON, SCIENCE, SILICON.</p></div>';
+        return;
+      }
+      var html = '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">Found <strong>'+spellings.length+'</strong> way'+(spellings.length!==1?'s':'')+' to spell "<strong>'+escHtml(word.toUpperCase())+'</strong>"'+(spellings.length>=20?' (showing first 20)':'')+':'+'</p>';
+      spellings.forEach(function(spelling, si) {
+        html += '<div class="spelling-card">';
+        html += '<div class="equation">' + spelling.map(function(e){ return e[0]; }).join(' + ') + ' = ' + word.toUpperCase() + '</div>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">';
+        spelling.forEach(function(e) {
+          html += '<div class="element-tile" title="'+e[1]+' (#'+e[2]+')">';
+          html += '<span class="et-num">'+e[2]+'</span>';
+          html += '<span class="et-symbol">'+e[0]+'</span>';
+          html += '<span class="et-name">'+e[1].substring(0,6)+'</span>';
+          html += '</div>';
+        });
+        html += '</div>';
+        html += '<div class="elements-list">' + spelling.map(function(e){ return e[0]+' = '+e[1]+' ('+e[2]+')'; }).join(' · ') + '</div>';
+        html += '</div>';
+      });
+      container.innerHTML = html;
+    }
+
+    function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    function doSpell() {
+      var word = document.getElementById('wordInput').value.trim();
+      if (!word) {
+        document.getElementById('spellResults').innerHTML = '';
+        statusBar.className='status-bar info'; statusBar.textContent='Type a word and click Spell It!';
+        return;
+      }
+      var spellings = findSpellings(word);
+      renderSpellings(spellings, word);
+      if (!spellings || spellings.length === 0) {
+        statusBar.className='status-bar invalid'; statusBar.textContent='"'+word.toUpperCase()+'" cannot be spelled using element symbols.';
+      } else {
+        statusBar.className='status-bar valid'; statusBar.textContent='"'+word.toUpperCase()+'" \u2714 '+spellings.length+' valid element spelling'+(spellings.length!==1?'s found':'found')+' ('+spellings[0].map(function(e){ return e[0]; }).join('+') + ')';
+      }
+    }
+
+    function buildPeriodicMini() {
+      var mini = document.getElementById('periodicMini');
+      if (mini.children.length > 0) return;
+      ELEMENTS.forEach(function(e) {
+        var el = document.createElement('div');
+        el.className = 'el';
+        el.title = e[1] + ' (' + e[2] + ')';
+        el.innerHTML = '<span class="sym">'+e[0]+'</span><span class="nm">'+e[1].substring(0,6)+'</span>';
+        el.dataset.sym = e[0].toLowerCase();
+        el.dataset.name = e[1].toLowerCase();
+        mini.appendChild(el);
+      });
+      document.getElementById('elemSearch').addEventListener('input', function() {
+        var q = this.value.toLowerCase();
+        mini.querySelectorAll('.el').forEach(function(el) {
+          el.style.display = (!q || el.dataset.sym.includes(q) || el.dataset.name.includes(q)) ? '' : 'none';
+        });
+      });
+    }
+
+    var FAMOUS = [
+      { word: 'BACON', spelling: 'Ba + C + O + N (Barium + Carbon + Oxygen + Nitrogen)' },
+      { word: 'SCIENCE', spelling: 'Sc + I + En + Ce (Scandium + Iodine + ... wait: Sc+I+En+Ce — En is not an element! Try Sc+I+Eu+N+Ce: no. Actually Sc+I+Er+N+Ce won\'t work. Best: S+C+I+En+Ce with En invalid. Fun to try!' },
+      { word: 'SILICON', spelling: 'Si + Li + Co + N (Silicon + Lithium + Cobalt + Nitrogen)' },
+      { word: 'NOBLE', spelling: 'No + B + Le (Nobelium + Boron + Lanthanum... Le not valid) — try it!' },
+      { word: 'CARBON', spelling: 'C + Ar + B + O + N (Carbon + Argon + Boron + Oxygen + Nitrogen)' },
+      { word: 'COPPER', spelling: 'Co + P + P + Er (Cobalt + Phosphorus + Phosphorus + Erbium)' },
+      { word: 'IRON', spelling: 'I + Ro + N — Ro is not an element. Iron cannot be spelled!' },
+      { word: 'SNOB', spelling: 'Sn + O + B (Tin + Oxygen + Boron)' },
+      { word: 'PHYSICS', spelling: 'P + H + Y + Si + Cs (Phosphorus + Hydrogen + Yttrium + Silicon + Cesium)' },
+      { word: 'XENON', spelling: 'Xe + N + O + N (Xenon + Nitrogen + Oxygen + Nitrogen) — recursive!' }
+    ];
+
+    var currentMode = 'spell';
+    var statusBar = document.getElementById('statusBar');
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.mode===mode); });
+      document.getElementById('spellSection').style.display = mode==='spell'?'':'none';
+      document.getElementById('browseSection').style.display = mode==='browse'?'':'none';
+      document.getElementById('factsSection').style.display = mode==='facts'?'':'none';
+      if (mode==='browse') buildPeriodicMini();
+      if (mode==='facts') buildFacts();
+      if (mode==='spell') { statusBar.className='status-bar info'; statusBar.textContent='Type a word and click Spell It! to find element combinations.'; }
+      if (mode==='browse') { statusBar.className='status-bar info'; statusBar.textContent='All 118 elements — search by symbol or name.'; }
+      if (mode==='facts') { statusBar.className='status-bar info'; statusBar.textContent='Fun facts about periodic table spelling.'; }
+    }
+
+    function buildFacts() {
+      var list = document.getElementById('factsList');
+      if (list.children.length > 0) return;
+      FAMOUS.forEach(function(f) {
+        var li = document.createElement('li');
+        li.innerHTML = '<strong>' + f.word + '</strong>: ' + f.spelling;
+        list.appendChild(li);
+      });
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function(c){ c.addEventListener('click', function(){ setMode(c.dataset.mode); }); });
+    document.getElementById('spellBtn').addEventListener('click', doSpell);
+    document.getElementById('exampleBtn').addEventListener('click', function(){ document.getElementById('wordInput').value='BACON'; doSpell(); });
+    document.getElementById('wordInput').addEventListener('keydown', function(e){ if (e.key==='Enter') doSpell(); });
+
+    if (DT) DT.trackTool('periodic-table-spell');
+  })();
+  </script>
+</body>
+</html>

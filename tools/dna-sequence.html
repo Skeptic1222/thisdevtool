@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>DNA Sequence Encoder — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encode text to DNA codons (A/C/T/G) and decode DNA sequences back to text or amino acids. Standard codon table. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/dna-sequence.html">
+  <meta property="og:title" content="DNA Sequence Encoder — ThisDevTool">
+  <meta property="og:description" content="Convert text to DNA codon sequences (A/C/T/G) and decode them back. Amino acid translation included. Free, runs in browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/dna-sequence.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "DNA Sequence Encoder",
+    "url": "https://thisdevtool.com/tools/dna-sequence.html",
+    "description": "Encode text to DNA codon sequences and decode them back. Amino acid translation with standard codon table.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are DNA codons?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A codon is a sequence of three DNA (or RNA) bases that codes for a specific amino acid or acts as a stop signal. There are 64 possible codons (4^3 = 64) mapping to 20 amino acids and 3 stop codons. This redundancy means multiple codons can code for the same amino acid."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does text-to-DNA encoding work in this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool uses a custom mapping where each ASCII character is encoded as a pair of DNA codons (6 bases). The four DNA bases A, C, G, T are mapped to 2-bit values (A=00, C=01, G=10, T=11), allowing 6 bases to encode one byte (8 bits). This is not a biological standard but a steganographic encoding scheme."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the four DNA bases?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The four DNA bases are Adenine (A), Cytosine (C), Guanine (G), and Thymine (T). In RNA, Uracil (U) replaces Thymine. Bases pair in complementary pairs: A pairs with T (or U in RNA), and C pairs with G."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the standard genetic codon table?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The standard genetic code maps 64 codons to 20 amino acids and 3 stop codons (TAA, TAG, TGA). For example, ATG codes for Methionine (the start codon), TTT and TTC code for Phenylalanine, and TAA is a stop codon. The code is nearly universal across all known life on Earth."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can DNA actually store digital data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. DNA data storage is an active research field. Scientists at Microsoft, Harvard, and other institutions have demonstrated storing megabytes of digital data in synthetic DNA strands. DNA offers extraordinary density — theoretically 1 exabyte (10^18 bytes) per cubic centimeter — and can last thousands of years in cold, dry conditions."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .dna-strand {
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      letter-spacing: 1px;
+      word-break: break-all;
+      line-height: 1.8;
+    }
+    .dna-a { color: #22c55e; }
+    .dna-c { color: #3b82f6; }
+    .dna-g { color: #f59e0b; }
+    .dna-t { color: #ef4444; }
+    .codon-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .codon-table th { background: var(--accent); color: #fff; padding: 4px 6px; text-align: left; }
+    .codon-table td { padding: 3px 6px; border-bottom: 1px solid var(--border); font-family: monospace; }
+    .codon-table tr:nth-child(even) td { background: var(--bg-secondary); }
+    .amino-output {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .amino-badge {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: monospace;
+      font-weight: 600;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+    }
+    .amino-badge.stop { color: #ef4444; border-color: #ef4444; }
+    .amino-badge.start { color: #22c55e; border-color: #22c55e; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/baudot-decoder.html">Baudot Code</a>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>DNA Sequence Encoder</h1>
+          <p class="tool-subtitle">Encode text to DNA codon sequences (A/C/T/G), decode DNA back to text, or translate codons to amino acids.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Text&rarr;DNA</button>
+            <button class="option-chip" data-mode="decode">DNA&rarr;Text</button>
+            <button class="option-chip" data-mode="amino">Amino Acids</button>
+            <button class="option-chip" data-mode="reference">Codon Table</button>
+          </div>
+
+          <div id="encodeSection">
+            <div class="pane-label">
+              <span>Plain Text</span>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+            <textarea id="textInput" rows="5" placeholder="Type text to encode as DNA sequence..." spellcheck="false"></textarea>
+            <div class="pane-label" style="margin-top:10px;">
+              <span>DNA Sequence (A/C/G/T)</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-primary" id="copyEncBtn">Copy</button>
+                <button class="btn btn-sm btn-secondary" id="dlEncBtn">Download</button>
+              </div>
+            </div>
+            <div class="code-output dna-strand" id="dnaOutput" style="min-height:80px;"></div>
+          </div>
+
+          <div id="decodeSection" style="display:none;">
+            <div class="pane-label">
+              <span>DNA Sequence (A/C/G/T only)</span>
+              <button class="btn btn-sm btn-secondary" id="decExBtn">Try Example</button>
+            </div>
+            <textarea id="dnaInput" rows="5" placeholder="Paste DNA sequence (ACGT only, min 8 chars)..." spellcheck="false"></textarea>
+            <div class="pane-label" style="margin-top:10px;"><span>Decoded Text</span></div>
+            <div class="code-output" id="decodeOutput" style="min-height:60px;"></div>
+          </div>
+
+          <div id="aminoSection" style="display:none;">
+            <div class="pane-label">
+              <span>DNA or RNA sequence to translate to amino acids</span>
+              <button class="btn btn-sm btn-secondary" id="aminoExBtn">Try Example</button>
+            </div>
+            <textarea id="aminoInput" rows="4" placeholder="e.g. ATGTTCAAA... (reads codons as triplets)" spellcheck="false"></textarea>
+            <div class="pane-label" style="margin-top:10px;"><span>Amino Acids</span></div>
+            <div class="amino-output" id="aminoOutput"></div>
+          </div>
+
+          <div id="referenceSection" style="display:none;">
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">Standard genetic codon table (DNA notation). 64 codons → 20 amino acids + 3 stop codons.</p>
+            <div style="overflow-x:auto;">
+              <table class="codon-table" id="codonTableEl"></table>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter text to encode as a DNA sequence.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the DNA Encoder</h2>
+          <ol>
+            <li><strong>Text&rarr;DNA</strong> — type any text. Each character is encoded as a sequence of A/C/G/T bases using a 2-bit per base scheme (6 bases per character).</li>
+            <li><strong>DNA&rarr;Text</strong> — paste a DNA sequence to decode it back to the original text.</li>
+            <li><strong>Amino Acids</strong> — input any DNA/RNA sequence and translate it using the standard genetic codon table (triplet codons → amino acid single-letter codes).</li>
+            <li><strong>Codon Table</strong> — full reference of all 64 codons and their amino acid mappings.</li>
+          </ol>
+
+          <h2>DNA and Digital Information</h2>
+          <p>DNA (deoxyribonucleic acid) is the molecule of life, but it is also, fundamentally, a storage medium for digital information. The four nucleotide bases — Adenine (A), Cytosine (C), Guanine (G), and Thymine (T) — can be thought of as a 4-symbol alphabet. Two bits can represent four states (00, 01, 10, 11), so each DNA base encodes exactly 2 bits of information. This means a DNA strand can encode digital data just as efficiently as binary, with vastly greater density than any electronic storage medium.</p>
+          <p>This tool uses a simple mapping: A=00, C=01, G=10, T=11. Each character (byte = 8 bits) requires 4 bases in this scheme. For readability, the output is displayed in triplet codons separated by spaces, and the bases are colour-coded (green=A, blue=C, amber=G, red=T).</p>
+
+          <h3>The Genetic Code</h3>
+          <p>In biology, the genetic code is the set of rules by which a cell translates information encoded in the DNA (or RNA) sequence of a gene into a sequence of amino acids. A codon is a sequence of three bases. With four possible bases, there are 4^3 = 64 possible codons. These 64 codons map to 20 amino acids and 3 stop signals. The code is nearly universal — with minor exceptions in mitochondria and some microorganisms, all life on Earth uses the same codon table, a strong piece of evidence for the common descent of all known life.</p>
+
+          <h3>DNA Data Storage</h3>
+          <p>DNA data storage has moved from theoretical concept to practical demonstration. In 2012, George Church's lab at Harvard stored 5.27 megabits of data in synthetic DNA. Microsoft Research has demonstrated retrieval of specific files from a pool of millions of DNA molecules using PCR-based addressing. The theoretical density of DNA storage is approximately 1 exabyte (10^18 bytes) per cubic centimeter — more than a million times denser than a solid-state drive. DNA also survives for thousands of years in cold, dry conditions, as demonstrated by the successful extraction of genetic information from woolly mammoth bones over 40,000 years old.</p>
+
+          <h3>Encoding Schemes</h3>
+          <p>This tool uses a simple 2-bit per base encoding. More sophisticated DNA data storage schemes use error correction codes to handle synthesis and sequencing errors, and they deliberately avoid runs of identical bases (homopolymers) that are difficult to synthesize and sequence accurately. The Grass et al. (2015) paper introduced Reed-Solomon error correction into DNA storage, enabling recovery of data even when up to 10% of bases are corrupted.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What are DNA codons?</button>
+            <div class="faq-answer">A codon is a sequence of three DNA bases that codes for a specific amino acid or acts as a stop signal. There are 64 possible codons (4^3) mapping to 20 amino acids and 3 stop codons.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does text-to-DNA encoding work in this tool?</button>
+            <div class="faq-answer">Each base maps to 2 bits (A=00, C=01, G=10, T=11). One byte (8 bits) requires 4 bases. The output is grouped in triplets for readability. This is a steganographic encoding, not a biological standard.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are the four DNA bases?</button>
+            <div class="faq-answer">Adenine (A), Cytosine (C), Guanine (G), and Thymine (T). In RNA, Uracil (U) replaces Thymine. A pairs with T, and C pairs with G.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the standard genetic codon table?</button>
+            <div class="faq-answer">The standard genetic code maps 64 codons to 20 amino acids and 3 stop codons (TAA, TAG, TGA). ATG codes for Methionine (the start codon). The code is nearly universal across all life on Earth.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can DNA actually store digital data?</button>
+            <div class="faq-answer">Yes. DNA data storage is an active research field. Scientists have stored megabytes of data in synthetic DNA strands. DNA offers extraordinary density — theoretically 1 exabyte per cubic centimeter — and can last thousands of years in cold, dry conditions.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Science Tools</h4>
+        <a href="/tools/dna-sequence.html">DNA Sequence</a>
+        <a href="/tools/periodic-table-spell.html">Element Speller</a>
+        <a href="/tools/resistor-color-code.html">Resistor Calculator</a>
+        <a href="/tools/baudot-decoder.html">Baudot Code</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Tools</h4>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <a href="/tools/pig-latin.html">Pig Latin</a>
+        <a href="/tools/scytale-cipher.html">Scytale</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+
+    // 2-bit encoding: A=00, C=01, G=10, T=11
+    var BASES = ['A','C','G','T'];
+    function byteToDNA(byte) {
+      var result = '';
+      for (var i = 3; i >= 0; i--) {
+        result += BASES[(byte >> (i*2)) & 3];
+      }
+      return result;
+    }
+    function dnaToBytes(dna) {
+      var result = [];
+      var clean = dna.toUpperCase().replace(/[^ACGT]/g,'');
+      for (var i = 0; i + 3 < clean.length; i += 4) {
+        var byte = 0;
+        for (var j = 0; j < 4; j++) {
+          var b = BASES.indexOf(clean[i+j]);
+          byte = (byte << 2) | (b === -1 ? 0 : b);
+        }
+        result.push(byte);
+      }
+      return result;
+    }
+
+    function textToDNA(text) {
+      var result = [];
+      for (var i = 0; i < text.length; i++) {
+        result.push(byteToDNA(text.charCodeAt(i)));
+      }
+      return result;
+    }
+
+    function renderColoredDNA(codons) {
+      var html = '';
+      codons.forEach(function(codon, ci) {
+        codon.split('').forEach(function(base) {
+          var cls = 'dna-' + base.toLowerCase();
+          html += '<span class="' + cls + '">' + base + '</span>';
+        });
+        if (ci < codons.length - 1) html += ' ';
+      });
+      return html;
+    }
+
+    // Standard genetic codon table
+    var CODON_TABLE = {
+      'TTT':'Phe(F)','TTC':'Phe(F)','TTA':'Leu(L)','TTG':'Leu(L)',
+      'CTT':'Leu(L)','CTC':'Leu(L)','CTA':'Leu(L)','CTG':'Leu(L)',
+      'ATT':'Ile(I)','ATC':'Ile(I)','ATA':'Ile(I)','ATG':'Met(M)*',
+      'GTT':'Val(V)','GTC':'Val(V)','GTA':'Val(V)','GTG':'Val(V)',
+      'TCT':'Ser(S)','TCC':'Ser(S)','TCA':'Ser(S)','TCG':'Ser(S)',
+      'CCT':'Pro(P)','CCC':'Pro(P)','CCA':'Pro(P)','CCG':'Pro(P)',
+      'ACT':'Thr(T)','ACC':'Thr(T)','ACA':'Thr(T)','ACG':'Thr(T)',
+      'GCT':'Ala(A)','GCC':'Ala(A)','GCA':'Ala(A)','GCG':'Ala(A)',
+      'TAT':'Tyr(Y)','TAC':'Tyr(Y)','TAA':'STOP','TAG':'STOP',
+      'CAT':'His(H)','CAC':'His(H)','CAA':'Gln(Q)','CAG':'Gln(Q)',
+      'AAT':'Asn(N)','AAC':'Asn(N)','AAA':'Lys(K)','AAG':'Lys(K)',
+      'GAT':'Asp(D)','GAC':'Asp(D)','GAA':'Glu(E)','GAG':'Glu(E)',
+      'TGT':'Cys(C)','TGC':'Cys(C)','TGA':'STOP','TGG':'Trp(W)',
+      'CGT':'Arg(R)','CGC':'Arg(R)','CGA':'Arg(R)','CGG':'Arg(R)',
+      'AGT':'Ser(S)','AGC':'Ser(S)','AGA':'Arg(R)','AGG':'Arg(R)',
+      'GGT':'Gly(G)','GGC':'Gly(G)','GGA':'Gly(G)','GGG':'Gly(G)'
+    };
+
+    function translateAmino(dna) {
+      var clean = dna.toUpperCase().replace(/[^ACGTU]/g,'').replace(/U/g,'T');
+      var results = [];
+      for (var i = 0; i + 2 < clean.length; i += 3) {
+        var codon = clean.slice(i, i+3);
+        var aa = CODON_TABLE[codon] || '???';
+        results.push({ codon: codon, aa: aa });
+      }
+      return results;
+    }
+
+    function buildCodonTable() {
+      var el = document.getElementById('codonTableEl');
+      if (el.innerHTML) return;
+      el.innerHTML = '<thead><tr><th>Codon</th><th>Amino Acid</th><th>Codon</th><th>Amino Acid</th><th>Codon</th><th>Amino Acid</th><th>Codon</th><th>Amino Acid</th></tr></thead><tbody></tbody>';
+      var tbody = el.querySelector('tbody');
+      var keys = Object.keys(CODON_TABLE);
+      for (var i = 0; i < keys.length; i += 4) {
+        var tr = document.createElement('tr');
+        for (var j = 0; j < 4 && i+j < keys.length; j++) {
+          var k = keys[i+j];
+          tr.innerHTML += '<td>' + k + '</td><td>' + CODON_TABLE[k] + '</td>';
+        }
+        tbody.appendChild(tr);
+      }
+    }
+
+    var currentMode = 'encode';
+    var statusBar = document.getElementById('statusBar');
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.mode===mode); });
+      ['encode','decode','amino','reference'].forEach(function(m){ document.getElementById(m+'Section').style.display = mode===m?'':'none'; });
+      if (mode==='reference') buildCodonTable();
+      updateStatus();
+    }
+
+    function updateStatus() {
+      if (currentMode === 'encode') {
+        var text = document.getElementById('textInput').value;
+        var codons = textToDNA(text);
+        var output = document.getElementById('dnaOutput');
+        if (!text) { output.innerHTML=''; statusBar.className='status-bar info'; statusBar.textContent='Enter text to encode as a DNA sequence.'; return; }
+        output.innerHTML = renderColoredDNA(codons);
+        statusBar.className='status-bar valid';
+        statusBar.textContent='"'+text.substring(0,20)+(text.length>20?'...':'')+'" \u2192 '+codons.length+' codon'+(codons.length!==1?'s':'')+' ('+codons.join('').length+' bases)';
+      } else if (currentMode === 'decode') {
+        var dna = document.getElementById('dnaInput').value;
+        var bytes = dnaToBytes(dna);
+        var decoded = bytes.map(function(b){ return b >= 32 && b < 127 ? String.fromCharCode(b) : '?'; }).join('');
+        document.getElementById('decodeOutput').textContent = decoded;
+        if (!dna.trim()) { statusBar.className='status-bar info'; statusBar.textContent='Paste a DNA sequence to decode.'; }
+        else { statusBar.className='status-bar valid'; statusBar.textContent='Decoded '+bytes.length+' bytes: "'+decoded.substring(0,40)+(decoded.length>40?'...':'')+'"'; }
+      } else if (currentMode === 'amino') {
+        var aseq = document.getElementById('aminoInput').value;
+        var aminos = translateAmino(aseq);
+        var container = document.getElementById('aminoOutput');
+        container.innerHTML = '';
+        if (!aseq.trim()) { container.innerHTML='<span style="color:var(--text-secondary);font-size:13px;">Enter a DNA/RNA sequence above.</span>'; statusBar.className='status-bar info'; statusBar.textContent='Enter a DNA sequence to translate to amino acids.'; return; }
+        aminos.forEach(function(item) {
+          var badge = document.createElement('span');
+          badge.className = 'amino-badge' + (item.aa==='STOP'?' stop':item.aa.includes('*')?' start':'');
+          badge.title = item.codon + ' = ' + item.aa;
+          badge.textContent = item.codon;
+          container.appendChild(badge);
+        });
+        var stopCount = aminos.filter(function(a){ return a.aa==='STOP'; }).length;
+        statusBar.className='status-bar valid';
+        statusBar.textContent='Translated '+aminos.length+' codon'+(aminos.length!==1?'s':'')+' — '+stopCount+' stop codon'+(stopCount!==1?'s':'');
+      } else {
+        statusBar.className='status-bar info'; statusBar.textContent='Standard genetic code — 64 codons, 20 amino acids, 3 stop codons.';
+      }
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function(c){ c.addEventListener('click', function(){ setMode(c.dataset.mode); }); });
+    document.getElementById('textInput').addEventListener('input', DT?DT.debounce(updateStatus,150):updateStatus);
+    document.getElementById('dnaInput').addEventListener('input', DT?DT.debounce(updateStatus,150):updateStatus);
+    document.getElementById('aminoInput').addEventListener('input', DT?DT.debounce(updateStatus,200):updateStatus);
+    document.getElementById('exampleBtn').addEventListener('click', function(){ document.getElementById('textInput').value='HELLO'; updateStatus(); });
+    document.getElementById('clearBtn').addEventListener('click', function(){ document.getElementById('textInput').value=''; updateStatus(); });
+    document.getElementById('decExBtn').addEventListener('click', function(){ document.getElementById('dnaInput').value='AAGACTATCAAGACTATCAAGAGTTT'; updateStatus(); });
+    document.getElementById('aminoExBtn').addEventListener('click', function(){ document.getElementById('aminoInput').value='ATGTTCAAATAA'; updateStatus(); });
+    document.getElementById('copyEncBtn').addEventListener('click', function(){
+      var t = document.getElementById('dnaOutput').textContent;
+      if (DT) DT.copyToClipboard(t, this); else navigator.clipboard.writeText(t);
+    });
+    document.getElementById('dlEncBtn').addEventListener('click', function(){
+      if (DT) DT.downloadText(document.getElementById('dnaOutput').textContent, 'dna-sequence.txt', 'text/plain');
+    });
+
+    if (DT) DT.trackTool('dna-sequence');
+    updateStatus();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CSS Variable Theme Builder — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Build a CSS custom property theme visually. Edit --primary, --bg, --text and more. Live dashboard preview. Export :root block instantly.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/css-variable-theme.html">
+  <meta property="og:title" content="CSS Variable Theme Builder — ThisDevTool">
+  <meta property="og:description" content="Create a complete CSS custom property theme with live preview. Export a :root block ready to drop into your stylesheet.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/css-variable-theme.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CSS Variable Theme Builder",
+    "url": "https://thisdevtool.com/tools/css-variable-theme.html",
+    "description": "Build a CSS custom property theme visually with live dashboard preview and :root export.",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are CSS custom properties (variables)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CSS custom properties, also called CSS variables, are entities you define in CSS that store values for reuse throughout a stylesheet. They are defined with a double-dash prefix (--primary-color: #10b981) and accessed with var(--primary-color). They cascade and can be overridden at any scope."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I use the exported :root block?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Copy the generated :root block and paste it at the top of your main CSS file, or into a dedicated theme.css file that you import first. Any element in your stylesheet can then use var(--your-variable-name) to reference the value."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I define dark mode using CSS variables?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Define your base (light) theme in :root, then override the color variables inside a @media (prefers-color-scheme: dark) block or a [data-theme='dark'] selector. All elements using var() will automatically reflect the dark theme values."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between CSS variables and SASS variables?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SASS variables ($primary: #10b981) are compile-time constants — they are replaced with their values during compilation and cannot change at runtime. CSS custom properties are live runtime values that can be changed with JavaScript or overridden by cascade. CSS variables are supported natively without a build step."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do CSS custom properties work in all browsers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. CSS custom properties have been supported in all major browsers since 2016 (Chrome 49, Firefox 31, Safari 9.1, Edge 15). Global browser support is above 97%. You can safely use them in production without a fallback for any modern project."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .theme-editor {
+      display:grid;
+      grid-template-columns:280px 1fr;
+      gap:1.5rem;
+    }
+    @media(max-width:700px){.theme-editor{grid-template-columns:1fr;}}
+    .var-list label { display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem;font-size:.875rem; }
+    .var-list input[type=color] { width:36px;height:28px;border:1px solid var(--border);border-radius:4px;cursor:pointer;flex-shrink:0; }
+    .var-list .var-name { font-family:monospace;font-size:.8rem;color:var(--text-muted);flex:1; }
+    .var-list input[type=text].hex-input { font-family:monospace;font-size:.8rem;width:78px;padding:.2rem .4rem; }
+    .mock-dashboard {
+      border:1px solid var(--border);
+      border-radius:12px;
+      overflow:hidden;
+      background:#fff;
+      min-height:380px;
+      font-size:13px;
+    }
+    .mock-topbar { padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between; }
+    .mock-topbar .mock-logo { font-weight:700;font-size:1rem; }
+    .mock-topbar .mock-nav-link { font-size:.8rem;margin-left:.75rem;text-decoration:none; }
+    .mock-topbar .mock-btn { padding:.3rem .9rem;border-radius:6px;font-size:.8rem;font-weight:600;border:none;cursor:pointer; }
+    .mock-body { display:grid;grid-template-columns:160px 1fr;min-height:320px; }
+    .mock-sidebar { padding:1rem;border-right:1px solid #e5e7eb; }
+    .mock-sidebar-item { padding:.45rem .6rem;border-radius:6px;margin-bottom:.25rem;font-size:.8rem;cursor:pointer; }
+    .mock-sidebar-item.active { font-weight:600; }
+    .mock-main { padding:1rem; }
+    .mock-card { border-radius:8px;padding:.75rem 1rem;margin-bottom:.75rem;border:1px solid #e5e7eb; }
+    .mock-card h4 { margin:0 0 .25rem;font-size:.85rem; }
+    .mock-card p { margin:0;font-size:.75rem;opacity:.7; }
+    .mock-badge { display:inline-block;padding:.15rem .5rem;border-radius:999px;font-size:.7rem;font-weight:600;margin-left:.5rem; }
+    .mock-input { width:100%;padding:.35rem .5rem;border-radius:5px;border:1px solid #e5e7eb;font-size:.8rem;box-sizing:border-box;margin-top:.5rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/button-style-generator.html">Button Generator</a>
+        <a href="/tools/gradient-generator.html">Gradient</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CSS Variable Theme Builder</h1>
+          <p class="tool-subtitle">Define your CSS custom properties visually. Live mock dashboard updates as you edit. Export a ready-to-use :root block.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="edit">Edit</button>
+            <button class="option-chip" data-mode="preview">Preview</button>
+            <button class="option-chip" data-mode="export">Export</button>
+          </div>
+
+          <div id="editView">
+            <div class="theme-editor">
+              <div class="var-list" id="varList"></div>
+              <div>
+                <p style="font-weight:600;margin-bottom:.75rem;font-size:.875rem;">LIVE PREVIEW</p>
+                <div class="mock-dashboard" id="mockDashboard">
+                  <div class="mock-topbar" id="mockTopbar">
+                    <span class="mock-logo" id="mockLogo">MyApp</span>
+                    <div>
+                      <a class="mock-nav-link" id="mockNav1" href="#">Dashboard</a>
+                      <a class="mock-nav-link" id="mockNav2" href="#">Reports</a>
+                      <button class="mock-btn" id="mockBtn">Upgrade</button>
+                    </div>
+                  </div>
+                  <div class="mock-body">
+                    <div class="mock-sidebar" id="mockSidebar">
+                      <div class="mock-sidebar-item active" id="mockSideActive">Overview</div>
+                      <div class="mock-sidebar-item" id="mockSideItem1">Analytics</div>
+                      <div class="mock-sidebar-item" id="mockSideItem2">Settings</div>
+                      <div class="mock-sidebar-item" id="mockSideItem3">Billing</div>
+                    </div>
+                    <div class="mock-main" id="mockMainArea">
+                      <div class="mock-card" id="mockCard1">
+                        <h4 id="mockCard1Title">Total Revenue <span class="mock-badge" id="mockBadge">+12%</span></h4>
+                        <p id="mockCard1Sub">$84,921 this month</p>
+                      </div>
+                      <div class="mock-card" id="mockCard2">
+                        <h4 id="mockCard2Title">Active Users</h4>
+                        <p id="mockCard2Sub">3,842 sessions today</p>
+                      </div>
+                      <input class="mock-input" id="mockInput" placeholder="Search…" type="text">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="previewView" style="display:none;">
+            <p style="color:var(--text-muted);margin-bottom:.75rem;">Switch to Edit tab to change colors — preview shown inline above.</p>
+          </div>
+
+          <div id="exportView" style="display:none;">
+            <div class="pane-label" style="margin-top:.5rem;">
+              <span>Generated :root CSS</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-primary" id="copyRootBtn">Copy CSS</button>
+                <button class="btn btn-sm btn-secondary" id="downloadRootBtn">Download</button>
+              </div>
+            </div>
+            <div class="code-output" id="rootOutput" style="min-height:200px;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            8 CSS variables defined — edit colors to update the live preview.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the CSS Theme Builder</h2>
+          <ol>
+            <li><strong>Edit variables</strong> — use the color pickers or type hex values directly in the Edit tab. The mock dashboard updates instantly.</li>
+            <li><strong>Check the preview</strong> — the mock dashboard shows a simulated navigation bar, sidebar, cards, badge, and input field all driven by your custom properties.</li>
+            <li><strong>Export your theme</strong> — switch to the Export tab to copy or download the :root CSS block. Paste it into your project's stylesheet.</li>
+          </ol>
+
+          <h2>Understanding CSS Custom Properties</h2>
+          <p>CSS custom properties (informally called CSS variables) are one of the most powerful modern CSS features. They let you define reusable values in one place and reference them throughout your stylesheet using the <code>var()</code> function. Unlike preprocessor variables in SASS or Less, CSS custom properties are dynamic — they live in the DOM, respond to cascade and inheritance, and can be changed at runtime with JavaScript.</p>
+
+          <h3>Scope and Cascade</h3>
+          <p>Custom properties follow the same cascade rules as regular CSS properties. Variables defined in <code>:root</code> are globally available. Variables defined in a component class override the global value for that component's subtree. This means you can define a global <code>--primary</code> and override it locally with <code>.danger { --primary: #ef4444; }</code> to theme a dangerous section differently without changing the global palette.</p>
+
+          <h3>Dark Mode with CSS Variables</h3>
+          <p>CSS variables are the standard approach to implementing dark mode. Define light values in <code>:root</code>, then override only the color tokens inside <code>@media (prefers-color-scheme: dark) { :root { ... } }</code> or on a <code>[data-theme="dark"]</code> attribute. Your layout, spacing, and typography don't need to change — only the semantic color tokens. This approach scales to large design systems without duplication. For an example, see how ThisDevTool's own theme toggle switches between light and dark palettes using this exact pattern.</p>
+
+          <h3>Naming Conventions</h3>
+          <p>The most maintainable naming convention separates semantic names from literal color names. Rather than <code>--blue</code>, use <code>--color-primary</code>. Rather than <code>--gray-100</code>, use <code>--color-bg</code>. Semantic names decouple your components from specific hues — if you rebrand from blue to green, you change one value in one place, not hundreds of references. Common token categories: color (background, surface, border, text, primary, secondary, accent, error, success), spacing (space-xs through space-2xl), and typography (font-size, font-weight, line-height).</p>
+
+          <h3>JavaScript Integration</h3>
+          <p>CSS variables can be read and written via JavaScript: <code>getComputedStyle(document.documentElement).getPropertyValue('--primary')</code> reads the current value, and <code>document.documentElement.style.setProperty('--primary', '#3b82f6')</code> overrides it at runtime. This enables dynamic theming (user color pickers), animation (incrementing a variable with requestAnimationFrame), and conditional styling based on data.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What are CSS custom properties (variables)?</button>
+            <div class="faq-answer">CSS custom properties store values for reuse throughout a stylesheet. They're defined with a double-dash prefix (--primary: #10b981) and accessed with var(--primary). They cascade, can be overridden at any scope, and can be changed at runtime with JavaScript.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I use the exported :root block?</button>
+            <div class="faq-answer">Copy the generated :root block and paste it at the top of your main CSS file, or into a dedicated theme.css file that you import first. Any element can then use var(--your-variable-name) to reference the value.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I define dark mode using CSS variables?</button>
+            <div class="faq-answer">Yes. Define your base (light) theme in :root, then override the color variables inside a @media (prefers-color-scheme: dark) block or a [data-theme='dark'] selector. All elements using var() will automatically reflect the dark theme values.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between CSS variables and SASS variables?</button>
+            <div class="faq-answer">SASS variables are compile-time constants replaced with their values during build. CSS custom properties are live runtime values that can be changed with JavaScript or overridden by cascade. CSS variables require no build step and are natively supported.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Do CSS custom properties work in all browsers?</button>
+            <div class="faq-answer">Yes. CSS custom properties are supported in all major browsers since 2016 (Chrome 49, Firefox 31, Safari 9.1, Edge 15). Global browser support is above 97%. You can safely use them in production without a fallback.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Design Tools</h4>
+        <a href="/tools/button-style-generator.html">Button Generator</a>
+        <a href="/tools/gradient-generator.html">Gradient Generator</a>
+        <a href="/tools/color-contrast-checker.html">Contrast Checker</a>
+        <a href="/tools/typography-scale.html">Typography Scale</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/color-palette-extractor.html">Palette Extractor</a>
+        <a href="/tools/glassmorphism-generator.html">Glassmorphism</a>
+        <a href="/tools/css-grid-generator.html">CSS Grid Generator</a>
+        <a href="/tools/tailwind-css.html">Tailwind → CSS</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var statusBar = document.getElementById('statusBar');
+    var rootOutput = document.getElementById('rootOutput');
+    var currentMode = 'edit';
+
+    var VARS = [
+      { name: '--primary',     label: '--primary',     value: '#10b981' },
+      { name: '--primary-dark',label: '--primary-dark', value: '#0d9668' },
+      { name: '--secondary',   label: '--secondary',    value: '#6366f1' },
+      { name: '--bg',          label: '--bg',           value: '#ffffff' },
+      { name: '--surface',     label: '--surface',      value: '#f9fafb' },
+      { name: '--border',      label: '--border',       value: '#e5e7eb' },
+      { name: '--text',        label: '--text',         value: '#111827' },
+      { name: '--text-muted',  label: '--text-muted',   value: '#6b7280' }
+    ];
+
+    // Build editor
+    var varList = document.getElementById('varList');
+    VARS.forEach(function (v, i) {
+      var lbl = document.createElement('label');
+      lbl.innerHTML =
+        '<input type="color" id="clr_' + i + '" value="' + v.value + '">' +
+        '<span class="var-name">' + v.label + '</span>' +
+        '<input type="text" class="hex-input" id="hex_' + i + '" value="' + v.value + '" maxlength="7">';
+      varList.appendChild(lbl);
+
+      document.getElementById('clr_' + i).addEventListener('input', function () {
+        VARS[i].value = this.value;
+        document.getElementById('hex_' + i).value = this.value;
+        updatePreview();
+      });
+      document.getElementById('hex_' + i).addEventListener('input', function () {
+        var v2 = this.value;
+        if (/^#[0-9a-fA-F]{6}$/.test(v2)) {
+          VARS[i].value = v2;
+          document.getElementById('clr_' + i).value = v2;
+          updatePreview();
+        }
+      });
+    });
+
+    function getVar(name) {
+      var found = VARS.find(function (v) { return v.name === name; });
+      return found ? found.value : '#888';
+    }
+
+    function updatePreview() {
+      var primary = getVar('--primary');
+      var primaryDark = getVar('--primary-dark');
+      var secondary = getVar('--secondary');
+      var bg = getVar('--bg');
+      var surface = getVar('--surface');
+      var border = getVar('--border');
+      var text = getVar('--text');
+      var muted = getVar('--text-muted');
+
+      var dash = document.getElementById('mockDashboard');
+      dash.style.background = bg;
+      dash.style.color = text;
+      dash.style.borderColor = border;
+
+      var topbar = document.getElementById('mockTopbar');
+      topbar.style.background = primary;
+      topbar.style.color = '#fff';
+      topbar.style.borderBottom = '1px solid ' + primaryDark;
+
+      var logo = document.getElementById('mockLogo');
+      logo.style.color = '#fff';
+
+      ['mockNav1','mockNav2'].forEach(function (id) {
+        var el = document.getElementById(id);
+        el.style.color = 'rgba(255,255,255,0.85)';
+      });
+
+      var btn = document.getElementById('mockBtn');
+      btn.style.background = '#fff';
+      btn.style.color = primary;
+
+      var sidebar = document.getElementById('mockSidebar');
+      sidebar.style.background = surface;
+      sidebar.style.borderColor = border;
+
+      var sideActive = document.getElementById('mockSideActive');
+      sideActive.style.background = primary + '22';
+      sideActive.style.color = primary;
+
+      ['mockSideItem1','mockSideItem2','mockSideItem3'].forEach(function (id) {
+        var el = document.getElementById(id);
+        el.style.color = muted;
+        el.style.background = '';
+      });
+
+      var mainArea = document.getElementById('mockMainArea');
+      mainArea.style.background = bg;
+
+      ['mockCard1','mockCard2'].forEach(function (id) {
+        var el = document.getElementById(id);
+        el.style.background = surface;
+        el.style.borderColor = border;
+        el.querySelector('h4').style.color = text;
+        el.querySelector('p').style.color = muted;
+      });
+
+      var badge = document.getElementById('mockBadge');
+      badge.style.background = secondary + '22';
+      badge.style.color = secondary;
+
+      var input = document.getElementById('mockInput');
+      input.style.borderColor = border;
+      input.style.color = text;
+      input.style.background = bg;
+
+      generateRoot();
+      setStatus('valid', VARS.length + ' CSS variables defined — preview updated');
+      if (DT && DT.trackTool) DT.trackTool('css-variable-theme');
+    }
+
+    function generateRoot() {
+      var lines = [':root {'];
+      VARS.forEach(function (v) {
+        lines.push('  ' + v.name + ': ' + v.value + ';');
+      });
+      lines.push('}');
+      rootOutput.textContent = lines.join('\n');
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        document.getElementById('editView').style.display = currentMode === 'edit' ? '' : 'none';
+        document.getElementById('previewView').style.display = currentMode === 'preview' ? '' : 'none';
+        document.getElementById('exportView').style.display = currentMode === 'export' ? '' : 'none';
+      });
+    });
+
+    document.getElementById('copyRootBtn').addEventListener('click', function () {
+      DT.copyToClipboard(rootOutput.textContent, document.getElementById('copyRootBtn'));
+    });
+
+    document.getElementById('downloadRootBtn').addEventListener('click', function () {
+      DT.downloadText(rootOutput.textContent, 'theme.css', 'text/css');
+    });
+
+    function setStatus(type, msg) {
+      statusBar.className = 'status-bar ' + type;
+      statusBar.textContent = msg;
+    }
+
+    updatePreview();
+  })();
+  </script>
+</body>
+</html>

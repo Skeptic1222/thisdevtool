@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Polybius Square Cipher — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encode and decode text with the Polybius square cipher online. 5x5 grid, I/J combined, custom keyword. Free and 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/polybius-square.html">
+  <meta property="og:title" content="Polybius Square Cipher — ThisDevTool">
+  <meta property="og:description" content="Free online Polybius square encoder and decoder. Custom keyword support, visual grid display. Runs in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/polybius-square.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Polybius Square Cipher",
+    "url": "https://thisdevtool.com/tools/polybius-square.html",
+    "description": "Encode and decode text using the Polybius square cipher with custom keyword support.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the Polybius square?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The Polybius square is a cipher invented by the ancient Greek historian Polybius. It uses a 5x5 grid filled with letters (I and J share one cell) where each letter is encoded as its row and column numbers. For example, A=11, B=12, Z=55. It is one of the earliest forms of substitution cipher." }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do I and J share a cell?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The standard 26-letter English alphabet does not fit in a 5x5 grid (which has 25 cells). The traditional solution is to combine I and J into one cell since they are phonetically similar and context usually makes the correct letter clear. During decoding, I is typically assumed unless context suggests J." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a keyword Polybius square?",
+        "acceptedAnswer": { "@type": "Answer", "text": "A keyword Polybius square uses a keyword to shuffle the order of letters in the grid, making the cipher harder to crack. The keyword letters (deduplicated) are placed first, then the remaining alphabet letters in order. This is called a keyed Polybius square." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I decode Polybius numbers?",
+        "acceptedAnswer": { "@type": "Answer", "text": "In standard Polybius encoding, each letter becomes a two-digit number. The first digit is the row (1-5) and the second digit is the column (1-5). To decode, look up the grid position for each pair of digits. Switch to Decode mode and paste your number pairs to decode them." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the Tap Code relationship to Polybius?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The Tap Code, used by POWs to communicate through prison walls, is directly based on the Polybius square with C used instead of K. Letters are encoded as sequences of taps separated by pauses: row taps then column taps. For example, A (row 1, column 1) is tapped as one tap, pause, one tap." }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .polybius-grid-table { border-collapse: collapse; margin: 0.75rem 0; font-family: monospace; }
+    .polybius-grid-table td, .polybius-grid-table th { width: 2.2rem; height: 2.2rem; text-align: center; border: 1px solid var(--border); font-size: 0.9rem; }
+    .polybius-grid-table th { background: var(--bg-secondary); font-weight: 700; color: #10b981; }
+    .polybius-grid-table td.highlight { background: #10b981; color: #fff; }
+    .keyword-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; }
+    .keyword-row input { flex: 1; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/tap-code.html">Tap Code</a>
+        <a href="/tools/playfair-cipher.html">Playfair</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Polybius Square Cipher</h1>
+          <p class="tool-subtitle">Encode text to coordinate pairs using the classic 5x5 Polybius grid (I/J combined).</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" id="chipEncode">Encode</button>
+            <button class="option-chip" id="chipDecode">Decode</button>
+            <button class="option-chip" id="chipCustom">Custom Key</button>
+          </div>
+
+          <div class="keyword-row" id="keywordRow" style="display:none;">
+            <label style="white-space:nowrap;font-weight:600;">Keyword:</label>
+            <input type="text" id="keyword" placeholder="e.g. SECRET" value="" style="font-family:monospace;padding:0.35rem 0.6rem;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--text);text-transform:uppercase;">
+            <button class="btn btn-sm btn-primary" id="applyKey">Apply</button>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="polybius-grid-table" id="polyTable">
+              <thead><tr><th></th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+              <tbody id="polyBody"></tbody>
+            </table>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">Plaintext</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="inputText" rows="6" spellcheck="false" placeholder="Enter text to encode..."></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Encoded</span>
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              </div>
+              <div class="code-output" id="outputText" style="min-height:130px;font-family:monospace;letter-spacing:0.1em;word-spacing:0.3em;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter text above to encode using the Polybius square.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Polybius Square Tool</h2>
+          <ol>
+            <li><strong>Choose Encode or Decode</strong> — select your direction using the option chips above.</li>
+            <li><strong>Optional: set a keyword</strong> — click Custom Key to enter a keyword that shuffles the grid order.</li>
+            <li><strong>Type or paste your text</strong> — plaintext for encoding, number pairs for decoding.</li>
+            <li><strong>Read the output</strong> — encoded pairs or decoded text appears on the right.</li>
+            <li><strong>Copy the result</strong> — use the Copy button to copy to clipboard.</li>
+          </ol>
+
+          <h2>About the Polybius Square</h2>
+          <p>The Polybius square is one of the oldest known ciphers, developed by the ancient Greek historian and soldier Polybius (c. 200–118 BC). Originally designed to allow messages to be signaled with torches (by holding up groups of torches to indicate row and column numbers), it later became the basis for many more advanced cipher techniques. The square's 5x5 grid holds 25 of the 26 English letters, with I and J traditionally sharing one cell.</p>
+
+          <h3>Standard vs. Keyed Polybius Square</h3>
+          <p>In the standard Polybius square, the alphabet is placed in the grid left-to-right, top-to-bottom in order: ABCDE in row 1, FGHIJ in row 2, and so on. In a keyed version, a keyword is written first (with duplicate letters removed), followed by the remaining unused letters of the alphabet. This means the same plaintext will produce completely different ciphertext depending on the keyword, greatly increasing the cipher's security.</p>
+
+          <h3>Encoding Rules</h3>
+          <p>Each letter maps to two digits: the first is its row number (1–5) and the second is its column number (1–5). Since I and J share cell (2,4) = "24", encoding always treats J as I, and decoding 24 gives I. Spaces and punctuation in the plaintext are typically skipped during encoding. In the output, pairs are separated by spaces for readability.</p>
+
+          <h3>Historical Uses and Derivatives</h3>
+          <p>The Polybius square is the foundation for several more advanced cipher systems. The ADFGVX cipher used in WWI replaced the digits 1–5 with the letters A, D, F, G, X (and V for the 6x6 version) and then added a columnar transposition step. The Tap Code, used by American POWs in Vietnam, is a direct application of the Polybius square: K is merged with C, and each letter is communicated as two sequences of taps representing the row and column. The Bifid cipher extends the Polybius square into a more complex fractionating scheme.</p>
+
+          <h3>Security Analysis</h3>
+          <p>The standard Polybius square offers no real security — it is a simple monoalphabetic substitution where each letter is replaced by a fixed two-digit pair. Frequency analysis can crack it easily. A keyed Polybius square is slightly harder but still vulnerable to frequency analysis since it remains a monoalphabetic substitution. The value of the Polybius square lies not in standalone security but as a building block for more sophisticated ciphers that combine substitution with transposition.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is the Polybius square?</button>
+            <div class="faq-answer">The Polybius square is a cipher invented by the ancient Greek historian Polybius. It uses a 5x5 grid where each letter is encoded as its row and column numbers. A=11, B=12, etc. It's one of the earliest known cipher systems.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why do I and J share a cell?</button>
+            <div class="faq-answer">The 26-letter English alphabet doesn't fit in a 5x5 grid (25 cells). I and J are combined because they're phonetically similar and context usually clarifies which is meant during decoding.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is a keyword Polybius square?</button>
+            <div class="faq-answer">A keyword Polybius square places the keyword letters (deduplicated) first in the grid, then remaining alphabet letters. This shuffles the encoding, making frequency analysis harder.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I decode Polybius numbers?</button>
+            <div class="faq-answer">Switch to Decode mode and paste your number pairs. Each pair of digits represents a row and column in the grid. The tool automatically looks up the corresponding letter.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the connection between Polybius square and Tap Code?</button>
+            <div class="faq-answer">The Tap Code (used by POWs) is a direct application of the Polybius square with C used instead of K. Letters are tapped as row count then column count, separated by a pause.</div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/polybius-square.html">Polybius Square</a>
+        <a href="/tools/tap-code.html">Tap Code</a>
+        <a href="/tools/playfair-cipher.html">Playfair Cipher</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Ciphers</h4>
+        <a href="/tools/adfgvx-cipher.html">ADFGVX Cipher</a>
+        <a href="/tools/baconian-cipher.html">Baconian Cipher</a>
+        <a href="/tools/rail-fence-cipher.html">Rail Fence</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var mode = 'encode';
+    var grid = []; // 25-char string, I/J combined
+
+    function buildGrid(keyword) {
+      var kw = (keyword || '').toUpperCase().replace(/[^A-Z]/g, '');
+      var seen = {};
+      var order = '';
+      for (var i = 0; i < kw.length; i++) {
+        var c = kw[i] === 'J' ? 'I' : kw[i];
+        if (!seen[c]) { seen[c] = true; order += c; }
+      }
+      for (var j = 0; j < 26; j++) {
+        var ch = String.fromCharCode(65 + j);
+        if (ch === 'J') continue;
+        if (!seen[ch]) { seen[ch] = true; order += ch; }
+      }
+      return order; // 25 chars
+    }
+
+    function renderGrid(g) {
+      var tbody = document.getElementById('polyBody');
+      tbody.innerHTML = '';
+      for (var row = 0; row < 5; row++) {
+        var tr = document.createElement('tr');
+        var th = document.createElement('th');
+        th.textContent = row + 1;
+        tr.appendChild(th);
+        for (var col = 0; col < 5; col++) {
+          var td = document.createElement('td');
+          var letter = g[row * 5 + col];
+          td.textContent = letter === 'I' ? 'I/J' : letter;
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+    }
+
+    function encode(text, g) {
+      var result = [];
+      text = text.toUpperCase().replace(/[^A-Z]/g, '');
+      for (var i = 0; i < text.length; i++) {
+        var c = text[i] === 'J' ? 'I' : text[i];
+        var idx = g.indexOf(c);
+        if (idx >= 0) {
+          result.push((Math.floor(idx / 5) + 1) + '' + (idx % 5 + 1));
+        }
+      }
+      return result.join(' ');
+    }
+
+    function decode(text, g) {
+      var pairs = text.replace(/\s+/g, ' ').trim().split(' ');
+      var result = '';
+      for (var i = 0; i < pairs.length; i++) {
+        var p = pairs[i].replace(/[^1-5]/g, '');
+        if (p.length === 2) {
+          var r = parseInt(p[0]) - 1;
+          var c = parseInt(p[1]) - 1;
+          var idx = r * 5 + c;
+          if (idx >= 0 && idx < 25) result += g[idx];
+        }
+      }
+      return result;
+    }
+
+    function process() {
+      var input = document.getElementById('inputText').value;
+      if (!input.trim()) { document.getElementById('outputText').textContent = ''; setStatus('Enter text to ' + mode + '.', 'info'); return; }
+      var result = mode === 'encode' ? encode(input, grid) : decode(input, grid);
+      document.getElementById('outputText').textContent = result;
+      if (mode === 'encode') {
+        var pairs = result.split(' ');
+        setStatus(input.toUpperCase().replace(/[^A-Z]/g, '').substring(0, 20) + ' → ' + result.substring(0, 30), 'valid');
+      } else {
+        setStatus('Decoded ' + result.length + ' letter' + (result.length !== 1 ? 's' : ''), 'valid');
+      }
+      DT && DT.trackTool && DT.trackTool('polybius-square');
+    }
+
+    function setStatus(msg, type) {
+      var el = document.getElementById('statusBar');
+      el.className = 'status-bar ' + (type || 'info');
+      el.textContent = msg;
+    }
+
+    document.getElementById('chipEncode').addEventListener('click', function () {
+      mode = 'encode';
+      setChip(this);
+      document.getElementById('inputLabel').textContent = 'Plaintext';
+      document.getElementById('outputLabel').textContent = 'Encoded';
+      document.getElementById('inputText').placeholder = 'Enter text to encode...';
+      process();
+    });
+
+    document.getElementById('chipDecode').addEventListener('click', function () {
+      mode = 'decode';
+      setChip(this);
+      document.getElementById('inputLabel').textContent = 'Encoded (pairs)';
+      document.getElementById('outputLabel').textContent = 'Decoded';
+      document.getElementById('inputText').placeholder = 'Enter number pairs, e.g. 23 15 31 31 34';
+      process();
+    });
+
+    document.getElementById('chipCustom').addEventListener('click', function () {
+      var row = document.getElementById('keywordRow');
+      row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+      setChip(this);
+    });
+
+    document.getElementById('applyKey').addEventListener('click', function () {
+      grid = buildGrid(document.getElementById('keyword').value);
+      renderGrid(grid);
+      process();
+    });
+
+    document.getElementById('inputText').addEventListener('input', process);
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      mode = 'encode';
+      setChip(document.getElementById('chipEncode'));
+      document.getElementById('inputText').value = 'HELLO';
+      process();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('inputText').value = '';
+      document.getElementById('outputText').textContent = '';
+      setStatus('Enter text to encode.', 'info');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var txt = document.getElementById('outputText').textContent;
+      DT && DT.copyToClipboard ? DT.copyToClipboard(txt, this) : navigator.clipboard.writeText(txt);
+    });
+
+    function setChip(el) {
+      document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      el.classList.add('active');
+    }
+
+    // Initialize
+    grid = buildGrid('');
+    renderGrid(grid);
+    setStatus('Enter text above to encode using the Polybius square.', 'info');
+  })();
+  </script>
+</body>
+</html>

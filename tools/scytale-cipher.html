@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Scytale Cipher — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encrypt and decrypt messages using the ancient Spartan scytale cylinder transposition cipher. Set the diameter and visualize the cylinder. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/scytale-cipher.html">
+  <meta property="og:title" content="Scytale Cipher — ThisDevTool">
+  <meta property="og:description" content="Ancient Spartan cylinder transposition cipher. Set the diameter, encrypt or decrypt, and visualize the wrapped text. Free, runs in browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/scytale-cipher.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Scytale Cipher",
+    "url": "https://thisdevtool.com/tools/scytale-cipher.html",
+    "description": "Encrypt and decrypt messages using the ancient Spartan scytale transposition cipher with visual cylinder animation.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a scytale cipher?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A scytale (pronounced SKIT-uh-lee) is one of the oldest known cryptographic devices, used by ancient Sparta around 700 BCE. A strip of leather or parchment is wound helically around a cylinder of a specific diameter. The message is written across the turns. When unwound, the letters appear scrambled. Only a cylinder of the same diameter can decode the message."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the scytale cipher work mathematically?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The scytale is a transposition cipher. If the cylinder has diameter D (meaning D letters fit per wrap), the text is arranged in a matrix with D columns. Encryption reads the matrix row by row; decryption reads it column by column — or vice versa depending on convention. The key is simply the integer D."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the scytale cipher secure?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The scytale is a transposition cipher with an integer key (the diameter). Since a message of length N can have at most N possible keys, an attacker can brute-force all possibilities quickly. Modern transposition ciphers use much larger key spaces and multiple rounds. The scytale is studied today for its historical significance, not its security."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does 'diameter' mean in the context of the scytale cipher?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In this tool, 'diameter' means the number of characters that fit in one full wrap around the cylinder — effectively the number of columns in the transposition matrix. A diameter of 4 means the text is arranged 4 characters per row."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Who used the scytale cipher in history?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The scytale was used by the ancient Spartans to communicate securely between military commanders. Both sender and receiver needed a matching cylinder. The device is referenced by the Greek poets Archilochus (7th century BCE) and Aristophanes, and by the historian Thucydides."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .cylinder-vis {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+    .cylinder-grid {
+      display: inline-grid;
+      gap: 2px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    .cylinder-cell {
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .cylinder-cell.highlight { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .cylinder-cell.pad { background: transparent; border-color: transparent; color: var(--text-secondary); opacity: 0.4; }
+    .diameter-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .diameter-control label { font-weight: 600; min-width: 90px; }
+    .diameter-control input[type=range] { flex: 1; }
+    .diameter-control .diam-val {
+      min-width: 32px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Scytale Cipher</h1>
+          <p class="tool-subtitle">Ancient Spartan cylinder transposition. Wrap text around the cylinder and read off columns.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encrypt">Encrypt</button>
+            <button class="option-chip" data-mode="decrypt">Decrypt</button>
+            <button class="option-chip" data-mode="visualize">Visualize</button>
+          </div>
+
+          <div class="diameter-control">
+            <label>Diameter (columns):</label>
+            <input type="range" id="diamSlider" min="2" max="20" value="4">
+            <span class="diam-val" id="diamVal">4</span>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">Plain Text</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="scytaleInput" rows="6" placeholder="Enter text to encrypt..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Cipher Text</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="scytaleOutput" style="min-height:140px;word-break:break-all;"></div>
+            </div>
+          </div>
+
+          <div id="visSection" style="display:none;">
+            <div class="pane-label"><span>Cylinder Grid Visualization</span></div>
+            <div class="cylinder-vis">
+              <div class="cylinder-grid" id="cylGrid"></div>
+            </div>
+            <p style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Green cells = highlighted read path (column by column). Each row wraps once around the cylinder.</p>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter text and set diameter to encrypt.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Scytale Cipher Tool</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — Encrypt to scramble text, Decrypt to unscramble, Visualize to see the grid.</li>
+            <li><strong>Set the diameter</strong> — drag the slider to set how many characters fit per cylinder wrap (2–20).</li>
+            <li><strong>Enter text</strong> — type or paste your message. Spaces and punctuation are included in the grid.</li>
+            <li><strong>Copy or download</strong> the result. Both parties must use the same diameter to communicate.</li>
+          </ol>
+
+          <h2>History of the Scytale</h2>
+          <p>The scytale (from Greek σκυτάλη, meaning "baton" or "staff") is one of the oldest cryptographic devices in recorded history. It was used by the Spartans of ancient Greece as early as the 7th century BCE for military communications. The device consists of a cylindrical rod around which a long narrow strip of leather or parchment is wound in a helix. The sender writes the message along the length of the wound strip, then unwinds it for transport. The resulting strip shows only a scrambled sequence of letters. Only someone possessing a rod of the identical diameter can re-wrap the strip and read the message.</p>
+          <p>The historian Thucydides mentions the scytale in his account of Pausanias of Sparta, and the device is described in detail by Plutarch in his "Life of Lysander." The simplicity and physical elegance of the design made it practical for military couriers, who could carry the leather strip as a belt or strap without arousing suspicion.</p>
+
+          <h3>Mathematical Structure</h3>
+          <p>The scytale is a columnar transposition cipher. If the cylinder has diameter D (D characters per row), the plaintext is laid out in a matrix with D columns. Padding characters (typically X or spaces) fill the last row if the message length is not a multiple of D. Encryption reads the matrix row by row (left to right, top to bottom) — which is just the original text. Decryption reads column by column. The encrypted ciphertext is produced by reading each column from top to bottom, left to right.</p>
+
+          <h3>Security Weaknesses</h3>
+          <p>The scytale has a very small key space. The key is a single integer — the cylinder diameter. For a message of length N, there are at most N-1 possible keys. An attacker can simply try every diameter from 2 to N and look for recognisable words in the output. This brute-force attack takes seconds on any computer. Additionally, frequency analysis still applies: the most common letters in the ciphertext will still be the most common letters of the language.</p>
+
+          <h3>Modern Transposition Ciphers</h3>
+          <p>Modern transposition ciphers address these weaknesses by using larger key spaces and multiple rounds. The Double Columnar Transposition applies two rounds of columnar transposition with different keys. The Rail Fence cipher writes text in a zigzag pattern across multiple rows. These methods are still weak by modern standards — they are vulnerable to anagramming attacks. True modern encryption (AES, ChaCha20) combines substitution and permutation in many rounds with large keys, making brute-force impossible with current hardware. Explore our <a href="/tools/dancing-men-cipher.html">Dancing Men Cipher</a>, <a href="/tools/letters-to-numbers.html">A1Z26 Cipher</a>, and <a href="/tools/baudot-decoder.html">Baudot Code</a> for more historical encoding systems.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a scytale cipher?</button>
+            <div class="faq-answer">A scytale (pronounced SKIT-uh-lee) is one of the oldest known cryptographic devices, used by ancient Sparta around 700 BCE. A strip of leather is wound around a cylinder of a specific diameter. The message is written across the turns. When unwound, the letters appear scrambled. Only a cylinder of the same diameter can decode it.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does the scytale cipher work mathematically?</button>
+            <div class="faq-answer">The scytale is a transposition cipher. If the cylinder has diameter D, the text is arranged in a matrix with D columns. Encryption reads the matrix row by row; the ciphertext is produced by reading column by column. The key is simply the integer D.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is the scytale cipher secure?</button>
+            <div class="faq-answer">No. The scytale has a tiny key space — just an integer. An attacker can brute-force all possible diameters in seconds. It is studied for its historical significance and as an introduction to transposition ciphers, not for real security.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does 'diameter' mean in the scytale cipher?</button>
+            <div class="faq-answer">In this tool, 'diameter' means the number of characters that fit in one full wrap — the number of columns in the transposition matrix. A diameter of 4 means text is arranged 4 characters per row.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Who used the scytale in history?</button>
+            <div class="faq-answer">The scytale was used by the ancient Spartans for secure military communications. It is referenced by the Greek poets Archilochus and Aristophanes, and by the historian Thucydides. Both sender and receiver needed a matching cylinder rod.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/scytale-cipher.html">Scytale Cipher</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+        <a href="/tools/baudot-decoder.html">Baudot Code</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Tools</h4>
+        <a href="/tools/pig-latin.html">Pig Latin</a>
+        <a href="/tools/t9-phone-decoder.html">T9 Decoder</a>
+        <a href="/tools/dna-sequence.html">DNA Sequence</a>
+        <a href="/tools/periodic-table-spell.html">Element Speller</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+
+    var currentMode = 'encrypt';
+    var diameter = 4;
+    var statusBar = document.getElementById('statusBar');
+    var scytaleInput = document.getElementById('scytaleInput');
+    var scytaleOutput = document.getElementById('scytaleOutput');
+    var diamSlider = document.getElementById('diamSlider');
+    var diamVal = document.getElementById('diamVal');
+
+    function encrypt(text, d) {
+      if (!text) return '';
+      var cols = d;
+      var rows = Math.ceil(text.length / cols);
+      var padded = text;
+      while (padded.length < rows * cols) padded += 'X';
+      var result = '';
+      for (var c = 0; c < cols; c++) {
+        for (var r = 0; r < rows; r++) {
+          result += padded[r * cols + c];
+        }
+      }
+      return result;
+    }
+
+    function decrypt(text, d) {
+      if (!text) return '';
+      var cols = d;
+      var len = text.length;
+      var rows = Math.ceil(len / cols);
+      // In scytale decrypt we read columns of the cipher which were rows of plain
+      // Actually decrypt is encrypt with transposed dimensions
+      var rows2 = d;
+      var cols2 = Math.ceil(len / rows2);
+      var padded = text;
+      while (padded.length < rows2 * cols2) padded += 'X';
+      var result = '';
+      for (var c = 0; c < cols2; c++) {
+        for (var r = 0; r < rows2; r++) {
+          result += padded[r * cols2 + c];
+        }
+      }
+      return result.replace(/X+$/, '');
+    }
+
+    function renderGrid(text, d) {
+      var grid = document.getElementById('cylGrid');
+      if (!grid) return;
+      var cols = d;
+      var rows = Math.ceil(text.length / cols);
+      var padded = text;
+      while (padded.length < rows * cols) padded += '·';
+      grid.style.gridTemplateColumns = 'repeat(' + cols + ', 26px)';
+      grid.innerHTML = '';
+      for (var i = 0; i < rows * cols; i++) {
+        var cell = document.createElement('div');
+        cell.className = 'cylinder-cell' + (padded[i] === '·' ? ' pad' : '');
+        cell.textContent = padded[i];
+        grid.appendChild(cell);
+      }
+    }
+
+    function process() {
+      var text = scytaleInput.value;
+      var d = diameter;
+      if (!text.trim()) {
+        scytaleOutput.textContent = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter text and set diameter to ' + (currentMode === 'encrypt' ? 'encrypt' : 'decrypt') + '.';
+        if (currentMode === 'visualize') renderGrid('', d);
+        return;
+      }
+      var result = '';
+      if (currentMode === 'encrypt' || currentMode === 'visualize') {
+        result = encrypt(text, d);
+      } else {
+        result = decrypt(text, d);
+      }
+      if (currentMode === 'visualize') {
+        scytaleOutput.textContent = '';
+        renderGrid(text, d);
+        document.getElementById('visSection').style.display = '';
+      } else {
+        scytaleOutput.textContent = result;
+        document.getElementById('visSection').style.display = 'none';
+      }
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Diameter: ' + d + ' — ' + text.length + ' chars ' + (currentMode==='encrypt'?'encrypted':'decrypted') + ' → ' + result.length + ' chars';
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.mode===mode); });
+      document.getElementById('inputLabel').textContent = mode === 'decrypt' ? 'Cipher Text' : 'Plain Text';
+      document.getElementById('outputLabel').textContent = mode === 'decrypt' ? 'Plain Text' : 'Cipher Text';
+      if (mode === 'visualize') {
+        document.getElementById('visSection').style.display = '';
+        scytaleOutput.style.display = 'none';
+      } else {
+        document.getElementById('visSection').style.display = 'none';
+        scytaleOutput.style.display = '';
+      }
+      process();
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function(c){ c.addEventListener('click', function(){ setMode(c.dataset.mode); }); });
+    scytaleInput.addEventListener('input', DT ? DT.debounce(process,150) : process);
+    diamSlider.addEventListener('input', function(){ diameter = parseInt(this.value); diamVal.textContent = diameter; process(); });
+    document.getElementById('exampleBtn').addEventListener('click', function(){ scytaleInput.value = 'WEAREDISCOVERED FLEE AT ONCE'; process(); });
+    document.getElementById('clearBtn').addEventListener('click', function(){ scytaleInput.value = ''; process(); });
+    document.getElementById('copyBtn').addEventListener('click', function(){
+      var t = scytaleOutput.textContent;
+      if (DT) DT.copyToClipboard(t, this); else navigator.clipboard.writeText(t);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function(){
+      if (DT) DT.downloadText(scytaleOutput.textContent, 'scytale-cipher.txt', 'text/plain');
+    });
+
+    if (DT) DT.trackTool('scytale-cipher');
+    process();
+  })();
+  </script>
+</body>
+</html>

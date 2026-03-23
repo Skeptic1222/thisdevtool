@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>One-Time Pad Cipher — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Generate one-time pad keys and encrypt/decrypt messages online. XOR perfect secrecy cipher. Cryptographically secure random key generation. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/one-time-pad.html">
+  <meta property="og:title" content="One-Time Pad (OTP) Cipher — ThisDevTool">
+  <meta property="og:description" content="Free one-time pad cipher tool. Generate cryptographically secure random keys, encrypt and decrypt with perfect secrecy XOR. 100% in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/one-time-pad.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "One-Time Pad Cipher",
+    "url": "https://thisdevtool.com/tools/one-time-pad.html",
+    "description": "Generate OTP keys and encrypt/decrypt messages using XOR for perfect secrecy. Cryptographically secure random keys.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a one-time pad?",
+        "acceptedAnswer": { "@type": "Answer", "text": "A one-time pad (OTP) is an encryption technique where the plaintext is combined with a random key of the same length using XOR (or modular addition for letters). When used correctly — with a truly random key, used only once, kept secret, and destroyed after use — it provides perfect secrecy, meaning the ciphertext reveals no information about the plaintext regardless of computing power." }
+      },
+      {
+        "@type": "Question",
+        "name": "Why is the one-time pad called 'perfect secrecy'?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Claude Shannon proved in 1949 that the one-time pad achieves perfect secrecy: given any ciphertext, every possible plaintext of that length is equally likely to be the original message. An attacker with unlimited computing power cannot determine which plaintext is correct without the key, because the ciphertext provides zero information about the plaintext." }
+      },
+      {
+        "@type": "Question",
+        "name": "What makes a one-time pad practical or impractical?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The key must be as long as the message, truly random, kept perfectly secret, used exactly once, and destroyed after use. The key distribution problem — securely delivering the key before the message — is the main practical limitation. For two parties to communicate securely, they must first securely exchange a key as large as all future messages combined." }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens if you reuse a one-time pad key?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Reusing a key completely destroys security. If two messages A and B are encrypted with the same key K, then XOR-ing the two ciphertexts gives A XOR B, eliminating K. Since natural language has known statistical patterns, an attacker can recover both messages from A XOR B using a technique called 'crib-dragging.' Soviet agents were famously broken in the VENONA project by reusing OTP keys." }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this tool secure for real use?",
+        "acceptedAnswer": { "@type": "Answer", "text": "This tool uses the browser's cryptographically secure random number generator (window.crypto.getRandomValues) for key generation, which is suitable for cryptographic use. However, the main vulnerability of any OTP implementation is key distribution and management. For real-world sensitive communications, use established tools like Signal or PGP rather than manual OTP implementations." }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .otp-warning { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 6px; padding: 0.6rem 0.75rem; font-size: 0.85rem; margin-bottom: 0.75rem; color: #92400e; }
+    .otp-warning strong { color: #78350f; }
+    .hex-output { font-family: monospace; font-size: 0.8rem; word-break: break-all; }
+    .key-display { font-family: monospace; font-size: 0.8rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 0.6rem; word-break: break-all; max-height: 6rem; overflow-y: auto; }
+    .format-chips { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+    .format-chip { padding: 0.2rem 0.6rem; border: 1px solid var(--border); border-radius: 12px; font-size: 0.8rem; cursor: pointer; background: var(--bg-secondary); color: var(--text); }
+    .format-chip.active { background: #10b981; color: #fff; border-color: #10b981; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/enigma-simulator.html">Enigma</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>One-Time Pad (OTP) Cipher</h1>
+          <p class="tool-subtitle">XOR perfect secrecy — generate cryptographically secure random keys, encrypt and decrypt.</p>
+
+          <div class="otp-warning">
+            <strong>Educational tool.</strong> A real OTP requires: a truly random key used <strong>exactly once</strong>, securely delivered to the recipient, and <strong>destroyed immediately after use</strong>. Reusing the key destroys all security.
+          </div>
+
+          <div class="option-chips">
+            <button class="option-chip active" id="chipEncrypt">Encrypt</button>
+            <button class="option-chip" id="chipDecrypt">Decrypt</button>
+            <button class="option-chip" id="chipGenKey">Generate Key</button>
+          </div>
+
+          <div style="margin-bottom:0.75rem;">
+            <div class="pane-label"><span>Key (hex)</span>
+              <button class="btn btn-sm btn-primary" id="genKeyBtn">Generate New Key</button>
+              <button class="btn btn-sm btn-secondary" id="copyKeyBtn">Copy Key</button>
+            </div>
+            <div class="key-display" id="keyDisplay">No key yet — click Generate New Key or enter one below.</div>
+            <textarea id="keyInput" rows="3" spellcheck="false" style="margin-top:0.4rem;" placeholder="Or paste a hex key here (e.g. a3f2 b7c1 ...)"></textarea>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">Plaintext</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear All</button>
+              </div>
+              <textarea id="inputText" rows="6" spellcheck="false" placeholder="Enter plaintext to encrypt..."></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Ciphertext (hex)</span>
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              </div>
+              <div class="code-output hex-output" id="outputText" style="min-height:130px;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Generate a key or paste one, then enter your plaintext.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the One-Time Pad Tool</h2>
+          <ol>
+            <li><strong>Generate a key</strong> — click "Generate New Key" to create a cryptographically secure random key matched to your message length. Or paste an existing hex key.</li>
+            <li><strong>Enter plaintext</strong> — type or paste your message. The key auto-adjusts to match the message length.</li>
+            <li><strong>Click Encrypt</strong> — the tool XORs each byte of the plaintext with the corresponding key byte, producing the ciphertext as a hex string.</li>
+            <li><strong>Share securely</strong> — both the ciphertext and key must be transmitted securely (separately) to the recipient.</li>
+            <li><strong>Decrypt</strong> — switch to Decrypt mode, paste the ciphertext and key, and recover the plaintext.</li>
+          </ol>
+
+          <h2>About the One-Time Pad</h2>
+          <p>The one-time pad (OTP) is the only known cipher that is theoretically unbreakable — it provides what cryptographers call "perfect secrecy." Invented independently by Frank Miller (1882) and later by Gilbert Vernam (1917) and Joseph Mauborgne, it works by XOR-ing each byte of the plaintext with a corresponding byte from a random key of equal length. The key is used exactly once, then destroyed.</p>
+
+          <h3>Why It Provides Perfect Secrecy</h3>
+          <p>Claude Shannon proved in his landmark 1949 paper "Communication Theory of Secrecy Systems" that the one-time pad achieves perfect secrecy: for any ciphertext and any possible plaintext of that length, there exists exactly one key that would produce that plaintext from that ciphertext. An attacker with unlimited computational power cannot determine the actual plaintext without the key — the ciphertext provides zero information. This is fundamentally different from modern ciphers like AES, which are computationally secure (hard to break given current computing power) rather than information-theoretically secure.</p>
+
+          <h3>The XOR Operation</h3>
+          <p>The XOR (exclusive OR) operation is used because it has ideal cryptographic properties: XOR-ing any value with a random byte produces an equally random result, and XOR-ing the result with the same key byte recovers the original value. This makes XOR self-inverting: encryption and decryption use the exact same operation. For text, each character is converted to its ASCII byte value, XOR-ed with the corresponding key byte, and the result is encoded as hexadecimal. To decrypt, XOR the ciphertext hex bytes with the key bytes.</p>
+
+          <h3>The Key Distribution Problem</h3>
+          <p>The practical limitation of the OTP is key distribution. Before any communication can happen, the sender and receiver must meet in person (or use another secure channel) to exchange a key as large as all the messages they plan to send. During the Cold War, Soviet spies used physical one-time pads — printed books of random numbers that were destroyed page by page after use. The famous VENONA project (1943–1980) broke Soviet OTP-encrypted communications only because Soviet agencies, under the pressure of WWII, reused some key pages — a catastrophic violation of the single-use requirement.</p>
+
+          <h3>Cryptographically Secure Key Generation</h3>
+          <p>This tool uses <code>window.crypto.getRandomValues()</code> to generate keys. This function uses the operating system's cryptographically secure pseudorandom number generator (CSPRNG), which is suitable for cryptographic key generation. It is fundamentally different from <code>Math.random()</code>, which is not cryptographically secure and should never be used for encryption keys. The generated keys are displayed as hexadecimal strings.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a one-time pad?</button>
+            <div class="faq-answer">A one-time pad is an encryption technique where plaintext is XOR-ed with a random key of the same length. When used correctly — truly random key, used only once, kept secret, destroyed after use — it provides perfect secrecy that is mathematically unbreakable.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why is the one-time pad called perfect secrecy?</button>
+            <div class="faq-answer">Claude Shannon proved in 1949 that OTP is perfectly secret: any possible plaintext is equally likely for a given ciphertext. Even with unlimited computing power, an attacker cannot determine the plaintext without the key.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What makes a one-time pad impractical?</button>
+            <div class="faq-answer">The key must be as long as the message, truly random, used only once, and securely exchanged before communication. The key distribution problem — safely delivering a key as large as all future messages — makes OTP impractical for most modern uses.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What happens if you reuse a one-time pad key?</button>
+            <div class="faq-answer">Reusing a key completely destroys security. XOR-ing two ciphertexts encrypted with the same key gives the XOR of the two plaintexts. Using statistical analysis (crib-dragging), both messages can be recovered. The VENONA project broke Soviet communications this way.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is this tool secure for real use?</button>
+            <div class="faq-answer">This tool uses window.crypto.getRandomValues() for cryptographically secure key generation. However, real OTP security depends on secure key distribution and destruction — problems this browser tool cannot solve. Use Signal or PGP for real-world secure communications.</div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Security Tools</h4>
+        <a href="/tools/one-time-pad.html">One-Time Pad</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/enigma-simulator.html">Enigma Simulator</a>
+        <a href="/tools/playfair-cipher.html">Playfair Cipher</a>
+        <a href="/tools/rail-fence-cipher.html">Rail Fence</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var mode = 'encrypt';
+    var currentKey = null; // Uint8Array
+
+    function generateKey(length) {
+      var key = new Uint8Array(length);
+      window.crypto.getRandomValues(key);
+      return key;
+    }
+
+    function toHex(arr) {
+      return Array.from(arr).map(function (b) { return ('0' + b.toString(16)).slice(-2); }).join(' ');
+    }
+
+    function fromHex(str) {
+      var bytes = str.replace(/\s/g, '').match(/.{1,2}/g) || [];
+      return new Uint8Array(bytes.map(function (b) { return parseInt(b, 16) || 0; }));
+    }
+
+    function xorBytes(data, key) {
+      var result = new Uint8Array(data.length);
+      for (var i = 0; i < data.length; i++) {
+        result[i] = data[i] ^ key[i % key.length];
+      }
+      return result;
+    }
+
+    function textToBytes(str) {
+      return new TextEncoder().encode(str);
+    }
+
+    function bytesToText(arr) {
+      try { return new TextDecoder().decode(arr); } catch (e) { return ''; }
+    }
+
+    function getKey() {
+      var raw = document.getElementById('keyInput').value.trim();
+      if (raw) return fromHex(raw);
+      return currentKey;
+    }
+
+    function process() {
+      var input = document.getElementById('inputText').value;
+      if (!input) {
+        document.getElementById('outputText').textContent = '';
+        setStatus('Enter a message and generate a key.', 'info');
+        return;
+      }
+
+      var key = getKey();
+
+      if (mode === 'encrypt') {
+        // Auto-generate or extend key if needed
+        var plainBytes = textToBytes(input);
+        if (!key || key.length < plainBytes.length) {
+          key = generateKey(plainBytes.length);
+          currentKey = key;
+          document.getElementById('keyDisplay').textContent = toHex(key);
+          document.getElementById('keyInput').value = '';
+        }
+        var cipherBytes = xorBytes(plainBytes, key);
+        document.getElementById('outputText').textContent = toHex(cipherBytes);
+        setStatus('OTP — ' + plainBytes.length + ' byte' + (plainBytes.length !== 1 ? 's' : '') + ' — Perfect secrecy', 'valid');
+      } else {
+        // Decrypt: input is hex ciphertext
+        if (!key) { setStatus('Please provide the key to decrypt.', 'invalid'); return; }
+        var cipherHex = input.trim();
+        var cBytes = fromHex(cipherHex);
+        if (key.length < cBytes.length) { setStatus('Key is shorter than ciphertext — cannot decrypt.', 'invalid'); return; }
+        var plainBytesOut = xorBytes(cBytes, key);
+        var decoded = bytesToText(plainBytesOut);
+        document.getElementById('outputText').textContent = decoded;
+        setStatus('Decrypted — ' + cBytes.length + ' byte' + (cBytes.length !== 1 ? 's' : ''), 'valid');
+      }
+      DT && DT.trackTool && DT.trackTool('one-time-pad');
+    }
+
+    function setStatus(msg, type) {
+      var el = document.getElementById('statusBar');
+      el.className = 'status-bar ' + (type || 'info');
+      el.textContent = msg;
+    }
+
+    document.getElementById('genKeyBtn').addEventListener('click', function () {
+      var input = document.getElementById('inputText').value;
+      var len = Math.max(16, input ? new TextEncoder().encode(input).length : 32);
+      currentKey = generateKey(len);
+      document.getElementById('keyDisplay').textContent = toHex(currentKey);
+      document.getElementById('keyInput').value = '';
+      setStatus('New ' + len + '-byte key generated. Keep it secret!', 'valid');
+      process();
+    });
+
+    document.getElementById('copyKeyBtn').addEventListener('click', function () {
+      var key = getKey();
+      if (!key) { setStatus('No key to copy.', 'invalid'); return; }
+      var hex = toHex(key);
+      DT && DT.copyToClipboard ? DT.copyToClipboard(hex, this) : navigator.clipboard.writeText(hex);
+    });
+
+    document.getElementById('chipEncrypt').addEventListener('click', function () {
+      mode = 'encrypt'; setChip(this);
+      document.getElementById('inputLabel').textContent = 'Plaintext';
+      document.getElementById('outputLabel').textContent = 'Ciphertext (hex)';
+      document.getElementById('inputText').placeholder = 'Enter plaintext to encrypt...';
+      process();
+    });
+
+    document.getElementById('chipDecrypt').addEventListener('click', function () {
+      mode = 'decrypt'; setChip(this);
+      document.getElementById('inputLabel').textContent = 'Ciphertext (hex)';
+      document.getElementById('outputLabel').textContent = 'Decrypted Plaintext';
+      document.getElementById('inputText').placeholder = 'Paste hex ciphertext here...';
+      process();
+    });
+
+    document.getElementById('chipGenKey').addEventListener('click', function () {
+      setChip(this);
+      var input = document.getElementById('inputText').value;
+      var len = Math.max(16, input ? new TextEncoder().encode(input).length : 32);
+      currentKey = generateKey(len);
+      document.getElementById('keyDisplay').textContent = toHex(currentKey);
+      document.getElementById('keyInput').value = '';
+      setStatus('New ' + len + '-byte key generated.', 'valid');
+      setChip(document.getElementById('chipEncrypt'));
+    });
+
+    document.getElementById('inputText').addEventListener('input', process);
+    document.getElementById('keyInput').addEventListener('input', process);
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('inputText').value = 'Hello, World! This is a secret message.';
+      mode = 'encrypt'; setChip(document.getElementById('chipEncrypt'));
+      currentKey = null;
+      document.getElementById('keyInput').value = '';
+      process();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('inputText').value = '';
+      document.getElementById('keyInput').value = '';
+      document.getElementById('keyDisplay').textContent = 'No key yet — click Generate New Key or enter one below.';
+      document.getElementById('outputText').textContent = '';
+      currentKey = null;
+      setStatus('Generate a key or paste one, then enter your plaintext.', 'info');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var txt = document.getElementById('outputText').textContent;
+      DT && DT.copyToClipboard ? DT.copyToClipboard(txt, this) : navigator.clipboard.writeText(txt);
+    });
+
+    function setChip(el) {
+      document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      el.classList.add('active');
+    }
+
+    setStatus('Generate a key or paste one, then enter your plaintext.', 'info');
+  })();
+  </script>
+</body>
+</html>

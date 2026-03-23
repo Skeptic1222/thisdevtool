@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Brainfuck Interpreter — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Execute Brainfuck code online. 30,000-cell memory tape, step-by-step debugger, visual memory display. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/brainfuck-interpreter.html">
+  <meta property="og:title" content="Brainfuck Interpreter — ThisDevTool">
+  <meta property="og:description" content="Run Brainfuck programs in your browser. 30,000-cell tape, step mode, visual memory display. No install needed.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/brainfuck-interpreter.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Brainfuck Interpreter",
+    "url": "https://thisdevtool.com/tools/brainfuck-interpreter.html",
+    "description": "Execute Brainfuck programs in your browser with 30,000-cell tape and step-by-step debugger.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Brainfuck?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Brainfuck is an esoteric programming language created by Urban Müller in 1993. It has only 8 commands: +, -, <, >, ., ,, [, and ]. Despite its minimal instruction set, Brainfuck is Turing-complete. It is used primarily for entertainment, educational challenges, and code golf competitions." }
+      },
+      {
+        "@type": "Question",
+        "name": "What do the 8 Brainfuck commands do?",
+        "acceptedAnswer": { "@type": "Answer", "text": "The 8 commands are: > (move data pointer right), < (move pointer left), + (increment cell value), - (decrement cell value), . (output cell as ASCII character), , (read one byte of input), [ (jump forward past matching ] if cell is zero), and ] (jump back to matching [ if cell is nonzero)." }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my Brainfuck program produce no output?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Most commonly the program never executes a dot (.) command, which is the only way to produce output. Also check that your loop brackets [] are balanced. Use Step mode to trace execution one instruction at a time and inspect the memory tape." }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the memory tape size in this interpreter?",
+        "acceptedAnswer": { "@type": "Answer", "text": "This interpreter provides 30,000 cells, each holding an 8-bit unsigned value (0–255). Arithmetic wraps around: incrementing a cell at 255 resets it to 0, and decrementing a cell at 0 wraps to 255. The data pointer starts at cell 0." }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I provide input to a Brainfuck program?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Type your input in the Input field below the code editor. When the program executes a comma (,) command, it reads the next character from your input string as an ASCII byte. If input is exhausted, the cell is set to 0." }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .bf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px) { .bf-grid { grid-template-columns: 1fr; } }
+    .tape-display { font-family: monospace; font-size: 0.75rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; overflow-x: auto; white-space: nowrap; margin-top: 0.75rem; min-height: 2.5rem; }
+    .tape-cell { display: inline-block; width: 2.5rem; text-align: center; padding: 0.15rem 0; margin: 0 1px; border-radius: 3px; border: 1px solid var(--border); }
+    .tape-cell.active { background: #10b981; color: #fff; border-color: #059669; }
+    .output-box { font-family: monospace; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; min-height: 5rem; white-space: pre-wrap; word-break: break-all; font-size: 0.9rem; }
+    .step-counter { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/ascii-art.html">ASCII Art</a>
+        <a href="/tools/unicode-text.html">Unicode Text</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Brainfuck Interpreter</h1>
+          <p class="tool-subtitle">Execute Brainfuck programs in your browser — 30,000-cell tape, step debugger, visual memory display.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" id="chipRun">&#9654; Run</button>
+            <button class="option-chip" id="chipStep">Step</button>
+            <button class="option-chip" id="chipExamples">Examples</button>
+          </div>
+
+          <div class="bf-grid">
+            <div>
+              <div class="pane-label">
+                <span>Brainfuck Code</span>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="bfCode" rows="10" spellcheck="false" placeholder="Enter Brainfuck code here...
+e.g.: ++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."></textarea>
+              <div class="pane-label" style="margin-top:0.75rem;">
+                <span>Input (for , commands)</span>
+              </div>
+              <input type="text" id="bfInput" placeholder="Optional: input string" style="width:100%;font-family:monospace;padding:0.4rem 0.6rem;border:1px solid var(--border);border-radius:6px;background:var(--bg-secondary);color:var(--text);">
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Output</span>
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+              </div>
+              <div class="output-box" id="bfOutput"></div>
+              <div class="step-counter" id="stepCounter"></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="pane-label" style="margin-top:0.75rem;"><span>Memory Tape (first 32 cells)</span></div>
+            <div class="tape-display" id="tapeDisplay">Run a program to see memory.</div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter Brainfuck code and click Run.
+          </div>
+
+          <!-- Examples modal area -->
+          <div id="examplesPanel" style="display:none;margin-top:1rem;">
+            <div class="pane-label"><span>Examples</span><button class="btn btn-sm btn-secondary" id="closeExamples">Close</button></div>
+            <div style="display:flex;flex-direction:column;gap:0.5rem;">
+              <button class="btn btn-sm btn-secondary" data-example="hello">Hello World</button>
+              <button class="btn btn-sm btn-secondary" data-example="add">Add Two Numbers</button>
+              <button class="btn btn-sm btn-secondary" data-example="cat">Cat (echo input)</button>
+              <button class="btn btn-sm btn-secondary" data-example="loop">Count 0-9</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Brainfuck Interpreter</h2>
+          <ol>
+            <li><strong>Enter your code</strong> — paste or type Brainfuck source code into the editor.</li>
+            <li><strong>Provide input</strong> — if your program uses the <code>,</code> command, type input in the Input field.</li>
+            <li><strong>Click Run</strong> — executes the program and shows output and the memory tape state.</li>
+            <li><strong>Use Step mode</strong> — click Step repeatedly to execute one instruction at a time, watching the tape update.</li>
+            <li><strong>Try Examples</strong> — load pre-built programs like Hello World to learn the language.</li>
+          </ol>
+
+          <h2>About Brainfuck</h2>
+          <p>Brainfuck is an esoteric programming language (esolang) invented by Urban Müller in 1993. Despite having only 8 commands, it is Turing-complete, meaning any computable function can be implemented in it. The language operates on an array of memory cells (the "tape") and a data pointer that moves along the tape. Its extreme minimalism makes it a favorite puzzle language for programmers who enjoy solving problems under severe constraints.</p>
+
+          <h3>The 8 Commands</h3>
+          <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:0.95rem;">
+            <thead><tr style="border-bottom:2px solid var(--border)"><th style="padding:0.4rem 0.75rem;text-align:left;">Command</th><th style="padding:0.4rem 0.75rem;text-align:left;">Effect</th></tr></thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.4rem 0.75rem;"><code>&gt;</code></td><td style="padding:0.4rem 0.75rem;">Move the data pointer one cell to the right</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.4rem 0.75rem;"><code>&lt;</code></td><td style="padding:0.4rem 0.75rem;">Move the data pointer one cell to the left</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.4rem 0.75rem;"><code>+</code></td><td style="padding:0.4rem 0.75rem;">Increment the current cell by 1 (wraps 255→0)</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.4rem 0.75rem;"><code>-</code></td><td style="padding:0.4rem 0.75rem;">Decrement the current cell by 1 (wraps 0→255)</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.4rem 0.75rem;"><code>.</code></td><td style="padding:0.4rem 0.75rem;">Output the current cell value as ASCII character</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.4rem 0.75rem;"><code>,</code></td><td style="padding:0.4rem 0.75rem;">Read one byte of input into the current cell</td></tr>
+              <tr style="border-bottom:1px solid var(--border)"><td style="padding:0.4rem 0.75rem;"><code>[</code></td><td style="padding:0.4rem 0.75rem;">Jump past matching <code>]</code> if current cell is 0</td></tr>
+              <tr><td style="padding:0.4rem 0.75rem;"><code>]</code></td><td style="padding:0.4rem 0.75rem;">Jump back to matching <code>[</code> if current cell is nonzero</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Memory Model</h3>
+          <p>This interpreter uses a 30,000-cell tape as specified in the original Brainfuck specification. Each cell holds an unsigned 8-bit value (0 to 255). All cells are initialized to 0 at the start. Arithmetic operations wrap around: incrementing 255 gives 0, decrementing 0 gives 255. The data pointer starts at cell index 0. Moving the pointer left from cell 0 or right from cell 29999 results in an error.</p>
+
+          <h3>Understanding Loops</h3>
+          <p>The <code>[</code> and <code>]</code> commands form loops. When execution reaches <code>[</code>, it checks whether the current cell is zero. If zero, execution jumps to the instruction after the matching <code>]</code>. If nonzero, execution continues normally. When execution reaches <code>]</code>, if the current cell is nonzero, it jumps back to the matching <code>[</code>. This simple mechanism allows implementing all standard loop patterns: while loops, for loops, and conditional branches. A common idiom is <code>[-]</code> which decrements the current cell until it reaches zero — a fast way to zero out a cell.</p>
+
+          <h3>Hello World Explained</h3>
+          <p>The classic Hello World program in Brainfuck is one of the most studied programs in the language. It works by using nested loops to efficiently build up ASCII values. The outer loop runs 8 times, and inner loops multiply values to reach character codes like 72 (H), 101 (e), 108 (l), 111 (o), and so on. Understanding this program teaches the fundamentals of Brainfuck arithmetic: since you can only increment and decrement by 1, multiplication is done via loops.</p>
+
+          <h3>Safety Limits</h3>
+          <p>This interpreter enforces a 10 million instruction limit to prevent infinite loops from freezing your browser. If your program exceeds this limit, execution halts and the current output and memory state are displayed. Step mode is useful for debugging — click Step to execute one instruction at a time, watching how the data pointer moves and cells change value. This makes it easy to understand how complex programs manipulate memory.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is Brainfuck?</button>
+            <div class="faq-answer">Brainfuck is an esoteric programming language created by Urban Müller in 1993. It has only 8 commands: +, -, &lt;, &gt;, ., ,, [, and ]. Despite its minimal instruction set, Brainfuck is Turing-complete and is used primarily for entertainment, educational challenges, and code golf.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What do the 8 Brainfuck commands do?</button>
+            <div class="faq-answer">The 8 commands are: &gt; (move pointer right), &lt; (move pointer left), + (increment cell), - (decrement cell), . (output as ASCII), , (read input), [ (jump forward if cell is 0), and ] (jump back if cell is nonzero).</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why does my program produce no output?</button>
+            <div class="faq-answer">The most common cause is no dot (.) command in the program. Also check that your loop brackets are balanced. Use Step mode to trace execution and find where it gets stuck.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the memory tape size?</button>
+            <div class="faq-answer">This interpreter provides 30,000 cells, each an 8-bit unsigned value (0–255). Arithmetic wraps around at both ends. The data pointer starts at cell 0.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I provide input to a Brainfuck program?</button>
+            <div class="faq-answer">Type your input string in the Input field. When the program executes a comma (,) command, it reads the next character as an ASCII byte. If input is exhausted, the cell is set to 0.</div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Esoteric Tools</h4>
+        <a href="/tools/brainfuck-interpreter.html">Brainfuck</a>
+        <a href="/tools/ascii-art.html">ASCII Art</a>
+        <a href="/tools/unicode-text.html">Unicode Text</a>
+      </div>
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/enigma-simulator.html">Enigma Simulator</a>
+        <a href="/tools/rail-fence-cipher.html">Rail Fence</a>
+        <a href="/tools/one-time-pad.html">One-Time Pad</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+
+    var EXAMPLES = {
+      hello: { code: '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.', input: '' },
+      add: { code: ',>,[<+>-]<.', input: String.fromCharCode(5, 3), label: 'Add two ASCII bytes (input: chr(5)+chr(3) → chr(8) = backspace)' },
+      cat: { code: ',[.,]', input: 'Hello' },
+      loop: { code: '++++++++++[->+<]>.' , input: '' }
+    };
+
+    var tape = null, dp = 0, ip = 0, inputBuf = '', inputIdx = 0, output = '', steps = 0, jumps = {};
+    var stepMode = false, compiled = [];
+    var MAX_STEPS = 10000000;
+
+    var codeEl = document.getElementById('bfCode');
+    var inputEl = document.getElementById('bfInput');
+    var outputEl = document.getElementById('bfOutput');
+    var statusEl = document.getElementById('statusBar');
+    var tapeEl = document.getElementById('tapeDisplay');
+    var stepCountEl = document.getElementById('stepCounter');
+
+    function setStatus(msg, type) {
+      statusEl.className = 'status-bar ' + (type || 'info');
+      statusEl.textContent = msg;
+    }
+
+    function renderTape() {
+      if (!tape) { tapeEl.textContent = 'Run a program to see memory.'; return; }
+      var html = '';
+      var lo = Math.max(0, dp - 4);
+      var hi = Math.min(29999, lo + 31);
+      for (var i = lo; i <= hi; i++) {
+        var cls = i === dp ? 'tape-cell active' : 'tape-cell';
+        html += '<span class="' + cls + '" title="Cell ' + i + '">' + tape[i] + '</span>';
+      }
+      tapeEl.innerHTML = html;
+    }
+
+    function buildJumpTable(code) {
+      var table = {}, stack = [];
+      for (var i = 0; i < code.length; i++) {
+        if (code[i] === '[') { stack.push(i); }
+        else if (code[i] === ']') {
+          if (stack.length === 0) return null;
+          var open = stack.pop();
+          table[open] = i;
+          table[i] = open;
+        }
+      }
+      if (stack.length > 0) return null;
+      return table;
+    }
+
+    function initRun() {
+      var code = codeEl.value;
+      var filtered = code.replace(/[^+\-<>.,[\]]/g, '');
+      compiled = filtered.split('');
+      jumps = buildJumpTable(compiled);
+      if (!jumps) { setStatus('Error: unbalanced brackets [ ]', 'invalid'); return false; }
+      tape = new Uint8Array(30000);
+      dp = 0; ip = 0;
+      inputBuf = inputEl.value;
+      inputIdx = 0;
+      output = '';
+      steps = 0;
+      outputEl.textContent = '';
+      stepCountEl.textContent = '';
+      return true;
+    }
+
+    function execStep() {
+      if (!compiled || ip >= compiled.length) return false;
+      var cmd = compiled[ip];
+      switch (cmd) {
+        case '>': dp++; if (dp >= 30000) { setStatus('Error: pointer moved past tape end', 'invalid'); return false; } break;
+        case '<': dp--; if (dp < 0) { setStatus('Error: pointer moved before tape start', 'invalid'); return false; } break;
+        case '+': tape[dp] = (tape[dp] + 1) & 0xff; break;
+        case '-': tape[dp] = (tape[dp] - 1) & 0xff; break;
+        case '.': output += String.fromCharCode(tape[dp]); outputEl.textContent = output; break;
+        case ',': tape[dp] = inputIdx < inputBuf.length ? inputBuf.charCodeAt(inputIdx++) & 0xff : 0; break;
+        case '[': if (tape[dp] === 0) { ip = jumps[ip]; } break;
+        case ']': if (tape[dp] !== 0) { ip = jumps[ip]; } break;
+      }
+      ip++;
+      steps++;
+      return ip < compiled.length;
+    }
+
+    function runAll() {
+      if (!initRun()) return;
+      var limit = MAX_STEPS;
+      while (ip < compiled.length && steps < limit) {
+        if (!execStep() && ip < compiled.length) break;
+      }
+      if (steps >= limit) {
+        setStatus('Halted: reached 10M instruction limit. Output: ' + (output || '(none)'), 'invalid');
+      } else {
+        setStatus('Executed ' + steps.toLocaleString() + ' instructions — Output: ' + (output || '(none)'), 'valid');
+      }
+      stepCountEl.textContent = steps.toLocaleString() + ' instructions executed';
+      renderTape();
+      DT && DT.trackTool && DT.trackTool('brainfuck-interpreter');
+    }
+
+    function doStep() {
+      if (!tape) {
+        if (!initRun()) return;
+        stepMode = true;
+      }
+      if (ip >= compiled.length) { setStatus('Program finished — ' + steps.toLocaleString() + ' total steps', 'valid'); return; }
+      var cont = execStep();
+      renderTape();
+      stepCountEl.textContent = 'Step ' + steps.toLocaleString() + ' — IP: ' + ip + ' — DP: ' + dp + ' — Cell: ' + (tape ? tape[dp] : 0);
+      if (!cont) {
+        setStatus('Step ' + steps + ' — Output: ' + (output || '(none)'), 'valid');
+      } else {
+        setStatus('Step ' + steps + ' — DP: ' + dp + ' — Cell[' + dp + ']: ' + tape[dp] + ' — next: ' + (compiled[ip] || 'end'), 'info');
+      }
+    }
+
+    document.getElementById('chipRun').addEventListener('click', function () {
+      setActiveChip(this);
+      tape = null;
+      runAll();
+    });
+
+    document.getElementById('chipStep').addEventListener('click', function () {
+      setActiveChip(this);
+      if (!tape) { tape = null; }
+      doStep();
+    });
+
+    document.getElementById('chipExamples').addEventListener('click', function () {
+      var p = document.getElementById('examplesPanel');
+      p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.getElementById('closeExamples').addEventListener('click', function () {
+      document.getElementById('examplesPanel').style.display = 'none';
+    });
+
+    document.querySelectorAll('[data-example]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var ex = EXAMPLES[this.dataset.example];
+        if (ex) {
+          codeEl.value = ex.code;
+          inputEl.value = ex.input || '';
+          document.getElementById('examplesPanel').style.display = 'none';
+          tape = null;
+          setStatus('Example loaded. Click Run to execute.', 'info');
+        }
+      });
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      codeEl.value = '';
+      inputEl.value = '';
+      outputEl.textContent = '';
+      tapeEl.textContent = 'Run a program to see memory.';
+      stepCountEl.textContent = '';
+      tape = null;
+      setStatus('Enter Brainfuck code and click Run.', 'info');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      DT && DT.copyToClipboard ? DT.copyToClipboard(outputEl.textContent, this) : navigator.clipboard.writeText(outputEl.textContent);
+    });
+
+    function setActiveChip(el) {
+      document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      el.classList.add('active');
+    }
+
+    // Reset step state when code changes
+    codeEl.addEventListener('input', function () { tape = null; });
+  })();
+  </script>
+</body>
+</html>

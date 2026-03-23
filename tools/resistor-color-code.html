@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Resistor Color Code Calculator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Decode resistor color bands to resistance values or find the color bands for any resistance value. Supports 4, 5, and 6 band resistors. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/resistor-color-code.html">
+  <meta property="og:title" content="Resistor Color Code Calculator — ThisDevTool">
+  <meta property="og:description" content="4, 5, and 6 band resistor color code decoder and encoder. Click bands to see resistance. Free, runs in browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/resistor-color-code.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Resistor Color Code Calculator",
+    "url": "https://thisdevtool.com/tools/resistor-color-code.html",
+    "description": "Decode resistor color bands to resistance values or find color bands for any value. 4, 5, and 6 band support.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I read a 4-band resistor?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A 4-band resistor has two digit bands, one multiplier band, and one tolerance band. Read the first two bands as digits (e.g., Brown=1, Black=0 → 10), multiply by the multiplier band (e.g., Red=100 → 10×100=1000), and the last band is the tolerance (e.g., Gold=±5%). So Brown-Black-Red-Gold = 1kΩ ±5%."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between 4-band and 5-band resistors?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A 5-band resistor has three digit bands instead of two, providing more precision. The first three bands are digits, the fourth is the multiplier, and the fifth is tolerance. 5-band resistors are used for precision components where 4-band accuracy is insufficient."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the 6th band on a resistor mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A 6-band resistor adds a temperature coefficient (TC) band to the standard 5-band layout. The TC band indicates how much the resistance changes per degree Celsius, measured in parts per million per °C (ppm/°C). Common TC values are 100 ppm/°C (brown) and 50 ppm/°C (red)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What color is gold on a resistor?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Gold on a resistor has two meanings depending on band position. As a multiplier (3rd or 4th band), Gold means ×0.1 (divide by 10). As a tolerance (last band), Gold means ±5%. Gold is never used as a digit band."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I remember resistor color codes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Common mnemonics for the resistor color order (Black Brown Red Orange Yellow Green Blue Violet Grey White = 0-9) include: 'Bad Boys Race Our Young Girls But Violet Generally Wins' or 'BB ROY of Great Britain has Very Good Wife'. Choose whichever is easiest to remember."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .resistor-svg-wrapper {
+      text-align: center;
+      margin: 16px 0;
+      padding: 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .resistor-svg-wrapper svg { max-width: 100%; height: auto; }
+    .band-selectors {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+      justify-content: center;
+    }
+    .band-selector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 70px;
+    }
+    .band-selector label { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+    .band-selector select {
+      width: 100%;
+      padding: 5px 4px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .color-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+    }
+    .result-display {
+      text-align: center;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      margin: 12px 0;
+    }
+    .result-ohm { font-size: 28px; font-weight: 700; color: var(--accent); }
+    .result-tol { font-size: 16px; color: var(--text-secondary); margin-top: 4px; }
+    .result-range { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+    .color-ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+    .color-ref-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--bg-secondary); border-radius: 6px; border: 1px solid var(--border); font-size: 13px; }
+    .color-ref-swatch { width: 20px; height: 20px; border-radius: 4px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.2); }
+    .value-to-bands input[type=number] { padding: 8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-size:15px; width:140px; }
+    .value-to-bands select { padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--bg-secondary); color:var(--text-primary); font-size:14px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/dna-sequence.html">DNA Sequence</a>
+        <a href="/tools/periodic-table-spell.html">Element Speller</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Resistor Color Code Calculator</h1>
+          <p class="tool-subtitle">Decode color bands to resistance values, or find the bands for any resistance. Supports 4, 5, and 6 band resistors.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="bands2value">Bands&rarr;Value</button>
+            <button class="option-chip" data-mode="value2bands">Value&rarr;Bands</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <div id="bands2valueSection">
+            <div class="option-chips" style="margin-top:8px;">
+              <button class="option-chip active" data-bands="4">4-Band</button>
+              <button class="option-chip" data-bands="5">5-Band</button>
+              <button class="option-chip" data-bands="6">6-Band</button>
+            </div>
+
+            <div class="band-selectors" id="bandSelectors"></div>
+
+            <div class="resistor-svg-wrapper">
+              <svg id="resistorSVG" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg" width="320" height="80"></svg>
+            </div>
+
+            <div class="result-display" id="resultDisplay">
+              <div class="result-ohm" id="resultOhm">Select bands above</div>
+              <div class="result-tol" id="resultTol"></div>
+              <div class="result-range" id="resultRange"></div>
+            </div>
+            <button class="btn btn-sm btn-primary" id="copyResultBtn">Copy Result</button>
+            <button class="btn btn-sm btn-secondary" id="exampleBtn" style="margin-left:8px;">Load Example</button>
+          </div>
+
+          <div id="value2bandsSection" style="display:none;">
+            <div class="value-to-bands" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0;">
+              <label style="font-weight:600;">Resistance:</label>
+              <input type="number" id="resistanceInput" placeholder="e.g. 1000" min="0.01" step="any">
+              <select id="unitSelect">
+                <option value="1">Ω (Ohm)</option>
+                <option value="1000" selected>kΩ</option>
+                <option value="1000000">MΩ</option>
+              </select>
+              <select id="bandsNumSelect">
+                <option value="4">4-Band</option>
+                <option value="5" selected>5-Band</option>
+              </select>
+            </div>
+            <div class="resistor-svg-wrapper">
+              <svg id="resistorSVG2" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg" width="320" height="80"></svg>
+            </div>
+            <div class="result-display" id="resultDisplay2">
+              <div class="result-ohm" id="resultOhm2">Enter a value above</div>
+              <div class="result-tol" id="resultTol2"></div>
+            </div>
+          </div>
+
+          <div id="referenceSection" style="display:none;">
+            <div class="color-ref-grid" id="colorRefGrid"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Select band colors above to calculate resistance.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Resistor Color Code Calculator</h2>
+          <ol>
+            <li><strong>Bands&rarr;Value</strong> — choose 4, 5, or 6 band mode, then select a color for each band from the dropdowns. The resistance value and tolerance update instantly.</li>
+            <li><strong>Value&rarr;Bands</strong> — enter a resistance value and select the unit (Ω, kΩ, MΩ). The tool shows the nearest standard E-series value and its color bands.</li>
+            <li><strong>Reference</strong> — a quick reference card for all band colors and their digit, multiplier, tolerance, and TC values.</li>
+          </ol>
+
+          <h2>Understanding Resistor Color Codes</h2>
+          <p>Resistor color codes are a standardized marking system for electronic components. Because resistors are small cylindrical components and numeric labels would be difficult to read from many angles, the IEC 60062 standard defines a system of colored bands painted around the resistor body. Each color corresponds to a digit (0-9), a multiplier power of ten, a tolerance percentage, or a temperature coefficient. Reading the bands from left to right (with the tolerance band on the right, or the gap toward the right) gives the resistance value.</p>
+          <p>The color sequence is: Black=0, Brown=1, Red=2, Orange=3, Yellow=4, Green=5, Blue=6, Violet=7, Grey=8, White=9. This order is universal. The tolerance band uses additional colors: Gold=±5%, Silver=±10%, Brown=±1%, Red=±2%, Green=±0.5%, Blue=±0.25%, Violet=±0.1%.</p>
+
+          <h3>4-Band vs 5-Band vs 6-Band</h3>
+          <p>The most common resistors use 4 bands: two digit bands, one multiplier, and one tolerance band. For example, Brown (1) - Black (0) - Red (×100) - Gold (±5%) = 1000Ω = 1kΩ ±5%. Precision resistors use 5 bands: three digit bands, one multiplier, and one tolerance. This allows representing values like 1.05kΩ that require a third significant digit. 6-band resistors add a temperature coefficient (TC) band, important for precision analog circuits where temperature drift must be known.</p>
+
+          <h3>Reading Direction</h3>
+          <p>The tolerance band (Gold or Silver) is always on the right. For 5-band resistors, the first band is closest to one end. If you can't tell which end to start from, check: Gold and Silver never appear as digit bands, so if you see one of those at the left end, flip the resistor. Some resistors have a larger gap between the multiplier and tolerance bands to indicate the read direction.</p>
+
+          <h3>Mnemonic for Remembering Colors</h3>
+          <p>The classic mnemonic for the digit order (0=Black, 1=Brown, 2=Red, 3=Orange, 4=Yellow, 5=Green, 6=Blue, 7=Violet, 8=Grey, 9=White) is "Bad Boys Race Our Young Girls But Violet Generally Wins." Many variations exist; use whichever resonates with you. After a few hours of reading real resistors, the colors become second nature and the mnemonic becomes unnecessary.</p>
+
+          <h3>Standard Resistor Series (E-Series)</h3>
+          <p>Resistors are manufactured in standardized value series: E12 (12 values per decade), E24 (24 values, ±5% tolerance), E48, E96 (±1%), and E192 (±0.5%). These series are logarithmically spaced so that the possible value range is covered with minimum gaps. If you need an exact resistance not available in a series, use a combination of resistors in series or parallel to achieve the target value.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">How do I read a 4-band resistor?</button>
+            <div class="faq-answer">A 4-band resistor has two digit bands, one multiplier, and one tolerance band. Read first two as digits (e.g., Brown=1, Black=0 → 10), multiply by the multiplier (e.g., Red=100 → 10×100=1000), last band is tolerance (Gold=±5%). So Brown-Black-Red-Gold = 1kΩ ±5%.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between 4-band and 5-band resistors?</button>
+            <div class="faq-answer">A 5-band resistor has three digit bands for more precision, plus a multiplier and tolerance band. 5-band resistors are used for precision components where 4-band accuracy (2 significant figures) is insufficient.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does the 6th band on a resistor mean?</button>
+            <div class="faq-answer">The 6th band is the temperature coefficient (TC), measured in ppm/°C. It indicates how much the resistance changes per degree Celsius. Brown = 100 ppm/°C, Red = 50 ppm/°C.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What color is gold on a resistor?</button>
+            <div class="faq-answer">Gold has two meanings: as a multiplier it means ×0.1 (divide by 10), and as a tolerance band it means ±5%. Gold is never used as a digit band.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I remember resistor color codes?</button>
+            <div class="faq-answer">The classic mnemonic is "Bad Boys Race Our Young Girls But Violet Generally Wins" for Black(0) Brown(1) Red(2) Orange(3) Yellow(4) Green(5) Blue(6) Violet(7) Grey(8) White(9).</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Science Tools</h4>
+        <a href="/tools/resistor-color-code.html">Resistor Calculator</a>
+        <a href="/tools/periodic-table-spell.html">Element Speller</a>
+        <a href="/tools/dna-sequence.html">DNA Sequence</a>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Tools</h4>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <a href="/tools/scytale-cipher.html">Scytale</a>
+        <a href="/tools/baudot-decoder.html">Baudot Code</a>
+        <a href="/tools/pig-latin.html">Pig Latin</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+
+    var COLORS = [
+      { name:'Black',   hex:'#1a1a1a', digit:0, mult:1,          tol:null,   tc:250 },
+      { name:'Brown',   hex:'#8B4513', digit:1, mult:10,         tol:1,      tc:100 },
+      { name:'Red',     hex:'#dc2626', digit:2, mult:100,        tol:2,      tc:50  },
+      { name:'Orange',  hex:'#f97316', digit:3, mult:1000,       tol:null,   tc:15  },
+      { name:'Yellow',  hex:'#eab308', digit:4, mult:10000,      tol:null,   tc:25  },
+      { name:'Green',   hex:'#16a34a', digit:5, mult:100000,     tol:0.5,    tc:20  },
+      { name:'Blue',    hex:'#2563eb', digit:6, mult:1000000,    tol:0.25,   tc:10  },
+      { name:'Violet',  hex:'#7c3aed', digit:7, mult:10000000,   tol:0.1,    tc:5   },
+      { name:'Grey',    hex:'#6b7280', digit:8, mult:100000000,  tol:0.05,   tc:1   },
+      { name:'White',   hex:'#f9fafb', digit:9, mult:1000000000, tol:null,   tc:null},
+      { name:'Gold',    hex:'#d97706', digit:null, mult:0.1,     tol:5,      tc:null},
+      { name:'Silver',  hex:'#9ca3af', digit:null, mult:0.01,    tol:10,     tc:null},
+      { name:'None',    hex:'transparent', digit:null, mult:null, tol:20,   tc:null}
+    ];
+
+    var numBands = 4;
+    var currentMode = 'bands2value';
+    var statusBar = document.getElementById('statusBar');
+
+    function getColor(name) { return COLORS.find(function(c){ return c.name===name; }); }
+
+    function formatOhms(v) {
+      if (v >= 1e9) return (v/1e9).toFixed(v%1e9===0?0:2) + ' GΩ';
+      if (v >= 1e6) return (v/1e6).toFixed(v%1e6===0?0:2) + ' MΩ';
+      if (v >= 1e3) return (v/1e3).toFixed(v%1e3===0?0:2) + ' kΩ';
+      return v.toFixed(v%1===0?0:2) + ' Ω';
+    }
+
+    function getBandSelections() {
+      var sels = document.querySelectorAll('.band-select');
+      return Array.from(sels).map(function(s){ return s.value; });
+    }
+
+    function calcResistance(bands) {
+      var digitBands = numBands - 2;
+      var digits = bands.slice(0, digitBands);
+      var multiplierBand = bands[digitBands];
+      var toleranceBand = bands[digitBands + 1];
+      var tcBand = numBands === 6 ? bands[5] : null;
+
+      var value = 0;
+      digits.forEach(function(name) {
+        var c = getColor(name);
+        if (c && c.digit !== null) value = value * 10 + c.digit;
+      });
+
+      var multiplierColor = getColor(multiplierBand);
+      if (multiplierColor && multiplierColor.mult !== null) value *= multiplierColor.mult;
+
+      var tolColor = getColor(toleranceBand);
+      var tol = tolColor ? tolColor.tol : null;
+
+      var tcColor = tcBand ? getColor(tcBand) : null;
+      var tc = tcColor ? tcColor.tc : null;
+
+      return { value: value, tol: tol, tc: tc };
+    }
+
+    function drawResistorSVG(svgEl, bandColors, count) {
+      var w = 320, h = 80;
+      var bodyX = 60, bodyW = 200, bodyH = 36, bodyY = (h - bodyH)/2;
+      var bandW = 14;
+      var spacing = (bodyW - count * bandW) / (count + 1);
+
+      var svg = '';
+      // Wire leads
+      svg += '<line x1="0" y1="40" x2="60" y2="40" stroke="#888" stroke-width="3"/>';
+      svg += '<line x1="260" y1="40" x2="320" y2="40" stroke="#888" stroke-width="3"/>';
+      // Body
+      svg += '<rect x="'+bodyX+'" y="'+bodyY+'" width="'+bodyW+'" height="'+bodyH+'" rx="10" fill="#d4c078" stroke="#b8a050" stroke-width="2"/>';
+      // Bands
+      for (var i = 0; i < count; i++) {
+        var bx = bodyX + spacing + i * (bandW + spacing);
+        var bc = bandColors[i] || 'None';
+        var colorObj = getColor(bc);
+        var fill = colorObj ? colorObj.hex : '#ccc';
+        svg += '<rect x="'+bx+'" y="'+bodyY+'" width="'+bandW+'" height="'+bodyH+'" fill="'+fill+'" opacity="0.95"/>';
+      }
+      svgEl.innerHTML = svg;
+    }
+
+    function buildBandSelectors() {
+      var container = document.getElementById('bandSelectors');
+      container.innerHTML = '';
+      var labels = numBands === 4
+        ? ['Digit 1','Digit 2','Multiplier','Tolerance']
+        : numBands === 5
+        ? ['Digit 1','Digit 2','Digit 3','Multiplier','Tolerance']
+        : ['Digit 1','Digit 2','Digit 3','Multiplier','Tolerance','Temp. Coeff.'];
+
+      var digitColors = COLORS.filter(function(c){ return c.digit !== null; });
+      var multColors = COLORS.filter(function(c){ return c.mult !== null; });
+      var tolColors = COLORS.filter(function(c){ return c.tol !== null; });
+      var tcColors = COLORS.filter(function(c){ return c.tc !== null; });
+
+      var defaults = numBands === 4
+        ? ['Brown','Black','Red','Gold']
+        : ['Brown','Black','Red','Brown','Brown'];
+
+      labels.forEach(function(label, i) {
+        var div = document.createElement('div');
+        div.className = 'band-selector';
+        var colorList = (label==='Multiplier') ? multColors : (label==='Tolerance') ? tolColors : (label==='Temp. Coeff.') ? tcColors : digitColors;
+        var sel = document.createElement('select');
+        sel.className = 'band-select';
+        colorList.forEach(function(c) {
+          var opt = document.createElement('option');
+          opt.value = c.name;
+          opt.textContent = c.name;
+          if (c.name === defaults[i]) opt.selected = true;
+          sel.appendChild(opt);
+        });
+        sel.addEventListener('change', updateCalculation);
+        div.innerHTML = '<label>'+label+'</label>';
+        div.appendChild(sel);
+        container.appendChild(div);
+      });
+      updateCalculation();
+    }
+
+    function updateCalculation() {
+      var bands = getBandSelections();
+      var result = calcResistance(bands);
+      var ohm = document.getElementById('resultOhm');
+      var tol = document.getElementById('resultTol');
+      var range = document.getElementById('resultRange');
+      var svgEl = document.getElementById('resistorSVG');
+
+      drawResistorSVG(svgEl, bands, numBands);
+
+      if (isNaN(result.value) || result.value === 0) {
+        ohm.textContent = 'Invalid combination';
+        tol.textContent = '';
+        range.textContent = '';
+        statusBar.className='status-bar invalid'; statusBar.textContent='Select valid band colors.';
+      } else {
+        var bandNames = bands.slice(0, numBands-2).map(function(b){ return b; }).join('-') + '-' + bands[numBands-2] + '-' + bands[numBands-1];
+        ohm.textContent = formatOhms(result.value);
+        tol.textContent = result.tol !== null ? '± ' + result.tol + '% tolerance' : '';
+        if (result.tc !== null) tol.textContent += ' · ' + result.tc + ' ppm/°C';
+        if (result.tol !== null) {
+          var lo = result.value * (1 - result.tol/100);
+          var hi = result.value * (1 + result.tol/100);
+          range.textContent = 'Range: ' + formatOhms(lo) + ' – ' + formatOhms(hi);
+        } else range.textContent = '';
+        statusBar.className='status-bar valid';
+        statusBar.textContent = bandNames + ' = ' + formatOhms(result.value) + (result.tol ? ' ±' + result.tol + '%' : '');
+      }
+    }
+
+    function buildRef() {
+      var grid = document.getElementById('colorRefGrid');
+      if (grid.children.length > 0) return;
+      COLORS.filter(function(c){ return c.name!=='None'; }).forEach(function(c) {
+        var item = document.createElement('div');
+        item.className = 'color-ref-item';
+        var parts = ['<div class="color-ref-swatch" style="background:'+c.hex+'"></div>'];
+        parts.push('<div><strong>'+c.name+'</strong>');
+        if (c.digit !== null) parts.push('<br>Digit: '+c.digit);
+        if (c.mult !== null) parts.push('<br>×'+c.mult);
+        if (c.tol !== null) parts.push('<br>±'+c.tol+'%');
+        if (c.tc !== null) parts.push('<br>'+c.tc+' ppm/°C');
+        parts.push('</div>');
+        item.innerHTML = parts.join('');
+        grid.appendChild(item);
+      });
+    }
+
+    function doValue2Bands() {
+      var val = parseFloat(document.getElementById('resistanceInput').value);
+      var unit = parseFloat(document.getElementById('unitSelect').value);
+      var bcount = parseInt(document.getElementById('bandsNumSelect').value);
+      if (!val || isNaN(val)) {
+        document.getElementById('resultOhm2').textContent='Enter a value above';
+        document.getElementById('resultTol2').textContent='';
+        return;
+      }
+      var ohms = val * unit;
+      // Find best 4-band color bands for this value
+      // sig digits
+      var sigDig = bcount - 2;
+      var exp = Math.floor(Math.log10(ohms)) - (sigDig - 1);
+      var mantissa = Math.round(ohms / Math.pow(10, exp));
+      var actualVal = mantissa * Math.pow(10, exp);
+
+      // Find multiplier band
+      var multBand = null;
+      COLORS.filter(function(c){ return c.mult!==null; }).forEach(function(c){
+        if (c.mult === Math.pow(10, exp)) multBand = c;
+      });
+
+      var digits = String(mantissa).split('').slice(0, sigDig);
+      var digitBands = digits.map(function(d){ return COLORS.find(function(c){ return c.digit===parseInt(d); }); });
+
+      var bandArr = digitBands.concat(multBand ? [multBand] : []).concat([COLORS.find(function(c){ return c.tol===5; })]);
+
+      var svgEl = document.getElementById('resistorSVG2');
+      drawResistorSVG(svgEl, bandArr.map(function(c){ return c?c.name:'None'; }), bcount);
+
+      document.getElementById('resultOhm2').textContent = formatOhms(actualVal) + ' ±5%';
+      document.getElementById('resultTol2').textContent = bandArr.map(function(c){ return c?c.name:'?'; }).join(' - ');
+      statusBar.className='status-bar valid';
+      statusBar.textContent = formatOhms(ohms) + ' → ' + bandArr.map(function(c){ return c?c.name:'?'; }).join('-');
+    }
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.option-chip[data-mode]').forEach(function(c){ c.classList.toggle('active', c.dataset.mode===mode); });
+      document.getElementById('bands2valueSection').style.display = mode==='bands2value'?'':'none';
+      document.getElementById('value2bandsSection').style.display = mode==='value2bands'?'':'none';
+      document.getElementById('referenceSection').style.display = mode==='reference'?'':'none';
+      if (mode==='reference') buildRef();
+      if (mode==='bands2value') updateCalculation();
+      if (mode==='value2bands') { statusBar.className='status-bar info'; statusBar.textContent='Enter a resistance value to find the color bands.'; }
+    }
+
+    document.querySelectorAll('.option-chip[data-mode]').forEach(function(c){ c.addEventListener('click', function(){ setMode(c.dataset.mode); }); });
+    document.querySelectorAll('.option-chip[data-bands]').forEach(function(c){ c.addEventListener('click', function(){
+      numBands = parseInt(c.dataset.bands);
+      document.querySelectorAll('.option-chip[data-bands]').forEach(function(x){ x.classList.toggle('active', x.dataset.bands==numBands); });
+      buildBandSelectors();
+    }); });
+    document.getElementById('resistanceInput').addEventListener('input', DT?DT.debounce(doValue2Bands,150):doValue2Bands);
+    document.getElementById('unitSelect').addEventListener('change', doValue2Bands);
+    document.getElementById('bandsNumSelect').addEventListener('change', doValue2Bands);
+    document.getElementById('exampleBtn').addEventListener('click', function(){
+      var sels = document.querySelectorAll('.band-select');
+      var example = ['Brown','Black','Red','Gold'];
+      sels.forEach(function(s, i){ if(example[i]) s.value=example[i]; });
+      updateCalculation();
+    });
+    document.getElementById('copyResultBtn').addEventListener('click', function(){
+      var t = document.getElementById('resultOhm').textContent + ' ' + document.getElementById('resultTol').textContent;
+      if (DT) DT.copyToClipboard(t, this); else navigator.clipboard.writeText(t);
+    });
+
+    if (DT) DT.trackTool('resistor-color-code');
+    buildBandSelectors();
+  })();
+  </script>
+</body>
+</html>

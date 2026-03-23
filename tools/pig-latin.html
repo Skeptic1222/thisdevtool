@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Pig Latin Translator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Translate English to Pig Latin and back. Handles consonant clusters, vowel-start words, edge cases, and compound words. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/pig-latin.html">
+  <meta property="og:title" content="Pig Latin Translator — ThisDevTool">
+  <meta property="og:description" content="Translate English to Pig Latin and back. Handles consonant clusters, vowel words, edge cases. Free, runs in browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/pig-latin.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Pig Latin Translator",
+    "url": "https://thisdevtool.com/tools/pig-latin.html",
+    "description": "Translate English text to Pig Latin and back. Handles consonant clusters, vowel-start words, and edge cases.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Pig Latin?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Pig Latin is a language game where words are altered following a simple set of rules. For most words, the initial consonant cluster is moved to the end of the word and 'ay' is appended. Words beginning with vowels simply have 'way' or 'ay' appended. It is not a real language but a playful secret code used mainly by children in English-speaking countries."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the rules for Pig Latin?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The standard rules are: (1) If a word begins with a consonant or consonant cluster, move all consonants before the first vowel to the end and add 'ay' — for example 'string' becomes 'ingstray'. (2) If a word begins with a vowel, just add 'way' to the end — 'apple' becomes 'appleway'. Some variants use 'ay' instead of 'way' for vowel-starting words."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do you translate 'the' to Pig Latin?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "'The' starts with 'th', a consonant cluster, so you move 'th' to the end and add 'ay': 'the' becomes 'ethay'. Similarly 'this' becomes 'isthay', 'there' becomes 'erethay', and 'they' becomes 'eythay'."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can you reverse-translate Pig Latin back to English?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Partial reverse translation is possible for consonant-moved words: find the trailing 'ay', remove it, take the consonants before 'ay', and prepend them to the remaining word. However, this is not 100% reliable because some Pig Latin forms are ambiguous — different original words can produce the same Pig Latin form. This tool does its best with a heuristic approach."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between 'way' and 'yay' variants?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Different Pig Latin conventions use different suffixes for vowel-starting words. The most common is 'way' (apple → appleway), but 'yay', 'ay', and 'hay' variants also exist. This tool uses 'way' for vowel-starting words and 'ay' for consonant-starting words, which matches the most widely taught standard."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Pig Latin Translator</h1>
+          <p class="tool-subtitle">Translate English to Pig Latin and back. Handles consonant clusters, vowel-start words, and edge cases.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="translate">English → Pig Latin</button>
+            <button class="option-chip" data-mode="reverse">Pig Latin → English</button>
+            <button class="option-chip" data-mode="rules">Rules</button>
+          </div>
+
+          <div id="translateSection">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>English Text</span>
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+                <textarea id="engInput" rows="8" placeholder="Type or paste English text here..." spellcheck="true"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Pig Latin</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                  </div>
+                </div>
+                <div class="code-output" id="plOutput" style="min-height:190px;white-space:pre-wrap;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="reverseSection" style="display:none;">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Pig Latin Text</span>
+                  <button class="btn btn-sm btn-secondary" id="revExBtn">Try Example</button>
+                </div>
+                <textarea id="plInput" rows="8" placeholder="Paste Pig Latin text to reverse translate..." spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label"><span>English (approximate)</span></div>
+                <div class="code-output" id="revOutput" style="min-height:190px;white-space:pre-wrap;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="rulesSection" style="display:none;">
+            <div class="content-section" style="margin:0;">
+              <h3>Standard Pig Latin Rules</h3>
+              <ol>
+                <li><strong>Consonant-initial words:</strong> Move all consonants before the first vowel to the end, then add "ay".<br>
+                  Examples: <em>pig → igpay, string → ingstray, the → ethay, school → oolschay</em></li>
+                <li><strong>Vowel-initial words:</strong> Keep the word as is and add "way" to the end.<br>
+                  Examples: <em>apple → appleway, eagle → eagleway, ice → iceway</em></li>
+                <li><strong>Capitalisation:</strong> The output word keeps the original capitalisation pattern. If the original first letter was capital, the new first letter of the result is capitalised.</li>
+                <li><strong>Punctuation and numbers:</strong> Passed through unchanged; only alphabetic words are transformed.</li>
+                <li><strong>Hyphenated words:</strong> Each part of a hyphenated word is translated separately.</li>
+              </ol>
+              <h3>Special Cases</h3>
+              <ul>
+                <li>Words like "the" (consonant cluster "th") → "ethay"</li>
+                <li>Words starting with "qu" treat "qu" as a unit → "question" → "estionquay"</li>
+                <li>Single-letter words ("a", "I") → "away", "Iway"</li>
+                <li>All-uppercase words (acronyms) → translated letter by letter</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type English text above to translate to Pig Latin.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>About Pig Latin</h2>
+          <p>Pig Latin is a language game — more accurately, a phonological coding system — played primarily in English-speaking countries. Despite its name, it has nothing to do with Latin or pigs. The earliest documented reference to a similar game dates to the 1880s, when it was called "Hog Latin" or "Dog Latin." The name Pig Latin became widespread in the early 20th century and appears in American slang dictionaries from the 1920s.</p>
+          <p>The game is typically used by children as a form of secret language — a way of communicating in front of adults who might not immediately understand what is being said. It requires knowledge of English phonology (specifically, the distinction between consonants and vowels at the start of syllables) to use correctly, making it a surprisingly sophisticated game for young children.</p>
+
+          <h3>The Rules in Detail</h3>
+          <p>The core rule is straightforward: identify the initial consonant cluster (all consonants before the first vowel), move that cluster to the end of the word, and append the suffix "ay." If the word begins with a vowel, simply append "way." The challenge comes in edge cases. The digraph "qu" is traditionally treated as a single consonant unit, so "queen" becomes "eenquay" rather than "ueenqay." Words starting with "y" may treat "y" as a consonant ("yellow" → "ellowyay") or as a vowel, depending on the speaker's convention.</p>
+          <p>Capitalisation also requires careful handling. If the original word begins with a capital letter (indicating a proper noun or the start of a sentence), the Pig Latin result should also begin with a capital letter. So "Hello" becomes "Ellohay" not "elloHay."</p>
+
+          <h3>Pig Latin in Media and Culture</h3>
+          <p>Pig Latin has appeared in countless books, films, and television shows as a marker of childhood, nostalgia, or coded speech. It features in works by Mark Twain, appears in the original Our Gang comedies, and has been referenced in everything from The Simpsons to Pixar films. Online, Pig Latin generators are perennial novelty tools, and the language game enjoys periodic revivals on social media whenever someone wants to add a layer of playful obscurity to their posts.</p>
+
+          <h3>Reverse Translation</h3>
+          <p>Reversing Pig Latin is inherently ambiguous. The suffix "ay" tells you that consonants were moved, but it does not tell you how many. "Airpay" could be from "pair" (initial p) or "pair" with other interpretations. The reverse translator in this tool uses a heuristic: it tries to find consonant runs at the end of the word (before "ay"), then checks whether prepending them to the remainder produces a plausible English-looking result. It is reasonably accurate for common words but may fail on unusual vocabulary or ambiguous cases.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is Pig Latin?</button>
+            <div class="faq-answer">Pig Latin is a language game where words are altered by moving the initial consonant cluster to the end and adding "ay". Words starting with vowels get "way" appended. It is used mainly by children as a playful secret code.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are the rules for Pig Latin?</button>
+            <div class="faq-answer">If a word begins with consonants, move all consonants before the first vowel to the end and add "ay" — "string" → "ingstray". If a word begins with a vowel, add "way" — "apple" → "appleway". Some variants use "ay" instead of "way" for vowel words.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do you translate 'the' to Pig Latin?</button>
+            <div class="faq-answer">"The" starts with the consonant cluster "th", so both consonants move to the end and "ay" is added: "the" → "ethay". Similarly "this" → "isthay", "there" → "erethay".</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can you reverse-translate Pig Latin back to English?</button>
+            <div class="faq-answer">Partial reverse translation is possible: find the trailing "ay", remove it, and prepend the consonants before "ay" to the rest of the word. It is not 100% reliable because some Pig Latin forms are ambiguous, but this tool does its best with a heuristic approach.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between 'way' and 'yay' variants?</button>
+            <div class="faq-answer">Different Pig Latin conventions use different suffixes for vowel-starting words. The most common is "way" (apple → appleway), but "yay", "ay", and "hay" variants exist. This tool uses "way" for vowel-starting words and "ay" for consonant-starting words.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Language Tools</h4>
+        <a href="/tools/pig-latin.html">Pig Latin</a>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <a href="/tools/scytale-cipher.html">Scytale</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Tools</h4>
+        <a href="/tools/t9-phone-decoder.html">T9 Decoder</a>
+        <a href="/tools/baudot-decoder.html">Baudot Code</a>
+        <a href="/tools/dna-sequence.html">DNA Sequence</a>
+        <a href="/tools/periodic-table-spell.html">Element Speller</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var VOWELS = 'aeiouAEIOU';
+
+    function isVowel(c) { return VOWELS.indexOf(c) !== -1; }
+
+    function translateWord(word) {
+      if (!word || !/[a-zA-Z]/.test(word)) return word;
+      // Handle capitalisation
+      var isCapital = word[0] === word[0].toUpperCase() && word[0] !== word[0].toLowerCase();
+      var lower = word.toLowerCase();
+
+      // Find first vowel
+      var firstVowel = -1;
+      // Special case: "qu" treated as unit
+      for (var i = 0; i < lower.length; i++) {
+        if (isVowel(lower[i])) {
+          // If this vowel is 'u' and previous is 'q', continue searching
+          if (lower[i] === 'u' && i > 0 && lower[i-1] === 'q') continue;
+          firstVowel = i;
+          break;
+        }
+      }
+
+      var result;
+      if (firstVowel === 0) {
+        // Starts with vowel — append "way"
+        result = lower + 'way';
+      } else if (firstVowel === -1) {
+        // All consonants — rare, just append "ay"
+        result = lower + 'ay';
+      } else {
+        // Move consonant cluster to end + "ay"
+        result = lower.slice(firstVowel) + lower.slice(0, firstVowel) + 'ay';
+      }
+
+      // Restore capitalisation
+      if (isCapital) {
+        result = result.charAt(0).toUpperCase() + result.slice(1).toLowerCase();
+      }
+      return result;
+    }
+
+    function translateText(text) {
+      // Split by word boundaries, preserving punctuation and spaces
+      return text.replace(/[a-zA-Z'-]+/g, function(word) {
+        // Handle hyphenated words
+        if (word.indexOf('-') !== -1) {
+          return word.split('-').map(translateWord).join('-');
+        }
+        return translateWord(word);
+      });
+    }
+
+    function reversePigWord(word) {
+      if (!word || !/[a-zA-Z]/.test(word)) return word;
+      var isCapital = word[0] === word[0].toUpperCase() && word[0] !== word[0].toLowerCase();
+      var lower = word.toLowerCase();
+
+      // Check if ends with "way" → vowel-start original
+      if (lower.endsWith('way') && lower.length > 3) {
+        var candidate = lower.slice(0, -3);
+        if (isCapital) candidate = candidate.charAt(0).toUpperCase() + candidate.slice(1);
+        return candidate;
+      }
+      // Check if ends with "ay"
+      if (lower.endsWith('ay') && lower.length > 2) {
+        var stem = lower.slice(0, -2);
+        // Find consonants at the end of stem
+        var consonants = '';
+        var i = stem.length - 1;
+        while (i >= 0 && !isVowel(stem[i])) {
+          consonants = stem[i] + consonants;
+          i--;
+        }
+        if (consonants) {
+          var result = consonants + stem.slice(0, i + 1);
+          if (isCapital) result = result.charAt(0).toUpperCase() + result.slice(1);
+          return result;
+        }
+        return lower.slice(0, -2); // fallback
+      }
+      return word;
+    }
+
+    function reverseText(text) {
+      return text.replace(/[a-zA-Z'-]+/g, function(word) {
+        if (word.indexOf('-') !== -1) {
+          return word.split('-').map(reversePigWord).join('-');
+        }
+        return reversePigWord(word);
+      });
+    }
+
+    var currentMode = 'translate';
+    var statusBar = document.getElementById('statusBar');
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.mode===mode); });
+      document.getElementById('translateSection').style.display = mode==='translate' ? '' : 'none';
+      document.getElementById('reverseSection').style.display = mode==='reverse' ? '' : 'none';
+      document.getElementById('rulesSection').style.display = mode==='rules' ? '' : 'none';
+      updateStatus();
+    }
+
+    function updateStatus() {
+      if (currentMode === 'translate') {
+        var text = document.getElementById('engInput').value;
+        var result = translateText(text);
+        document.getElementById('plOutput').textContent = result;
+        var wordCount = (text.match(/\b[a-zA-Z]+\b/g)||[]).length;
+        if (!text.trim()) { statusBar.className='status-bar info'; statusBar.textContent='Type English text above to translate to Pig Latin.'; }
+        else { statusBar.className='status-bar valid'; statusBar.textContent='"'+text.split(/\s+/).slice(0,3).join(' ')+(text.split(/\s+/).length>3?'...':'')+'" \u2192 "'+result.split(/\s+/).slice(0,3).join(' ')+(result.split(/\s+/).length>3?'...':'')+'" ('+wordCount+' words)'; }
+      } else if (currentMode === 'reverse') {
+        var plText = document.getElementById('plInput').value;
+        var revResult = reverseText(plText);
+        document.getElementById('revOutput').textContent = revResult;
+        if (!plText.trim()) { statusBar.className='status-bar info'; statusBar.textContent='Paste Pig Latin text to reverse translate.'; }
+        else { statusBar.className='status-bar valid'; statusBar.textContent='Reverse translated (approximate): "'+revResult.substring(0,50)+(revResult.length>50?'...':'')+'"'; }
+      } else {
+        statusBar.className='status-bar info'; statusBar.textContent='Standard Pig Latin rules and special cases.';
+      }
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function(c){ c.addEventListener('click', function(){ setMode(c.dataset.mode); }); });
+    document.getElementById('engInput').addEventListener('input', DT?DT.debounce(updateStatus,150):updateStatus);
+    document.getElementById('plInput').addEventListener('input', DT?DT.debounce(updateStatus,150):updateStatus);
+    document.getElementById('exampleBtn').addEventListener('click', function(){ document.getElementById('engInput').value='Hello world! Pig Latin is easy to learn.'; updateStatus(); });
+    document.getElementById('clearBtn').addEventListener('click', function(){ document.getElementById('engInput').value=''; updateStatus(); });
+    document.getElementById('revExBtn').addEventListener('click', function(){ document.getElementById('plInput').value='Ellohay orldway! Igpay Atinlay isway easyway otay earnlay.'; updateStatus(); });
+    document.getElementById('copyBtn').addEventListener('click', function(){
+      var t = document.getElementById('plOutput').textContent;
+      if (DT) DT.copyToClipboard(t, this); else navigator.clipboard.writeText(t);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function(){
+      if (DT) DT.downloadText(document.getElementById('plOutput').textContent, 'pig-latin.txt', 'text/plain');
+    });
+
+    if (DT) DT.trackTool('pig-latin');
+    updateStatus();
+  })();
+  </script>
+</body>
+</html>

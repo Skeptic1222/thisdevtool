@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Colored Squares Cipher — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encode text as colored squares using hex color-to-letter mapping. Decode colored blocks back to text. Custom color maps. Visual cipher tool, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/colored-squares-cipher.html">
+  <meta property="og:title" content="Colored Squares Cipher — ThisDevTool">
+  <meta property="og:description" content="Map hex colors to alphabet letters. Encode messages as visual color blocks. Decode color sequences. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/colored-squares-cipher.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Colored Squares Cipher",
+    "url": "https://thisdevtool.com/tools/colored-squares-cipher.html",
+    "description": "Encode and decode text as colored squares using a hex color-to-alphabet mapping. Visual cipher with custom color maps.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does the colored squares cipher work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Each letter A–Z is assigned a specific hex color. When you encode text, each letter becomes a colored square displayed visually. To decode, you provide a sequence of hex color codes separated by spaces or commas, and each color is looked up in the mapping table to find its letter."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use my own custom color mapping?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Switch to the Custom Map tab and provide your own JSON mapping of letters to hex colors. Each letter A–Z must map to a unique 6-digit hex color in #RRGGBB format. Your custom map is applied immediately to encoding and decoding."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I decode a colored squares message?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Switch to Decode mode and enter hex color codes separated by spaces, commas, or newlines. Each code like #FF0000 is matched against the color map to find the corresponding letter. Unknown colors are shown as '?' in the output."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What format is used for the color codes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool uses standard 6-digit hex color codes in #RRGGBB format (e.g., #FF5733). When decoding, you can enter codes with or without the # prefix, and both uppercase and lowercase are accepted."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this cipher secure for secret messages?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The default color map is publicly known, making it trivially breakable. It is intended for fun, puzzles, and educational use. For real security, use AES encryption or another proven cryptographic method."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .color-squares-display {
+      display: flex; flex-wrap: wrap; gap: 6px; padding: 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+      min-height: 64px; margin: 0.75rem 0;
+    }
+    .color-square {
+      width: 44px; height: 44px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.85rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      cursor: default; transition: transform 0.15s;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .color-square:hover { transform: scale(1.15); z-index: 1; }
+    .color-square.space { background: transparent !important; border-color: var(--border); width: 16px; height: 44px; border-radius: 4px; }
+    .color-map-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem; margin-top: 0.75rem;
+    }
+    .color-map-item {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .color-map-swatch {
+      width: 44px; height: 44px; border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.15);
+    }
+    .color-map-item span { font-size: 0.7rem; color: var(--text-muted); text-align: center; word-break: break-all; }
+    .custom-map-area { width: 100%; height: 200px; font-size: 0.8rem; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/clock-code-decoder.html">Clock Code</a>
+        <a href="/tools/five-needle-telegraph.html">5-Needle</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Colored Squares Cipher</h1>
+          <p class="tool-subtitle">Map hex colors to alphabet letters. Encode messages as visual color blocks, decode color sequences back to text.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Encode</button>
+            <button class="option-chip" data-mode="decode">Decode</button>
+            <button class="option-chip" data-mode="custommap">Custom Map</button>
+          </div>
+
+          <div id="encodeSection">
+            <div class="pane-label" style="margin-bottom:0.5rem;">
+              <span>Text to Encode</span>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+            <textarea id="encodeInput" rows="3" placeholder="Type text to encode as colored squares..." spellcheck="false"></textarea>
+            <div class="color-squares-display" id="colorDisplay"></div>
+            <div class="pane-label">
+              <span>Hex Codes</span>
+              <button class="btn btn-sm btn-primary" id="copyHexBtn">Copy Codes</button>
+            </div>
+            <div class="code-output" id="hexOutput" style="min-height:60px;"></div>
+          </div>
+
+          <div id="decodeSection" style="display:none;">
+            <div class="pane-label" style="margin-bottom:0.5rem;">
+              <span>Hex Codes to Decode</span>
+              <button class="btn btn-sm btn-secondary" id="decExampleBtn">Try Example</button>
+            </div>
+            <textarea id="decodeInput" rows="4" placeholder="Enter hex codes separated by spaces: #FF5733 #2ECC71 ..." spellcheck="false"></textarea>
+            <div class="color-squares-display" id="decColorDisplay"></div>
+            <div class="pane-label"><span>Decoded Text</span><button class="btn btn-sm btn-primary" id="copyDecBtn">Copy</button></div>
+            <div class="code-output" id="decodeOutput" style="min-height:60px;"></div>
+          </div>
+
+          <div id="custommapSection" style="display:none;">
+            <p style="margin-bottom:0.5rem;">Edit the JSON map below. Keys are letters A–Z, values are hex colors.</p>
+            <textarea class="custom-map-area" id="customMapInput" spellcheck="false"></textarea>
+            <button class="btn btn-primary" style="margin-top:0.5rem;" id="applyMapBtn">Apply Custom Map</button>
+            <div class="color-map-grid" id="mapPreview"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type text to encode it as colored squares.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How the Colored Squares Cipher Works</h2>
+          <p>This visual cipher replaces each letter of the alphabet with a specific color. The encoded message becomes a row of colored squares — visually appealing and impossible to read without the color key. The default mapping uses a carefully chosen palette of 26 distinct colors, one per letter. Spaces in the original text appear as thin gaps between groups of squares.</p>
+          <p>The cipher is inspired by color-based steganography and visual cryptography. While it is not mathematically secure, it serves as an excellent educational tool for exploring substitution ciphers, and creates beautiful visual outputs that work well for puzzles, games, and art projects.</p>
+
+          <h2>Visual Cryptography and Color Codes</h2>
+          <p>Visual cryptography is a branch of cryptography where secrets are encoded in visual elements — images, patterns, colors, or spatial arrangements — rather than purely mathematical operations. Color-based encoding has been used in various forms throughout history, from colored lanterns used as signals to modern QR codes where color variations encode data. This tool uses hex color codes — the standard 6-digit RGB representation used in web design and digital art — as the encoding alphabet.</p>
+
+          <h3>The Default Color Palette</h3>
+          <p>The 26 colors in the default map are chosen to be visually distinct from one another, making manual decoding possible if you memorize key colors. High-frequency letters like E, T, A get bold distinctive colors. The full palette is visible in the Custom Map tab. The colors are drawn from a rainbow-spread selection that ensures no two adjacent letters look similar.</p>
+
+          <h3>Custom Color Maps</h3>
+          <p>Switch to the Custom Map tab to define your own letter-to-color mapping as a JSON object. This makes the cipher significantly harder to decode without the key — since the color sequence itself gives no information about the underlying mapping. Share only the key with your intended recipient. You can use any valid hex color, including dark and light shades, pastels, and neons.</p>
+
+          <h3>Applications</h3>
+          <ul>
+            <li><strong>Escape rooms</strong> — hide a code word in a grid of colored squares</li>
+            <li><strong>Educational cryptography</strong> — teach substitution ciphers visually</li>
+            <li><strong>Art and design</strong> — generate color sequences from text for design inspiration</li>
+            <li><strong>Puzzle books</strong> — create color-coded puzzle challenges</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">How does the colored squares cipher work?</button>
+            <div class="faq-answer">Each letter A–Z maps to a specific hex color. Encoding converts text to colored squares. Decoding takes a sequence of hex codes and looks them up in the color map to retrieve letters.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I use my own custom color mapping?</button>
+            <div class="faq-answer">Yes. Switch to the Custom Map tab and edit the JSON to assign any hex color to each letter. Your custom map is applied immediately to encoding and decoding.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I decode a colored squares message?</button>
+            <div class="faq-answer">Switch to Decode mode and enter hex codes (like #FF5733) separated by spaces. Each code is matched to its letter using the color map. Unknown colors show as '?'.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What format is used for the color codes?</button>
+            <div class="faq-answer">Standard 6-digit hex #RRGGBB format. The # prefix is optional when decoding. Both uppercase and lowercase are accepted.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is this cipher secure?</button>
+            <div class="faq-answer">No — it is a fun visual tool, not a security tool. Use AES encryption for real secrets.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/colored-squares-cipher.html">Color Cipher</a>
+        <a href="/tools/clock-code-decoder.html">Clock Code</a>
+        <a href="/tools/five-needle-telegraph.html">5-Needle Telegraph</a>
+      </div>
+      <div class="footer-col">
+        <h4>Color Tools</h4>
+        <a href="/tools/color-contrast-checker.html">Contrast Checker</a>
+        <a href="/tools/color-converter.html">Color Converter</a>
+        <a href="/tools/color-palette.html">Palette Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var currentMode = 'encode';
+
+    var DEFAULT_MAP = {
+      A:'#E74C3C',B:'#E67E22',C:'#F1C40F',D:'#2ECC71',E:'#1ABC9C',
+      F:'#3498DB',G:'#9B59B6',H:'#E91E63',I:'#FF5722',J:'#795548',
+      K:'#607D8B',L:'#00BCD4',M:'#4CAF50',N:'#CDDC39',O:'#FF9800',
+      P:'#9C27B0',Q:'#673AB7',R:'#2196F3',S:'#03A9F4',T:'#009688',
+      U:'#8BC34A',V:'#FFC107',W:'#FF5733',X:'#C0392B',Y:'#8E44AD',Z:'#2C3E50'
+    };
+
+    var colorMap = Object.assign({}, DEFAULT_MAP);
+    var decodeMap = {};
+    function rebuildDecode() {
+      decodeMap = {};
+      Object.keys(colorMap).forEach(function (k) { decodeMap[colorMap[k].toUpperCase()] = k; });
+    }
+    rebuildDecode();
+
+    function getTextColor(hex) {
+      var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+      return (0.299*r + 0.587*g + 0.114*b) > 140 ? '#000' : '#fff';
+    }
+
+    function encodeText() {
+      var text = document.getElementById('encodeInput').value.toUpperCase();
+      var display = document.getElementById('colorDisplay');
+      var hexOut = document.getElementById('hexOutput');
+      if (!text) { display.innerHTML = ''; hexOut.textContent = ''; setStatus('info','Type text to encode.'); return; }
+      var html = '', codes = [];
+      text.split('').forEach(function (ch) {
+        if (colorMap[ch]) {
+          var c = colorMap[ch];
+          var tc = getTextColor(c);
+          html += '<div class="color-square" style="background:' + c + ';color:' + tc + ';" title="' + ch + ' = ' + c + '">' + ch + '</div>';
+          codes.push(c);
+        } else if (ch === ' ') {
+          html += '<div class="color-square space"></div>';
+          codes.push('|');
+        } else {
+          html += '<div class="color-square" style="background:var(--surface);border:1px solid var(--border);color:var(--text);">' + ch + '</div>';
+          codes.push(ch);
+        }
+      });
+      display.innerHTML = html;
+      hexOut.textContent = codes.join(' ');
+      var letters = text.replace(/[^A-Z]/g,'').length;
+      setStatus('valid', letters + ' letters encoded — ' + letters + ' colored squares');
+      if (DT && DT.trackTool) DT.trackTool('colored-squares-cipher');
+    }
+
+    function decodeText() {
+      var input = document.getElementById('decodeInput').value;
+      var tokens = input.trim().split(/[\s,]+/).filter(Boolean);
+      var display = document.getElementById('decColorDisplay');
+      var output = document.getElementById('decodeOutput');
+      if (!tokens.length) { display.innerHTML = ''; output.textContent = ''; setStatus('info','Enter hex codes to decode.'); return; }
+      var html = '', result = '';
+      tokens.forEach(function (tok) {
+        if (tok === '|') { html += '<div class="color-square space"></div>'; result += ' '; return; }
+        var hex = '#' + tok.replace(/^#/,'').toUpperCase();
+        var letter = decodeMap[hex];
+        if (letter) {
+          var tc = getTextColor(colorMap[letter]);
+          html += '<div class="color-square" style="background:' + colorMap[letter] + ';color:' + tc + ';" title="' + hex + ' = ' + letter + '">' + letter + '</div>';
+          result += letter;
+        } else {
+          html += '<div class="color-square" style="background:' + hex + ';color:#fff;" title="Unknown: ' + hex + '">?</div>';
+          result += '?';
+        }
+      });
+      display.innerHTML = html;
+      output.textContent = result;
+      setStatus('valid', 'Decoded ' + tokens.length + ' tokens → ' + result.replace(/[^A-Z]/gi,'').length + ' letters');
+    }
+
+    function renderMapPreview() {
+      var grid = document.getElementById('mapPreview');
+      var html = '';
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(function (l) {
+        var c = colorMap[l] || '#ccc';
+        html += '<div class="color-map-item"><div class="color-map-swatch" style="background:' + c + '"></div><span>' + l + '<br>' + c + '</span></div>';
+      });
+      grid.innerHTML = html;
+      document.getElementById('customMapInput').value = JSON.stringify(colorMap, null, 2);
+    }
+
+    function setStatus(type, msg) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + type;
+      bar.textContent = msg;
+    }
+
+    document.getElementById('encodeInput').addEventListener('input', DT && DT.debounce ? DT.debounce(encodeText, 200) : encodeText);
+    document.getElementById('decodeInput').addEventListener('input', DT && DT.debounce ? DT.debounce(decodeText, 200) : decodeText);
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('encodeInput').value = 'HELLO WORLD'; encodeText();
+    });
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('encodeInput').value = ''; encodeText();
+    });
+    document.getElementById('decExampleBtn').addEventListener('click', function () {
+      var codes = 'HELLO'.split('').map(function (l) { return colorMap[l]; }).join(' ');
+      document.getElementById('decodeInput').value = codes; decodeText();
+    });
+    document.getElementById('copyHexBtn').addEventListener('click', function () {
+      if (DT && DT.copyToClipboard) DT.copyToClipboard(document.getElementById('hexOutput').textContent, this);
+    });
+    document.getElementById('copyDecBtn').addEventListener('click', function () {
+      if (DT && DT.copyToClipboard) DT.copyToClipboard(document.getElementById('decodeOutput').textContent, this);
+    });
+    document.getElementById('applyMapBtn').addEventListener('click', function () {
+      try {
+        var parsed = JSON.parse(document.getElementById('customMapInput').value);
+        colorMap = parsed;
+        rebuildDecode();
+        renderMapPreview();
+        setStatus('valid', 'Custom color map applied — ' + Object.keys(colorMap).length + ' letters mapped');
+      } catch (e) {
+        setStatus('invalid', 'Invalid JSON: ' + e.message);
+      }
+    });
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        this.classList.add('active');
+        currentMode = this.dataset.mode;
+        document.getElementById('encodeSection').style.display = currentMode === 'encode' ? 'block' : 'none';
+        document.getElementById('decodeSection').style.display = currentMode === 'decode' ? 'block' : 'none';
+        document.getElementById('custommapSection').style.display = currentMode === 'custommap' ? 'block' : 'none';
+        if (currentMode === 'custommap') renderMapPreview();
+        setStatus('info', currentMode === 'encode' ? 'Type text to encode.' : currentMode === 'decode' ? 'Enter hex codes to decode.' : 'Edit the color map below.');
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

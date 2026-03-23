@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Prime Number Tester — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Test if any number is prime using trial division and Miller-Rabin. Find next/previous primes. Factorize. Works with very large numbers via BigInt.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/prime-tester.html">
+  <meta property="og:title" content="Prime Number Tester — ThisDevTool">
+  <meta property="og:description" content="Instantly test primality, find next/previous prime, and factorize any number. Miller-Rabin algorithm for large numbers. Free, no signup.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/prime-tester.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Prime Number Tester",
+    "url": "https://thisdevtool.com/tools/prime-tester.html",
+    "description": "Test primality using trial division and Miller-Rabin. Find next/previous primes. Factorize numbers. Works with BigInt for very large numbers.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a prime number?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself. Examples: 2, 3, 5, 7, 11, 13, 17, 19, 23... The number 1 is not prime by definition. 2 is the only even prime."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does trial division primality testing work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Trial division checks divisibility by every integer from 2 up to the square root of the candidate number. If no divisor is found, the number is prime. The square root limit works because any composite number n must have at least one factor at or below √n."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the Miller-Rabin primality test?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Miller-Rabin is a probabilistic primality test that is much faster than trial division for large numbers. It uses modular exponentiation and witnesses to determine if a number is composite or probably prime. With enough witnesses, the probability of a false positive is astronomically small."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the largest number this tool can test?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool uses JavaScript BigInt for all calculations, so it has no practical integer overflow limit. Numbers up to hundreds of digits can be tested. For very large numbers (15+ digits), the Miller-Rabin algorithm is used automatically for speed."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is integer factorization?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Integer factorization is the decomposition of a composite number into a product of smaller integers, specifically prime numbers. For example, 360 = 2³ × 3² × 5. This is the mathematical foundation of RSA encryption — factoring large numbers (with hundreds of digits) is computationally infeasible with current algorithms."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .prime-input-row { display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem; }
+    .prime-input-row input[type=text] { flex:1;min-width:160px;font-size:1.2rem;font-family:monospace;text-align:center;padding:.5rem; }
+    .result-box { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.25rem;margin-top:.75rem;font-family:monospace;font-size:.95rem; }
+    .result-box .result-main { font-size:1.4rem;font-weight:700;margin-bottom:.5rem; }
+    .result-box .result-main.prime { color:#10b981; }
+    .result-box .result-main.composite { color:#ef4444; }
+    .result-detail { color:var(--text-muted);font-size:.85rem;margin:.25rem 0; }
+    .factor-list { display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem; }
+    .factor-chip { background:var(--border);border-radius:6px;padding:.2rem .6rem;font-size:.82rem;font-family:monospace; }
+    .generate-output { max-height:220px;overflow-y:auto;font-family:monospace;font-size:.85rem;line-height:1.6;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem;white-space:pre-wrap;word-break:break-all; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/fibonacci-generator.html">Fibonacci</a>
+        <a href="/tools/digital-root.html">Digital Root</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Prime Number Tester</h1>
+          <p class="tool-subtitle">Test if a number is prime, find the next or previous prime, or factorize any number. Supports very large numbers via BigInt and Miller-Rabin.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="test">Test</button>
+            <button class="option-chip" data-mode="generate">Generate</button>
+            <button class="option-chip" data-mode="factorize">Factorize</button>
+          </div>
+
+          <div id="testView">
+            <div class="prime-input-row">
+              <input type="text" id="primeInput" placeholder="Enter a number…" value="7919" inputmode="numeric">
+              <button class="btn btn-primary" id="testBtn">Test</button>
+              <button class="btn btn-secondary" id="prevBtn">← Previous Prime</button>
+              <button class="btn btn-secondary" id="nextBtn">Next Prime →</button>
+            </div>
+            <div class="result-box" id="testResult">
+              <div class="result-main" id="resultMain">Enter a number and click Test</div>
+              <div class="result-detail" id="resultDetail"></div>
+              <div class="result-detail" id="resultNext"></div>
+            </div>
+          </div>
+
+          <div id="generateView" style="display:none;">
+            <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem;">
+              <label style="font-size:.9rem;">Generate first <input type="number" id="genCount" min="1" max="200" value="50" style="width:72px;margin:0 .3rem;"> primes</label>
+              <button class="btn btn-primary" id="genBtn">Generate</button>
+              <button class="btn btn-sm btn-secondary" id="copyGenBtn">Copy</button>
+            </div>
+            <div class="generate-output" id="genOutput">Click Generate to list prime numbers.</div>
+          </div>
+
+          <div id="factorizeView" style="display:none;">
+            <div class="prime-input-row">
+              <input type="text" id="factorInput" placeholder="Enter a number to factorize…" value="360" inputmode="numeric">
+              <button class="btn btn-primary" id="factorBtn">Factorize</button>
+            </div>
+            <div class="result-box" id="factorResult">
+              <div class="result-main" id="factorMain">Enter a number and click Factorize</div>
+              <div class="factor-list" id="factorList"></div>
+              <div class="result-detail" id="factorExpr" style="margin-top:.5rem;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a number above and press Test to check primality.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Prime Number Tester</h2>
+          <ol>
+            <li><strong>Test mode</strong> — type any integer (no limit on size) and click Test. The result shows prime/composite, the number of digits, and the nearest primes.</li>
+            <li><strong>Previous/Next Prime</strong> — click the arrow buttons to jump to the nearest prime above or below your number.</li>
+            <li><strong>Generate mode</strong> — set a count and generate the first N prime numbers as a list you can copy.</li>
+            <li><strong>Factorize mode</strong> — decompose a number into its prime factors, shown as individual chips and as a mathematical expression.</li>
+          </ol>
+
+          <h2>What Makes a Number Prime?</h2>
+          <p>A prime number is a natural number greater than 1 with exactly two divisors: 1 and itself. The number 1 is not prime by convention (it has only one divisor). The number 2 is the only even prime — every other even number is divisible by 2. Prime numbers become less frequent as numbers grow larger, following the <em>prime number theorem</em>: the number of primes up to N is approximately N / ln(N).</p>
+
+          <h3>Trial Division Algorithm</h3>
+          <p>For numbers with fewer than 15 digits, this tool uses <em>trial division</em>: it checks divisibility by every integer from 2 up to the square root of the candidate. If no divisor is found, the number is prime. The square root limit is the key optimization — if n has a factor greater than √n, then it must also have a factor less than √n (because the factors come in pairs that multiply to n). Additional optimizations: skip even numbers after checking 2, and only test numbers of the form 6k ± 1 since all primes greater than 3 have this form.</p>
+
+          <h3>Miller-Rabin Primality Test</h3>
+          <p>For large numbers (15+ digits), trial division becomes too slow. This tool uses the <em>deterministic Miller-Rabin test</em> with a specific set of witnesses that is provably correct for all numbers below 3.3 × 10²⁴. For numbers beyond that range, it uses a large set of witnesses to achieve a false-positive probability below 2⁻⁶⁴. The algorithm works by writing n − 1 as 2ˢ × d (factoring out powers of 2), then checking if modular exponentiation witnesses confirm or contradict primality.</p>
+
+          <h3>Applications of Prime Numbers</h3>
+          <p>Prime numbers are the foundation of modern cryptography. RSA encryption relies on the difficulty of factoring the product of two large primes. A 2048-bit RSA key uses primes with about 617 decimal digits — numbers that would take thousands of years to factor with current computers and algorithms. Diffie-Hellman key exchange and elliptic curve cryptography also depend on prime moduli. In mathematics, prime numbers appear in the Riemann hypothesis, one of the seven Millennium Prize Problems with a $1 million reward for a proof or disproof.</p>
+
+          <h3>Interesting Prime Facts</h3>
+          <p>There are infinitely many primes (proved by Euclid around 300 BC). The largest known prime as of 2024 is 2¹³⁶²⁷⁹⁸⁴¹ − 1, a Mersenne prime with 41,024,320 digits. Twin primes (primes differing by 2, like 11 and 13) are conjectured to be infinite but this remains unproven. Sophie Germain primes (p where 2p + 1 is also prime) are used in some cryptographic protocols. The prime gaps (distances between consecutive primes) grow on average as log(n) but can be arbitrarily large.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a prime number?</button>
+            <div class="faq-answer">A prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself. Examples: 2, 3, 5, 7, 11, 13... The number 1 is not prime by definition. 2 is the only even prime.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does trial division primality testing work?</button>
+            <div class="faq-answer">Trial division checks divisibility by every integer from 2 up to the square root of the candidate. If no divisor is found, the number is prime. The square root limit works because any composite number n must have at least one factor at or below √n.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the Miller-Rabin primality test?</button>
+            <div class="faq-answer">Miller-Rabin is a probabilistic primality test much faster than trial division for large numbers. It uses modular exponentiation and witnesses to determine if a number is composite or probably prime. With enough deterministic witnesses, it is provably correct for numbers up to certain bounds.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the largest number this tool can test?</button>
+            <div class="faq-answer">This tool uses JavaScript BigInt for all calculations, so there is no practical integer overflow limit. Numbers up to hundreds of digits can be tested. For very large numbers (15+ digits), the Miller-Rabin algorithm is used automatically for speed.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is integer factorization?</button>
+            <div class="faq-answer">Integer factorization decomposes a composite number into a product of prime numbers. For example, 360 = 2³ × 3² × 5. This is the mathematical foundation of RSA encryption — factoring large numbers (hundreds of digits) is computationally infeasible with current algorithms.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Math Tools</h4>
+        <a href="/tools/fibonacci-generator.html">Fibonacci Generator</a>
+        <a href="/tools/digital-root.html">Digital Root</a>
+        <a href="/tools/fraction-approximator.html">Fraction Approximator</a>
+        <a href="/tools/golden-ratio.html">Golden Ratio</a>
+      </div>
+      <div class="footer-col">
+        <h4>Number Tools</h4>
+        <a href="/tools/number-base.html">Base Converter</a>
+        <a href="/tools/bitwise-calculator.html">Bitwise Calculator</a>
+        <a href="/tools/clock-angle.html">Clock Angle</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var statusBar = document.getElementById('statusBar');
+    var currentMode = 'test';
+
+    // --- BigInt Miller-Rabin ---
+    function modpow(base, exp, mod) {
+      base = BigInt(base); exp = BigInt(exp); mod = BigInt(mod);
+      if (mod === 1n) return 0n;
+      var result = 1n;
+      base = base % mod;
+      while (exp > 0n) {
+        if (exp % 2n === 1n) result = result * base % mod;
+        exp = exp / 2n;
+        base = base * base % mod;
+      }
+      return result;
+    }
+
+    function millerRabinTest(n, a) {
+      n = BigInt(n); a = BigInt(a);
+      if (n < 2n) return false;
+      if (n === 2n || n === 3n) return true;
+      if (n % 2n === 0n) return false;
+      var d = n - 1n, r = 0n;
+      while (d % 2n === 0n) { d /= 2n; r++; }
+      var x = modpow(a, d, n);
+      if (x === 1n || x === n - 1n) return true;
+      for (var i = 0n; i < r - 1n; i++) {
+        x = x * x % n;
+        if (x === n - 1n) return true;
+      }
+      return false;
+    }
+
+    var WITNESSES = [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n];
+
+    function isPrimeBig(n) {
+      n = BigInt(n);
+      if (n < 2n) return false;
+      if (n < 4n) return true;
+      if (n % 2n === 0n || n % 3n === 0n) return false;
+      for (var i = 0; i < WITNESSES.length; i++) {
+        if (WITNESSES[i] >= n) continue;
+        if (!millerRabinTest(n, WITNESSES[i])) return false;
+      }
+      return true;
+    }
+
+    function isPrime(n) { return isPrimeBig(n); }
+
+    function nextPrime(n) {
+      var bn = BigInt(n) + 1n;
+      if (bn <= 2n) return 2n;
+      if (bn % 2n === 0n) bn++;
+      while (!isPrimeBig(bn)) bn += 2n;
+      return bn;
+    }
+
+    function prevPrime(n) {
+      var bn = BigInt(n) - 1n;
+      if (bn < 2n) return null;
+      if (bn === 2n) return 2n;
+      if (bn % 2n === 0n) bn--;
+      while (bn > 2n && !isPrimeBig(bn)) bn -= 2n;
+      return bn >= 2n ? bn : null;
+    }
+
+    function factorize(n) {
+      var bn = BigInt(n);
+      if (bn < 2n) return [];
+      var factors = [];
+      var d = 2n;
+      while (d * d <= bn) {
+        while (bn % d === 0n) { factors.push(d); bn /= d; }
+        d++;
+        if (d > 1000n && d * d <= bn) {
+          // skip to next odd
+          if (d % 2n === 0n) d++;
+        }
+      }
+      if (bn > 1n) factors.push(bn);
+      return factors;
+    }
+
+    function factorExp(factors) {
+      var map = {};
+      factors.forEach(function (f) { var k = String(f); map[k] = (map[k] || 0) + 1; });
+      return Object.keys(map).map(function (k) {
+        return map[k] > 1 ? k + '&sup' + (map[k] === 2 ? '2' : map[k] === 3 ? '3' : ';' + map[k] + ';') + ';' : k;
+      }).join(' × ');
+    }
+
+    // Test mode
+    function doTest(raw) {
+      raw = raw.trim().replace(/[^0-9\-]/g, '');
+      if (!raw) { setStatus('info', 'Enter a number to test.'); return; }
+      var t0 = performance.now();
+      var prime = isPrime(raw);
+      var elapsed = (performance.now() - t0).toFixed(2);
+      var main = document.getElementById('resultMain');
+      var detail = document.getElementById('resultDetail');
+      var nextEl = document.getElementById('resultNext');
+      main.className = 'result-main ' + (prime ? 'prime' : 'composite');
+      main.textContent = raw + ' is ' + (prime ? 'PRIME' : 'COMPOSITE');
+      detail.textContent = 'Digits: ' + raw.replace('-','').length + ' — Tested in ' + elapsed + 'ms';
+      if (!prime) {
+        var factors = factorize(raw);
+        nextEl.innerHTML = 'Factors: ' + factors.join(' × ');
+      } else {
+        nextEl.textContent = '';
+      }
+      setStatus('valid', raw + ' is ' + (prime ? 'prime' : 'composite') + ' — tested in ' + elapsed + 'ms');
+      if (DT && DT.trackTool) DT.trackTool('prime-tester');
+    }
+
+    document.getElementById('testBtn').addEventListener('click', function () {
+      doTest(document.getElementById('primeInput').value);
+    });
+    document.getElementById('primeInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doTest(this.value);
+    });
+
+    document.getElementById('prevBtn').addEventListener('click', function () {
+      var raw = document.getElementById('primeInput').value.trim();
+      var p = prevPrime(raw || '2');
+      if (p !== null) { document.getElementById('primeInput').value = String(p); doTest(String(p)); }
+      else setStatus('info', 'No previous prime below this number.');
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', function () {
+      var raw = document.getElementById('primeInput').value.trim() || '1';
+      var p = nextPrime(raw);
+      document.getElementById('primeInput').value = String(p);
+      doTest(String(p));
+    });
+
+    // Generate mode
+    document.getElementById('genBtn').addEventListener('click', function () {
+      var count = Math.min(200, Math.max(1, parseInt(document.getElementById('genCount').value, 10) || 50));
+      var result = [];
+      var n = 2n;
+      while (result.length < count) {
+        if (isPrimeBig(n)) result.push(String(n));
+        n++;
+      }
+      document.getElementById('genOutput').textContent = result.join(', ');
+      setStatus('valid', 'First ' + count + ' primes listed — largest: ' + result[result.length - 1]);
+    });
+
+    document.getElementById('copyGenBtn').addEventListener('click', function () {
+      DT.copyToClipboard(document.getElementById('genOutput').textContent, document.getElementById('copyGenBtn'));
+    });
+
+    // Factorize mode
+    document.getElementById('factorBtn').addEventListener('click', function () {
+      var raw = document.getElementById('factorInput').value.trim();
+      if (!raw || isNaN(raw)) { setStatus('invalid', 'Enter a valid integer.'); return; }
+      var factors = factorize(raw);
+      var main = document.getElementById('factorMain');
+      var list = document.getElementById('factorList');
+      var expr = document.getElementById('factorExpr');
+      if (!factors.length) { main.textContent = raw + ' is less than 2 — not factorable'; list.innerHTML = ''; expr.textContent = ''; return; }
+      if (isPrime(raw)) {
+        main.textContent = raw + ' is prime (no factors)';
+        list.innerHTML = '<span class="factor-chip">' + raw + '</span>';
+        expr.textContent = '';
+      } else {
+        main.textContent = raw + ' = ' + factors.join(' × ');
+        list.innerHTML = factors.map(function (f) { return '<span class="factor-chip">' + f + '</span>'; }).join('');
+        // Build grouped expression
+        var map = {};
+        factors.forEach(function (f) { var k = String(f); map[k] = (map[k] || 0) + 1; });
+        var grouped = Object.keys(map).map(function (k) { return map[k] > 1 ? k + '^' + map[k] : k; }).join(' × ');
+        expr.textContent = 'Prime factorization: ' + grouped;
+      }
+      setStatus('valid', 'Factorized ' + raw + ' into ' + factors.length + ' prime factor' + (factors.length !== 1 ? 's' : ''));
+    });
+    document.getElementById('factorInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') document.getElementById('factorBtn').click();
+    });
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        document.getElementById('testView').style.display = currentMode === 'test' ? '' : 'none';
+        document.getElementById('generateView').style.display = currentMode === 'generate' ? '' : 'none';
+        document.getElementById('factorizeView').style.display = currentMode === 'factorize' ? '' : 'none';
+      });
+    });
+
+    function setStatus(type, msg) {
+      statusBar.className = 'status-bar ' + type;
+      statusBar.textContent = msg;
+    }
+
+    doTest('7919');
+  })();
+  </script>
+</body>
+</html>

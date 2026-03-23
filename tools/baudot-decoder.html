@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Baudot / ITA2 Code Decoder — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Encode and decode text using Baudot ITA2 5-bit teletype code. Visualize as paper tape holes. Letters/Figures shift support. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/baudot-decoder.html">
+  <meta property="og:title" content="Baudot ITA2 Decoder — ThisDevTool">
+  <meta property="og:description" content="Encode and decode Baudot ITA2 5-bit teletype code with paper tape visualization. Free, runs in browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/baudot-decoder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Baudot ITA2 Decoder",
+    "url": "https://thisdevtool.com/tools/baudot-decoder.html",
+    "description": "Encode and decode text using Baudot ITA2 5-bit teletype code with paper tape visualization.",
+    "applicationCategory": "UtilityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Baudot code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Baudot code is a 5-bit character encoding invented by Émile Baudot in 1870 for use with telegraph and teletype machines. Each character is represented by a combination of 5 binary bits (punched holes in paper tape). ITA2 (International Telegraph Alphabet No. 2) is the standardized version still used in some telex systems."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are Letters and Figures shifts in Baudot?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Since 5 bits only allows 32 codes, Baudot uses two shift states. 'Letters' mode maps codes to uppercase letters (A-Z). 'Figures' mode maps the same codes to numbers and punctuation. Special codes (11111 for Letters shift, 11011 for Figures shift) switch between modes, similar to Shift Lock on a keyboard."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is ITA2?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ITA2 (International Telegraph Alphabet No. 2) is the international standardization of Baudot code adopted by the CCITT in 1932. It defines specific bit patterns for each character and is the basis for most teletype and telex communications that followed. This tool implements ITA2."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does paper tape look like for Baudot code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Paper tape for Baudot/ITA2 has 5 data channels (columns) plus a smaller sprocket hole column for timing. A punched hole represents a 1 bit; unpunched represents 0. Each row of 5 holes encodes one character. You read tape left to right (or top to bottom depending on orientation) to decode the message."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Baudot still used today?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ITA2 Baudot code is still used in some legacy telex networks, TTY (text telephone) devices for the deaf and hard-of-hearing (TDD/TTY), and some amateur radio RTTY (Radio Teletype) modes. Modern systems have largely replaced it with ASCII, Unicode, or digital modes, but ITA2 remains in operation in niche contexts."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .tape-container {
+      overflow-x: auto;
+      background: #f5deb3;
+      border-radius: 8px;
+      padding: 12px 8px;
+      margin: 10px 0;
+    }
+    .dark .tape-container { background: #5a4a2a; }
+    .tape-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+    }
+    .tape-label {
+      font-size: 9px;
+      font-family: monospace;
+      width: 22px;
+      text-align: right;
+      color: #666;
+      padding-right: 4px;
+      flex-shrink: 0;
+    }
+    .tape-char {
+      display: flex;
+      gap: 2px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .tape-hole {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1.5px solid #8B7355;
+      background: #f5deb3;
+    }
+    .dark .tape-hole { background: #5a4a2a; border-color: #c0a060; }
+    .tape-hole.punched { background: #1a1a1a; border-color: #333; }
+    .dark .tape-hole.punched { background: #000; border-color: #000; }
+    .tape-sprocket { width: 8px; height: 8px; background: #8B7355; border-radius: 50%; }
+    .dark .tape-sprocket { background: #c0a060; }
+    .tape-charval {
+      font-size: 9px;
+      font-family: monospace;
+      width: 14px;
+      text-align: center;
+      color: #555;
+    }
+    .baudot-bits { font-family: monospace; font-size: 13px; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .ref-table th { background: var(--accent); color: #fff; padding: 5px 8px; }
+    .ref-table td { padding: 4px 8px; border-bottom: 1px solid var(--border); font-family: monospace; }
+    .ref-table tr:nth-child(even) td { background: var(--bg-secondary); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <a href="/tools/scytale-cipher.html">Scytale</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Baudot / ITA2 Code Decoder</h1>
+          <p class="tool-subtitle">Encode and decode text using 5-bit ITA2 teletype code. Visualize as punched paper tape.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Encode</button>
+            <button class="option-chip" data-mode="decode">Decode</button>
+            <button class="option-chip" data-mode="tape">Tape View</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <div id="encodeSection">
+            <div class="pane-label">
+              <span>Plain Text</span>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            </div>
+            <textarea id="encodeInput" rows="4" placeholder="Type text to encode to Baudot ITA2..." spellcheck="false"></textarea>
+            <div class="pane-label" style="margin-top:10px;">
+              <span>ITA2 Bit Codes (5-bit groups)</span>
+              <button class="btn btn-sm btn-primary" id="copyEncBtn">Copy</button>
+            </div>
+            <div class="code-output baudot-bits" id="encodeOutput" style="min-height:60px;word-break:break-all;"></div>
+          </div>
+
+          <div id="decodeSection" style="display:none;">
+            <div class="pane-label">
+              <span>ITA2 Bit Codes (5-bit groups separated by spaces)</span>
+              <button class="btn btn-sm btn-secondary" id="decExBtn">Try Example</button>
+            </div>
+            <textarea id="decodeInput" rows="4" placeholder="e.g. 00100 00001 01101 ..." spellcheck="false"></textarea>
+            <div class="pane-label" style="margin-top:10px;"><span>Decoded Text</span></div>
+            <div class="code-output" id="decodeOutput" style="min-height:60px;"></div>
+          </div>
+
+          <div id="tapeSection" style="display:none;">
+            <div class="pane-label">
+              <span>Text to Render as Tape</span>
+              <button class="btn btn-sm btn-secondary" id="tapeExBtn">Try Example</button>
+            </div>
+            <input type="text" id="tapeInput" placeholder="e.g. HELLO" maxlength="40" style="width:100%;padding:8px;font-size:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-primary);margin-bottom:10px;">
+            <div class="tape-container" id="tapeContainer">
+              <div style="font-size:12px;color:#888;padding:4px;">Enter text above to render paper tape.</div>
+            </div>
+          </div>
+
+          <div id="referenceSection" style="display:none;">
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">ITA2 character table. Bit order: Q1 Q2 Q3 Q4 Q5 (LSB first).</p>
+            <div style="overflow-x:auto;">
+              <table class="ref-table">
+                <thead><tr><th>Code (binary)</th><th>Decimal</th><th>Letters</th><th>Figures</th></tr></thead>
+                <tbody id="refBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter text to encode to Baudot ITA2.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Baudot Decoder</h2>
+          <ol>
+            <li><strong>Encode</strong> — type plain text. The tool outputs 5-bit ITA2 code groups, including Letters/Figures shift codes where needed.</li>
+            <li><strong>Decode</strong> — paste 5-bit groups (space-separated) to recover the original text.</li>
+            <li><strong>Tape View</strong> — type text and see it rendered as a punched paper tape diagram with holes representing 1-bits.</li>
+            <li><strong>Reference</strong> — full ITA2 character table with binary codes, decimal values, and both Letters and Figures interpretations.</li>
+          </ol>
+
+          <h2>About Baudot and ITA2</h2>
+          <p>Baudot code was invented by French telegraph engineer Émile Baudot in 1870 and patented in 1888. It was the first character encoding to use a fixed-length binary scheme — every character encoded in exactly 5 bits, producing 32 possible codes. This was a major advance over Morse code, which uses variable-length sequences of dots and dashes and requires a skilled human operator to send and receive at speed. Baudot's encoding allowed a relatively unskilled operator to type text on a piano-style keyboard while an automatic mechanism handled the electrical transmission.</p>
+          <p>The ITU standardized an improved version as ITA2 (International Telegraph Alphabet No. 2) in 1932. ITA2 remained the standard for international telex systems for most of the 20th century and is still in use in TTY/TDD devices for deaf communication, amateur radio RTTY, and some legacy maritime communication systems.</p>
+
+          <h3>The Letters/Figures Shift System</h3>
+          <p>With only 32 code points, ITA2 cannot represent all letters and figures simultaneously. Instead, it uses two shift states. In Letters mode (the default), codes map to uppercase letters A-Z and a few control characters. In Figures mode, the same codes map to digits 0-9 and punctuation marks. Two special codes — Letters Shift (11111, decimal 31) and Figures Shift (11011, decimal 27) — switch between modes. A receiver must track the current shift state to interpret each incoming character correctly.</p>
+
+          <h3>Paper Tape Format</h3>
+          <p>ITA2 messages were traditionally stored and transmitted on punched paper tape. The tape has five data channels (representing the five bits) arranged across its width, plus a smaller sprocket hole column used for driving the tape mechanism. A punched hole represents a 1 bit; an unpunched position is 0. Reading the tape one row at a time from left to right gives the sequence of characters. The narrow, low-tech paper tape was robust and archival — many original teletype tapes from the mid-20th century survive in archives today.</p>
+
+          <h3>Legacy and Modern Use</h3>
+          <p>ITA2 was largely replaced by ASCII in computer systems from the 1960s onward. ASCII uses 7 bits and eliminates the need for shift states by providing separate codes for both letters and figures. However, ITA2 survives in TTY/TDD telecommunications devices mandated by accessibility law in many countries, in amateur radio Radioteletype (RTTY) transmissions, and in some older naval and maritime signaling systems. Explore our <a href="/tools/dancing-men-cipher.html">Dancing Men Cipher</a> and <a href="/tools/scytale-cipher.html">Scytale Cipher</a> for more historical encoding tools.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is Baudot code?</button>
+            <div class="faq-answer">Baudot code is a 5-bit character encoding invented by Émile Baudot in 1870 for telegraph and teletype machines. Each character is represented by 5 binary bits. ITA2 is the international standardized version, still used in some TTY and telex systems.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are Letters and Figures shifts in Baudot?</button>
+            <div class="faq-answer">Since 5 bits only allows 32 codes, Baudot uses two shift states. Letters mode maps codes to uppercase letters. Figures mode maps the same codes to numbers and punctuation. Special codes switch between modes, similar to Shift Lock on a keyboard.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is ITA2?</button>
+            <div class="faq-answer">ITA2 (International Telegraph Alphabet No. 2) is the international standardization of Baudot code adopted by the CCITT in 1932. It defines specific bit patterns for each character and is the basis for most teletype and telex communications that followed.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does paper tape look like for Baudot code?</button>
+            <div class="faq-answer">Baudot paper tape has 5 data channels plus a sprocket hole. A punched hole is a 1 bit; unpunched is 0. Each row of 5 holes encodes one character. You read tape row by row to decode the message.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is Baudot still used today?</button>
+            <div class="faq-answer">Yes. ITA2 Baudot code is still used in TTY/TDD devices for the deaf and hard-of-hearing, amateur radio RTTY (Radio Teletype), and some legacy telex networks. Modern systems mostly use ASCII or Unicode, but ITA2 remains active in niche contexts.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Cipher Tools</h4>
+        <a href="/tools/baudot-decoder.html">Baudot Code</a>
+        <a href="/tools/dancing-men-cipher.html">Dancing Men</a>
+        <a href="/tools/scytale-cipher.html">Scytale Cipher</a>
+        <a href="/tools/letters-to-numbers.html">A1Z26</a>
+      </div>
+      <div class="footer-col">
+        <h4>More Tools</h4>
+        <a href="/tools/dna-sequence.html">DNA Sequence</a>
+        <a href="/tools/t9-phone-decoder.html">T9 Decoder</a>
+        <a href="/tools/pig-latin.html">Pig Latin</a>
+        <a href="/tools/periodic-table-spell.html">Element Speller</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+
+    // ITA2 table: index = code value (0-31), [letters, figures]
+    var ITA2 = [
+      ['\0','\0'],  // 0 - NUL
+      ['E','3'],    // 1
+      ['\n','\n'],  // 2 - LF
+      ['A','-'],    // 3
+      [' ',' '],    // 4 - SP
+      ['S','\''],   // 5 (apostrophe in figures)
+      ['I','8'],    // 6
+      ['U','7'],    // 7
+      ['\r','\r'],  // 8 - CR
+      ['D','\x05'], // 9 - WRU
+      ['R','4'],    // 10
+      ['J','\x07'], // 11 - BEL
+      ['N',','],    // 12
+      ['F','!'],    // 13
+      ['C',':'],    // 14
+      ['K','('],    // 15
+      ['T','5'],    // 16
+      ['Z','"'],    // 17
+      ['L',')'],    // 18
+      ['W','2'],    // 19
+      ['H','#'],    // 20
+      ['Y','6'],    // 21
+      ['P','0'],    // 22
+      ['Q','1'],    // 23
+      ['O','9'],    // 24
+      ['B','?'],    // 25
+      ['G','&'],    // 26
+      ['\x1B','\x1B'], // 27 - FIGS shift
+      ['M','.'],    // 28
+      ['X','/'],    // 29
+      ['V',';'],    // 30
+      ['\x1F','\x1F']  // 31 - LTRS shift
+    ];
+
+    var LTRS_CODE = 31; // 11111
+    var FIGS_CODE = 27; // 11011
+
+    // Build reverse lookup
+    var CHAR_TO_CODE = {};
+    ITA2.forEach(function(pair, code) {
+      var l = pair[0], f = pair[1];
+      if (l && l !== '\0' && l !== '\r' && l !== '\n' && l.charCodeAt(0) > 31) {
+        if (!CHAR_TO_CODE[l]) CHAR_TO_CODE[l] = { code: code, shift: 'letters' };
+      }
+      if (f && f !== '\0' && f !== '\r' && f !== '\n' && f.charCodeAt(0) > 31) {
+        if (!CHAR_TO_CODE[f]) CHAR_TO_CODE[f] = { code: code, shift: 'figures' };
+      }
+    });
+    // Space
+    CHAR_TO_CODE[' '] = { code: 4, shift: 'letters' };
+
+    function toBin5(n) {
+      return n.toString(2).padStart(5, '0');
+    }
+
+    function encodeText(text) {
+      var upper = text.toUpperCase();
+      var codes = [];
+      var curShift = 'letters';
+      // Start with LTRS
+      codes.push({ code: LTRS_CODE, label: 'LTRS' });
+      var figShifts = 0;
+      for (var i = 0; i < upper.length; i++) {
+        var ch = upper[i];
+        if (ch === '\n') { codes.push({ code: 2, label: 'LF' }); continue; }
+        if (ch === '\r') { codes.push({ code: 8, label: 'CR' }); continue; }
+        var info = CHAR_TO_CODE[ch];
+        if (!info) continue;
+        if (info.shift !== curShift) {
+          if (info.shift === 'figures') { codes.push({ code: FIGS_CODE, label: 'FIGS' }); figShifts++; }
+          else codes.push({ code: LTRS_CODE, label: 'LTRS' });
+          curShift = info.shift;
+        }
+        codes.push({ code: info.code, label: ch });
+      }
+      return codes;
+    }
+
+    function decodeBits(bitStr) {
+      var groups = bitStr.trim().split(/\s+/);
+      var result = '';
+      var curShift = 'letters';
+      var figShifts = 0;
+      groups.forEach(function(g) {
+        if (!/^[01]{5}$/.test(g)) return;
+        var code = parseInt(g, 2);
+        if (code === LTRS_CODE) { curShift = 'letters'; return; }
+        if (code === FIGS_CODE) { curShift = 'figures'; figShifts++; return; }
+        var pair = ITA2[code];
+        if (!pair) return;
+        var ch = pair[curShift === 'letters' ? 0 : 1];
+        if (ch && ch.charCodeAt(0) >= 32) result += ch;
+        else if (ch === '\n') result += '\n';
+        else if (ch === ' ') result += ' ';
+      });
+      return result;
+    }
+
+    function renderTape(text) {
+      var container = document.getElementById('tapeContainer');
+      if (!text.trim()) { container.innerHTML = '<div style="font-size:12px;color:#888;padding:4px;">Enter text above to render paper tape.</div>'; return; }
+      var codes = encodeText(text);
+      var html = '';
+      // Column headers
+      html += '<div class="tape-row"><div class="tape-label">Char</div>';
+      codes.forEach(function(c){
+        html += '<div class="tape-charval" style="width:12px;">' + (c.label.length===1&&c.label.charCodeAt(0)>=32?c.label:c.label.substring(0,2)) + '</div>';
+      });
+      html += '</div>';
+      // 5 bit rows
+      for (var bit = 4; bit >= 0; bit--) {
+        html += '<div class="tape-row"><div class="tape-label">b' + (bit+1) + '</div>';
+        codes.forEach(function(c){
+          var b = (c.code >> bit) & 1;
+          html += '<div class="tape-hole' + (b?'  punched':'') + '"></div>';
+        });
+        html += '</div>';
+      }
+      container.innerHTML = html;
+    }
+
+    function buildRef() {
+      var tbody = document.getElementById('refBody');
+      if (!tbody || tbody.children.length > 0) return;
+      ITA2.forEach(function(pair, code) {
+        var tr = document.createElement('tr');
+        var l = pair[0], f = pair[1];
+        var ls = l && l.charCodeAt(0) >= 32 ? l : (l==='\n'?'LF':l==='\r'?'CR':l==='\0'?'NUL':(code===31?'LTRS':code===27?'FIGS':'CTRL'));
+        var fs = f && f.charCodeAt(0) >= 32 ? f : (f==='\n'?'LF':f==='\r'?'CR':f==='\0'?'NUL':(code===31?'LTRS':code===27?'FIGS':'CTRL'));
+        tr.innerHTML = '<td>' + toBin5(code) + '</td><td>' + code + '</td><td>' + ls + '</td><td>' + fs + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    var currentMode = 'encode';
+    var statusBar = document.getElementById('statusBar');
+
+    function setMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.mode===mode); });
+      ['encode','decode','tape','reference'].forEach(function(m){ document.getElementById(m+'Section').style.display = mode===m?'':'none'; });
+      if (mode==='reference') buildRef();
+      updateStatus();
+    }
+
+    function updateStatus() {
+      if (currentMode === 'encode') {
+        var text = document.getElementById('encodeInput').value;
+        var codes = encodeText(text);
+        var bits = codes.map(function(c){ return toBin5(c.code); }).join(' ');
+        document.getElementById('encodeOutput').textContent = bits;
+        var dataChars = codes.filter(function(c){ return c.label.length===1&&c.label.charCodeAt(0)>=32; }).length;
+        var shifts = codes.filter(function(c){ return c.label==='LTRS'||c.label==='FIGS'; }).length;
+        if (!text) { statusBar.className='status-bar info'; statusBar.textContent='Enter text to encode to Baudot ITA2.'; }
+        else { statusBar.className='status-bar valid'; statusBar.textContent='Encoded '+dataChars+' characters — '+codes.length+' codes total, '+(shifts-1)+' figure shift'+(shifts-1!==1?'s':''); }
+      } else if (currentMode === 'decode') {
+        var seq = document.getElementById('decodeInput').value;
+        var dec = decodeBits(seq);
+        document.getElementById('decodeOutput').textContent = dec;
+        if (!seq.trim()) { statusBar.className='status-bar info'; statusBar.textContent='Enter 5-bit codes to decode.'; }
+        else { statusBar.className='status-bar valid'; statusBar.textContent='Decoded '+dec.length+' characters: "'+dec.substring(0,40)+(dec.length>40?'...':'\"'); }
+      } else if (currentMode === 'tape') {
+        renderTape(document.getElementById('tapeInput').value);
+        statusBar.className='status-bar info'; statusBar.textContent='Tape view — punched holes = 1 bits, unpunched = 0 bits.';
+      } else {
+        statusBar.className='status-bar info'; statusBar.textContent='ITA2 character table — 32 codes, Letters and Figures shift states.';
+      }
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function(c){ c.addEventListener('click', function(){ setMode(c.dataset.mode); }); });
+    document.getElementById('encodeInput').addEventListener('input', DT?DT.debounce(updateStatus,150):updateStatus);
+    document.getElementById('decodeInput').addEventListener('input', DT?DT.debounce(updateStatus,150):updateStatus);
+    document.getElementById('tapeInput').addEventListener('input', DT?DT.debounce(updateStatus,150):updateStatus);
+    document.getElementById('exampleBtn').addEventListener('click', function(){ document.getElementById('encodeInput').value='HELLO WORLD'; updateStatus(); });
+    document.getElementById('decExBtn').addEventListener('click', function(){ document.getElementById('decodeInput').value='11111 00100 00001 01101 01101 11000'; updateStatus(); });
+    document.getElementById('tapeExBtn').addEventListener('click', function(){ document.getElementById('tapeInput').value='SOS'; updateStatus(); });
+    document.getElementById('copyEncBtn').addEventListener('click', function(){
+      var t = document.getElementById('encodeOutput').textContent;
+      if (DT) DT.copyToClipboard(t, this); else navigator.clipboard.writeText(t);
+    });
+
+    if (DT) DT.trackTool('baudot-decoder');
+    updateStatus();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Clock Angle Calculator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Calculate the angle between clock hands for any time. Shows acute and reflex angles. Visual clock face. Quiz mode. Free online math tool.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/clock-angle.html">
+  <meta property="og:title" content="Clock Angle Calculator — ThisDevTool">
+  <meta property="og:description" content="Find the angle between clock hands at any time. Visual clock face, quiz mode, and step-by-step explanation. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/clock-angle.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Clock Angle Calculator",
+    "url": "https://thisdevtool.com/tools/clock-angle.html",
+    "description": "Calculate the angle between clock hands for any time with visual clock face and step-by-step explanation.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do you calculate the angle between clock hands?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The minute hand moves 360°/60 = 6° per minute. The hour hand moves 360°/720 = 0.5° per minute (completing a full revolution in 12 hours = 720 minutes). At time H:M, the minute hand is at 6M degrees from 12. The hour hand is at 30H + 0.5M degrees from 12. The angle between them is |hour_angle - minute_angle|, and the smaller of this value and 360° minus this value gives the acute angle."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "At what times are the clock hands exactly aligned (0 degrees)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The hour and minute hands overlap approximately every 65.45 minutes: at 12:00, ~1:05, ~2:10, ~3:16, ~4:21, ~5:27, ~6:32, ~7:38, ~8:43, ~9:49, ~10:54. Exactly 11 overlaps in 12 hours. The exact formula gives non-integer minutes, which is why none except 12:00 land on a whole minute."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When are the clock hands at exactly 90 degrees?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The hands are at 90° approximately at 12:16, 12:49, 1:21, 1:54, 2:27, 3:00, 3:32, 4:05, 4:38, 5:10, 5:43, 6:16, 6:49, 7:21, 7:54, 8:27, 9:00, 9:32, 10:05, 10:38, 11:10, 11:43. There are 44 times per 12-hour period when hands are at 90°."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the reflex angle?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The reflex angle is the larger angle between the two hands, measured going the 'long way around.' If the acute angle between the hands is θ, the reflex angle is 360° − θ. Together, the acute and reflex angles always sum to 360°."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does the clock angle problem appear in coding interviews?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The clock angle problem is a classic interview question because it tests a candidate's ability to model a physical system mathematically, handle edge cases (like converting 12 o'clock to 0 for calculation), apply modular arithmetic, and communicate reasoning clearly. It also involves no complex data structures — it's pure math reasoning."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .clock-container { display:flex;flex-wrap:wrap;gap:1.5rem;align-items:flex-start; }
+    .clock-face { position:relative;width:200px;height:200px;flex-shrink:0; }
+    .clock-face canvas { width:200px;height:200px; }
+    .time-inputs { display:flex;gap:.5rem;align-items:center;margin-bottom:.75rem; }
+    .time-inputs input[type=number] { width:64px;font-size:1.3rem;font-family:monospace;text-align:center;padding:.35rem; }
+    .time-inputs .sep { font-size:1.5rem;font-weight:700;color:var(--text-muted); }
+    .angle-box { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;min-width:200px; }
+    .angle-value { font-size:1.8rem;font-weight:700;font-family:monospace;color:#10b981; }
+    .angle-label { font-size:.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em; }
+    .step-detail { font-family:monospace;font-size:.82rem;color:var(--text-muted);margin:.2rem 0; }
+    .quiz-question { background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.75rem; }
+    .quiz-question p { font-weight:600;font-size:1rem;margin-bottom:.5rem; }
+    .quiz-options { display:flex;gap:.5rem;flex-wrap:wrap; }
+    .quiz-opt { padding:.4rem .9rem;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-family:monospace;font-size:.9rem;background:var(--bg);transition:background .15s; }
+    .quiz-opt:hover { background:var(--border); }
+    .quiz-opt.correct { background:#10b981;color:#fff;border-color:#10b981; }
+    .quiz-opt.wrong { background:#ef4444;color:#fff;border-color:#ef4444; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/prime-tester.html">Prime Tester</a>
+        <a href="/tools/golden-ratio.html">Golden Ratio</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Clock Angle Calculator</h1>
+          <p class="tool-subtitle">Calculate the angle between clock hands at any time. Shows both the acute and reflex angles with a visual clock face and step-by-step math.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="calculate">Calculate</button>
+            <button class="option-chip" data-mode="quiz">Quiz</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <div id="calculateView">
+            <div class="time-inputs">
+              <input type="number" id="hourInput" min="1" max="12" value="3" placeholder="H">
+              <span class="sep">:</span>
+              <input type="number" id="minInput" min="0" max="59" value="15" placeholder="MM">
+              <button class="btn btn-primary" id="calcAngleBtn">Calculate</button>
+              <button class="btn btn-sm btn-secondary" id="nowBtn">Now</button>
+            </div>
+
+            <div class="clock-container">
+              <div class="clock-face">
+                <canvas id="clockCanvas" width="400" height="400"></canvas>
+              </div>
+              <div>
+                <div class="angle-box" style="margin-bottom:.75rem;">
+                  <div class="angle-label">Acute angle</div>
+                  <div class="angle-value" id="acuteAngle">—</div>
+                </div>
+                <div class="angle-box">
+                  <div class="angle-label">Reflex angle</div>
+                  <div class="angle-value" id="reflexAngle">—</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:.75rem;" id="stepContainer">
+              <p style="font-weight:600;font-size:.875rem;margin-bottom:.25rem;">Step-by-step:</p>
+              <div class="step-detail" id="step1"></div>
+              <div class="step-detail" id="step2"></div>
+              <div class="step-detail" id="step3"></div>
+              <div class="step-detail" id="step4"></div>
+            </div>
+          </div>
+
+          <div id="quizView" style="display:none;">
+            <div class="quiz-question" id="quizCard">
+              <p id="quizPrompt">What is the angle between the clock hands at 3:00?</p>
+              <div class="quiz-options" id="quizOpts"></div>
+              <p id="quizFeedback" style="margin-top:.5rem;font-size:.875rem;"></p>
+            </div>
+            <button class="btn btn-primary" id="nextQuizBtn">Next Question →</button>
+            <p id="quizScore" style="margin-top:.5rem;color:var(--text-muted);font-size:.875rem;"></p>
+          </div>
+
+          <div id="referenceView" style="display:none;">
+            <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:.5rem;">Notable times and their angles:</p>
+            <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:.85rem;">
+              <thead><tr><th style="text-align:left;padding:.3rem .5rem;border-bottom:2px solid var(--border);">Time</th><th style="text-align:left;padding:.3rem .5rem;border-bottom:2px solid var(--border);">Acute Angle</th><th style="text-align:left;padding:.3rem .5rem;border-bottom:2px solid var(--border);">Notes</th></tr></thead>
+              <tbody id="refTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a time and click Calculate to find the clock hand angle.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Calculate Clock Hand Angles</h2>
+          <ol>
+            <li><strong>Enter a time</strong> — type hours (1-12) and minutes (0-59). Click "Now" to use the current time.</li>
+            <li><strong>Click Calculate</strong> — the visual clock and both angles (acute and reflex) update instantly with step-by-step math.</li>
+            <li><strong>Quiz mode</strong> — test your mental calculation skills with random times. Compete to get the closest answer.</li>
+            <li><strong>Reference table</strong> — see notable times like 12:00, 3:00, 6:00 with their exact angles.</li>
+          </ol>
+
+          <h2>The Math Behind Clock Angles</h2>
+          <p>The clock angle problem requires understanding the angular velocities of both hands. The <strong>minute hand</strong> makes a complete revolution every 60 minutes, so it moves at 360/60 = <strong>6 degrees per minute</strong>. The <strong>hour hand</strong> makes a complete revolution every 12 hours (720 minutes), so it moves at 360/720 = <strong>0.5 degrees per minute</strong>. The hour hand is never stationary — it continuously advances as minutes pass.</p>
+
+          <h3>The Formula</h3>
+          <p>For time H:M where H is the hour (1-12, treating 12 as 0) and M is the minute:</p>
+          <ul>
+            <li>Minute hand position = 6 × M degrees from 12</li>
+            <li>Hour hand position = 30 × H + 0.5 × M degrees from 12</li>
+            <li>Angle between hands = |hour_position − minute_position|</li>
+            <li>Acute angle = min(angle, 360 − angle)</li>
+          </ul>
+          <p>At 3:15: minute = 6×15 = 90°, hour = 30×3 + 0.5×15 = 97.5°. Difference = 7.5°.</p>
+
+          <h3>Interview Problem</h3>
+          <p>This problem is a classic software engineering interview question. Interviewers use it to test whether candidates can translate a real-world problem into a mathematical model, handle edge cases (12 o'clock treated as 0 to avoid a 360° anomaly), and reason about modular arithmetic. The key insight is recognizing that the hour hand is not frozen at integer positions — it continuously moves as minutes advance.</p>
+
+          <h3>Interesting Properties</h3>
+          <p>The hands overlap (0° apart) exactly 11 times in each 12-hour period. This surprises many people who expect 12 overlaps. The issue: the hands don't overlap at 1:05, 2:10, etc. — those times are slightly off. Exact overlaps occur every 720/11 ≈ 65.45 minutes. The hands are diametrically opposite (180° apart) also exactly 11 times in 12 hours. The hands form a right angle (90°) 44 times in 12 hours.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">How do you calculate the angle between clock hands?</button>
+            <div class="faq-answer">The minute hand moves 6° per minute. The hour hand moves 0.5° per minute. At H:M, minute angle = 6M, hour angle = 30H + 0.5M. The acute angle is the smaller of |hour − minute| and 360 − |hour − minute|.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">At what times are the clock hands exactly aligned (0 degrees)?</button>
+            <div class="faq-answer">The hands overlap 11 times in 12 hours, approximately every 65.45 minutes: at 12:00 exactly, and approximately 1:05:27, 2:10:54, 3:16:21... Only 12:00 lands on a whole minute.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">When are the clock hands at exactly 90 degrees?</button>
+            <div class="faq-answer">The hands are at 90° exactly 44 times in a 12-hour period. Notable exact times include 3:00 (90°) and 9:00 (90°). Most 90° times fall at non-integer minutes.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the reflex angle?</button>
+            <div class="faq-answer">The reflex angle is the larger angle between the two hands — going the long way around. If the acute angle is θ, the reflex angle is 360° − θ. They always sum to 360°.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does the clock angle problem appear in coding interviews?</button>
+            <div class="faq-answer">It tests mathematical modeling, edge case handling (12 → 0), modular arithmetic, and clear communication. It requires no complex data structures — pure reasoning about angular velocity and relative positions.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Math Tools</h4>
+        <a href="/tools/prime-tester.html">Prime Number Tester</a>
+        <a href="/tools/fibonacci-generator.html">Fibonacci Generator</a>
+        <a href="/tools/digital-root.html">Digital Root</a>
+        <a href="/tools/golden-ratio.html">Golden Ratio</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/fraction-approximator.html">Fraction Approximator</a>
+        <a href="/tools/number-base.html">Base Converter</a>
+        <a href="/tools/bitwise-calculator.html">Bitwise Calculator</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var statusBar = document.getElementById('statusBar');
+    var currentMode = 'calculate';
+    var canvas = document.getElementById('clockCanvas');
+    var ctx = canvas.getContext('2d');
+    var quizScore = 0, quizTotal = 0, quizAnswer = 0;
+
+    function calcAngle(h, m) {
+      h = h % 12;
+      var minuteAngle = 6 * m;
+      var hourAngle = 30 * h + 0.5 * m;
+      var diff = Math.abs(hourAngle - minuteAngle);
+      var acute = Math.min(diff, 360 - diff);
+      return { acute: Math.round(acute * 10) / 10, reflex: Math.round((360 - acute) * 10) / 10, minuteAngle: minuteAngle, hourAngle: hourAngle };
+    }
+
+    function drawClock(h, m, minuteAngle, hourAngle) {
+      var W = 400, cx = W/2, cy = W/2, R = 180;
+      ctx.clearRect(0, 0, W, W);
+
+      // Face
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2*Math.PI);
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg') || '#fff';
+      ctx.fill();
+      ctx.strokeStyle = '#10b981'; ctx.lineWidth = 4; ctx.stroke();
+
+      // Hour marks
+      for (var i = 0; i < 12; i++) {
+        var a = (i * 30 - 90) * Math.PI / 180;
+        ctx.beginPath();
+        ctx.moveTo(cx + (R - 18) * Math.cos(a), cy + (R - 18) * Math.sin(a));
+        ctx.lineTo(cx + R * Math.cos(a), cy + R * Math.sin(a));
+        ctx.strokeStyle = '#6b7280'; ctx.lineWidth = 2; ctx.stroke();
+      }
+
+      // Numbers
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text') || '#111';
+      ctx.font = 'bold 22px system-ui';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (var j = 1; j <= 12; j++) {
+        var ang = (j * 30 - 90) * Math.PI / 180;
+        ctx.fillText(j, cx + (R - 36) * Math.cos(ang), cy + (R - 36) * Math.sin(ang));
+      }
+
+      // Hour hand
+      var hRad = (hourAngle - 90) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + R * 0.55 * Math.cos(hRad), cy + R * 0.55 * Math.sin(hRad));
+      ctx.strokeStyle = '#10b981'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
+
+      // Minute hand
+      var mRad = (minuteAngle - 90) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + R * 0.8 * Math.cos(mRad), cy + R * 0.8 * Math.sin(mRad));
+      ctx.strokeStyle = '#6366f1'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.stroke();
+
+      // Center dot
+      ctx.beginPath(); ctx.arc(cx, cy, 7, 0, 2*Math.PI);
+      ctx.fillStyle = '#10b981'; ctx.fill();
+    }
+
+    function doCalc() {
+      var h = parseInt(document.getElementById('hourInput').value, 10);
+      var m = parseInt(document.getElementById('minInput').value, 10);
+      if (isNaN(h) || isNaN(m) || h < 1 || h > 12 || m < 0 || m > 59) {
+        setStatus('invalid', 'Enter valid hours (1-12) and minutes (0-59).');
+        return;
+      }
+      var result = calcAngle(h, m);
+      document.getElementById('acuteAngle').textContent = result.acute + '°';
+      document.getElementById('reflexAngle').textContent = result.reflex + '°';
+      document.getElementById('step1').textContent = 'Minute hand: 6 × ' + m + ' = ' + result.minuteAngle + '°';
+      document.getElementById('step2').textContent = 'Hour hand: 30 × ' + (h % 12) + ' + 0.5 × ' + m + ' = ' + result.hourAngle + '°';
+      document.getElementById('step3').textContent = 'Difference: |' + result.hourAngle + ' − ' + result.minuteAngle + '| = ' + Math.abs(result.hourAngle - result.minuteAngle).toFixed(1) + '°';
+      document.getElementById('step4').textContent = 'Acute angle: min(' + Math.abs(result.hourAngle - result.minuteAngle).toFixed(1) + ', 360 − ' + Math.abs(result.hourAngle - result.minuteAngle).toFixed(1) + ') = ' + result.acute + '°';
+      drawClock(h, m, result.minuteAngle, result.hourAngle);
+      setStatus('valid', h + ':' + String(m).padStart(2,'0') + ' → ' + result.acute + '° between hands');
+      if (DT && DT.trackTool) DT.trackTool('clock-angle');
+    }
+
+    document.getElementById('calcAngleBtn').addEventListener('click', doCalc);
+    document.getElementById('hourInput').addEventListener('input', doCalc);
+    document.getElementById('minInput').addEventListener('input', doCalc);
+    document.getElementById('nowBtn').addEventListener('click', function () {
+      var now = new Date();
+      var h = now.getHours() % 12 || 12;
+      var m = now.getMinutes();
+      document.getElementById('hourInput').value = h;
+      document.getElementById('minInput').value = m;
+      doCalc();
+    });
+
+    // Quiz
+    function genQuiz() {
+      var h = Math.floor(Math.random() * 12) + 1;
+      var m = Math.floor(Math.random() * 60);
+      var real = calcAngle(h, m).acute;
+      document.getElementById('quizPrompt').textContent = 'What is the acute angle between the hands at ' + h + ':' + String(m).padStart(2,'0') + '?';
+      quizAnswer = real;
+      var opts = [real];
+      while (opts.length < 4) {
+        var fake = Math.round((Math.random() * 180) * 10) / 10;
+        if (!opts.includes(fake)) opts.push(fake);
+      }
+      opts.sort(function (a, b) { return a - b; });
+      var container = document.getElementById('quizOpts');
+      container.innerHTML = '';
+      document.getElementById('quizFeedback').textContent = '';
+      opts.forEach(function (o) {
+        var btn = document.createElement('button');
+        btn.className = 'quiz-opt';
+        btn.textContent = o + '°';
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.quiz-opt').forEach(function (b) { b.style.pointerEvents = 'none'; });
+          quizTotal++;
+          if (o === quizAnswer) {
+            btn.classList.add('correct');
+            quizScore++;
+            document.getElementById('quizFeedback').textContent = 'Correct! ' + real + '° is right.';
+          } else {
+            btn.classList.add('wrong');
+            document.querySelectorAll('.quiz-opt').forEach(function (b) { if (parseFloat(b.textContent) === quizAnswer) b.classList.add('correct'); });
+            document.getElementById('quizFeedback').textContent = 'Incorrect. The answer is ' + real + '°.';
+          }
+          document.getElementById('quizScore').textContent = 'Score: ' + quizScore + '/' + quizTotal;
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    document.getElementById('nextQuizBtn').addEventListener('click', genQuiz);
+
+    // Reference table
+    var REF_TIMES = [
+      [12,0,'Hands overlap'],
+      [3,0,'Right angle (90°)'],
+      [6,0,'Hands point opposite (180°)'],
+      [9,0,'Right angle (90°)'],
+      [3,15,'Smallest common angle'],
+      [12,30,'180° (opposite)'],
+      [1,5,'Near overlap — not exact'],
+      [2,10,'Near overlap — not exact'],
+      [4,21,'Near overlap — not exact'],
+      [6,33,'Near overlap — not exact'],
+    ];
+
+    function buildRefTable() {
+      var tbody = document.getElementById('refTableBody');
+      tbody.innerHTML = '';
+      REF_TIMES.forEach(function (row) {
+        var h = row[0], m = row[1];
+        var angle = calcAngle(h, m).acute;
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td style="padding:.25rem .5rem;border-bottom:1px solid var(--border)">' + h + ':' + String(m).padStart(2,'0') + '</td>' +
+          '<td style="padding:.25rem .5rem;border-bottom:1px solid var(--border);font-weight:700;color:#10b981">' + angle + '°</td>' +
+          '<td style="padding:.25rem .5rem;border-bottom:1px solid var(--border);color:var(--text-muted)">' + row[2] + '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        document.getElementById('calculateView').style.display = currentMode === 'calculate' ? '' : 'none';
+        document.getElementById('quizView').style.display = currentMode === 'quiz' ? '' : 'none';
+        document.getElementById('referenceView').style.display = currentMode === 'reference' ? '' : 'none';
+        if (currentMode === 'quiz') genQuiz();
+        if (currentMode === 'reference') buildRefTable();
+      });
+    });
+
+    function setStatus(type, msg) {
+      statusBar.className = 'status-bar ' + type;
+      statusBar.textContent = msg;
+    }
+
+    doCalc();
+  })();
+  </script>
+</body>
+</html>

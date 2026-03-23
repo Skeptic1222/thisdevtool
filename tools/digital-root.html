@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Digital Root Calculator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Calculate the digital root of any number. Step-by-step digit sum reduction. Batch mode, O(1) shortcut formula, and reference table. Free online math tool.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/digital-root.html">
+  <meta property="og:title" content="Digital Root Calculator — ThisDevTool">
+  <meta property="og:description" content="Find the digital root of any number with step-by-step reduction. Also supports batch mode and includes a reference table. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/digital-root.html">
+  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Digital Root Calculator",
+    "url": "https://thisdevtool.com/tools/digital-root.html",
+    "description": "Calculate digital roots with step-by-step reduction, batch processing, and O(1) shortcut formula explanation.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a digital root?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The digital root of a positive integer is the single-digit value obtained by repeatedly summing its digits. For example, the digital root of 9875 is calculated as: 9+8+7+5=29, then 2+9=11, then 1+1=2. So the digital root of 9875 is 2."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the O(1) shortcut formula for digital root?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The digital root of a positive integer n can be calculated in O(1) time (no iteration needed) using: DR(n) = 1 + ((n-1) mod 9). This works because digital roots cycle with period 9. Special cases: DR(0) = 0, and for multiples of 9: DR(9) = 9, DR(18) = 9, etc. The formula handles these correctly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the digital root the same as the remainder when dividing by 9?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Almost. The digital root equals n mod 9, except when n mod 9 = 0 (and n > 0), in which case the digital root is 9 (not 0). This is why the formula uses 1 + ((n-1) mod 9) rather than simply n mod 9."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are digital roots used for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Digital roots are used in: (1) casting out nines — a mental arithmetic verification technique; (2) numerology — assigning meanings to single-digit values; (3) checksum algorithms — some banking and barcode standards use digit sum variants; (4) recreational mathematics — many puzzles involve digital roots as constraints."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the digital root work for very large numbers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Because the O(1) formula uses modular arithmetic, digital roots can be computed for arbitrarily large numbers instantly. Even for a number with a million digits, the formula gives the result in constant time — the only constraint is how many digits your browser can store as a string."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .big-result { font-size:2rem;font-weight:700;font-family:monospace;color:#10b981;margin:.5rem 0; }
+    .steps-list { list-style:none;padding:0;margin:.5rem 0; }
+    .steps-list li { display:flex;align-items:center;gap:.5rem;padding:.35rem 0;border-bottom:1px solid var(--border);font-family:monospace;font-size:.9rem; }
+    .steps-list li:last-child { border-bottom:none; }
+    .step-arrow { color:var(--text-muted); }
+    .step-result { font-weight:700;color:#10b981; }
+    .ref-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:.4rem;margin-top:.75rem; }
+    .ref-cell { background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:.4rem .5rem;text-align:center;font-family:monospace;font-size:.8rem; }
+    .ref-cell .rc-num { font-weight:700; }
+    .ref-cell .rc-root { color:#10b981;font-weight:700;font-size:1rem; }
+    .batch-output { font-family:monospace;font-size:.85rem;max-height:220px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem;white-space:pre; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/prime-tester.html">Prime Tester</a>
+        <a href="/tools/fibonacci-generator.html">Fibonacci</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Digital Root Calculator</h1>
+          <p class="tool-subtitle">Find the digital root of any number with step-by-step reduction. Uses the O(1) shortcut formula for instant results.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="calculate">Calculate</button>
+            <button class="option-chip" data-mode="batch">Batch</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <div id="calculateView">
+            <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem;">
+              <input type="text" id="numInput" placeholder="Enter any positive integer…" value="9875" inputmode="numeric" style="flex:1;min-width:180px;font-size:1.1rem;font-family:monospace;text-align:center;padding:.5rem;">
+              <button class="btn btn-primary" id="calcBtn">Calculate</button>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+            </div>
+
+            <div id="resultArea" style="display:none;">
+              <div style="display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap;">
+                <span style="font-size:1rem;color:var(--text-muted);">Digital Root of <strong id="inputEcho"></strong> =</span>
+                <div class="big-result" id="drResult">?</div>
+              </div>
+              <p id="shortcutLine" style="font-family:monospace;font-size:.85rem;color:var(--text-muted);margin-bottom:.75rem;"></p>
+              <p style="font-weight:600;font-size:.875rem;margin-bottom:.25rem;">Step-by-step reduction:</p>
+              <ul class="steps-list" id="stepsList"></ul>
+            </div>
+          </div>
+
+          <div id="batchView" style="display:none;">
+            <div style="margin-bottom:.75rem;">
+              <label style="font-size:.875rem;font-weight:600;">Enter numbers (one per line or comma-separated):</label>
+              <textarea id="batchInput" rows="6" placeholder="9875&#10;12345&#10;99999&#10;42" style="font-family:monospace;margin-top:.35rem;"></textarea>
+            </div>
+            <div style="display:flex;gap:.5rem;">
+              <button class="btn btn-primary" id="batchBtn">Calculate All</button>
+              <button class="btn btn-sm btn-secondary" id="copyBatchBtn">Copy</button>
+            </div>
+            <div class="batch-output" id="batchOutput" style="margin-top:.75rem;">Enter numbers above and click Calculate All.</div>
+          </div>
+
+          <div id="referenceView" style="display:none;">
+            <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:.5rem;">Digital roots for integers 1–99:</p>
+            <div class="ref-grid" id="refGrid"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a number and click Calculate to find its digital root.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Digital Root Calculator</h2>
+          <ol>
+            <li><strong>Calculate mode</strong> — type any positive integer and click Calculate. You'll see the digital root, the O(1) shortcut formula applied, and a step-by-step digit reduction.</li>
+            <li><strong>Batch mode</strong> — paste a list of numbers (one per line or comma-separated) to compute digital roots for all of them at once.</li>
+            <li><strong>Reference mode</strong> — browse the digital roots of integers 1–99 in a grid for quick lookup.</li>
+          </ol>
+
+          <h2>What Is a Digital Root?</h2>
+          <p>The digital root of a positive integer is the single digit reached by repeatedly summing the digits until a single digit remains. For example: 9875 → 9+8+7+5 = 29 → 2+9 = 11 → 1+1 = 2. The digital root of 9875 is 2. Digital roots were used in ancient arithmetic as error-checking tools, in numerology, and appear in many recreational mathematics puzzles.</p>
+
+          <h3>The O(1) Shortcut Formula</h3>
+          <p>Computing a digital root by iterative digit summing works for any number but requires work proportional to the number of digits. A far more elegant approach uses the mathematical identity: for any positive integer n, DR(n) = 1 + ((n − 1) mod 9). This is O(1) — it gives the answer in constant time regardless of how many digits n has. A billion-digit number? Same formula, same time. The formula exploits the fact that the digital root is equivalent to the number's remainder when divided by 9, with the special case that multiples of 9 have digital root 9 (not 0). The formula <code>1 + ((n-1) % 9)</code> handles this naturally.</p>
+
+          <h3>Casting Out Nines</h3>
+          <p>Casting out nines is a mental arithmetic technique that uses digital roots to check multiplication and addition. If you multiply 123 × 456 and get 56,088, you can verify: digital root of 123 = 6, digital root of 456 = 6, 6 × 6 = 36, digital root of 36 = 9. Digital root of 56,088 = 5+6+0+8+8 = 27, 2+7 = 9. They match — so the multiplication is probably correct (it won't catch all errors, but it catches transposition errors and most arithmetic mistakes). This technique was taught in European arithmetic textbooks from the medieval period through the 20th century.</p>
+
+          <h3>Digital Root Patterns</h3>
+          <p>Digital roots cycle with period 9: 1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9... All multiples of 9 have digital root 9. All multiples of 3 have digital root divisible by 3 (i.e., 3, 6, or 9). The digital root of the product of two numbers equals the digital root of the product of their digital roots. This multiplicative property (along with the additive property: DR(a+b) = DR(DR(a)+DR(b))) is what makes casting out nines work as a checksum.</p>
+
+          <h3>Applications in Computer Science</h3>
+          <p>Digital roots appear in hash function design, where modular arithmetic creates bounded outputs. The Luhn algorithm (used for credit card number validation) is a more sophisticated version of digit summing. Some checksum schemes for ISBNs and bar codes use weighted digit sums that generalize the digital root concept. In recreational programming, digital root challenges appear frequently in coding competitions and algorithm courses as exercises in modular arithmetic.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a digital root?</button>
+            <div class="faq-answer">The digital root of a positive integer is the single-digit value obtained by repeatedly summing its digits. For 9875: 9+8+7+5=29, then 2+9=11, then 1+1=2. Digital root = 2.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the O(1) shortcut formula for digital root?</button>
+            <div class="faq-answer">For any positive integer n: DR(n) = 1 + ((n-1) mod 9). This is constant time regardless of how many digits n has. It works because digital roots cycle with period 9, and handles the special case where multiples of 9 return 9 (not 0).</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is the digital root the same as the remainder when dividing by 9?</button>
+            <div class="faq-answer">Almost. DR(n) equals n mod 9, except when n mod 9 = 0 (and n > 0), where DR = 9 instead of 0. That is why the formula uses 1 + ((n-1) mod 9) rather than simply n mod 9.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What are digital roots used for?</button>
+            <div class="faq-answer">Digital roots are used in: casting out nines (mental arithmetic error-checking), numerology, checksum algorithms (simplified variants appear in banking and bar codes), and recreational mathematics puzzles.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does the digital root work for very large numbers?</button>
+            <div class="faq-answer">Yes. Because the O(1) formula uses modular arithmetic, digital roots can be computed for arbitrarily large numbers instantly. Even a number with a million digits returns a result in constant time.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Math Tools</h4>
+        <a href="/tools/prime-tester.html">Prime Number Tester</a>
+        <a href="/tools/fibonacci-generator.html">Fibonacci Generator</a>
+        <a href="/tools/fraction-approximator.html">Fraction Approximator</a>
+        <a href="/tools/golden-ratio.html">Golden Ratio</a>
+      </div>
+      <div class="footer-col">
+        <h4>Number Tools</h4>
+        <a href="/tools/number-base.html">Base Converter</a>
+        <a href="/tools/bitwise-calculator.html">Bitwise Calculator</a>
+        <a href="/tools/clock-angle.html">Clock Angle</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = window.DevToolbox;
+    var statusBar = document.getElementById('statusBar');
+    var currentMode = 'calculate';
+    var EXAMPLES = ['9875', '12345', '999', '100', '0'];
+    var exIdx = 0;
+
+    function digitalRoot(n) {
+      // O(1) formula
+      if (n === 0) return 0;
+      return 1 + (n - 1) % 9;
+    }
+
+    function getSteps(s) {
+      var steps = [s];
+      var cur = s.replace(/[^0-9]/g, '');
+      while (cur.length > 1) {
+        var sum = cur.split('').reduce(function (a, d) { return a + parseInt(d, 10); }, 0);
+        steps.push(String(sum));
+        cur = String(sum);
+      }
+      return steps;
+    }
+
+    function doCalc(raw) {
+      raw = raw.trim().replace(/[^0-9]/g, '') || '0';
+      var n = parseInt(raw, 10);
+      var dr = digitalRoot(n);
+      var steps = getSteps(raw);
+      var totalSteps = steps.length - 1;
+
+      document.getElementById('inputEcho').textContent = raw;
+      document.getElementById('drResult').textContent = dr;
+      document.getElementById('shortcutLine').textContent = 'O(1) formula: 1 + ((' + raw + ' - 1) mod 9) = ' + dr;
+
+      var list = document.getElementById('stepsList');
+      list.innerHTML = '';
+      steps.forEach(function (step, i) {
+        var li = document.createElement('li');
+        if (i === 0) {
+          li.innerHTML = '<span>Original: <strong>' + step + '</strong></span>';
+        } else {
+          var prev = steps[i - 1];
+          var digitBreakdown = prev.split('').join(' + ');
+          li.innerHTML = '<span class="step-arrow">→</span><span>' + digitBreakdown + ' = <span class="step-result">' + step + '</span></span>';
+        }
+        list.appendChild(li);
+      });
+      document.getElementById('resultArea').style.display = '';
+      setStatus('valid', 'Digital root of ' + raw + ' = ' + dr + ' (' + totalSteps + ' step' + (totalSteps !== 1 ? 's' : '') + ')');
+      if (DT && DT.trackTool) DT.trackTool('digital-root');
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', function () {
+      doCalc(document.getElementById('numInput').value);
+    });
+    document.getElementById('numInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doCalc(this.value);
+    });
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('numInput').value = EXAMPLES[exIdx % EXAMPLES.length];
+      exIdx++;
+      doCalc(document.getElementById('numInput').value);
+    });
+
+    // Batch
+    document.getElementById('batchBtn').addEventListener('click', function () {
+      var raw = document.getElementById('batchInput').value;
+      var nums = raw.split(/[\n,]+/).map(function (s) { return s.trim(); }).filter(function (s) { return /^[0-9]+$/.test(s); });
+      if (!nums.length) { setStatus('invalid', 'Enter valid integers in the batch field.'); return; }
+      var lines = nums.map(function (n) {
+        var dr = digitalRoot(parseInt(n, 10));
+        return n + ' → ' + dr;
+      });
+      document.getElementById('batchOutput').textContent = lines.join('\n');
+      setStatus('valid', 'Computed digital roots for ' + nums.length + ' numbers');
+    });
+    document.getElementById('copyBatchBtn').addEventListener('click', function () {
+      DT.copyToClipboard(document.getElementById('batchOutput').textContent, document.getElementById('copyBatchBtn'));
+    });
+
+    // Reference grid
+    function buildRefGrid() {
+      var grid = document.getElementById('refGrid');
+      grid.innerHTML = '';
+      for (var i = 1; i <= 99; i++) {
+        var dr = digitalRoot(i);
+        var cell = document.createElement('div');
+        cell.className = 'ref-cell';
+        cell.innerHTML = '<div class="rc-num">' + i + '</div><div class="rc-root">' + dr + '</div>';
+        grid.appendChild(cell);
+      }
+    }
+
+    document.querySelectorAll('.option-chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        document.getElementById('calculateView').style.display = currentMode === 'calculate' ? '' : 'none';
+        document.getElementById('batchView').style.display = currentMode === 'batch' ? '' : 'none';
+        document.getElementById('referenceView').style.display = currentMode === 'reference' ? '' : 'none';
+        if (currentMode === 'reference') buildRefGrid();
+      });
+    });
+
+    function setStatus(type, msg) {
+      statusBar.className = 'status-bar ' + type;
+      statusBar.textContent = msg;
+    }
+
+    doCalc('9875');
+  })();
+  </script>
+</body>
+</html>
