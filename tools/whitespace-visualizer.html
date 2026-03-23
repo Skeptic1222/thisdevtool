@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Whitespace Visualizer — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Visualize invisible whitespace characters in text. See spaces, tabs, newlines, and NBSP as colored symbols. Clean and normalize whitespace instantly.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/whitespace-visualizer.html">
+  <meta property="og:title" content="Whitespace Visualizer — DevToolbox">
+  <meta property="og:description" content="Make invisible whitespace characters visible. Color-coded symbols for spaces, tabs, newlines, and non-breaking spaces. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/whitespace-visualizer.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Whitespace Visualizer — DevToolbox">
+  <meta name="twitter:description" content="Make invisible whitespace characters visible. Color-coded symbols for spaces, tabs, newlines, and NBSP.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Whitespace Visualizer",
+    "url": "https://thisdevtool.com/tools/whitespace-visualizer.html",
+    "description": "Visualize invisible whitespace characters in text. Color-coded symbols for spaces, tabs, newlines, and NBSP. Free, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a non-breaking space (NBSP)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A non-breaking space (U+00A0) looks identical to a regular space but prevents line breaks between the words it separates. It is common in copy-pasted text from word processors, HTML entities (&nbsp;), and PDF exports. This tool highlights NBSP characters with the ⍽ symbol so you can spot them instantly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my text have unexpected whitespace?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Unexpected whitespace often comes from copy-pasting from websites, PDFs, or word processors, which may insert non-breaking spaces, thin spaces, or other Unicode whitespace characters. Tab characters are also common in code copied from IDEs. The Visualize mode makes all of these visible so you can find the source of the problem."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the Clean mode do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Clean mode normalizes all whitespace in your text: it trims leading and trailing whitespace from each line, converts tabs to single spaces, replaces non-breaking spaces with regular spaces, and collapses multiple consecutive spaces into one. This is useful for cleaning up copy-pasted content before using it in code or a database."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What whitespace characters does this tool detect?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool detects regular spaces (U+0020), tabs (U+0009), newlines (U+000A), carriage returns (U+000D), non-breaking spaces (U+00A0), thin spaces (U+2009), hair spaces (U+200A), en spaces (U+2002), em spaces (U+2003), and figure spaces (U+2007)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my text data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This whitespace visualizer runs entirely in your browser using JavaScript. Your text never leaves your machine. There is no server-side processing, no logging, and no data collection of any kind."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .ws-output { font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; line-height: 1.8; padding: 1rem; min-height: 340px; white-space: pre-wrap; word-break: break-all; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); overflow: auto; }
+    .ws-space { color: #6ee7b7; }
+    .ws-tab { color: #34d399; background: rgba(52,211,153,0.08); }
+    .ws-newline { color: #a78bfa; }
+    .ws-nbsp { color: #f87171; background: rgba(248,113,113,0.1); }
+    .ws-thin { color: #fb923c; background: rgba(251,146,60,0.1); }
+    .ws-other { color: #facc15; background: rgba(250,204,21,0.1); }
+    .ws-legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin: 0.75rem 0; font-size: 0.8rem; }
+    .ws-legend-item { display: flex; align-items: center; gap: 0.35rem; }
+    .ws-legend-swatch { display: inline-block; width: 1.1em; height: 1.1em; border-radius: 3px; font-family: monospace; text-align: center; line-height: 1.1em; font-size: 0.85em; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; text-align: center; }
+    .stat-card .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+    .stat-card .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/invisible-char-detector.html">Zero-Width Detector</a>
+        <a href="/tools/text-reverser.html">Text Reverser</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Whitespace Visualizer</h1>
+          <p class="tool-subtitle">Make invisible whitespace characters visible — spaces, tabs, newlines, and NBSP rendered as color-coded symbols.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="visualize">Visualize</button>
+            <button class="option-chip" data-mode="clean">Clean</button>
+            <button class="option-chip" data-mode="stats">Stats</button>
+          </div>
+
+          <!-- Legend -->
+          <div class="ws-legend" id="wsLegend">
+            <span class="ws-legend-item"><span class="ws-legend-swatch ws-space">·</span> Space (U+0020)</span>
+            <span class="ws-legend-item"><span class="ws-legend-swatch ws-tab">→</span> Tab (U+0009)</span>
+            <span class="ws-legend-item"><span class="ws-legend-swatch ws-newline">↵</span> Newline (U+000A)</span>
+            <span class="ws-legend-item"><span class="ws-legend-swatch ws-nbsp">⍽</span> NBSP (U+00A0)</span>
+            <span class="ws-legend-item"><span class="ws-legend-swatch ws-thin">·</span> Thin/Other (U+2009+)</span>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="wsInput" rows="16" placeholder="Paste text here to visualize its whitespace characters..." spellcheck="false"></textarea>
+            </div>
+            <div id="outputPane">
+              <div class="pane-label">
+                <span>Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="ws-output" id="wsOutput" style="min-height:340px;"></div>
+              <div id="statsPane" style="display:none;">
+                <div class="stats-grid" id="statsGrid"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste text above to visualize whitespace characters.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Whitespace Visualizer</h2>
+          <ol>
+            <li><strong>Paste your text</strong> into the input area on the left.</li>
+            <li><strong>Choose a mode</strong> — Visualize shows symbols for each whitespace type, Clean normalizes whitespace, Stats counts each type.</li>
+            <li><strong>Read the legend</strong> — each whitespace type is rendered in a distinct color with a Unicode symbol.</li>
+            <li><strong>Copy or download</strong> the cleaned text using the buttons above the output.</li>
+          </ol>
+
+          <h2>Why Whitespace Matters in Code and Data</h2>
+          <p>Invisible whitespace characters are one of the most common causes of bugs that are hard to debug because you cannot see what you are looking at. A non-breaking space where a regular space is expected can break a JSON key lookup, cause a CSS class not to match, or make a database query return no results. Tabs mixed with spaces can cause Python indentation errors. Trailing spaces on lines can cause git diffs to show phantom changes. This tool makes all of these characters visible so you can debug them instantly.</p>
+
+          <h3>Visualize Mode</h3>
+          <p>In Visualize mode, every whitespace character is replaced with a distinctive Unicode symbol rendered in a unique color. Regular spaces become middle dots (<span style="color:#6ee7b7">·</span>), tabs become right arrows (<span style="color:#34d399">→</span>), newlines become return symbols (<span style="color:#a78bfa">↵</span>), and non-breaking spaces become the NBSP symbol (<span style="color:#f87171">⍽</span>). Non-printable text characters remain visible against the colored whitespace, making it easy to spot problematic characters at a glance. This mode is read-only — it does not modify your original text.</p>
+
+          <h3>Clean Mode</h3>
+          <p>Clean mode normalizes all whitespace in your text by applying a series of transformations: it trims leading and trailing spaces from every line, converts all tab characters to single spaces, replaces non-breaking spaces and other exotic Unicode whitespace (thin space, hair space, en space, em space, figure space) with regular spaces, and collapses runs of multiple spaces into a single space. The result is text with consistent, predictable whitespace. This is particularly useful when preparing user-submitted content for storage in a database, normalizing log file entries for parsing, or cleaning up copy-pasted content from word processors or PDF readers before pasting it into code.</p>
+
+          <h3>Stats Mode</h3>
+          <p>Stats mode counts every whitespace character in your text and displays the results as a grid of cards. You see the exact count of regular spaces, tabs, newlines (LF), carriage returns (CR), non-breaking spaces, and other Unicode whitespace. This is useful when auditing content for encoding consistency — for example, checking whether a file uses Unix (LF-only) or Windows (CR+LF) line endings, or whether a database field contains NBSP characters from a rich text editor that could break downstream processing.</p>
+
+          <h3>Common Sources of Invisible Whitespace Problems</h3>
+          <ul>
+            <li><strong>Copy from Word/Google Docs</strong> — inserts non-breaking spaces and thin spaces around punctuation</li>
+            <li><strong>PDF copy-paste</strong> — common source of non-standard spaces and hidden characters</li>
+            <li><strong>HTML &amp;nbsp; entities</strong> — rendered as U+00A0 when pasted from a browser</li>
+            <li><strong>Windows line endings</strong> — CR+LF (U+000D U+000A) vs. Unix LF-only</li>
+            <li><strong>Spreadsheet exports</strong> — may add tab characters between fields when copied</li>
+            <li><strong>Internationalized content</strong> — languages like French use non-breaking spaces before ! ? ; :</li>
+          </ul>
+
+          <h3>Unicode Whitespace Reference</h3>
+          <p>Unicode defines over a dozen distinct whitespace characters beyond the common space, tab, and newline. The most frequently encountered are: U+00A0 (Non-Breaking Space), U+2009 (Thin Space, used in SI unit formatting like "100 km"), U+200A (Hair Space, used in typography), U+2002 (En Space), U+2003 (Em Space), and U+2007 (Figure Space, as wide as a digit). Most programming languages and databases treat only ASCII whitespace as word separators, so these Unicode spaces can cause subtle matching failures in regex patterns, SQL LIKE queries, and string comparisons.</p>
+
+          <h3>Whitespace in JSON, CSV, and YAML</h3>
+          <p>In JSON, keys and string values are compared exactly, so a key with a trailing NBSP is a different key from one without it. In CSV files, unquoted fields with leading or trailing spaces may be parsed differently across tools — some strip whitespace, others preserve it. In YAML, indentation must use spaces (not tabs, which are illegal in YAML), and mixed indentation depths cause parse errors. The Visualize mode makes it easy to check all of these cases before committing data to a format that is strict about whitespace.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a non-breaking space (NBSP)?</button>
+            <div class="faq-answer">A non-breaking space (U+00A0) looks identical to a regular space but prevents line breaks between the words it separates. It is common in copy-pasted text from word processors, HTML entities (&amp;nbsp;), and PDF exports. This tool highlights NBSP characters with the ⍽ symbol so you can spot them instantly.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does my text have unexpected whitespace?</button>
+            <div class="faq-answer">Unexpected whitespace often comes from copy-pasting from websites, PDFs, or word processors, which may insert non-breaking spaces, thin spaces, or other Unicode whitespace characters. Tab characters are also common in code copied from IDEs. The Visualize mode makes all of these visible so you can find the source of the problem.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does the Clean mode do?</button>
+            <div class="faq-answer">Clean mode normalizes all whitespace in your text: trims leading and trailing whitespace from each line, converts tabs to single spaces, replaces non-breaking spaces with regular spaces, and collapses multiple consecutive spaces into one. This is useful for cleaning up copy-pasted content before using it in code or a database.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What whitespace characters does this tool detect?</button>
+            <div class="faq-answer">This tool detects regular spaces (U+0020), tabs (U+0009), newlines (U+000A), carriage returns (U+000D), non-breaking spaces (U+00A0), thin spaces (U+2009), hair spaces (U+200A), en spaces (U+2002), em spaces (U+2003), and figure spaces (U+2007).</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is my text data sent to a server?</button>
+            <div class="faq-answer">No. This whitespace visualizer runs entirely in your browser using JavaScript. Your text never leaves your machine. There is no server-side processing, no logging, and no data collection of any kind.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/whitespace-visualizer.html">Whitespace Visualizer</a>
+        <a href="/tools/invisible-char-detector.html">Zero-Width Detector</a>
+        <a href="/tools/text-reverser.html">Text Reverser</a>
+        <a href="/tools/string-length-calculator.html">String Length</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/slug-generator.html">Slug Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('wsInput');
+      var wsOutput = document.getElementById('wsOutput');
+      var statsPane = document.getElementById('statsPane');
+      var statsGrid = document.getElementById('statsGrid');
+      var statusBar = document.getElementById('statusBar');
+      var legend = document.getElementById('wsLegend');
+      var currentMode = 'visualize';
+      var cleanedText = '';
+
+      // Unicode whitespace map
+      var WS_MAP = [
+        { re: /\t/g,      sym: '\u2192', cls: 'ws-tab',     name: 'Tabs',            code: 'U+0009' },
+        { re: /\r\n/g,    sym: '\u21B5', cls: 'ws-newline', name: 'CRLF',            code: 'U+000D+0A' },
+        { re: /\r/g,      sym: '\u21B5', cls: 'ws-newline', name: 'CR',              code: 'U+000D' },
+        { re: /\n/g,      sym: '\u21B5', cls: 'ws-newline', name: 'Newlines (LF)',   code: 'U+000A' },
+        { re: /\u00A0/g,  sym: '\u236D', cls: 'ws-nbsp',    name: 'Non-Breaking Spaces', code: 'U+00A0' },
+        { re: /\u2009/g,  sym: '\u00B7', cls: 'ws-thin',    name: 'Thin Spaces',     code: 'U+2009' },
+        { re: /\u200A/g,  sym: '\u00B7', cls: 'ws-thin',    name: 'Hair Spaces',     code: 'U+200A' },
+        { re: /\u2002/g,  sym: '\u00B7', cls: 'ws-thin',    name: 'En Spaces',       code: 'U+2002' },
+        { re: /\u2003/g,  sym: '\u00B7', cls: 'ws-thin',    name: 'Em Spaces',       code: 'U+2003' },
+        { re: /\u2007/g,  sym: '\u00B7', cls: 'ws-thin',    name: 'Figure Spaces',   code: 'U+2007' },
+        { re: / /g,       sym: '\u00B7', cls: 'ws-space',   name: 'Spaces',          code: 'U+0020' }
+      ];
+
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
+      function visualize(text) {
+        // Process each character
+        var out = '';
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i];
+          var code = text.codePointAt(i);
+          if (ch === '\t') {
+            out += '<span class="ws-tab" title="Tab (U+0009)">\u2192</span>';
+          } else if (ch === '\n') {
+            out += '<span class="ws-newline" title="Newline (U+000A)">\u21B5</span>\n';
+          } else if (ch === '\r') {
+            // skip paired \r in \r\n
+            if (text[i + 1] === '\n') {
+              out += '<span class="ws-newline" title="CRLF (U+000D U+000A)">\u21B5</span>\n';
+              i++;
+            } else {
+              out += '<span class="ws-newline" title="CR (U+000D)">\u21B5</span>';
+            }
+          } else if (ch === '\u00A0') {
+            out += '<span class="ws-nbsp" title="Non-Breaking Space (U+00A0)">\u236D</span>';
+          } else if (ch === ' ') {
+            out += '<span class="ws-space" title="Space (U+0020)">\u00B7</span>';
+          } else if (['\u2009','\u200A','\u2002','\u2003','\u2007'].indexOf(ch) !== -1) {
+            var u = '0000' + code.toString(16).toUpperCase();
+            u = 'U+' + u.slice(-4);
+            out += '<span class="ws-thin" title="Unicode Whitespace (' + u + ')">\u00B7</span>';
+          } else {
+            out += escapeHtml(ch);
+          }
+        }
+        return out;
+      }
+
+      function cleanText(text) {
+        return text
+          .split(/\r?\n/)
+          .map(function (line) {
+            return line
+              .replace(/[\u00A0\u2009\u200A\u2002\u2003\u2007]/g, ' ')
+              .replace(/\t/g, ' ')
+              .replace(/ {2,}/g, ' ')
+              .replace(/^\s+|\s+$/g, '');
+          })
+          .join('\n');
+      }
+
+      function countStats(text) {
+        var counts = {
+          'Spaces': 0, 'Tabs': 0, 'Newlines (LF)': 0, 'CR': 0,
+          'Non-Breaking Spaces': 0, 'Thin Spaces': 0, 'Other Unicode WS': 0
+        };
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i];
+          if (ch === ' ') counts['Spaces']++;
+          else if (ch === '\t') counts['Tabs']++;
+          else if (ch === '\n') counts['Newlines (LF)']++;
+          else if (ch === '\r') counts['CR']++;
+          else if (ch === '\u00A0') counts['Non-Breaking Spaces']++;
+          else if (ch === '\u2009' || ch === '\u200A') counts['Thin Spaces']++;
+          else if (['\u2002','\u2003','\u2007'].indexOf(ch) !== -1) counts['Other Unicode WS']++;
+        }
+        return counts;
+      }
+
+      function process() {
+        var raw = input.value;
+        if (!raw) {
+          wsOutput.innerHTML = '';
+          wsOutput.style.display = 'block';
+          statsPane.style.display = 'none';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste text above to visualize whitespace characters.';
+          return;
+        }
+
+        if (currentMode === 'visualize') {
+          wsOutput.style.display = 'block';
+          statsPane.style.display = 'none';
+          legend.style.display = '';
+          wsOutput.innerHTML = visualize(raw);
+
+          var stats = countStats(raw);
+          var parts = [];
+          Object.keys(stats).forEach(function (k) {
+            if (stats[k] > 0) parts.push(stats[k] + ' ' + k.toLowerCase());
+          });
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = parts.length ? parts.join(', ') : 'No whitespace characters found.';
+          cleanedText = raw;
+
+        } else if (currentMode === 'clean') {
+          cleanedText = cleanText(raw);
+          wsOutput.style.display = 'block';
+          statsPane.style.display = 'none';
+          legend.style.display = 'none';
+          wsOutput.textContent = cleanedText;
+
+          var diff = raw.length - cleanedText.length;
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Cleaned — ' + cleanedText.length + ' chars (removed ' + diff + ' chars)';
+
+        } else if (currentMode === 'stats') {
+          var counts = countStats(raw);
+          wsOutput.style.display = 'none';
+          statsPane.style.display = 'block';
+          legend.style.display = 'none';
+          cleanedText = raw;
+
+          var html = '';
+          var total = 0;
+          Object.keys(counts).forEach(function (k) {
+            total += counts[k];
+            html += '<div class="stat-card"><div class="stat-value">' + counts[k].toLocaleString() + '</div><div class="stat-label">' + k + '</div></div>';
+          });
+          html += '<div class="stat-card"><div class="stat-value">' + total.toLocaleString() + '</div><div class="stat-label">Total Whitespace</div></div>';
+          statsGrid.innerHTML = html;
+
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = raw.length.toLocaleString() + ' total chars, ' + total.toLocaleString() + ' whitespace (' + Math.round(total / raw.length * 100) + '%)';
+        }
+
+        DT.trackTool('whitespace-visualizer');
+      }
+
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          if (currentMode === 'visualize') legend.style.display = '';
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = currentMode === 'clean' ? cleanedText : input.value;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = currentMode === 'clean' ? cleanedText : input.value;
+        if (text) DT.downloadText(text, 'text-cleaned.txt', 'text/plain');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = 'Hello\u00A0World\t\tthis has\u2003em spaces\nand trailing spaces   \n\nDouble  spaces  here';
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var s = this.selectionStart, en = this.selectionEnd;
+          this.value = this.value.substring(0, s) + '\t' + this.value.substring(en);
+          this.selectionStart = this.selectionEnd = s + 1;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

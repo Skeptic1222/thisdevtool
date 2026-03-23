@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Zero-Width Character Detector — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Detect and remove zero-width characters (ZWS, ZWNJ, ZWJ, BOM) from text. Find invisible Unicode chars by position with hex codes. Free, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/invisible-char-detector.html">
+  <meta property="og:title" content="Zero-Width Character Detector — DevToolbox">
+  <meta property="og:description" content="Detect, highlight, and remove zero-width invisible Unicode characters. Find ZWS, ZWNJ, ZWJ, BOM and more by position with hex codes.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/invisible-char-detector.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Zero-Width Character Detector — DevToolbox">
+  <meta name="twitter:description" content="Find and remove hidden zero-width Unicode characters from text. Supports ZWS, ZWNJ, ZWJ, BOM, and more.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Zero-Width Character Detector",
+    "url": "https://thisdevtool.com/tools/invisible-char-detector.html",
+    "description": "Detect and remove zero-width invisible Unicode characters including ZWS, ZWNJ, ZWJ, and BOM. Shows positions and hex codes. Free, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are zero-width characters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Zero-width characters are Unicode code points that take up no visual space in rendered text. They include Zero-Width Space (U+200B), Zero-Width Non-Joiner (U+200C), Zero-Width Joiner (U+200D), Byte Order Mark (U+FEFF), Word Joiner (U+2060), and others. They are often used for language formatting but can also be inserted maliciously to bypass filters or create homograph attacks."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why are zero-width characters dangerous?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Zero-width characters can be used to bypass spam filters, keyword blocklists, and plagiarism detectors. Attackers insert them into phishing URLs to make them look like legitimate domains. They can also break string comparisons, cause URL routing issues, and embed hidden watermarks or tracking identifiers in documents without the reader's knowledge."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the Insert mode work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Insert mode lets you add zero-width spaces at specific positions in your text — useful for controlling line-break behavior in long strings, or for adding watermarks that can later be decoded to identify the source of a leak. You can insert a Zero-Width Space (U+200B) between every character or at word boundaries."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a Byte Order Mark (BOM)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Byte Order Mark (U+FEFF) is a special Unicode character that can appear at the very start of a text file to indicate its encoding (UTF-8, UTF-16 LE, or UTF-16 BE). While useful for file encoding detection, a BOM at the start of JSON, CSV, or HTML files can cause parsing errors and is often undesirable. This tool detects and removes BOMs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can zero-width characters be used for text watermarking?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Techniques like Unicode Steganography use combinations of zero-width characters to embed binary data invisibly in plaintext. Each recipient of a sensitive document gets a uniquely watermarked version, so if the document leaks, the watermark can be decoded to identify which recipient leaked it. The Insert mode in this tool provides a simple version of this capability."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .zw-output { font-family: 'Courier New', Courier, monospace; font-size: 0.9rem; line-height: 1.8; padding: 1rem; min-height: 340px; white-space: pre-wrap; word-break: break-all; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); overflow: auto; }
+    .zw-marker { display: inline-block; background: #ef4444; color: #fff; border-radius: 3px; padding: 0 3px; font-size: 0.7em; vertical-align: middle; cursor: help; font-family: monospace; line-height: 1.6; }
+    .zw-finding { display: flex; align-items: baseline; gap: 0.5rem; padding: 0.4rem 0.6rem; border-radius: 6px; background: var(--surface); border: 1px solid var(--border); margin-bottom: 0.4rem; font-size: 0.85rem; }
+    .zw-finding-pos { font-weight: 700; color: var(--accent); min-width: 3.5rem; }
+    .zw-finding-code { font-family: monospace; background: rgba(239,68,68,0.12); color: #ef4444; padding: 1px 5px; border-radius: 4px; }
+    .zw-finding-name { color: var(--text-muted); }
+    .zw-findings-list { max-height: 260px; overflow-y: auto; margin-top: 0.75rem; }
+    .insert-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; }
+    .insert-controls label { font-size: 0.85rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/whitespace-visualizer.html">Whitespace Visualizer</a>
+        <a href="/tools/text-reverser.html">Text Reverser</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Zero-Width Character Detector</h1>
+          <p class="tool-subtitle">Find, highlight, and remove invisible zero-width Unicode characters — ZWS, ZWNJ, ZWJ, BOM, and more.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="detect">Detect</button>
+            <button class="option-chip" data-mode="remove">Remove</button>
+            <button class="option-chip" data-mode="insert">Insert</button>
+          </div>
+
+          <div id="insertControls" class="insert-controls" style="display:none;">
+            <label><strong>Insert position:</strong></label>
+            <label><input type="radio" name="insertPos" value="between" checked> Between every character</label>
+            <label><input type="radio" name="insertPos" value="words"> Between words only</label>
+            <label><input type="radio" name="insertPos" value="end"> At end of text</label>
+            <label><strong>Character:</strong></label>
+            <label><input type="radio" name="insertChar" value="200B" checked> ZWS (U+200B)</label>
+            <label><input type="radio" name="insertChar" value="200C"> ZWNJ (U+200C)</label>
+            <label><input type="radio" name="insertChar" value="200D"> ZWJ (U+200D)</label>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="zwInput" rows="16" placeholder="Paste text here to detect zero-width characters..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Detected Characters</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="zw-output" id="zwOutput" style="min-height:180px;"></div>
+              <div class="zw-findings-list" id="findingsList"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste text above to detect zero-width characters.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Zero-Width Character Detector</h2>
+          <ol>
+            <li><strong>Paste your text</strong> into the input area on the left. Zero-width characters are invisible, so text containing them looks normal.</li>
+            <li><strong>Detect mode</strong> — the tool highlights every zero-width character with a red badge showing its Unicode code point, and lists all findings below the output with position and name.</li>
+            <li><strong>Remove mode</strong> — strips all zero-width characters and outputs clean text ready to copy or download.</li>
+            <li><strong>Insert mode</strong> — adds zero-width characters to your text for line-break control or document watermarking.</li>
+          </ol>
+
+          <h2>What Are Zero-Width Characters?</h2>
+          <p>Zero-width characters are Unicode code points that occupy no horizontal space when rendered. They are invisible in virtually all fonts and rendering environments, making them ideal for both legitimate typographic purposes and malicious obfuscation. The most common zero-width characters are: Zero-Width Space (U+200B), which allows line breaks within words; Zero-Width Non-Joiner (U+200C), which prevents character joining in Arabic and Indic scripts; Zero-Width Joiner (U+200D), which causes adjacent characters to join (used in emoji sequences like family emojis); Byte Order Mark (U+FEFF, also Zero-Width No-Break Space); and Word Joiner (U+2060), which prevents line breaks without adding space.</p>
+
+          <h3>Security Implications</h3>
+          <p>Zero-width characters have become a significant security concern in several contexts. In phishing attacks, they are inserted into domain names and URLs to make them look identical to legitimate addresses while actually pointing to different servers. In social engineering, they can be inserted into names, keywords, and sensitive strings to bypass automated keyword filters and spam detectors. In content theft detection, they can be removed to strip watermarks that were embedded to track document leaks. This tool helps security researchers and content creators audit their text for these hidden characters.</p>
+
+          <h3>Zero-Width Characters in Programming</h3>
+          <p>Zero-width characters in source code are a particularly dangerous attack vector. A malicious code review contribution could insert ZWC characters into string literals, variable names, or comments to create code that looks correct in a code review but behaves differently than expected. For example, a Zero-Width Joiner between two characters in a string comparison can make the string never match its expected value. Some IDEs and code editors do not highlight these characters by default, making them hard to detect during review. Always run untrusted code contributions through a zero-width character detector before merging.</p>
+
+          <h3>Insert Mode: Watermarking with Zero-Width Characters</h3>
+          <p>The Insert mode allows you to embed zero-width characters into text — a technique used for document fingerprinting and leak detection. The idea is simple: different combinations of ZWS (U+200B) and ZWNJ (U+200C) can be used to encode binary data. By assigning different zero-width character patterns to different recipients of a sensitive document, the document's origin can be traced if it leaks, even after formatting changes or copy-paste operations that preserve the invisible characters. Note that sophisticated actors can detect and strip these watermarks with tools like this one, so zero-width watermarking is most effective against unsophisticated leakers.</p>
+
+          <h3>Detected Character Reference</h3>
+          <p>This tool detects the following zero-width and invisible Unicode characters: U+200B Zero-Width Space, U+200C Zero-Width Non-Joiner, U+200D Zero-Width Joiner, U+FEFF Byte Order Mark (BOM) / Zero-Width No-Break Space, U+2060 Word Joiner, U+2061 Function Application, U+2062 Invisible Times, U+2063 Invisible Separator, U+2064 Invisible Plus, U+00AD Soft Hyphen, U+034F Combining Grapheme Joiner, and U+180E Mongolian Vowel Separator.</p>
+
+          <h3>Common Sources of Zero-Width Characters</h3>
+          <ul>
+            <li><strong>Copy from Twitter/X</strong> — may add ZWS for line-break control in long words</li>
+            <li><strong>Arabic and Indic text</strong> — ZWNJ and ZWJ control character joining</li>
+            <li><strong>Emoji sequences</strong> — family emojis and flag emojis use ZWJ to combine base characters</li>
+            <li><strong>UTF-8 BOM files</strong> — some Windows text editors add a BOM at file start</li>
+            <li><strong>Web scraping</strong> — scraped content often contains ZWC from the source page's JavaScript</li>
+            <li><strong>Malicious content</strong> — spam, phishing, and filter evasion deliberately insert ZWC</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What are zero-width characters?</button>
+            <div class="faq-answer">Zero-width characters are Unicode code points that take up no visual space in rendered text. They include Zero-Width Space (U+200B), Zero-Width Non-Joiner (U+200C), Zero-Width Joiner (U+200D), Byte Order Mark (U+FEFF), Word Joiner (U+2060), and others. They are often used for language formatting but can also be inserted maliciously to bypass filters or create homograph attacks.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why are zero-width characters dangerous?</button>
+            <div class="faq-answer">Zero-width characters can be used to bypass spam filters, keyword blocklists, and plagiarism detectors. Attackers insert them into phishing URLs to make them look like legitimate domains. They can also break string comparisons, cause URL routing issues, and embed hidden watermarks in documents without the reader's knowledge.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does the Insert mode work?</button>
+            <div class="faq-answer">Insert mode lets you add zero-width spaces at specific positions in your text — useful for controlling line-break behavior in long strings, or for adding watermarks that can later be decoded to identify the source of a leak. You can insert between every character, between words only, or at the end of the text.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a Byte Order Mark (BOM)?</button>
+            <div class="faq-answer">A Byte Order Mark (U+FEFF) is a special Unicode character that can appear at the very start of a text file to indicate its encoding. While useful for file encoding detection, a BOM at the start of JSON, CSV, or HTML files can cause parsing errors. This tool detects and removes BOMs along with all other zero-width characters.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can zero-width characters be used for text watermarking?</button>
+            <div class="faq-answer">Yes. Unicode Steganography uses combinations of zero-width characters to embed binary data invisibly in plaintext. Each recipient of a sensitive document gets a uniquely watermarked version, so if the document leaks, the watermark can be decoded to identify which recipient leaked it. The Insert mode in this tool provides a simple version of this capability.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/whitespace-visualizer.html">Whitespace Visualizer</a>
+        <a href="/tools/invisible-char-detector.html">Zero-Width Detector</a>
+        <a href="/tools/text-reverser.html">Text Reverser</a>
+        <a href="/tools/string-length-calculator.html">String Length</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('zwInput');
+      var zwOutput = document.getElementById('zwOutput');
+      var findingsList = document.getElementById('findingsList');
+      var statusBar = document.getElementById('statusBar');
+      var outputLabel = document.getElementById('outputLabel');
+      var insertControls = document.getElementById('insertControls');
+      var currentMode = 'detect';
+      var cleanedText = '';
+
+      // Zero-width character definitions
+      var ZW_CHARS = [
+        { code: '\u200B', hex: 'U+200B', name: 'Zero-Width Space (ZWS)' },
+        { code: '\u200C', hex: 'U+200C', name: 'Zero-Width Non-Joiner (ZWNJ)' },
+        { code: '\u200D', hex: 'U+200D', name: 'Zero-Width Joiner (ZWJ)' },
+        { code: '\uFEFF', hex: 'U+FEFF', name: 'Byte Order Mark / ZWNBSP (BOM)' },
+        { code: '\u2060', hex: 'U+2060', name: 'Word Joiner' },
+        { code: '\u2061', hex: 'U+2061', name: 'Function Application' },
+        { code: '\u2062', hex: 'U+2062', name: 'Invisible Times' },
+        { code: '\u2063', hex: 'U+2063', name: 'Invisible Separator' },
+        { code: '\u2064', hex: 'U+2064', name: 'Invisible Plus' },
+        { code: '\u00AD', hex: 'U+00AD', name: 'Soft Hyphen' },
+        { code: '\u034F', hex: 'U+034F', name: 'Combining Grapheme Joiner' },
+        { code: '\u180E', hex: 'U+180E', name: 'Mongolian Vowel Separator' }
+      ];
+
+      var ZW_SET = {};
+      ZW_CHARS.forEach(function (c) { ZW_SET[c.code] = c; });
+
+      function isZW(ch) { return !!ZW_SET[ch]; }
+
+      function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function detectAndRender(text) {
+        var out = '';
+        var findings = [];
+        for (var i = 0; i < text.length; i++) {
+          var ch = text[i];
+          if (ZW_SET[ch]) {
+            var def = ZW_SET[ch];
+            findings.push({ pos: i, hex: def.hex, name: def.name });
+            out += '<span class="zw-marker" title="' + escapeHtml(def.name) + ' at position ' + i + '">' + def.hex + '</span>';
+          } else {
+            out += escapeHtml(ch);
+          }
+        }
+        return { html: out, findings: findings };
+      }
+
+      function removeZW(text) {
+        var result = '';
+        for (var i = 0; i < text.length; i++) {
+          if (!ZW_SET[text[i]]) result += text[i];
+        }
+        return result;
+      }
+
+      function insertZW(text) {
+        var pos = document.querySelector('input[name="insertPos"]:checked').value;
+        var charCode = document.querySelector('input[name="insertChar"]:checked').value;
+        var zwChar = String.fromCodePoint(parseInt(charCode, 16));
+
+        if (pos === 'between') {
+          return text.split('').join(zwChar);
+        } else if (pos === 'words') {
+          return text.replace(/(\S)(\s+)(\S)/g, function (m, a, sp, b) {
+            return a + zwChar + sp + b;
+          });
+        } else if (pos === 'end') {
+          return text + zwChar;
+        }
+        return text;
+      }
+
+      function process() {
+        var raw = input.value;
+        if (!raw) {
+          zwOutput.innerHTML = '';
+          findingsList.innerHTML = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste text above to detect zero-width characters.';
+          return;
+        }
+
+        if (currentMode === 'detect') {
+          var result = detectAndRender(raw);
+          zwOutput.innerHTML = result.html;
+          cleanedText = raw;
+
+          if (result.findings.length === 0) {
+            findingsList.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">No zero-width characters found.</p>';
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Clean — no zero-width characters detected.';
+          } else {
+            var html = '';
+            result.findings.forEach(function (f) {
+              html += '<div class="zw-finding"><span class="zw-finding-pos">Pos ' + f.pos + '</span><span class="zw-finding-code">' + f.hex + '</span><span class="zw-finding-name">' + escapeHtml(f.name) + '</span></div>';
+            });
+            findingsList.innerHTML = html;
+
+            var positions = result.findings.map(function (f) { return f.pos; }).join(', ');
+            statusBar.className = 'status-bar invalid';
+            statusBar.textContent = 'Found ' + result.findings.length + ' zero-width character' + (result.findings.length === 1 ? '' : 's') + ' at position' + (result.findings.length === 1 ? '' : 's') + ': ' + (positions.length > 80 ? positions.substring(0, 80) + '...' : positions);
+          }
+
+        } else if (currentMode === 'remove') {
+          cleanedText = removeZW(raw);
+          zwOutput.textContent = cleanedText;
+          findingsList.innerHTML = '';
+          var removed = raw.length - cleanedText.length;
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = removed === 0
+            ? 'No zero-width characters found — text is already clean.'
+            : 'Removed ' + removed + ' zero-width character' + (removed === 1 ? '' : 's') + '. Output is clean.';
+
+        } else if (currentMode === 'insert') {
+          cleanedText = insertZW(raw);
+          zwOutput.textContent = cleanedText;
+          findingsList.innerHTML = '';
+          var added = cleanedText.length - raw.length;
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Inserted ' + added + ' zero-width character' + (added === 1 ? '' : 's') + ' into text.';
+        }
+
+        DT.trackTool('invisible-char-detector');
+      }
+
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          insertControls.style.display = currentMode === 'insert' ? 'flex' : 'none';
+          outputLabel.textContent = currentMode === 'detect' ? 'Detected Characters' : (currentMode === 'remove' ? 'Cleaned Text' : 'Text with Inserted Characters');
+          process();
+        });
+      });
+
+      document.querySelectorAll('input[name="insertPos"], input[name="insertChar"]').forEach(function (radio) {
+        radio.addEventListener('change', function () { if (currentMode === 'insert') process(); });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (cleanedText) DT.copyToClipboard(cleanedText, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        if (cleanedText) DT.downloadText(cleanedText, 'cleaned-text.txt', 'text/plain');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        // Insert some zero-width chars as example
+        input.value = 'Hello\u200B World\u200C — this\u200D text\uFEFF has\u2060 hidden\u200B characters.';
+        process();
+      });
+    })();
+  </script>
+</body>
+</html>

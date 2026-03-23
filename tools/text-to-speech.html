@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Text to Speech — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert text to speech free online. Choose voice, adjust rate, pitch and volume. Uses your browser's Web Speech API — no server, no signup required.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/text-to-speech.html">
+  <meta property="og:title" content="Text to Speech — DevToolbox">
+  <meta property="og:description" content="Free browser-based text to speech converter. Select voice, adjust rate/pitch/volume, play/pause/stop. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/text-to-speech.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Text to Speech — DevToolbox">
+  <meta name="twitter:description" content="Free browser-based text to speech converter. Select voice, adjust rate/pitch/volume, play/pause/stop.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Text to Speech",
+    "url": "https://thisdevtool.com/tools/text-to-speech.html",
+    "description": "Convert text to speech using your browser's Web Speech API. Choose voice, rate, pitch and volume. 100% client-side, no server required.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What voices are available in the text to speech tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Available voices depend on your operating system and browser. Chrome on Windows typically includes Google US English, Google UK English, and Microsoft voices. macOS users get Siri-quality voices like Alex and Samantha. The tool lists all voices your browser exposes via the Web Speech API."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this text to speech tool work offline?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Some voices work offline (system voices like Microsoft David on Windows) while others like Google voices require an internet connection to synthesize speech. The tool uses whatever voices your browser makes available."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the maximum text length I can convert to speech?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Web Speech API can handle long texts, but some browsers limit a single utterance to a few thousand characters. This tool automatically chunks longer texts at sentence boundaries so you can listen to texts of any length."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I download the audio output?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Web Speech API does not expose audio data for download — it plays directly through your speakers. To record the output, use your operating system's audio recording feature or a tool like Audacity with loopback recording enabled."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does word highlighting not work in my browser?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Word boundary events used for word highlighting are supported in Chrome and Edge but not in Firefox or Safari. If you are using Firefox or Safari, speech will still play but the word-by-word highlighting feature will be unavailable."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .tts-layout { display: flex; flex-direction: column; gap: 1rem; }
+    .tts-textarea-wrap { position: relative; }
+    #ttsInput { width: 100%; min-height: 200px; font-size: 1rem; line-height: 1.7; resize: vertical; }
+    .tts-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .tts-control-group { display: flex; flex-direction: column; gap: .4rem; }
+    .tts-control-group label { font-size: .85rem; font-weight: 600; color: var(--text-secondary); }
+    .tts-control-group select,
+    .tts-control-group input[type=range] { width: 100%; }
+    .tts-slider-row { display: flex; align-items: center; gap: .5rem; }
+    .tts-slider-row input[type=range] { flex: 1; }
+    .tts-slider-val { font-size: .85rem; min-width: 2.5rem; text-align: right; color: var(--text-secondary); }
+    .tts-btn-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .5rem; }
+    .tts-btn-row .btn { min-width: 80px; }
+    .word-highlight { background: rgba(16,185,129,0.3); border-radius: 3px; padding: 0 2px; }
+    .tts-progress { height: 4px; background: var(--border); border-radius: 2px; margin-top: .5rem; overflow: hidden; }
+    .tts-progress-bar { height: 100%; background: var(--accent); width: 0; transition: width .3s; border-radius: 2px; }
+    @media (max-width: 600px) { .tts-controls { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/readability-score.html">Readability</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Text to Speech</h1>
+          <p class="tool-subtitle">Convert any text to speech in your browser. Choose voice, speed, pitch and volume — no server, no signup.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="speak">Speak</button>
+            <button class="option-chip" data-mode="settings">Settings</button>
+            <button class="option-chip" data-mode="ssml">SSML</button>
+          </div>
+
+          <div class="tts-layout">
+            <!-- Text input -->
+            <div id="panelSpeak">
+              <div class="pane-label">
+                <span>Text to Read</span>
+                <div class="btn-group" style="margin:0">
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+              </div>
+              <div class="tts-textarea-wrap">
+                <textarea id="ttsInput" placeholder="Type or paste text here to convert to speech..." spellcheck="true"></textarea>
+              </div>
+              <div class="tts-progress"><div class="tts-progress-bar" id="progressBar"></div></div>
+              <div class="tts-btn-row">
+                <button class="btn btn-primary" id="speakBtn">&#9654; Play</button>
+                <button class="btn btn-secondary" id="pauseBtn" disabled>&#10074;&#10074; Pause</button>
+                <button class="btn btn-secondary" id="stopBtn" disabled>&#9632; Stop</button>
+              </div>
+            </div>
+
+            <!-- Settings panel -->
+            <div id="panelSettings" style="display:none">
+              <div class="tts-controls">
+                <div class="tts-control-group">
+                  <label for="voiceSelect">Voice</label>
+                  <select id="voiceSelect"><option value="">Loading voices...</option></select>
+                </div>
+                <div class="tts-control-group">
+                  <label>Rate <span class="tts-slider-val" id="rateVal">1.0x</span></label>
+                  <div class="tts-slider-row">
+                    <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1">
+                  </div>
+                </div>
+                <div class="tts-control-group">
+                  <label>Pitch <span class="tts-slider-val" id="pitchVal">1.0</span></label>
+                  <div class="tts-slider-row">
+                    <input type="range" id="pitchSlider" min="0" max="2" step="0.1" value="1">
+                  </div>
+                </div>
+                <div class="tts-control-group">
+                  <label>Volume <span class="tts-slider-val" id="volumeVal">100%</span></label>
+                  <div class="tts-slider-row">
+                    <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SSML panel -->
+            <div id="panelSSML" style="display:none">
+              <p class="tool-subtitle" style="margin-bottom:.75rem">Paste SSML markup below. The tool will strip tags and read the text content using your voice settings. Full SSML synthesis requires a server-side TTS API.</p>
+              <div class="pane-label"><span>SSML Input</span></div>
+              <textarea id="ssmlInput" rows="8" placeholder='<speak>Hello <break time="500ms"/> world. <emphasis level="strong">DevToolbox</emphasis> is great.</speak>' spellcheck="false" style="width:100%;font-family:monospace;font-size:.85rem;"></textarea>
+              <div class="tts-btn-row">
+                <button class="btn btn-primary" id="ssmlSpeakBtn">&#9654; Speak SSML Text</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter text above and press Play to start speaking.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Text to Speech Tool</h2>
+          <ol>
+            <li><strong>Type or paste</strong> your text into the input area.</li>
+            <li><strong>Choose a voice</strong> — click the Settings chip to see all voices available in your browser.</li>
+            <li><strong>Adjust speed, pitch and volume</strong> using the sliders in Settings.</li>
+            <li><strong>Press Play</strong> to start speaking. Use Pause and Stop to control playback.</li>
+            <li><strong>Watch word highlighting</strong> — the current word is highlighted as it is spoken (Chrome/Edge).</li>
+          </ol>
+
+          <h2>About Web Speech Synthesis</h2>
+          <p>This tool uses the browser's built-in <strong>Web Speech API</strong> (<code>speechSynthesis</code>), which is supported in Chrome, Edge, Safari, and Firefox. No audio is sent to any server — the speech synthesis happens entirely on your device using the voices installed on your operating system or provided by the browser.</p>
+
+          <h3>Voice Quality</h3>
+          <p>Voice quality varies by platform. <strong>Chrome on Windows</strong> includes high-quality Google voices (Google US English, Google UK English Female, etc.) that sound natural and are streamed from Google's servers. <strong>macOS and iOS</strong> include premium voices like Alex, Samantha, and various international options. <strong>Windows</strong> includes Microsoft David and Zira voices that work offline. <strong>Linux</strong> typically includes eSpeak voices which sound more robotic but work without internet. To get the best voices on Windows, go to Settings → Time & Language → Speech and download additional voice packs.</p>
+
+          <h3>Rate, Pitch and Volume Explained</h3>
+          <ul>
+            <li><strong>Rate</strong> — Controls how fast the speech is read. 1.0 is normal speed. 0.5 is half speed (useful for learning) and 2.0 is double speed (useful for quickly reviewing long documents). Most people find 1.1–1.3x comfortable for productivity.</li>
+            <li><strong>Pitch</strong> — Changes the frequency of the voice. Higher values make the voice sound higher, lower values deeper. 1.0 is the voice's natural pitch.</li>
+            <li><strong>Volume</strong> — Controls the loudness from 0 (silent) to 1 (full volume). This is separate from your system volume.</li>
+          </ul>
+
+          <h3>Accessibility Uses</h3>
+          <p>Text to speech has important accessibility applications. People with dyslexia, visual impairments, or reading difficulties often use TTS tools to consume written content more easily. Developers use TTS to test the accessibility of their web applications. Language learners use it to hear correct pronunciation of words and sentences. If you need more advanced accessibility features, consider pairing this tool with our <a href="/tools/readability-score.html">Readability Score</a> to ensure your text is easy to understand at the target audience level.</p>
+
+          <h3>SSML Support</h3>
+          <p>Speech Synthesis Markup Language (SSML) is an XML-based markup language that allows you to control speech more precisely — adding pauses with <code>&lt;break&gt;</code>, emphasis with <code>&lt;emphasis&gt;</code>, or pronunciation hints with <code>&lt;phoneme&gt;</code>. The Web Speech API has limited SSML support, so this tool extracts the text content from your SSML and reads it with your chosen voice settings. For full SSML support, server-side APIs like Google Cloud Text-to-Speech or Amazon Polly are recommended.</p>
+
+          <h3>Common Use Cases</h3>
+          <ul>
+            <li>Proofreading — hearing your writing helps catch errors that eyes miss</li>
+            <li>Accessibility testing — verify how screen readers will read your content</li>
+            <li>Language learning — hear correct pronunciation of foreign phrases</li>
+            <li>Productivity — listen to articles or documents while multitasking</li>
+            <li>Presentations — generate placeholder voiceover for demos</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What voices are available in the text to speech tool?</button>
+            <div class="faq-answer">Available voices depend on your operating system and browser. Chrome on Windows typically includes Google US English, Google UK English, and Microsoft voices. macOS users get Siri-quality voices like Alex and Samantha. The tool lists all voices your browser exposes via the Web Speech API.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does this text to speech tool work offline?</button>
+            <div class="faq-answer">Some voices work offline (system voices like Microsoft David on Windows) while others like Google voices require an internet connection to synthesize speech. The tool uses whatever voices your browser makes available.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the maximum text length I can convert to speech?</button>
+            <div class="faq-answer">The Web Speech API can handle long texts, but some browsers limit a single utterance to a few thousand characters. This tool automatically chunks longer texts at sentence boundaries so you can listen to texts of any length.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I download the audio output?</button>
+            <div class="faq-answer">The Web Speech API does not expose audio data for download — it plays directly through your speakers. To record the output, use your operating system's audio recording feature or a tool like Audacity with loopback recording enabled.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why does word highlighting not work in my browser?</button>
+            <div class="faq-answer">Word boundary events used for word highlighting are supported in Chrome and Edge but not in Firefox or Safari. If you are using Firefox or Safari, speech will still play but the word-by-word highlighting feature will be unavailable.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/text-to-speech.html">Text to Speech</a>
+        <a href="/tools/readability-score.html">Readability Score</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/text-sorter.html">Line Sorter</a>
+        <a href="/tools/find-replace-advanced.html">Find &amp; Replace</a>
+        <a href="/tools/lorem-ipsum.html">Lorem Ipsum</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var synth = window.speechSynthesis;
+    var voices = [];
+    var chunks = [];
+    var chunkIndex = 0;
+    var totalWords = 0;
+    var spokenWords = 0;
+    var currentUtterance = null;
+    var isPaused = false;
+    var currentMode = 'speak';
+
+    var ttsInput   = document.getElementById('ttsInput');
+    var ssmlInput  = document.getElementById('ssmlInput');
+    var statusBar  = document.getElementById('statusBar');
+    var progressBar= document.getElementById('progressBar');
+    var speakBtn   = document.getElementById('speakBtn');
+    var pauseBtn   = document.getElementById('pauseBtn');
+    var stopBtn    = document.getElementById('stopBtn');
+    var voiceSel   = document.getElementById('voiceSelect');
+    var rateSlider = document.getElementById('rateSlider');
+    var pitchSlider= document.getElementById('pitchSlider');
+    var volSlider  = document.getElementById('volumeSlider');
+    var rateVal    = document.getElementById('rateVal');
+    var pitchVal   = document.getElementById('pitchVal');
+    var volumeVal  = document.getElementById('volumeVal');
+
+    // --- Voice loading ---
+    function loadVoices() {
+      voices = synth.getVoices();
+      if (!voices.length) return;
+      voiceSel.innerHTML = '';
+      voices.forEach(function (v, i) {
+        var opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = v.name + ' (' + v.lang + ')' + (v.localService ? '' : ' [online]');
+        if (v.lang.startsWith('en') && !voiceSel.querySelector('[selected]')) opt.selected = true;
+        voiceSel.appendChild(opt);
+      });
+    }
+    loadVoices();
+    if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = loadVoices;
+
+    // --- Sliders ---
+    rateSlider.addEventListener('input', function () { rateVal.textContent = parseFloat(this.value).toFixed(1) + 'x'; });
+    pitchSlider.addEventListener('input', function () { pitchVal.textContent = parseFloat(this.value).toFixed(1); });
+    volSlider.addEventListener('input', function () { volumeVal.textContent = Math.round(this.value * 100) + '%'; });
+
+    // --- Mode chips ---
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        document.getElementById('panelSpeak').style.display = currentMode === 'speak' ? '' : 'none';
+        document.getElementById('panelSettings').style.display = currentMode === 'settings' ? '' : 'none';
+        document.getElementById('panelSSML').style.display = currentMode === 'ssml' ? '' : 'none';
+      });
+    });
+
+    // --- Chunk text at sentence boundaries ---
+    function splitIntoChunks(text, maxLen) {
+      maxLen = maxLen || 200;
+      var sentences = text.match(/[^.!?\n]+[.!?\n]?/g) || [text];
+      var result = [];
+      var current = '';
+      sentences.forEach(function (s) {
+        if ((current + s).length > maxLen) {
+          if (current) result.push(current.trim());
+          current = s;
+        } else {
+          current += s;
+        }
+      });
+      if (current.trim()) result.push(current.trim());
+      return result;
+    }
+
+    function getSelectedVoice() {
+      var idx = parseInt(voiceSel.value, 10);
+      return isNaN(idx) ? null : voices[idx] || null;
+    }
+
+    function setPlaying(playing) {
+      speakBtn.disabled = playing;
+      pauseBtn.disabled = !playing;
+      stopBtn.disabled = !playing;
+    }
+
+    function speakText(text) {
+      if (!synth) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Web Speech API not supported in this browser.';
+        return;
+      }
+      synth.cancel();
+      var words = text.trim().split(/\s+/).filter(Boolean);
+      totalWords = words.length;
+      spokenWords = 0;
+      if (!totalWords) {
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter text above and press Play to start speaking.';
+        return;
+      }
+      chunks = splitIntoChunks(text);
+      chunkIndex = 0;
+      setPlaying(true);
+      isPaused = false;
+      speakChunk();
+      DT.trackTool('text-to-speech');
+    }
+
+    function speakChunk() {
+      if (chunkIndex >= chunks.length) {
+        setPlaying(false);
+        progressBar.style.width = '100%';
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Done — ' + totalWords + ' words spoken.';
+        setTimeout(function () { progressBar.style.width = '0'; }, 1500);
+        return;
+      }
+      var chunkText = chunks[chunkIndex];
+      var utt = new SpeechSynthesisUtterance(chunkText);
+      var voice = getSelectedVoice();
+      if (voice) utt.voice = voice;
+      utt.rate = parseFloat(rateSlider.value);
+      utt.pitch = parseFloat(pitchSlider.value);
+      utt.volume = parseFloat(volSlider.value);
+      currentUtterance = utt;
+
+      var chunkWords = chunkText.split(/\s+/).filter(Boolean).length;
+
+      utt.onboundary = function (e) {
+        if (e.name !== 'word') return;
+        spokenWords++;
+        progressBar.style.width = Math.min(100, (spokenWords / totalWords * 100)) + '%';
+        var voiceName = (voice ? voice.name : 'Default');
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Speaking \u2014 ' + totalWords + ' words \u2014 Voice: ' + voiceName;
+        // Highlight word in textarea
+        try {
+          var charIdx = e.charIndex;
+          var allText = chunks.slice(0, chunkIndex).join(' ') + (chunkIndex > 0 ? ' ' : '') + chunkText;
+          var absIdx = chunks.slice(0, chunkIndex).join(' ').length + (chunkIndex > 0 ? 1 : 0) + charIdx;
+          ttsInput.setSelectionRange(absIdx, absIdx + (e.charLength || 5));
+        } catch (err) {}
+      };
+
+      utt.onend = function () {
+        spokenWords += chunkWords;
+        chunkIndex++;
+        speakChunk();
+      };
+
+      utt.onerror = function (e) {
+        if (e.error === 'interrupted' || e.error === 'canceled') return;
+        setPlaying(false);
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Speech error: ' + e.error;
+      };
+
+      synth.speak(utt);
+      statusBar.className = 'status-bar valid';
+      var vn = (getSelectedVoice() ? getSelectedVoice().name : 'Default');
+      statusBar.textContent = 'Speaking \u2014 ' + totalWords + ' words \u2014 Voice: ' + vn;
+    }
+
+    // --- Controls ---
+    speakBtn.addEventListener('click', function () {
+      var text = ttsInput.value.trim();
+      if (!text) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Please enter some text first.';
+        return;
+      }
+      speakText(text);
+    });
+
+    pauseBtn.addEventListener('click', function () {
+      if (isPaused) {
+        synth.resume();
+        isPaused = false;
+        pauseBtn.textContent = '\u23F8\uFE0F Pause';
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Resumed.';
+      } else {
+        synth.pause();
+        isPaused = true;
+        pauseBtn.textContent = '\u25B6 Resume';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paused.';
+      }
+    });
+
+    stopBtn.addEventListener('click', function () {
+      synth.cancel();
+      setPlaying(false);
+      isPaused = false;
+      pauseBtn.textContent = '\u23F8\uFE0F Pause';
+      progressBar.style.width = '0';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Stopped.';
+    });
+
+    document.getElementById('ssmlSpeakBtn').addEventListener('click', function () {
+      var raw = ssmlInput.value.trim();
+      if (!raw) return;
+      // Strip XML tags
+      var text = raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      ttsInput.value = text;
+      // Switch to speak panel
+      document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      document.querySelector('[data-mode="speak"]').classList.add('active');
+      document.getElementById('panelSpeak').style.display = '';
+      document.getElementById('panelSSML').style.display = 'none';
+      currentMode = 'speak';
+      speakText(text);
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      ttsInput.value = 'Welcome to DevToolbox, your free online developer toolkit. This text to speech tool uses your browser\'s built-in Web Speech API to convert any text into natural-sounding speech. You can adjust the voice, speed, pitch, and volume using the Settings panel. Try different voices to find the one that suits you best. No data is ever sent to a server — everything happens right here in your browser.';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Example loaded. Press Play to listen.';
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      synth.cancel();
+      setPlaying(false);
+      isPaused = false;
+      ttsInput.value = '';
+      progressBar.style.width = '0';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Enter text above and press Play to start speaking.';
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Text Reverser — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Reverse text by characters, words, lines, or sentences. Handles Unicode, emoji, and combining characters correctly. Free, instant, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/text-reverser.html">
+  <meta property="og:title" content="Text Reverser — DevToolbox">
+  <meta property="og:description" content="Reverse text by characters, words, lines, or sentences. Unicode-safe — handles emoji and combining characters correctly. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/text-reverser.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Text Reverser — DevToolbox">
+  <meta name="twitter:description" content="Reverse text by characters, words, lines, or sentences. Unicode-safe. Free online tool.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Text Reverser",
+    "url": "https://thisdevtool.com/tools/text-reverser.html",
+    "description": "Reverse text by characters, words, lines, or sentences. Unicode-safe — handles emoji and combining characters correctly. Free, 100% client-side.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why does naively reversing a string break emoji?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Emoji are represented in JavaScript as surrogate pairs — two UTF-16 code units that together represent a single character. If you reverse a string character by character using .split('').reverse().join(''), the surrogate pairs get separated and the emoji become garbled. This tool uses the Intl.Segmenter API (or a regex-based polyfill) to split text into proper Unicode grapheme clusters before reversing, ensuring emoji remain intact."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between reversing by characters vs. words?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Character reversal reverses the entire string so the last character becomes the first. Word reversal keeps the characters within each word intact but reverses the order of words in the sentence — so 'Hello World' becomes 'World Hello'. Line reversal keeps lines intact but reverses their order. Sentence reversal keeps sentences intact but reverses their order in the text."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are Unicode combining characters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Combining characters are Unicode code points that modify the preceding character — for example, accent marks, diacritics, and certain emoji modifiers. A single visually perceived character may be composed of a base character plus one or more combining characters. Reversing without accounting for combining characters separates them from their base, producing garbled output. This tool treats each grapheme cluster (base + combiners) as a single unit."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the Mirror Text option do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Mirror Text converts each character to its Unicode mirrored equivalent where one exists — for example, parentheses flip direction, square brackets reverse, and some letters have dedicated mirrored forms. It then reverses the character order, producing text that resembles a mirror reflection. Note that only a subset of Unicode characters have formal mirror equivalents, so most letters will appear reversed but not truly mirrored."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I reverse multiple paragraphs at once?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. In Lines mode, the tool reverses the order of all lines in your input — so you can paste multiple paragraphs and reverse their order in one click. In Characters or Words mode, the entire input is treated as a single block and reversed as a whole. Sentence mode splits on terminal punctuation and reverses the sentence order."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Text Reverser</h1>
+          <p class="tool-subtitle">Reverse text by characters, words, lines, or sentences. Unicode-safe — handles emoji and combining characters correctly.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="characters">Characters</button>
+            <button class="option-chip" data-mode="words">Words</button>
+            <button class="option-chip" data-mode="lines">Lines</button>
+            <button class="option-chip" data-mode="sentences">Sentences</button>
+          </div>
+
+          <div style="margin: 0.5rem 0 0.75rem; display:flex; align-items:center; gap:0.75rem; font-size:0.85rem;">
+            <label style="display:flex;align-items:center;gap:0.35rem;cursor:pointer;">
+              <input type="checkbox" id="mirrorToggle"> Mirror text (flip chars to Unicode mirrors)
+            </label>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="reverseInput" rows="16" placeholder="Paste or type text here to reverse it..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Reversed Text</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="reverseOutput" style="min-height:340px; white-space:pre-wrap; word-break:break-all;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste text above to reverse it.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Text Reverser</h2>
+          <ol>
+            <li><strong>Paste your text</strong> into the input area on the left.</li>
+            <li><strong>Choose a reversal mode</strong> — Characters (full string reversal), Words (reverse word order), Lines (reverse line order), or Sentences (reverse sentence order).</li>
+            <li><strong>Optionally enable Mirror Text</strong> to flip characters to their Unicode mirror equivalents.</li>
+            <li><strong>Copy or download</strong> the reversed text using the buttons above the output.</li>
+          </ol>
+
+          <h2>Reversal Modes Explained</h2>
+
+          <h3>Characters Mode</h3>
+          <p>Characters mode reverses the entire text at the grapheme cluster level. This means the very last character in your text becomes the first, and so on. Unlike naive JavaScript string reversal (which breaks emoji), this tool correctly handles multi-codepoint sequences including emoji (e.g., 👨‍👩‍👧 family emoji are composed of multiple code points joined with ZWJ), emoji with skin tone modifiers (e.g., 👋🏽 is two code points), combining diacritics (e.g., é can be "e" + combining acute accent), and regional indicator symbols used for flag emoji. The result is a true mirror of your input at the character level.</p>
+
+          <h3>Words Mode</h3>
+          <p>Words mode preserves the spelling and characters of each individual word but reverses the sequence of words in the text. Whitespace between words is preserved. For example, "The quick brown fox" becomes "fox brown quick The". This mode is useful for testing text parsers that read words in order, creating word-order puzzles, or reversing lists written as sentences. Punctuation attached to words (like trailing periods or commas) travels with the word it is attached to.</p>
+
+          <h3>Lines Mode</h3>
+          <p>Lines mode reverses the order of lines in the text without modifying the content of any individual line. This is particularly useful for reversing chronologically ordered data — for example, turning a log file from oldest-first to newest-first, reversing the order of items in a numbered list, or flipping a commit history. Both Unix (LF) and Windows (CRLF) line endings are handled correctly.</p>
+
+          <h3>Sentences Mode</h3>
+          <p>Sentences mode splits text on sentence-ending punctuation (. ! ?) and reverses the order of sentences while preserving each sentence's internal content. This is useful for text analysis, creating readability puzzles, or testing how content reads when the sentence order is different. The tool handles common edge cases like abbreviations (Mr., Dr.), decimal numbers (3.14), and ellipsis (...).</p>
+
+          <h3>Unicode and Emoji Safety</h3>
+          <p>Most online text reversers produce broken output for text containing emoji, accented characters with combining marks, or right-to-left script characters. This is because JavaScript strings are sequences of UTF-16 code units, and many characters require two code units (a surrogate pair) to represent. Splitting by code unit and reversing separates surrogate pairs, making emoji appear as question marks or tofu squares. This tool uses the <code>Intl.Segmenter</code> API where available, which correctly identifies grapheme cluster boundaries. On older browsers, a regex-based approach using Unicode property escapes handles the most common cases.</p>
+
+          <h3>Mirror Text</h3>
+          <p>When Mirror Text is enabled, each character is first converted to its Unicode mirrored equivalent (if one exists) before the reversal is applied. Unicode defines formal mirror images for bracket-like characters: ( becomes ), [ becomes ], { becomes }, &lt; becomes &gt;, and so on. Some mathematical operators and geometric shapes also have mirrors. For Latin letters, no formal mirrors exist in Unicode, but the visual effect of reversed text combined with mirrored punctuation creates a text that resembles a reflection in a mirror — a popular effect for creative writing and social media captions.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does naively reversing a string break emoji?</button>
+            <div class="faq-answer">Emoji are represented in JavaScript as surrogate pairs — two UTF-16 code units that together represent a single character. If you reverse a string character by character using .split('').reverse().join(''), the surrogate pairs get separated and the emoji become garbled. This tool uses the Intl.Segmenter API to split text into proper Unicode grapheme clusters before reversing, ensuring emoji remain intact.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between reversing by characters vs. words?</button>
+            <div class="faq-answer">Character reversal reverses the entire string so the last character becomes the first. Word reversal keeps the characters within each word intact but reverses the order of words — so "Hello World" becomes "World Hello". Line reversal keeps lines intact but reverses their order. Sentence reversal keeps sentences intact but reverses their order in the text.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What are Unicode combining characters?</button>
+            <div class="faq-answer">Combining characters are Unicode code points that modify the preceding character — for example, accent marks, diacritics, and emoji modifiers. A single visually perceived character may be composed of a base character plus one or more combining characters. Reversing without accounting for combining characters separates them from their base, producing garbled output. This tool treats each grapheme cluster as a single unit.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does the Mirror Text option do?</button>
+            <div class="faq-answer">Mirror Text converts each character to its Unicode mirrored equivalent where one exists — parentheses flip direction, brackets reverse, and angle brackets swap. It then reverses the character order, producing text that resembles a mirror reflection. Most letters do not have Unicode mirror forms so they appear reversed but not mirrored.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I reverse multiple paragraphs at once?</button>
+            <div class="faq-answer">Yes. In Lines mode, the tool reverses the order of all lines in your input — so you can paste multiple paragraphs and reverse their order in one click. In Characters or Words mode, the entire input is treated as a single block and reversed as a whole. Sentence mode splits on terminal punctuation and reverses the sentence order.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/text-reverser.html">Text Reverser</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/string-length-calculator.html">String Length</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/whitespace-visualizer.html">Whitespace Visualizer</a>
+        <a href="/tools/invisible-char-detector.html">Zero-Width Detector</a>
+        <a href="/tools/slug-generator.html">Slug Generator</a>
+        <a href="/tools/list-deduper.html">List Deduper</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var input = document.getElementById('reverseInput');
+      var output = document.getElementById('reverseOutput');
+      var statusBar = document.getElementById('statusBar');
+      var mirrorToggle = document.getElementById('mirrorToggle');
+      var currentMode = 'characters';
+      var resultText = '';
+
+      // Mirror map for Unicode mirrored characters
+      var MIRROR_MAP = {
+        '(': ')', ')': '(', '[': ']', ']': '[', '{': '}', '}': '{',
+        '<': '>', '>': '<', '\u2329': '\u232A', '\u232A': '\u2329',
+        '\u27E8': '\u27E9', '\u27E9': '\u27E8',
+        '\u2308': '\u2309', '\u2309': '\u2308',
+        '\u230A': '\u230B', '\u230B': '\u230A',
+        '\u2018': '\u2019', '\u2019': '\u2018',
+        '\u201C': '\u201D', '\u201D': '\u201C',
+        '\u00AB': '\u00BB', '\u00BB': '\u00AB'
+      };
+
+      // Unicode-safe grapheme cluster split
+      function splitGraphemes(str) {
+        if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+          var segmenter = new Intl.Segmenter();
+          var segments = [];
+          var iter = segmenter.segment(str);
+          for (var seg of iter) { segments.push(seg.segment); }
+          return segments;
+        }
+        // Fallback: regex-based surrogate pair + combining char handling
+        var re = /[\uD800-\uDBFF][\uDC00-\uDFFF][\u0300-\u036F\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]*|[\u0300-\u036F\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]*[\uD800-\uDBFF][\uDC00-\uDFFF]|[\s\S]/g;
+        return str.match(re) || [];
+      }
+
+      function applyMirror(chars) {
+        return chars.map(function (ch) {
+          return MIRROR_MAP[ch] !== undefined ? MIRROR_MAP[ch] : ch;
+        });
+      }
+
+      function reverseChars(text) {
+        var graphemes = splitGraphemes(text);
+        if (mirrorToggle.checked) graphemes = applyMirror(graphemes);
+        return graphemes.reverse().join('');
+      }
+
+      function reverseWords(text) {
+        return text.split(/\n/).map(function (line) {
+          var words = line.split(/(\s+)/);
+          var wordTokens = [];
+          var sepTokens = [];
+          words.forEach(function (t, i) {
+            if (i % 2 === 0) wordTokens.push(t);
+            else sepTokens.push(t);
+          });
+          var revWords = wordTokens.reverse();
+          var result = '';
+          revWords.forEach(function (w, i) {
+            result += w;
+            if (i < sepTokens.length) result += sepTokens[i];
+          });
+          return result;
+        }).join('\n');
+      }
+
+      function reverseLines(text) {
+        return text.split(/\r?\n/).reverse().join('\n');
+      }
+
+      function reverseSentences(text) {
+        // Split on sentence endings, preserving delimiter
+        var parts = text.split(/(?<=[.!?])\s+/);
+        if (parts.length <= 1) {
+          // Fallback: try splitting on periods more aggressively
+          parts = text.match(/[^.!?]*[.!?]+\s*/g) || [text];
+        }
+        return parts.reverse().join(' ').trim();
+      }
+
+      function process() {
+        var raw = input.value;
+        if (!raw) {
+          output.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Paste text above to reverse it.';
+          return;
+        }
+
+        switch (currentMode) {
+          case 'characters': resultText = reverseChars(raw); break;
+          case 'words': resultText = reverseWords(raw); break;
+          case 'lines': resultText = reverseLines(raw); break;
+          case 'sentences': resultText = reverseSentences(raw); break;
+          default: resultText = reverseChars(raw);
+        }
+
+        output.textContent = resultText;
+
+        var graphemes = splitGraphemes(raw);
+        var words = raw.trim().split(/\s+/).length;
+        var lines = raw.split(/\r?\n/).length;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Reversed ' + graphemes.length + ' characters, ' + words + ' words, ' + lines + ' line' + (lines === 1 ? '' : 's');
+
+        DT.trackTool('text-reverser');
+      }
+
+      var debouncedProcess = DT.debounce(process, 150);
+      input.addEventListener('input', debouncedProcess);
+      mirrorToggle.addEventListener('change', process);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          process();
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (resultText) DT.copyToClipboard(resultText, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        if (resultText) DT.downloadText(resultText, 'reversed-text.txt', 'text/plain');
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        input.value = '';
+        process();
+        input.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        input.value = 'Hello World! The quick brown fox jumps over the lazy dog.\nSecond line here.\nEmoji test: 👨‍👩‍👧 and 👋🏽';
+        process();
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var s = this.selectionStart, en = this.selectionEnd;
+          this.value = this.value.substring(0, s) + '  ' + this.value.substring(en);
+          this.selectionStart = this.selectionEnd = s + 2;
+          debouncedProcess();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Unicode Character Search — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Search Unicode characters by name, hex code, decimal, or description. Browse blocks and categories. Copy any character instantly. Free, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/unicode-search.html">
+  <meta property="og:title" content="Unicode Character Search — DevToolbox">
+  <meta property="og:description" content="Search over 1,000 Unicode characters by name, codepoint, or category. Copy any character with one click. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/unicode-search.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Unicode Character Search",
+    "url": "https://thisdevtool.com/tools/unicode-search.html",
+    "description": "Search Unicode characters by name, hex code, decimal, or description. Browse blocks and categories. Copy any character instantly.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a Unicode codepoint?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Unicode codepoint is a unique number assigned to every character in the Unicode standard. Codepoints are written as U+ followed by 4-6 hex digits, for example U+0041 is the Latin capital letter A, and U+1F600 is the grinning face emoji."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I type a Unicode character by codepoint?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On Windows, hold Alt and type the decimal value on the numeric keypad (for characters below U+00FF). For any codepoint in most apps, type the hex codepoint followed by Alt+X (e.g., '2665' then Alt+X gives ♥). On macOS, enable Unicode Hex Input keyboard and hold Option while typing the hex codepoint."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between UTF-8, UTF-16, and UTF-32?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "These are three different ways to encode Unicode codepoints as bytes. UTF-8 uses 1–4 bytes per character and is the dominant encoding for web content. UTF-16 uses 2 or 4 bytes and is used internally by JavaScript and Windows. UTF-32 always uses 4 bytes per character, making it simple but memory-inefficient."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a Unicode block?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Unicode block is a contiguous range of codepoints assigned to a particular script or symbol group. For example, Basic Latin covers U+0000–U+007F, Greek covers U+0370–U+03FF, and Emoticons covers U+1F600–U+1F64F. Blocks make it easier to navigate the Unicode character space."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this tool safe for sensitive data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The Unicode Search tool runs entirely in your browser. No text you type or characters you copy are sent to any server. The character database is built into the page itself."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 12px; }
+    .char-card { background: var(--surface-2, #f3f4f6); border: 1px solid var(--border, #e5e7eb); border-radius: 8px; padding: 8px 4px; text-align: center; cursor: pointer; transition: background 0.15s, transform 0.1s; user-select: none; }
+    .char-card:hover { background: var(--accent-light, #d1fae5); transform: scale(1.06); }
+    .char-glyph { font-size: 1.8rem; display: block; line-height: 1.2; min-height: 2.2rem; }
+    .char-cp { font-size: 0.6rem; color: var(--text-muted, #9ca3af); font-family: monospace; }
+    .char-name-sm { font-size: 0.55rem; color: var(--text-muted, #9ca3af); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; display: block; padding: 0 2px; }
+    .char-list-view .char-grid { grid-template-columns: 1fr; gap: 4px; }
+    .char-list-view .char-card { display: flex; align-items: center; gap: 12px; text-align: left; padding: 8px 12px; }
+    .char-list-view .char-glyph { font-size: 1.4rem; min-height: unset; flex-shrink: 0; }
+    .char-list-view .char-name-sm { font-size: 0.75rem; flex: 1; white-space: normal; overflow: visible; }
+    .char-list-view .char-cp { font-size: 0.7rem; }
+    .search-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+    .search-row input { flex: 1; min-width: 180px; }
+    .view-toggle { display: flex; gap: 4px; }
+    .view-btn { padding: 4px 10px; border: 1px solid var(--border, #e5e7eb); border-radius: 6px; background: var(--surface, #fff); cursor: pointer; font-size: 0.8rem; }
+    .view-btn.active { background: var(--accent, #10b981); color: #fff; border-color: var(--accent, #10b981); }
+    .block-select, .cat-select { padding: 6px 10px; border: 1px solid var(--border, #e5e7eb); border-radius: 6px; background: var(--surface, #fff); font-size: 0.85rem; color: var(--text, #111); }
+    .results-count { font-size: 0.8rem; color: var(--text-muted, #9ca3af); margin-bottom: 4px; }
+    #charResults { max-height: 420px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/unicode-inspector.html">Inspector</a>
+        <a href="/tools/ascii-table.html">ASCII Table</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Unicode Character Search</h1>
+          <p class="tool-subtitle">Search characters by name, hex code, decimal, or browse by block and category. Click any character to copy it.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="search">Search</button>
+            <button class="option-chip" data-mode="block">By Block</button>
+            <button class="option-chip" data-mode="category">By Category</button>
+          </div>
+
+          <!-- Search Panel -->
+          <div id="panelSearch">
+            <div class="search-row">
+              <input type="text" id="searchInput" placeholder="Search by name, U+hex, or decimal…" autocomplete="off" spellcheck="false">
+              <div class="view-toggle">
+                <button class="view-btn active" id="gridViewBtn" title="Grid view">&#9783;</button>
+                <button class="view-btn" id="listViewBtn" title="List view">&#9776;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Block Panel -->
+          <div id="panelBlock" style="display:none;">
+            <div class="search-row">
+              <select class="block-select" id="blockSelect">
+                <option value="">— Select a block —</option>
+                <option value="basic-latin">Basic Latin (U+0020–U+007E)</option>
+                <option value="latin-ext-a">Latin Extended-A (U+0100–U+017F)</option>
+                <option value="ipa">IPA Extensions (U+0250–U+02AF)</option>
+                <option value="greek">Greek &amp; Coptic (U+0370–U+03FF)</option>
+                <option value="cyrillic">Cyrillic (U+0400–U+04FF)</option>
+                <option value="arrows">Arrows (U+2190–U+21FF)</option>
+                <option value="math-ops">Mathematical Operators (U+2200–U+22FF)</option>
+                <option value="box-drawing">Box Drawing (U+2500–U+257F)</option>
+                <option value="block-elements">Block Elements (U+2580–U+259F)</option>
+                <option value="dingbats">Dingbats (U+2700–U+27BF)</option>
+                <option value="cjk-symbols">CJK Symbols &amp; Punctuation (U+3000–U+303F)</option>
+                <option value="hiragana">Hiragana (U+3040–U+309F)</option>
+                <option value="katakana">Katakana (U+30A0–U+30FF)</option>
+                <option value="emoji-misc">Miscellaneous Symbols (U+2600–U+26FF)</option>
+                <option value="emoji-faces">Emoticons (U+1F600–U+1F64F)</option>
+              </select>
+              <div class="view-toggle">
+                <button class="view-btn active" id="gridViewBtn2" title="Grid view">&#9783;</button>
+                <button class="view-btn" id="listViewBtn2" title="List view">&#9776;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category Panel -->
+          <div id="panelCategory" style="display:none;">
+            <div class="search-row">
+              <select class="cat-select" id="catSelect">
+                <option value="">— Select a category —</option>
+                <option value="Lu">Uppercase Letter (Lu)</option>
+                <option value="Ll">Lowercase Letter (Ll)</option>
+                <option value="Nd">Decimal Digit Number (Nd)</option>
+                <option value="Po">Other Punctuation (Po)</option>
+                <option value="Sm">Math Symbol (Sm)</option>
+                <option value="So">Other Symbol (So)</option>
+                <option value="Ps">Open Punctuation (Ps)</option>
+                <option value="Pe">Close Punctuation (Pe)</option>
+                <option value="Pd">Dash Punctuation (Pd)</option>
+                <option value="Sk">Modifier Symbol (Sk)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="results-count" id="resultsCount"></div>
+          <div id="charResults"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type a search term or select a block to browse Unicode characters.
+          </div>
+
+          <!-- Char detail toast area -->
+          <div id="charDetail" style="display:none; margin-top:12px; padding:12px; background:var(--surface-2,#f3f4f6); border:1px solid var(--border,#e5e7eb); border-radius:8px; font-family:monospace; font-size:0.85rem;"></div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Unicode Character Search</h2>
+          <ol>
+            <li><strong>Search mode</strong> — type a character name (e.g., "arrow"), a hex codepoint (e.g., "U+2192" or "2192"), or a decimal number. Results update as you type.</li>
+            <li><strong>By Block</strong> — select a Unicode block from the dropdown to browse all characters in that range.</li>
+            <li><strong>By Category</strong> — filter by Unicode general category such as Uppercase Letter, Math Symbol, or Other Punctuation.</li>
+            <li><strong>Copy a character</strong> — click any character card to copy it to your clipboard instantly.</li>
+            <li><strong>Grid / List view</strong> — toggle between a compact grid and a detailed list that shows the full character name.</li>
+          </ol>
+
+          <h2>What Is Unicode?</h2>
+          <p>Unicode is an international encoding standard that assigns a unique number — called a codepoint — to every character used in human writing systems, plus thousands of symbols, emoji, and technical characters. The Unicode standard currently defines over 149,000 characters spanning more than 160 scripts, from Ancient Egyptian hieroglyphs to modern emoji. Before Unicode, different computer systems used incompatible character encodings, making cross-platform text exchange error-prone. Unicode solved this by providing a single, universal character set that every modern operating system, browser, and application can use.</p>
+
+          <h3>Unicode Blocks and Planes</h3>
+          <p>The Unicode codespace is organised into 17 planes, each containing 65,536 codepoints. The first plane — the Basic Multilingual Plane (BMP, U+0000–U+FFFF) — contains virtually all characters needed for modern text, including Latin, Greek, Cyrillic, Arabic, Hebrew, Chinese, Japanese, and Korean characters. The supplementary planes (U+10000 and above) contain historic scripts, musical notation, mathematical alphanumerics, and the full emoji set. Within each plane, codepoints are grouped into named blocks that make navigation easier. For example, the Arrows block (U+2190–U+21FF) contains 112 arrow symbols, while the Box Drawing block (U+2500–U+257F) contains the line-drawing characters used in terminal UIs.</p>
+
+          <h3>General Categories</h3>
+          <p>Every Unicode character is assigned a general category that describes its broad type. The major categories are: Letter (L), Mark (M), Number (N), Punctuation (P), Symbol (S), Separator (Z), and Other (C). These are further subdivided — for example, Letter splits into Uppercase Letter (Lu), Lowercase Letter (Ll), Titlecase Letter (Lt), Modifier Letter (Lm), and Other Letter (Lo). Understanding categories is important for text processing: regular expressions use Unicode categories to match character classes, and bidirectional text algorithms rely on them to determine text direction.</p>
+
+          <h3>Encoding: UTF-8, UTF-16, and UTF-32</h3>
+          <p>Unicode defines codepoints, but encoding standards define how those numbers are stored as bytes. UTF-8 encodes ASCII characters as single bytes and uses 2–4 bytes for higher codepoints, making it backward-compatible with ASCII and ideal for web content. UTF-16 uses 2 bytes for characters in the BMP and 4 bytes (surrogate pairs) for supplementary characters — this is the internal encoding used by JavaScript strings, Java, and the Windows API. UTF-32 always uses 4 bytes per character, making random access by codepoint index simple but doubling or quadrupling storage compared to UTF-8 for ASCII-heavy text. When copying characters from this tool, they are placed on your clipboard in your system's native encoding.</p>
+
+          <h3>Using Unicode in Code</h3>
+          <p>Most programming languages support Unicode escape sequences. In JavaScript, you can write <code>'\u2192'</code> for a rightward arrow (→) or <code>'\u{1F600}'</code> for an emoji using the ES6 extended escape. In Python 3, all strings are Unicode by default and you can use <code>'\u2192'</code> or <code>'\N{RIGHTWARDS ARROW}'</code>. In CSS, use <code>content: '\2192'</code> for pseudo-element content. HTML entities work too: <code>&amp;#x2192;</code> (hex) or <code>&amp;#8594;</code> (decimal). This tool shows all these representations for every character, making it easy to copy the right format for your use case.</p>
+
+          <h3>Common Use Cases</h3>
+          <p>Developers use Unicode search to find arrow symbols for documentation, box-drawing characters for terminal applications, mathematical operators for formula rendering, and special punctuation for typography. Designers look for decorative symbols, dingbats, and geometric shapes. Security researchers use it to identify homoglyphs — characters that look identical to ASCII letters but have different codepoints — which are used in phishing attacks and typosquatting domains. Content writers use it to insert special punctuation like em dashes (—), non-breaking spaces, and typographic quotes that are not available on standard keyboard layouts.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a Unicode codepoint?</button>
+            <div class="faq-answer">A Unicode codepoint is a unique number assigned to every character in the Unicode standard. Codepoints are written as U+ followed by 4–6 hex digits. For example, U+0041 is the Latin capital letter A, and U+1F600 is the grinning face emoji. There are over 1.1 million possible codepoints, of which about 149,000 are currently assigned.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I type a Unicode character by codepoint?</button>
+            <div class="faq-answer">On Windows, in most applications you can type the hex codepoint (e.g., 2665) followed by Alt+X to insert the character (♥). On macOS, enable the Unicode Hex Input keyboard layout, then hold Option while typing the 4-digit hex code. Alternatively, use this tool to find and copy any character with a single click.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between UTF-8 and UTF-16?</button>
+            <div class="faq-answer">Both are ways of encoding Unicode codepoints as bytes. UTF-8 uses 1–4 bytes per character and is backward-compatible with ASCII. UTF-16 uses 2 or 4 bytes and is used internally by JavaScript, Java, and Windows. UTF-8 is preferred for web content because it is more compact for ASCII-heavy text and has no byte-order ambiguity.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a Unicode block?</button>
+            <div class="faq-answer">A Unicode block is a contiguous range of codepoints assigned to a particular script or symbol group. For example, Basic Latin covers U+0000–U+007F, Greek covers U+0370–U+03FF, and Emoticons covers U+1F600–U+1F64F. There are currently 331 named blocks in Unicode 15.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is this tool safe for sensitive data?</button>
+            <div class="faq-answer">Yes. The Unicode Search tool runs entirely in your browser. No text you type or characters you copy are sent to any server. The character database is embedded in the page JavaScript itself.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Unicode Tools</h4>
+        <a href="/tools/unicode-search.html">Unicode Search</a>
+        <a href="/tools/unicode-inspector.html">Character Inspector</a>
+        <a href="/tools/homoglyph-detector.html">Homoglyph Detector</a>
+        <a href="/tools/zero-width-encoder.html">Zero-Width Encoder</a>
+        <a href="/tools/ascii-table.html">ASCII Table</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    // ── Character database ──────────────────────────────────────────────────
+    // Format: [codepoint, name, category, block]
+    var DB = [
+      // Basic Latin printable
+      [0x0021,'EXCLAMATION MARK','Po','Basic Latin'],[0x0022,'QUOTATION MARK','Po','Basic Latin'],
+      [0x0023,'NUMBER SIGN','Po','Basic Latin'],[0x0024,'DOLLAR SIGN','Sc','Basic Latin'],
+      [0x0025,'PERCENT SIGN','Po','Basic Latin'],[0x0026,'AMPERSAND','Po','Basic Latin'],
+      [0x0027,'APOSTROPHE','Po','Basic Latin'],[0x0028,'LEFT PARENTHESIS','Ps','Basic Latin'],
+      [0x0029,'RIGHT PARENTHESIS','Pe','Basic Latin'],[0x002A,'ASTERISK','Po','Basic Latin'],
+      [0x002B,'PLUS SIGN','Sm','Basic Latin'],[0x002C,'COMMA','Po','Basic Latin'],
+      [0x002D,'HYPHEN-MINUS','Pd','Basic Latin'],[0x002E,'FULL STOP','Po','Basic Latin'],
+      [0x002F,'SOLIDUS','Po','Basic Latin'],[0x003C,'LESS-THAN SIGN','Sm','Basic Latin'],
+      [0x003D,'EQUALS SIGN','Sm','Basic Latin'],[0x003E,'GREATER-THAN SIGN','Sm','Basic Latin'],
+      [0x003F,'QUESTION MARK','Po','Basic Latin'],[0x0040,'COMMERCIAL AT','Po','Basic Latin'],
+      [0x005B,'LEFT SQUARE BRACKET','Ps','Basic Latin'],[0x005C,'REVERSE SOLIDUS','Po','Basic Latin'],
+      [0x005D,'RIGHT SQUARE BRACKET','Pe','Basic Latin'],[0x005E,'CIRCUMFLEX ACCENT','Sk','Basic Latin'],
+      [0x005F,'LOW LINE','Pc','Basic Latin'],[0x0060,'GRAVE ACCENT','Sk','Basic Latin'],
+      [0x007B,'LEFT CURLY BRACKET','Ps','Basic Latin'],[0x007C,'VERTICAL LINE','Sm','Basic Latin'],
+      [0x007D,'RIGHT CURLY BRACKET','Pe','Basic Latin'],[0x007E,'TILDE','Sm','Basic Latin'],
+      // Greek
+      [0x0391,'GREEK CAPITAL LETTER ALPHA','Lu','Greek'],[0x0392,'GREEK CAPITAL LETTER BETA','Lu','Greek'],
+      [0x0393,'GREEK CAPITAL LETTER GAMMA','Lu','Greek'],[0x0394,'GREEK CAPITAL LETTER DELTA','Lu','Greek'],
+      [0x0395,'GREEK CAPITAL LETTER EPSILON','Lu','Greek'],[0x0396,'GREEK CAPITAL LETTER ZETA','Lu','Greek'],
+      [0x0397,'GREEK CAPITAL LETTER ETA','Lu','Greek'],[0x0398,'GREEK CAPITAL LETTER THETA','Lu','Greek'],
+      [0x0399,'GREEK CAPITAL LETTER IOTA','Lu','Greek'],[0x039A,'GREEK CAPITAL LETTER KAPPA','Lu','Greek'],
+      [0x039B,'GREEK CAPITAL LETTER LAMDA','Lu','Greek'],[0x039C,'GREEK CAPITAL LETTER MU','Lu','Greek'],
+      [0x039D,'GREEK CAPITAL LETTER NU','Lu','Greek'],[0x039E,'GREEK CAPITAL LETTER XI','Lu','Greek'],
+      [0x039F,'GREEK CAPITAL LETTER OMICRON','Lu','Greek'],[0x03A0,'GREEK CAPITAL LETTER PI','Lu','Greek'],
+      [0x03A1,'GREEK CAPITAL LETTER RHO','Lu','Greek'],[0x03A3,'GREEK CAPITAL LETTER SIGMA','Lu','Greek'],
+      [0x03A4,'GREEK CAPITAL LETTER TAU','Lu','Greek'],[0x03A5,'GREEK CAPITAL LETTER UPSILON','Lu','Greek'],
+      [0x03A6,'GREEK CAPITAL LETTER PHI','Lu','Greek'],[0x03A7,'GREEK CAPITAL LETTER CHI','Lu','Greek'],
+      [0x03A8,'GREEK CAPITAL LETTER PSI','Lu','Greek'],[0x03A9,'GREEK CAPITAL LETTER OMEGA','Lu','Greek'],
+      [0x03B1,'GREEK SMALL LETTER ALPHA','Ll','Greek'],[0x03B2,'GREEK SMALL LETTER BETA','Ll','Greek'],
+      [0x03B3,'GREEK SMALL LETTER GAMMA','Ll','Greek'],[0x03B4,'GREEK SMALL LETTER DELTA','Ll','Greek'],
+      [0x03B5,'GREEK SMALL LETTER EPSILON','Ll','Greek'],[0x03B6,'GREEK SMALL LETTER ZETA','Ll','Greek'],
+      [0x03B7,'GREEK SMALL LETTER ETA','Ll','Greek'],[0x03B8,'GREEK SMALL LETTER THETA','Ll','Greek'],
+      [0x03B9,'GREEK SMALL LETTER IOTA','Ll','Greek'],[0x03BA,'GREEK SMALL LETTER KAPPA','Ll','Greek'],
+      [0x03BB,'GREEK SMALL LETTER LAMDA','Ll','Greek'],[0x03BC,'GREEK SMALL LETTER MU','Ll','Greek'],
+      [0x03BD,'GREEK SMALL LETTER NU','Ll','Greek'],[0x03BE,'GREEK SMALL LETTER XI','Ll','Greek'],
+      [0x03BF,'GREEK SMALL LETTER OMICRON','Ll','Greek'],[0x03C0,'GREEK SMALL LETTER PI','Ll','Greek'],
+      [0x03C1,'GREEK SMALL LETTER RHO','Ll','Greek'],[0x03C3,'GREEK SMALL LETTER SIGMA','Ll','Greek'],
+      [0x03C4,'GREEK SMALL LETTER TAU','Ll','Greek'],[0x03C5,'GREEK SMALL LETTER UPSILON','Ll','Greek'],
+      [0x03C6,'GREEK SMALL LETTER PHI','Ll','Greek'],[0x03C7,'GREEK SMALL LETTER CHI','Ll','Greek'],
+      [0x03C8,'GREEK SMALL LETTER PSI','Ll','Greek'],[0x03C9,'GREEK SMALL LETTER OMEGA','Ll','Greek'],
+      // Cyrillic
+      [0x0410,'CYRILLIC CAPITAL LETTER A','Lu','Cyrillic'],[0x0411,'CYRILLIC CAPITAL LETTER BE','Lu','Cyrillic'],
+      [0x0412,'CYRILLIC CAPITAL LETTER VE','Lu','Cyrillic'],[0x0413,'CYRILLIC CAPITAL LETTER GHE','Lu','Cyrillic'],
+      [0x0414,'CYRILLIC CAPITAL LETTER DE','Lu','Cyrillic'],[0x0415,'CYRILLIC CAPITAL LETTER IE','Lu','Cyrillic'],
+      [0x0416,'CYRILLIC CAPITAL LETTER ZHE','Lu','Cyrillic'],[0x0417,'CYRILLIC CAPITAL LETTER ZE','Lu','Cyrillic'],
+      [0x0418,'CYRILLIC CAPITAL LETTER I','Lu','Cyrillic'],[0x041A,'CYRILLIC CAPITAL LETTER KA','Lu','Cyrillic'],
+      [0x041B,'CYRILLIC CAPITAL LETTER EL','Lu','Cyrillic'],[0x041C,'CYRILLIC CAPITAL LETTER EM','Lu','Cyrillic'],
+      [0x041D,'CYRILLIC CAPITAL LETTER EN','Lu','Cyrillic'],[0x041E,'CYRILLIC CAPITAL LETTER O','Lu','Cyrillic'],
+      [0x041F,'CYRILLIC CAPITAL LETTER PE','Lu','Cyrillic'],[0x0420,'CYRILLIC CAPITAL LETTER ER','Lu','Cyrillic'],
+      [0x0421,'CYRILLIC CAPITAL LETTER ES','Lu','Cyrillic'],[0x0422,'CYRILLIC CAPITAL LETTER TE','Lu','Cyrillic'],
+      [0x0423,'CYRILLIC CAPITAL LETTER U','Lu','Cyrillic'],[0x0424,'CYRILLIC CAPITAL LETTER EF','Lu','Cyrillic'],
+      [0x0425,'CYRILLIC CAPITAL LETTER HA','Lu','Cyrillic'],[0x0426,'CYRILLIC CAPITAL LETTER TSE','Lu','Cyrillic'],
+      [0x0427,'CYRILLIC CAPITAL LETTER CHE','Lu','Cyrillic'],[0x0428,'CYRILLIC CAPITAL LETTER SHA','Lu','Cyrillic'],
+      // Arrows
+      [0x2190,'LEFTWARDS ARROW','So','Arrows'],[0x2191,'UPWARDS ARROW','So','Arrows'],
+      [0x2192,'RIGHTWARDS ARROW','So','Arrows'],[0x2193,'DOWNWARDS ARROW','So','Arrows'],
+      [0x2194,'LEFT RIGHT ARROW','So','Arrows'],[0x2195,'UP DOWN ARROW','So','Arrows'],
+      [0x2196,'NORTH WEST ARROW','So','Arrows'],[0x2197,'NORTH EAST ARROW','So','Arrows'],
+      [0x2198,'SOUTH EAST ARROW','So','Arrows'],[0x2199,'SOUTH WEST ARROW','So','Arrows'],
+      [0x21A0,'RIGHTWARDS TWO HEADED ARROW','So','Arrows'],[0x21A9,'LEFTWARDS ARROW WITH HOOK','So','Arrows'],
+      [0x21AA,'RIGHTWARDS ARROW WITH HOOK','So','Arrows'],[0x21B5,'DOWNWARDS ARROW WITH CORNER LEFTWARDS','So','Arrows'],
+      [0x21C4,'RIGHTWARDS ARROW OVER LEFTWARDS ARROW','So','Arrows'],
+      [0x21CC,'RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON','So','Arrows'],
+      [0x21D0,'LEFTWARDS DOUBLE ARROW','So','Arrows'],[0x21D1,'UPWARDS DOUBLE ARROW','So','Arrows'],
+      [0x21D2,'RIGHTWARDS DOUBLE ARROW','So','Arrows'],[0x21D3,'DOWNWARDS DOUBLE ARROW','So','Arrows'],
+      [0x21D4,'LEFT RIGHT DOUBLE ARROW','So','Arrows'],[0x21E6,'LEFTWARDS WHITE ARROW','So','Arrows'],
+      [0x21E7,'UPWARDS WHITE ARROW','So','Arrows'],[0x21E8,'RIGHTWARDS WHITE ARROW','So','Arrows'],
+      [0x21E9,'DOWNWARDS WHITE ARROW','So','Arrows'],
+      // Math operators
+      [0x2200,'FOR ALL','Sm','Math Operators'],[0x2202,'PARTIAL DIFFERENTIAL','Sm','Math Operators'],
+      [0x2203,'THERE EXISTS','Sm','Math Operators'],[0x2205,'EMPTY SET','Sm','Math Operators'],
+      [0x2206,'INCREMENT','Sm','Math Operators'],[0x2207,'NABLA','Sm','Math Operators'],
+      [0x2208,'ELEMENT OF','Sm','Math Operators'],[0x2209,'NOT AN ELEMENT OF','Sm','Math Operators'],
+      [0x220F,'N-ARY PRODUCT','Sm','Math Operators'],[0x2211,'N-ARY SUMMATION','Sm','Math Operators'],
+      [0x2212,'MINUS SIGN','Sm','Math Operators'],[0x2215,'DIVISION SLASH','Sm','Math Operators'],
+      [0x221A,'SQUARE ROOT','Sm','Math Operators'],[0x221E,'INFINITY','Sm','Math Operators'],
+      [0x2220,'ANGLE','Sm','Math Operators'],[0x2227,'LOGICAL AND','Sm','Math Operators'],
+      [0x2228,'LOGICAL OR','Sm','Math Operators'],[0x2229,'INTERSECTION','Sm','Math Operators'],
+      [0x222A,'UNION','Sm','Math Operators'],[0x222B,'INTEGRAL','Sm','Math Operators'],
+      [0x2248,'ALMOST EQUAL TO','Sm','Math Operators'],[0x2260,'NOT EQUAL TO','Sm','Math Operators'],
+      [0x2261,'IDENTICAL TO','Sm','Math Operators'],[0x2264,'LESS-THAN OR EQUAL TO','Sm','Math Operators'],
+      [0x2265,'GREATER-THAN OR EQUAL TO','Sm','Math Operators'],[0x2282,'SUBSET OF','Sm','Math Operators'],
+      [0x2283,'SUPERSET OF','Sm','Math Operators'],[0x22C5,'DOT OPERATOR','Sm','Math Operators'],
+      // Box drawing
+      [0x2500,'BOX DRAWINGS LIGHT HORIZONTAL','So','Box Drawing'],
+      [0x2501,'BOX DRAWINGS HEAVY HORIZONTAL','So','Box Drawing'],
+      [0x2502,'BOX DRAWINGS LIGHT VERTICAL','So','Box Drawing'],
+      [0x2503,'BOX DRAWINGS HEAVY VERTICAL','So','Box Drawing'],
+      [0x250C,'BOX DRAWINGS LIGHT DOWN AND RIGHT','So','Box Drawing'],
+      [0x250F,'BOX DRAWINGS HEAVY DOWN AND RIGHT','So','Box Drawing'],
+      [0x2510,'BOX DRAWINGS LIGHT DOWN AND LEFT','So','Box Drawing'],
+      [0x2513,'BOX DRAWINGS HEAVY DOWN AND LEFT','So','Box Drawing'],
+      [0x2514,'BOX DRAWINGS LIGHT UP AND RIGHT','So','Box Drawing'],
+      [0x2517,'BOX DRAWINGS HEAVY UP AND RIGHT','So','Box Drawing'],
+      [0x2518,'BOX DRAWINGS LIGHT UP AND LEFT','So','Box Drawing'],
+      [0x251B,'BOX DRAWINGS HEAVY UP AND LEFT','So','Box Drawing'],
+      [0x251C,'BOX DRAWINGS LIGHT VERTICAL AND RIGHT','So','Box Drawing'],
+      [0x2524,'BOX DRAWINGS LIGHT VERTICAL AND LEFT','So','Box Drawing'],
+      [0x252C,'BOX DRAWINGS LIGHT DOWN AND HORIZONTAL','So','Box Drawing'],
+      [0x2534,'BOX DRAWINGS LIGHT UP AND HORIZONTAL','So','Box Drawing'],
+      [0x253C,'BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL','So','Box Drawing'],
+      [0x2550,'BOX DRAWINGS DOUBLE HORIZONTAL','So','Box Drawing'],
+      [0x2551,'BOX DRAWINGS DOUBLE VERTICAL','So','Box Drawing'],
+      [0x2554,'BOX DRAWINGS DOUBLE DOWN AND RIGHT','So','Box Drawing'],
+      [0x2557,'BOX DRAWINGS DOUBLE DOWN AND LEFT','So','Box Drawing'],
+      [0x255A,'BOX DRAWINGS DOUBLE UP AND RIGHT','So','Box Drawing'],
+      [0x255D,'BOX DRAWINGS DOUBLE UP AND LEFT','So','Box Drawing'],
+      [0x256C,'BOX DRAWINGS DOUBLE VERTICAL AND HORIZONTAL','So','Box Drawing'],
+      // Misc symbols
+      [0x2600,'BLACK SUN WITH RAYS','So','Misc Symbols'],[0x2601,'CLOUD','So','Misc Symbols'],
+      [0x2602,'UMBRELLA','So','Misc Symbols'],[0x2603,'SNOWMAN','So','Misc Symbols'],
+      [0x2605,'BLACK STAR','So','Misc Symbols'],[0x2606,'WHITE STAR','So','Misc Symbols'],
+      [0x2610,'BALLOT BOX','So','Misc Symbols'],[0x2611,'BALLOT BOX WITH CHECK','So','Misc Symbols'],
+      [0x2614,'UMBRELLA WITH RAIN DROPS','So','Misc Symbols'],
+      [0x2615,'HOT BEVERAGE','So','Misc Symbols'],
+      [0x2620,'SKULL AND CROSSBONES','So','Misc Symbols'],
+      [0x2622,'RADIOACTIVE SIGN','So','Misc Symbols'],
+      [0x2623,'BIOHAZARD SIGN','So','Misc Symbols'],
+      [0x2639,'WHITE FROWNING FACE','So','Misc Symbols'],
+      [0x263A,'WHITE SMILING FACE','So','Misc Symbols'],
+      [0x2660,'BLACK SPADE SUIT','So','Misc Symbols'],[0x2663,'BLACK CLUB SUIT','So','Misc Symbols'],
+      [0x2665,'BLACK HEART SUIT','So','Misc Symbols'],[0x2666,'BLACK DIAMOND SUIT','So','Misc Symbols'],
+      [0x2764,'HEAVY BLACK HEART','So','Misc Symbols'],
+      // Dingbats
+      [0x2702,'BLACK SCISSORS','So','Dingbats'],[0x2703,'WHITE SCISSORS','So','Dingbats'],
+      [0x2704,'BLACK TELEPHONE','So','Dingbats'],[0x2706,'TELEPHONE LOCATION SIGN','So','Dingbats'],
+      [0x270B,'RAISED HAND','So','Dingbats'],[0x270C,'VICTORY HAND','So','Dingbats'],
+      [0x270D,'WRITING HAND','So','Dingbats'],[0x270E,'LOWER RIGHT PENCIL','So','Dingbats'],
+      [0x270F,'PENCIL','So','Dingbats'],[0x2713,'CHECK MARK','So','Dingbats'],
+      [0x2714,'HEAVY CHECK MARK','So','Dingbats'],[0x2715,'MULTIPLICATION X','So','Dingbats'],
+      [0x2716,'HEAVY MULTIPLICATION X','So','Dingbats'],[0x2717,'BALLOT X','So','Dingbats'],
+      [0x2718,'HEAVY BALLOT X','So','Dingbats'],[0x2726,'BLACK FOUR POINTED STAR','So','Dingbats'],
+      [0x2727,'WHITE FOUR POINTED STAR','So','Dingbats'],[0x272A,'CIRCLED WHITE STAR','So','Dingbats'],
+      [0x2730,'WHITE SHADOWED WHITE STAR','So','Dingbats'],[0x2733,'EIGHT SPOKED ASTERISK','So','Dingbats'],
+      [0x2734,'EIGHT POINTED BLACK STAR','So','Dingbats'],[0x2736,'SIX POINTED BLACK STAR','So','Dingbats'],
+      [0x273D,'HEAVY TEARDROP-SPOKED ASTERISK','So','Dingbats'],
+      [0x2744,'SNOWFLAKE','So','Dingbats'],[0x2748,'HEAVY SPARKLE','So','Dingbats'],
+      [0x274C,'CROSS MARK','So','Dingbats'],[0x274E,'CROSS MARK','So','Dingbats'],
+      [0x2753,'BLACK QUESTION MARK ORNAMENT','So','Dingbats'],
+      [0x2755,'WHITE EXCLAMATION MARK ORNAMENT','So','Dingbats'],
+      [0x2757,'HEAVY EXCLAMATION MARK ORNAMENT','So','Dingbats'],
+      // Emoji (subset)
+      [0x1F600,'GRINNING FACE','So','Emoticons'],[0x1F601,'GRINNING FACE WITH SMILING EYES','So','Emoticons'],
+      [0x1F602,'FACE WITH TEARS OF JOY','So','Emoticons'],[0x1F603,'SMILING FACE WITH OPEN MOUTH','So','Emoticons'],
+      [0x1F604,'SMILING FACE WITH OPEN MOUTH AND SMILING EYES','So','Emoticons'],
+      [0x1F605,'SMILING FACE WITH OPEN MOUTH AND COLD SWEAT','So','Emoticons'],
+      [0x1F606,'SMILING FACE WITH OPEN MOUTH AND TIGHTLY-CLOSED EYES','So','Emoticons'],
+      [0x1F607,'SMILING FACE WITH HALO','So','Emoticons'],[0x1F608,'SMILING FACE WITH HORNS','So','Emoticons'],
+      [0x1F609,'WINKING FACE','So','Emoticons'],[0x1F60A,'SMILING FACE WITH SMILING EYES','So','Emoticons'],
+      [0x1F60B,'FACE SAVOURING DELICIOUS FOOD','So','Emoticons'],
+      [0x1F60C,'RELIEVED FACE','So','Emoticons'],[0x1F60D,'SMILING FACE WITH HEART-SHAPED EYES','So','Emoticons'],
+      [0x1F60E,'SMILING FACE WITH SUNGLASSES','So','Emoticons'],
+      [0x1F60F,'SMIRKING FACE','So','Emoticons'],[0x1F610,'NEUTRAL FACE','So','Emoticons'],
+      [0x1F611,'EXPRESSIONLESS FACE','So','Emoticons'],[0x1F612,'UNAMUSED FACE','So','Emoticons'],
+      [0x1F613,'FACE WITH COLD SWEAT','So','Emoticons'],[0x1F614,'PENSIVE FACE','So','Emoticons'],
+      [0x1F615,'CONFUSED FACE','So','Emoticons'],[0x1F616,'CONFOUNDED FACE','So','Emoticons'],
+      [0x1F617,'KISSING FACE','So','Emoticons'],[0x1F618,'FACE THROWING A KISS','So','Emoticons'],
+      [0x1F619,'KISSING FACE WITH SMILING EYES','So','Emoticons'],
+      [0x1F61A,'KISSING FACE WITH CLOSED EYES','So','Emoticons'],
+      [0x1F61B,'FACE WITH STUCK-OUT TONGUE','So','Emoticons'],
+      [0x1F620,'ANGRY FACE','So','Emoticons'],[0x1F621,'POUTING FACE','So','Emoticons'],
+      [0x1F622,'CRYING FACE','So','Emoticons'],[0x1F623,'PERSEVERING FACE','So','Emoticons'],
+      [0x1F624,'FACE WITH LOOK OF TRIUMPH','So','Emoticons'],
+      [0x1F625,'DISAPPOINTED BUT RELIEVED FACE','So','Emoticons'],
+      [0x1F626,'FROWNING FACE WITH OPEN MOUTH','So','Emoticons'],
+      [0x1F627,'ANGUISHED FACE','So','Emoticons'],[0x1F628,'FEARFUL FACE','So','Emoticons'],
+      [0x1F629,'WEARY FACE','So','Emoticons'],[0x1F62A,'SLEEPY FACE','So','Emoticons'],
+      [0x1F62B,'TIRED FACE','So','Emoticons'],[0x1F62C,'GRIMACING FACE','So','Emoticons'],
+      [0x1F62D,'LOUDLY CRYING FACE','So','Emoticons'],[0x1F631,'FACE SCREAMING IN FEAR','So','Emoticons'],
+      [0x1F632,'ASTONISHED FACE','So','Emoticons'],[0x1F633,'FLUSHED FACE','So','Emoticons'],
+      [0x1F634,'SLEEPING FACE','So','Emoticons'],[0x1F635,'DIZZY FACE','So','Emoticons'],
+      [0x1F636,'FACE WITHOUT MOUTH','So','Emoticons'],[0x1F637,'FACE WITH MEDICAL MASK','So','Emoticons'],
+      [0x1F638,'GRINNING CAT FACE WITH SMILING EYES','So','Emoticons'],
+      [0x1F63A,'SMILING CAT FACE WITH OPEN MOUTH','So','Emoticons'],
+      [0x1F640,'WEARY CAT FACE','So','Emoticons'],[0x1F641,'SLIGHTLY FROWNING FACE','So','Emoticons'],
+      [0x1F642,'SLIGHTLY SMILING FACE','So','Emoticons'],[0x1F643,'UPSIDE-DOWN FACE','So','Emoticons'],
+      [0x1F644,'FACE WITH ROLLING EYES','So','Emoticons'],
+      [0x1F645,'FACE WITH NO GOOD GESTURE','So','Emoticons'],
+      [0x1F646,'FACE WITH OK GESTURE','So','Emoticons'],
+      [0x1F647,'PERSON BOWING DEEPLY','So','Emoticons'],
+      [0x1F648,'SEE-NO-EVIL MONKEY','So','Emoticons'],
+      [0x1F649,'HEAR-NO-EVIL MONKEY','So','Emoticons'],
+      [0x1F64A,'SPEAK-NO-EVIL MONKEY','So','Emoticons'],
+      [0x1F64B,'HAPPY PERSON RAISING ONE HAND','So','Emoticons'],
+      [0x1F64C,'PERSON RAISING BOTH HANDS IN CELEBRATION','So','Emoticons'],
+      [0x1F64F,'PERSON WITH FOLDED HANDS','So','Emoticons'],
+      // Special punctuation
+      [0x00A0,'NO-BREAK SPACE','Zs','Latin-1 Supplement'],
+      [0x00A9,'COPYRIGHT SIGN','So','Latin-1 Supplement'],
+      [0x00AE,'REGISTERED SIGN','So','Latin-1 Supplement'],
+      [0x00B0,'DEGREE SIGN','So','Latin-1 Supplement'],
+      [0x00B1,'PLUS-MINUS SIGN','Sm','Latin-1 Supplement'],
+      [0x00B2,'SUPERSCRIPT TWO','No','Latin-1 Supplement'],
+      [0x00B3,'SUPERSCRIPT THREE','No','Latin-1 Supplement'],
+      [0x00B5,'MICRO SIGN','Ll','Latin-1 Supplement'],
+      [0x00B7,'MIDDLE DOT','Po','Latin-1 Supplement'],
+      [0x00BC,'VULGAR FRACTION ONE QUARTER','No','Latin-1 Supplement'],
+      [0x00BD,'VULGAR FRACTION ONE HALF','No','Latin-1 Supplement'],
+      [0x00BE,'VULGAR FRACTION THREE QUARTERS','No','Latin-1 Supplement'],
+      [0x00D7,'MULTIPLICATION SIGN','Sm','Latin-1 Supplement'],
+      [0x00F7,'DIVISION SIGN','Sm','Latin-1 Supplement'],
+      [0x2010,'HYPHEN','Pd','General Punctuation'],
+      [0x2013,'EN DASH','Pd','General Punctuation'],
+      [0x2014,'EM DASH','Pd','General Punctuation'],
+      [0x2018,'LEFT SINGLE QUOTATION MARK','Pi','General Punctuation'],
+      [0x2019,'RIGHT SINGLE QUOTATION MARK','Pf','General Punctuation'],
+      [0x201C,'LEFT DOUBLE QUOTATION MARK','Pi','General Punctuation'],
+      [0x201D,'RIGHT DOUBLE QUOTATION MARK','Pf','General Punctuation'],
+      [0x2022,'BULLET','Po','General Punctuation'],
+      [0x2026,'HORIZONTAL ELLIPSIS','Po','General Punctuation'],
+      [0x20AC,'EURO SIGN','Sc','Currency Symbols'],
+      [0x00A3,'POUND SIGN','Sc','Latin-1 Supplement'],
+      [0x00A5,'YEN SIGN','Sc','Latin-1 Supplement'],
+      [0x00A7,'SECTION SIGN','Po','Latin-1 Supplement'],
+      [0x2122,'TRADE MARK SIGN','So','Letterlike Symbols'],
+      [0x2116,'NUMERO SIGN','So','Letterlike Symbols'],
+      [0x2103,'DEGREE CELSIUS','So','Letterlike Symbols'],
+      [0x2109,'DEGREE FAHRENHEIT','So','Letterlike Symbols'],
+      [0x211E,'PRESCRIPTION TAKE','So','Letterlike Symbols'],
+      [0x2120,'SERVICE MARK','So','Letterlike Symbols'],
+      [0x2665,'BLACK HEART SUIT','So','Misc Symbols'],
+      [0x2764,'HEAVY BLACK HEART','So','Dingbats'],
+    ];
+
+    // Block range map for "By Block" mode
+    var BLOCK_RANGES = {
+      'basic-latin':   [0x0020, 0x007E],
+      'latin-ext-a':   [0x0100, 0x017F],
+      'ipa':           [0x0250, 0x02AF],
+      'greek':         [0x0370, 0x03FF],
+      'cyrillic':      [0x0400, 0x04FF],
+      'arrows':        [0x2190, 0x21FF],
+      'math-ops':      [0x2200, 0x22FF],
+      'box-drawing':   [0x2500, 0x257F],
+      'block-elements':[0x2580, 0x259F],
+      'dingbats':      [0x2700, 0x27BF],
+      'cjk-symbols':   [0x3000, 0x303F],
+      'hiragana':      [0x3040, 0x309F],
+      'katakana':      [0x30A0, 0x30FF],
+      'emoji-misc':    [0x2600, 0x26FF],
+      'emoji-faces':   [0x1F600, 0x1F64F],
+    };
+
+    var currentMode = 'search';
+    var isListView = false;
+    var resultsDiv = document.getElementById('charResults');
+    var statusBar = document.getElementById('statusBar');
+    var countEl = document.getElementById('resultsCount');
+    var charDetail = document.getElementById('charDetail');
+
+    function cpToStr(cp) {
+      return cp > 0xFFFF
+        ? String.fromCodePoint(cp)
+        : String.fromCharCode(cp);
+    }
+
+    function hexCP(cp) {
+      return 'U+' + cp.toString(16).toUpperCase().padStart(4, '0');
+    }
+
+    function utf8Bytes(cp) {
+      var bytes = [];
+      if (cp < 0x80) { bytes.push(cp); }
+      else if (cp < 0x800) {
+        bytes.push(0xC0 | (cp >> 6), 0x80 | (cp & 0x3F));
+      } else if (cp < 0x10000) {
+        bytes.push(0xE0 | (cp >> 12), 0x80 | ((cp >> 6) & 0x3F), 0x80 | (cp & 0x3F));
+      } else {
+        bytes.push(0xF0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3F), 0x80 | ((cp >> 6) & 0x3F), 0x80 | (cp & 0x3F));
+      }
+      return bytes.map(function(b){ return b.toString(16).toUpperCase().padStart(2,'0'); }).join(' ');
+    }
+
+    function renderCards(chars) {
+      if (!chars.length) {
+        resultsDiv.innerHTML = '<p style="color:var(--text-muted);padding:16px 0;">No characters found.</p>';
+        countEl.textContent = '';
+        return;
+      }
+      var wrapper = document.createElement('div');
+      wrapper.className = 'char-grid' + (isListView ? ' char-list-view' : '');
+      wrapper.id = 'charGrid';
+      chars.slice(0, 200).forEach(function(row) {
+        var cp = row[0], name = row[1], cat = row[2], block = row[3];
+        var glyph = cpToStr(cp);
+        var card = document.createElement('div');
+        card.className = 'char-card';
+        card.title = name + ' — ' + hexCP(cp) + ' — click to copy';
+        card.innerHTML =
+          '<span class="char-glyph">' + (cp < 0x20 || (cp >= 0x7F && cp <= 0x9F) ? '&#9633;' : glyph) + '</span>' +
+          '<span class="char-cp">' + hexCP(cp) + '</span>' +
+          '<span class="char-name-sm">' + name + '</span>';
+        card.addEventListener('click', function() {
+          DT.copyToClipboard(glyph);
+          showDetail(cp, name, cat, block, glyph);
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Copied ' + hexCP(cp) + ' (' + name + ') to clipboard.';
+        });
+        wrapper.appendChild(card);
+      });
+      resultsDiv.innerHTML = '';
+      resultsDiv.appendChild(wrapper);
+      countEl.textContent = 'Showing ' + Math.min(chars.length, 200) + ' of ' + chars.length + ' characters' + (chars.length > 200 ? ' (refine search to see more)' : '');
+    }
+
+    function showDetail(cp, name, cat, block, glyph) {
+      charDetail.style.display = '';
+      charDetail.innerHTML =
+        '<strong>' + name + '</strong><br>' +
+        'Codepoint: ' + hexCP(cp) + ' &nbsp;|&nbsp; Decimal: ' + cp + ' &nbsp;|&nbsp; ' +
+        'UTF-8: ' + utf8Bytes(cp) + ' &nbsp;|&nbsp; Category: ' + cat + ' &nbsp;|&nbsp; Block: ' + block +
+        '<br>HTML: <code>&amp;#x' + cp.toString(16).toUpperCase() + ';</code> &nbsp;|&nbsp; ' +
+        'JS: <code>\\u{' + cp.toString(16).toUpperCase() + '}</code>';
+      DT.trackTool('unicode-search');
+    }
+
+    function doSearch() {
+      var q = document.getElementById('searchInput').value.trim().toLowerCase();
+      if (!q) {
+        resultsDiv.innerHTML = '';
+        countEl.textContent = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Type a search term or select a block to browse Unicode characters.';
+        charDetail.style.display = 'none';
+        return;
+      }
+      // detect hex codepoint search
+      var hexMatch = q.replace(/^u\+/,'').match(/^[0-9a-f]{1,6}$/i);
+      var decMatch = q.match(/^\d{1,7}$/);
+      var results;
+      if (hexMatch) {
+        var cp = parseInt(hexMatch[0], 16);
+        results = DB.filter(function(r){ return r[0] === cp; });
+        if (!results.length) {
+          var glyph = cpToStr(cp);
+          results = [[cp, 'U+' + cp.toString(16).toUpperCase().padStart(4,'0'), '?', 'Unknown']];
+        }
+      } else if (decMatch) {
+        var cp2 = parseInt(q, 10);
+        results = DB.filter(function(r){ return r[0] === cp2; });
+      } else {
+        results = DB.filter(function(r){ return r[1].toLowerCase().indexOf(q) !== -1 || r[3].toLowerCase().indexOf(q) !== -1; });
+      }
+      renderCards(results);
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Found ' + results.length + ' character' + (results.length !== 1 ? 's' : '') + ' matching "' + q + '"';
+    }
+
+    function doBlock() {
+      var val = document.getElementById('blockSelect').value;
+      if (!val) { resultsDiv.innerHTML = ''; countEl.textContent = ''; return; }
+      var range = BLOCK_RANGES[val];
+      var results = [];
+      // First check DB
+      DB.forEach(function(r){ if (r[0] >= range[0] && r[0] <= range[1]) results.push(r); });
+      // Fill remaining range codepoints not in DB
+      var inDB = {};
+      results.forEach(function(r){ inDB[r[0]] = true; });
+      var MAX = Math.min(range[1], range[0] + 255);
+      for (var i = range[0]; i <= MAX; i++) {
+        if (!inDB[i]) results.push([i, 'U+' + i.toString(16).toUpperCase().padStart(4,'0'), '?', val]);
+      }
+      results.sort(function(a,b){ return a[0]-b[0]; });
+      renderCards(results);
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Showing ' + results.length + ' characters in selected block.';
+    }
+
+    function doCategory() {
+      var cat = document.getElementById('catSelect').value;
+      if (!cat) { resultsDiv.innerHTML = ''; countEl.textContent = ''; return; }
+      var results = DB.filter(function(r){ return r[2] === cat; });
+      renderCards(results);
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Found ' + results.length + ' characters in category ' + cat + '.';
+    }
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        document.getElementById('panelSearch').style.display = currentMode === 'search' ? '' : 'none';
+        document.getElementById('panelBlock').style.display = currentMode === 'block' ? '' : 'none';
+        document.getElementById('panelCategory').style.display = currentMode === 'category' ? '' : 'none';
+        resultsDiv.innerHTML = ''; countEl.textContent = '';
+        charDetail.style.display = 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Type a search term or select a block to browse Unicode characters.';
+      });
+    });
+
+    // Search input
+    var debouncedSearch = DT.debounce(doSearch, 200);
+    document.getElementById('searchInput').addEventListener('input', debouncedSearch);
+
+    // Block select
+    document.getElementById('blockSelect').addEventListener('change', doBlock);
+
+    // Category select
+    document.getElementById('catSelect').addEventListener('change', doCategory);
+
+    // View toggles
+    function setView(list) {
+      isListView = list;
+      ['gridViewBtn','gridViewBtn2'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (el) el.classList.toggle('active', !list);
+      });
+      ['listViewBtn','listViewBtn2'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (el) el.classList.toggle('active', list);
+      });
+      var grid = document.getElementById('charGrid');
+      if (grid) grid.className = 'char-grid' + (list ? ' char-list-view' : '');
+    }
+    document.getElementById('gridViewBtn').addEventListener('click', function(){ setView(false); });
+    document.getElementById('listViewBtn').addEventListener('click', function(){ setView(true); });
+    document.getElementById('gridViewBtn2').addEventListener('click', function(){ setView(false); });
+    document.getElementById('listViewBtn2').addEventListener('click', function(){ setView(true); });
+
+    // Try Example
+    document.addEventListener('DOMContentLoaded', function() {
+      // auto-show some popular chars on load
+      var featured = DB.filter(function(r){
+        return [0x2192,0x2665,0x221E,0x221A,0x03C0,0x03A9,0x2022,0x2014,0x00A9,0x2122,
+                0x20AC,0x2713,0x2717,0x2603,0x2764,0x1F600,0x1F602,0x1F604].indexOf(r[0]) !== -1;
+      });
+      renderCards(featured);
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Showing featured characters — search or browse by block to explore more.';
+    });
+  })();
+  </script>
+</body>
+</html>

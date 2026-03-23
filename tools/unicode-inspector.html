@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Unicode Character Property Inspector — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Inspect Unicode properties of any text character by character. See codepoint, UTF-8, UTF-16, category, block, and bidirectional class. Free, 100% in-browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/unicode-inspector.html">
+  <meta property="og:title" content="Unicode Character Property Inspector — DevToolbox">
+  <meta property="og:description" content="Paste any text to see per-character Unicode properties: codepoint, UTF-8, UTF-16, category, block, and more. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/unicode-inspector.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Unicode Character Property Inspector",
+    "url": "https://thisdevtool.com/tools/unicode-inspector.html",
+    "description": "Inspect Unicode properties of any text — codepoint, UTF-8/UTF-16 encoding, category, block, and bidi class per character.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a Unicode general category?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Unicode general category is a property assigned to every codepoint that describes its primary type. Major categories include Letter (L), Number (N), Punctuation (P), Symbol (S), Mark (M), Separator (Z), and Other (C). Each major category has subcategories, such as Lu (Uppercase Letter) and Sm (Math Symbol)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a surrogate pair in UTF-16?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "UTF-16 uses surrogate pairs to encode Unicode codepoints above U+FFFF. A surrogate pair consists of a high surrogate (U+D800–U+DBFF) followed by a low surrogate (U+DC00–U+DFFF). Together they represent a single supplementary character. JavaScript strings use UTF-16 internally, so emoji and some CJK characters are stored as surrogate pairs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the bidirectional class mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Unicode bidirectional (Bidi) algorithm determines the display order of mixed left-to-right and right-to-left text. Every character has a bidi class: L (Left-to-Right), R (Right-to-Left), AN (Arabic Number), EN (European Number), WS (Whitespace), and others. The algorithm uses these classes to correctly render mixed Arabic/Hebrew and Latin text on the same line."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my emoji show two codepoints?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Most emoji have codepoints above U+FFFF (in the supplementary planes), which means JavaScript represents them as surrogate pairs in UTF-16. When you paste an emoji into the inspector, it shows both surrogates. Some emoji are also sequences: a base emoji followed by variation selectors, skin-tone modifiers, or zero-width joiners that combine into a single visible glyph."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between a codepoint and a grapheme cluster?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A codepoint is a single Unicode number (e.g., U+0041 = A). A grapheme cluster is one or more codepoints that together form a single visible character as perceived by a user. For example, a letter with a combining accent mark, or a complex emoji with skin-tone modifier, may be a single grapheme cluster made of multiple codepoints. The Segmentation Inspector in this tool identifies grapheme clusters."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .inspect-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; font-family: monospace; margin-top: 12px; }
+    .inspect-table th { background: var(--surface-2,#f3f4f6); padding: 6px 8px; text-align: left; font-size: 0.75rem; color: var(--text-muted,#6b7280); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 2px solid var(--border,#e5e7eb); white-space: nowrap; }
+    .inspect-table td { padding: 5px 8px; border-bottom: 1px solid var(--border,#e5e7eb); vertical-align: middle; }
+    .inspect-table tr:hover { background: var(--surface-2,#f3f4f6); }
+    .glyph-cell { font-size: 1.4rem; text-align: center; width: 44px; cursor: pointer; }
+    .glyph-cell:hover { color: var(--accent,#10b981); }
+    .cp-badge { background: var(--accent,#10b981); color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 0.75rem; display: inline-block; }
+    .cat-badge { background: var(--surface-2,#f3f4f6); border: 1px solid var(--border,#e5e7eb); border-radius: 4px; padding: 1px 6px; font-size: 0.75rem; }
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .compare-diff { background: #fef3c7; border-left: 3px solid #f59e0b; padding: 2px 6px; }
+    [data-theme="dark"] .compare-diff { background: #3b2e0a; }
+    .encode-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+    .encode-row input { flex: 1; min-width: 120px; font-size: 1.2rem; }
+    .encode-result { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .encode-item { background: var(--surface-2,#f3f4f6); border: 1px solid var(--border,#e5e7eb); border-radius: 6px; padding: 8px 10px; }
+    .encode-label { font-size: 0.7rem; color: var(--text-muted,#9ca3af); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+    .encode-value { font-family: monospace; font-size: 0.9rem; word-break: break-all; }
+    #inspectInput { width: 100%; font-size: 1rem; font-family: inherit; padding: 10px; border: 1px solid var(--border,#e5e7eb); border-radius: 8px; background: var(--surface,#fff); color: var(--text,#111); resize: vertical; }
+    .table-wrap { overflow-x: auto; max-height: 400px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/unicode-search.html">Unicode Search</a>
+        <a href="/tools/homoglyph-detector.html">Homoglyphs</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Unicode Character Property Inspector</h1>
+          <p class="tool-subtitle">Paste any text to see per-character Unicode properties: codepoint, UTF-8, UTF-16, category, block, and bidirectional class.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="inspect">Inspect</button>
+            <button class="option-chip" data-mode="compare">Compare</button>
+            <button class="option-chip" data-mode="encode">Encode</button>
+          </div>
+
+          <!-- Inspect panel -->
+          <div id="panelInspect">
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
+              <textarea id="inspectInput" rows="3" placeholder="Paste or type any text — including emoji, math symbols, or mixed scripts…" spellcheck="false"></textarea>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy Table</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBtn">Download CSV</button>
+            </div>
+            <div class="table-wrap" id="tableWrap">
+              <table class="inspect-table" id="inspectTable">
+                <thead>
+                  <tr>
+                    <th>Glyph</th>
+                    <th>Codepoint</th>
+                    <th>Decimal</th>
+                    <th>Name</th>
+                    <th>UTF-8</th>
+                    <th>UTF-16</th>
+                    <th>Category</th>
+                    <th>Block</th>
+                    <th>Bidi</th>
+                  </tr>
+                </thead>
+                <tbody id="inspectBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Compare panel -->
+          <div id="panelCompare" style="display:none;">
+            <div class="compare-grid">
+              <div>
+                <label style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;display:block;">String A</label>
+                <textarea id="compareA" rows="3" placeholder="Paste first string…" spellcheck="false" style="width:100%;font-size:1rem;padding:8px;border:1px solid var(--border,#e5e7eb);border-radius:8px;background:var(--surface,#fff);color:var(--text,#111);resize:vertical;"></textarea>
+              </div>
+              <div>
+                <label style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;display:block;">String B</label>
+                <textarea id="compareB" rows="3" placeholder="Paste second string…" spellcheck="false" style="width:100%;font-size:1rem;padding:8px;border:1px solid var(--border,#e5e7eb);border-radius:8px;background:var(--surface,#fff);color:var(--text,#111);resize:vertical;"></textarea>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-secondary" id="compareExBtn" style="margin-top:8px;">Try Example</button>
+            <div class="table-wrap" id="compareWrap" style="margin-top:12px;"></div>
+          </div>
+
+          <!-- Encode panel -->
+          <div id="panelEncode" style="display:none;">
+            <div class="encode-row">
+              <input type="text" id="encodeInput" placeholder="Type a single character…" maxlength="4" spellcheck="false">
+              <button class="btn btn-sm btn-secondary" id="encodeExBtn">Try Example</button>
+            </div>
+            <div class="encode-result" id="encodeResult"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste text above to inspect its Unicode properties.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Unicode Property Inspector</h2>
+          <ol>
+            <li><strong>Inspect mode</strong> — paste any text into the input area. The table below shows every character with its codepoint, UTF-8 bytes, UTF-16 representation, Unicode category, block, and bidirectional class. Click any glyph cell to copy that character.</li>
+            <li><strong>Compare mode</strong> — paste two strings that look identical but may differ. The tool highlights characters with different codepoints, revealing homoglyphs or invisible characters.</li>
+            <li><strong>Encode mode</strong> — type a single character to see all its encoding representations: decimal, hex, HTML entity, JavaScript escape, Python escape, CSS escape, and raw bytes.</li>
+          </ol>
+
+          <h2>Unicode Character Properties Explained</h2>
+          <p>Every Unicode character carries a rich set of properties beyond just its visual shape. The most useful for developers are the general category, block, script, and bidirectional class. Understanding these properties is essential when building text-processing systems, input validation, search engines, or any application that needs to handle multilingual text correctly.</p>
+
+          <h3>General Category</h3>
+          <p>The general category property classifies every codepoint into one of 30 categories. The broad groups are: Letter (L), Mark (M), Number (N), Punctuation (P), Symbol (S), Separator (Z), and Other (C). Letters are further divided into Uppercase (Lu), Lowercase (Ll), Titlecase (Lt), Modifier (Lm), and Other Letter (Lo). Numbers include Decimal Digit (Nd), Letter Number (Nl), and Other Number (No). Understanding categories is critical for regular expressions — the pattern <code>\p{L}</code> matches any letter in Unicode-aware regex engines, regardless of script.</p>
+
+          <h3>Unicode Blocks</h3>
+          <p>Blocks are contiguous named ranges of codepoints. Unlike scripts, blocks do not always align perfectly with a single writing system, but they are a useful navigation aid. The Basic Latin block (U+0000–U+007F) corresponds to ASCII. The Miscellaneous Symbols block (U+2600–U+26FF) contains weather symbols, card suits, and other decorative characters. Knowing the block of an unknown character helps you understand its intended use and find similar characters nearby.</p>
+
+          <h3>UTF-8 and UTF-16 Encoding</h3>
+          <p>The inspector shows the raw byte sequences for both UTF-8 and UTF-16. UTF-8 uses 1 byte for ASCII characters (U+0000–U+007F), 2 bytes for characters up to U+07FF, 3 bytes for U+0800–U+FFFF, and 4 bytes for supplementary characters (U+10000+). UTF-16 always uses 2 bytes for characters in the Basic Multilingual Plane and a 4-byte surrogate pair for supplementary characters. JavaScript's <code>charCodeAt()</code> returns UTF-16 code units, while <code>codePointAt()</code> returns the actual Unicode codepoint — this distinction matters when processing emoji or historic script characters.</p>
+
+          <h3>Bidirectional Class</h3>
+          <p>The Unicode Bidirectional Algorithm (UBA, defined in Unicode Standard Annex #9) governs how characters are rendered when left-to-right and right-to-left text appear in the same paragraph. Every character has a bidi class: L (Left-to-Right, for Latin, Greek, etc.), R (Right-to-Left, for Hebrew), AL (Arabic Letter), AN (Arabic Number), EN (European Number), and several neutral classes like WS (Whitespace) and ON (Other Neutral). The algorithm resolves the display order based on the sequence of these classes. Incorrect bidi handling is a common source of rendering bugs in multilingual applications.</p>
+
+          <h3>Grapheme Clusters vs. Codepoints</h3>
+          <p>What users perceive as a single character may be composed of multiple Unicode codepoints. A grapheme cluster can include a base character followed by combining marks (accent or diacritic), emoji with skin-tone modifiers (U+1F3FB–U+1F3FF), or emoji joined by Zero-Width Joiners (U+200D) such as the family emoji sequence. This means that <code>string.length</code> in JavaScript does not necessarily equal the number of visible characters. Use the Intl.Segmenter API (available in modern browsers) or a library like grapheme-splitter for accurate grapheme counting in applications.</p>
+
+          <h3>Practical Applications</h3>
+          <p>The Unicode inspector is invaluable for debugging text that looks correct visually but causes issues in code. Common scenarios include: detecting invisible control characters (U+200B zero-width space, U+FEFF BOM) that cause unexpected string comparisons to fail; identifying characters in wrong encoding (the garbled text known as "mojibake" often appears as sequences of Latin-1 supplement characters); checking whether a string contains right-to-left override characters (U+202E) that might be used maliciously; and verifying that a font supports all the codepoints in a string before rendering.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a Unicode general category?</button>
+            <div class="faq-answer">The Unicode general category classifies every codepoint into one of 30 types. Major categories include Letter (L), Number (N), Punctuation (P), Symbol (S), Separator (Z), and Other (C). Subcategories are more specific — for example Lu = Uppercase Letter, Sm = Math Symbol, Po = Other Punctuation. Categories are used by regex engines (e.g., \p{L} matches any letter) and text-processing algorithms.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a surrogate pair in UTF-16?</button>
+            <div class="faq-answer">UTF-16 uses surrogate pairs to encode codepoints above U+FFFF. A high surrogate (U+D800–U+DBFF) is followed by a low surrogate (U+DC00–U+DFFF) to form a pair representing one supplementary character. JavaScript strings use UTF-16 internally, so emoji and some other characters appear as two code units. Use codePointAt() instead of charCodeAt() to get the actual codepoint.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does the bidirectional class mean?</button>
+            <div class="faq-answer">The bidi class tells the Unicode Bidirectional Algorithm how to display a character when left-to-right and right-to-left text are mixed. Common classes are L (Left-to-Right), R (Right-to-Left), AL (Arabic Letter), AN (Arabic Number), and WS (Whitespace). The algorithm uses these to determine the correct visual display order in multilingual text.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does my emoji show two codepoints?</button>
+            <div class="faq-answer">Most emoji have codepoints above U+FFFF, which requires surrogate pairs in UTF-16. JavaScript string methods see them as two code units. Some emoji are actually sequences — a base emoji combined with skin-tone modifiers, gender signs, or Zero-Width Joiners (U+200D) — which can appear as multiple separate codepoints that combine into one visible glyph.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between a codepoint and a grapheme cluster?</button>
+            <div class="faq-answer">A codepoint is a single Unicode number. A grapheme cluster is one or more codepoints that together form a single perceived character. For example, the letter é can be encoded as U+00E9 (one codepoint) or as U+0065 U+0301 (e + combining acute accent, two codepoints). Both look identical but have different byte sequences. Use Intl.Segmenter for accurate grapheme counting.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Unicode Tools</h4>
+        <a href="/tools/unicode-search.html">Unicode Search</a>
+        <a href="/tools/unicode-inspector.html">Character Inspector</a>
+        <a href="/tools/homoglyph-detector.html">Homoglyph Detector</a>
+        <a href="/tools/zero-width-encoder.html">Zero-Width Encoder</a>
+        <a href="/tools/ascii-table.html">ASCII Table</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    // ── Character data lookup ───────────────────────────────────────────────
+    var NAMES = {
+      0x0000:'NULL',0x0001:'START OF HEADING',0x0002:'START OF TEXT',0x0003:'END OF TEXT',
+      0x0004:'END OF TRANSMISSION',0x0005:'ENQUIRY',0x0006:'ACKNOWLEDGE',0x0007:'BELL',
+      0x0008:'BACKSPACE',0x0009:'HORIZONTAL TABULATION',0x000A:'LINE FEED',0x000B:'VERTICAL TABULATION',
+      0x000C:'FORM FEED',0x000D:'CARRIAGE RETURN',0x000E:'SHIFT OUT',0x000F:'SHIFT IN',
+      0x0020:'SPACE',0x0021:'EXCLAMATION MARK',0x0022:'QUOTATION MARK',0x0023:'NUMBER SIGN',
+      0x0024:'DOLLAR SIGN',0x0025:'PERCENT SIGN',0x0026:'AMPERSAND',0x0027:'APOSTROPHE',
+      0x0028:'LEFT PARENTHESIS',0x0029:'RIGHT PARENTHESIS',0x002A:'ASTERISK',0x002B:'PLUS SIGN',
+      0x002C:'COMMA',0x002D:'HYPHEN-MINUS',0x002E:'FULL STOP',0x002F:'SOLIDUS',
+      0x003A:'COLON',0x003B:'SEMICOLON',0x003C:'LESS-THAN SIGN',0x003D:'EQUALS SIGN',
+      0x003E:'GREATER-THAN SIGN',0x003F:'QUESTION MARK',0x0040:'COMMERCIAL AT',
+      0x005B:'LEFT SQUARE BRACKET',0x005C:'REVERSE SOLIDUS',0x005D:'RIGHT SQUARE BRACKET',
+      0x005E:'CIRCUMFLEX ACCENT',0x005F:'LOW LINE',0x0060:'GRAVE ACCENT',
+      0x007B:'LEFT CURLY BRACKET',0x007C:'VERTICAL LINE',0x007D:'RIGHT CURLY BRACKET',
+      0x007E:'TILDE',0x007F:'DELETE',0x00A0:'NO-BREAK SPACE',0x00A9:'COPYRIGHT SIGN',
+      0x00AE:'REGISTERED SIGN',0x00B0:'DEGREE SIGN',0x00B1:'PLUS-MINUS SIGN',
+      0x00D7:'MULTIPLICATION SIGN',0x00F7:'DIVISION SIGN',
+      0x200B:'ZERO WIDTH SPACE',0x200C:'ZERO WIDTH NON-JOINER',0x200D:'ZERO WIDTH JOINER',
+      0x200E:'LEFT-TO-RIGHT MARK',0x200F:'RIGHT-TO-LEFT MARK',
+      0x2013:'EN DASH',0x2014:'EM DASH',0x2018:'LEFT SINGLE QUOTATION MARK',
+      0x2019:'RIGHT SINGLE QUOTATION MARK',0x201C:'LEFT DOUBLE QUOTATION MARK',
+      0x201D:'RIGHT DOUBLE QUOTATION MARK',0x2022:'BULLET',0x2026:'HORIZONTAL ELLIPSIS',
+      0x20AC:'EURO SIGN',0x2122:'TRADE MARK SIGN',0x2190:'LEFTWARDS ARROW',
+      0x2192:'RIGHTWARDS ARROW',0x21D2:'RIGHTWARDS DOUBLE ARROW',0x221E:'INFINITY',
+      0x221A:'SQUARE ROOT',0x03C0:'GREEK SMALL LETTER PI',0x03A9:'GREEK CAPITAL LETTER OMEGA',
+      0x2665:'BLACK HEART SUIT',0x2764:'HEAVY BLACK HEART',0xFEFF:'ZERO WIDTH NO-BREAK SPACE (BOM)',
+      0x1F600:'GRINNING FACE',0x1F602:'FACE WITH TEARS OF JOY',0x1F4A9:'PILE OF POO',
+    };
+
+    var CATEGORIES = {
+      0x0000:'Cc',0x0001:'Cc',0x0002:'Cc',0x0003:'Cc',0x0004:'Cc',0x0005:'Cc',0x0006:'Cc',
+      0x0007:'Cc',0x0008:'Cc',0x0009:'Cc',0x000A:'Cc',0x000B:'Cc',0x000C:'Cc',0x000D:'Cc',
+      0x0020:'Zs',0x00A0:'Zs',0x2003:'Zs',
+      0x200B:'Cf',0x200C:'Cf',0x200D:'Cf',0x200E:'Cf',0x200F:'Cf',0xFEFF:'Cf',
+    };
+
+    var BIDI = {
+      0x0000:'BN',0x0020:'WS',0x00A0:'CS',0x200B:'BN',0x200C:'BN',0x200D:'BN',
+      0x200E:'L',0x200F:'R',0xFEFF:'BN',
+    };
+
+    function getName(cp) {
+      if (NAMES[cp]) return NAMES[cp];
+      // Ranges
+      if (cp >= 0x0041 && cp <= 0x005A) return 'LATIN CAPITAL LETTER ' + String.fromCharCode(cp);
+      if (cp >= 0x0061 && cp <= 0x007A) return 'LATIN SMALL LETTER ' + String.fromCharCode(cp);
+      if (cp >= 0x0030 && cp <= 0x0039) return 'DIGIT ' + String.fromCharCode(cp);
+      if (cp >= 0x0391 && cp <= 0x03A9) return 'GREEK CAPITAL LETTER';
+      if (cp >= 0x03B1 && cp <= 0x03C9) return 'GREEK SMALL LETTER';
+      if (cp >= 0x0410 && cp <= 0x042F) return 'CYRILLIC CAPITAL LETTER';
+      if (cp >= 0x0430 && cp <= 0x044F) return 'CYRILLIC SMALL LETTER';
+      if (cp >= 0x4E00 && cp <= 0x9FFF) return 'CJK UNIFIED IDEOGRAPH-' + cp.toString(16).toUpperCase();
+      if (cp >= 0x3040 && cp <= 0x309F) return 'HIRAGANA LETTER';
+      if (cp >= 0x30A0 && cp <= 0x30FF) return 'KATAKANA LETTER';
+      if (cp >= 0x1F600 && cp <= 0x1F64F) return 'EMOJI FACE';
+      if (cp >= 0x1F300 && cp <= 0x1F9FF) return 'EMOJI';
+      return 'U+' + cp.toString(16).toUpperCase().padStart(4,'0');
+    }
+
+    function getCategory(cp) {
+      if (CATEGORIES[cp]) return CATEGORIES[cp];
+      if (cp >= 0x0041 && cp <= 0x005A) return 'Lu';
+      if (cp >= 0x0061 && cp <= 0x007A) return 'Ll';
+      if (cp >= 0x0030 && cp <= 0x0039) return 'Nd';
+      if (cp >= 0x0001 && cp <= 0x001F) return 'Cc';
+      if (cp === 0x007F || (cp >= 0x0080 && cp <= 0x009F)) return 'Cc';
+      if (cp >= 0x0391 && cp <= 0x03A9) return 'Lu';
+      if (cp >= 0x03B1 && cp <= 0x03C9) return 'Ll';
+      if (cp >= 0x0410 && cp <= 0x042F) return 'Lu';
+      if (cp >= 0x0430 && cp <= 0x044F) return 'Ll';
+      if (cp >= 0x4E00 && cp <= 0x9FFF) return 'Lo';
+      if (cp >= 0x3040 && cp <= 0x309F) return 'Lo';
+      if (cp >= 0x30A0 && cp <= 0x30FF) return 'Lo';
+      if (cp >= 0x2190 && cp <= 0x21FF) return 'So';
+      if (cp >= 0x2200 && cp <= 0x22FF) return 'Sm';
+      if (cp >= 0x2500 && cp <= 0x257F) return 'So';
+      if (cp >= 0x2600 && cp <= 0x27BF) return 'So';
+      if (cp >= 0x1F000 && cp <= 0x1FFFF) return 'So';
+      if (cp >= 0x0021 && cp <= 0x002F) return 'Po';
+      if (cp >= 0x003A && cp <= 0x0040) return 'Po';
+      if (cp >= 0x005B && cp <= 0x0060) return 'Po';
+      if (cp >= 0x007B && cp <= 0x007E) return 'Po';
+      if (cp >= 0x00C0 && cp <= 0x00D6) return 'Lu';
+      if (cp >= 0x00D8 && cp <= 0x00DE) return 'Lu';
+      if (cp >= 0x00E0 && cp <= 0x00F6) return 'Ll';
+      return '?';
+    }
+
+    function getBlock(cp) {
+      if (cp <= 0x007F) return 'Basic Latin';
+      if (cp <= 0x00FF) return 'Latin-1 Supplement';
+      if (cp <= 0x017F) return 'Latin Extended-A';
+      if (cp <= 0x024F) return 'Latin Extended-B';
+      if (cp <= 0x02AF) return 'IPA Extensions';
+      if (cp <= 0x036F) return 'Combining Diacritical Marks';
+      if (cp <= 0x03FF) return 'Greek and Coptic';
+      if (cp <= 0x04FF) return 'Cyrillic';
+      if (cp <= 0x052F) return 'Cyrillic Supplement';
+      if (cp <= 0x058F) return 'Armenian';
+      if (cp <= 0x05FF) return 'Hebrew';
+      if (cp <= 0x06FF) return 'Arabic';
+      if (cp <= 0x09FF) return 'Indic Scripts';
+      if (cp <= 0x1FFF) return 'Greek Extended';
+      if (cp <= 0x206F) return 'General Punctuation';
+      if (cp <= 0x20CF) return 'Currency Symbols';
+      if (cp <= 0x20FF) return 'Combining Marks for Symbols';
+      if (cp <= 0x214F) return 'Letterlike Symbols';
+      if (cp <= 0x218F) return 'Number Forms';
+      if (cp <= 0x21FF) return 'Arrows';
+      if (cp <= 0x22FF) return 'Mathematical Operators';
+      if (cp <= 0x23FF) return 'Miscellaneous Technical';
+      if (cp <= 0x243F) return 'Control Pictures';
+      if (cp <= 0x24FF) return 'Enclosed Alphanumerics';
+      if (cp <= 0x257F) return 'Box Drawing';
+      if (cp <= 0x259F) return 'Block Elements';
+      if (cp <= 0x25FF) return 'Geometric Shapes';
+      if (cp <= 0x26FF) return 'Miscellaneous Symbols';
+      if (cp <= 0x27BF) return 'Dingbats';
+      if (cp <= 0x303F) return 'CJK Symbols and Punctuation';
+      if (cp <= 0x309F) return 'Hiragana';
+      if (cp <= 0x30FF) return 'Katakana';
+      if (cp <= 0x9FFF) return 'CJK Unified Ideographs';
+      if (cp <= 0xD7FF) return 'Hangul Syllables';
+      if (cp <= 0xDFFF) return 'Surrogates';
+      if (cp <= 0xFFFD) return 'Specials / Private Use';
+      if (cp <= 0x1F1FF) return 'Enclosed Alphanumeric Supplement';
+      if (cp <= 0x1F2FF) return 'Enclosed Ideographic Supplement';
+      if (cp <= 0x1F5FF) return 'Miscellaneous Symbols and Pictographs';
+      if (cp <= 0x1F64F) return 'Emoticons';
+      if (cp <= 0x1F6FF) return 'Transport and Map Symbols';
+      if (cp <= 0x1F9FF) return 'Supplemental Symbols and Pictographs';
+      return 'Supplementary Planes';
+    }
+
+    function getBidi(cp) {
+      if (BIDI[cp]) return BIDI[cp];
+      if (cp >= 0x0041 && cp <= 0x007A) return 'L';
+      if (cp >= 0x0030 && cp <= 0x0039) return 'EN';
+      if (cp >= 0x0600 && cp <= 0x06FF) return 'AL';
+      if (cp >= 0x0590 && cp <= 0x05FF) return 'R';
+      if (cp >= 0x0400 && cp <= 0x04FF) return 'L';
+      if (cp >= 0x0391 && cp <= 0x03C9) return 'L';
+      if (cp >= 0x4E00 && cp <= 0x9FFF) return 'L';
+      if (cp >= 0x1F000 && cp <= 0x1FFFF) return 'ON';
+      if (cp >= 0x2000 && cp <= 0x206F) return 'ON';
+      if (cp >= 0x2190 && cp <= 0x27BF) return 'ON';
+      if (cp <= 0x001F) return 'BN';
+      return 'L';
+    }
+
+    function utf8Hex(cp) {
+      var bytes = [];
+      if (cp < 0x80) bytes.push(cp);
+      else if (cp < 0x800) { bytes.push(0xC0|(cp>>6), 0x80|(cp&0x3F)); }
+      else if (cp < 0x10000) { bytes.push(0xE0|(cp>>12), 0x80|((cp>>6)&0x3F), 0x80|(cp&0x3F)); }
+      else { bytes.push(0xF0|(cp>>18), 0x80|((cp>>12)&0x3F), 0x80|((cp>>6)&0x3F), 0x80|(cp&0x3F)); }
+      return bytes.map(function(b){ return b.toString(16).toUpperCase().padStart(2,'0'); }).join(' ');
+    }
+
+    function utf16Hex(cp) {
+      if (cp <= 0xFFFF) return cp.toString(16).toUpperCase().padStart(4,'0');
+      var c = cp - 0x10000;
+      var high = 0xD800 + (c >> 10);
+      var low  = 0xDC00 + (c & 0x3FF);
+      return high.toString(16).toUpperCase() + ' ' + low.toString(16).toUpperCase();
+    }
+
+    function cpStr(cp) { return 'U+' + cp.toString(16).toUpperCase().padStart(4,'0'); }
+
+    function getCodepoints(str) {
+      var cps = [];
+      for (var i = 0; i < str.length; ) {
+        var cp = str.codePointAt(i);
+        cps.push(cp);
+        i += cp > 0xFFFF ? 2 : 1;
+      }
+      return cps;
+    }
+
+    // ── Inspect mode ────────────────────────────────────────────────────────
+    var tbody = document.getElementById('inspectBody');
+    var statusBar = document.getElementById('statusBar');
+
+    function inspect(str) {
+      tbody.innerHTML = '';
+      if (!str) {
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste text above to inspect its Unicode properties.';
+        return;
+      }
+      var cps = getCodepoints(str);
+      var blocks = {};
+      var scripts = new Set ? new Set() : {};
+      cps.forEach(function(cp) {
+        var glyph = cp > 0xFFFF ? String.fromCodePoint(cp) : String.fromCharCode(cp);
+        var isControl = (cp < 0x20 || (cp >= 0x7F && cp <= 0x9F));
+        var block = getBlock(cp);
+        blocks[block] = (blocks[block]||0)+1;
+        if (scripts.add) scripts.add(block);
+        var tr = document.createElement('tr');
+        var glyphCell = document.createElement('td');
+        glyphCell.className = 'glyph-cell';
+        glyphCell.title = 'Click to copy';
+        glyphCell.innerHTML = isControl ? '<span style="font-size:0.7rem;color:var(--text-muted)">CTRL</span>' : glyph;
+        glyphCell.addEventListener('click', function(){ DT.copyToClipboard(glyph); });
+        tr.appendChild(glyphCell);
+        var cells = [
+          '<span class="cp-badge">' + cpStr(cp) + '</span>',
+          cp,
+          getName(cp),
+          utf8Hex(cp),
+          utf16Hex(cp),
+          '<span class="cat-badge">' + getCategory(cp) + '</span>',
+          block,
+          getBidi(cp)
+        ];
+        cells.forEach(function(c){
+          var td = document.createElement('td');
+          td.innerHTML = c;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      var blockCount = Object.keys(blocks).length;
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Inspecting ' + cps.length + ' character' + (cps.length !== 1 ? 's' : '') +
+        ' — ' + blockCount + ' block' + (blockCount !== 1 ? 's' : '');
+      DT.trackTool('unicode-inspector');
+    }
+
+    var debouncedInspect = DT.debounce(function(){ inspect(document.getElementById('inspectInput').value); }, 200);
+    document.getElementById('inspectInput').addEventListener('input', debouncedInspect);
+
+    // Copy table as TSV
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var rows = [['Glyph','Codepoint','Decimal','Name','UTF-8','UTF-16','Category','Block','Bidi']];
+      Array.from(document.querySelectorAll('#inspectBody tr')).forEach(function(tr) {
+        rows.push(Array.from(tr.querySelectorAll('td')).map(function(td){ return td.textContent.trim(); }));
+      });
+      DT.copyToClipboard(rows.map(function(r){ return r.join('\t'); }).join('\n'), this);
+    });
+
+    // Download CSV
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      var rows = [['Glyph','Codepoint','Decimal','Name','UTF-8','UTF-16','Category','Block','Bidi']];
+      Array.from(document.querySelectorAll('#inspectBody tr')).forEach(function(tr) {
+        rows.push(Array.from(tr.querySelectorAll('td')).map(function(td){ return '"'+td.textContent.trim().replace(/"/g,'""')+'"'; }));
+      });
+      DT.downloadText(rows.map(function(r){ return r.join(','); }).join('\n'), 'unicode-properties.csv', 'text/csv');
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      document.getElementById('inspectInput').value = 'Hello 🌍 — αβγ 你好 ①②③';
+      inspect(document.getElementById('inspectInput').value);
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      document.getElementById('inspectInput').value = '';
+      tbody.innerHTML = '';
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Paste text above to inspect its Unicode properties.';
+    });
+
+    // ── Compare mode ────────────────────────────────────────────────────────
+    function doCompare() {
+      var a = document.getElementById('compareA').value;
+      var b = document.getElementById('compareB').value;
+      if (!a && !b) return;
+      var cpsA = getCodepoints(a);
+      var cpsB = getCodepoints(b);
+      var maxLen = Math.max(cpsA.length, cpsB.length);
+      var html = '<table class="inspect-table"><thead><tr><th>#</th><th>Char A</th><th>CP A</th><th>Char B</th><th>CP B</th><th>Match?</th></tr></thead><tbody>';
+      for (var i = 0; i < maxLen; i++) {
+        var cpA = cpsA[i];
+        var cpB = cpsB[i];
+        var same = cpA === cpB;
+        var glA = cpA !== undefined ? (String.fromCodePoint ? String.fromCodePoint(cpA) : String.fromCharCode(cpA)) : '—';
+        var glB = cpB !== undefined ? (String.fromCodePoint ? String.fromCodePoint(cpB) : String.fromCharCode(cpB)) : '—';
+        var cls = same ? '' : ' class="compare-diff"';
+        html += '<tr' + cls + '><td>' + (i+1) + '</td>' +
+          '<td style="font-size:1.3rem;text-align:center">' + glA + '</td>' +
+          '<td>' + (cpA !== undefined ? cpStr(cpA) : '—') + '</td>' +
+          '<td style="font-size:1.3rem;text-align:center">' + glB + '</td>' +
+          '<td>' + (cpB !== undefined ? cpStr(cpB) : '—') + '</td>' +
+          '<td>' + (same ? '✓' : '<strong style="color:#ef4444">✗ differ</strong>') + '</td></tr>';
+      }
+      html += '</tbody></table>';
+      document.getElementById('compareWrap').innerHTML = html;
+      var diffs = 0;
+      for (var j = 0; j < maxLen; j++) { if (cpsA[j] !== cpsB[j]) diffs++; }
+      statusBar.className = diffs ? 'status-bar invalid' : 'status-bar valid';
+      statusBar.textContent = diffs
+        ? 'Strings differ — ' + diffs + ' position' + (diffs !== 1 ? 's' : '') + ' have different codepoints.'
+        : 'Strings are identical at the codepoint level.';
+    }
+
+    var debouncedCompare = DT.debounce(doCompare, 300);
+    document.getElementById('compareA').addEventListener('input', debouncedCompare);
+    document.getElementById('compareB').addEventListener('input', debouncedCompare);
+    document.getElementById('compareExBtn').addEventListener('click', function() {
+      document.getElementById('compareA').value = 'hello';
+      document.getElementById('compareB').value = 'h\u0435llo'; // Cyrillic е
+      doCompare();
+    });
+
+    // ── Encode mode ─────────────────────────────────────────────────────────
+    function doEncode() {
+      var val = document.getElementById('encodeInput').value;
+      if (!val) { document.getElementById('encodeResult').innerHTML = ''; return; }
+      var cp = val.codePointAt(0);
+      var glyph = String.fromCodePoint ? String.fromCodePoint(cp) : String.fromCharCode(cp);
+      var hexCP4 = cp.toString(16).toUpperCase().padStart(4,'0');
+      var items = [
+        ['Character', glyph],
+        ['Codepoint', cpStr(cp)],
+        ['Decimal', String(cp)],
+        ['Name', getName(cp)],
+        ['Category', getCategory(cp) + ' — ' + getBlock(cp)],
+        ['UTF-8 bytes', utf8Hex(cp)],
+        ['UTF-16', utf16Hex(cp)],
+        ['HTML hex entity', '&#x' + hexCP4 + ';'],
+        ['HTML decimal entity', '&#' + cp + ';'],
+        ['JS escape', '\\u{' + hexCP4 + '}'],
+        ['Python escape', '\\u' + hexCP4],
+        ['CSS escape', '\\' + hexCP4],
+        ['Bidi class', getBidi(cp)],
+      ];
+      var html = items.map(function(item) {
+        return '<div class="encode-item"><div class="encode-label">' + item[0] + '</div>' +
+          '<div class="encode-value">' + item[1] + '</div></div>';
+      }).join('');
+      document.getElementById('encodeResult').innerHTML = html;
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Showing all encodings for ' + cpStr(cp) + ' (' + getName(cp) + ')';
+    }
+
+    document.getElementById('encodeInput').addEventListener('input', DT.debounce(doEncode, 150));
+    document.getElementById('encodeExBtn').addEventListener('click', function() {
+      document.getElementById('encodeInput').value = '€';
+      doEncode();
+    });
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        var mode = chip.dataset.mode;
+        document.getElementById('panelInspect').style.display = mode === 'inspect' ? '' : 'none';
+        document.getElementById('panelCompare').style.display = mode === 'compare' ? '' : 'none';
+        document.getElementById('panelEncode').style.display = mode === 'encode' ? '' : 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Ready.';
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

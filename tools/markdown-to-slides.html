@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Markdown to Slides — Free Online Presentation Tool | DevToolbox</title>
+  <meta name="description" content="Turn Markdown into a fullscreen slide presentation instantly. Split by --- or ## headings, navigate with arrow keys, export as HTML. Free, browser-only.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/markdown-to-slides.html">
+  <meta property="og:title" content="Markdown to Slides — DevToolbox">
+  <meta property="og:description" content="Free online Markdown presentation tool. Write slides in Markdown, present fullscreen, export as standalone HTML. No signup required.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/markdown-to-slides.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Markdown to Slides",
+    "url": "https://thisdevtool.com/tools/markdown-to-slides.html",
+    "description": "Convert Markdown text into a fullscreen slide presentation with keyboard navigation and HTML export.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I create slides from Markdown?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Write your Markdown in the editor. Slides are separated either by a line containing only '---' (horizontal rule) or automatically at each '## ' heading. Click 'Present' to enter fullscreen mode and use the arrow keys or on-screen buttons to navigate."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What Markdown formatting is supported?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The renderer supports headings (# ## ###), bold (**text**), italic (*text*), inline code (`code`), fenced code blocks (```), unordered lists (- item), ordered lists (1. item), and links ([text](url)). Images are not supported to keep the tool privacy-safe and offline-capable."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I export the presentation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Click the 'Export' chip and then 'Download HTML'. The exported file is a fully standalone single-page HTML file with all styles inlined — no internet connection required to present it. Open it in any browser to present."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What keyboard shortcuts are available?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In Present mode: Right Arrow or Space to go to the next slide, Left Arrow to go back, Escape to exit fullscreen and return to the editor. The slide counter in the top-right shows your current position."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this for technical presentations and code demos?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Fenced code blocks are rendered with monospace styling and a distinct background, making them ideal for code demos. The tool is especially popular for developer talks, internal tech reviews, and documentation walkthroughs where writing slides in a text editor is faster than using PowerPoint or Google Slides."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    /* Presentation overlay */
+    #presentOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #0f172a;
+      color: #f8fafc;
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+    }
+    #presentOverlay.active { display: flex; }
+    #slideContent {
+      max-width: 880px;
+      width: 90%;
+      padding: 40px;
+      line-height: 1.6;
+    }
+    #slideContent h1 { font-size: 2.2rem; margin-bottom: 0.5rem; color: #10b981; }
+    #slideContent h2 { font-size: 1.8rem; margin-bottom: 0.5rem; color: #10b981; }
+    #slideContent h3 { font-size: 1.4rem; margin-bottom: 0.4rem; }
+    #slideContent ul, #slideContent ol { padding-left: 1.5rem; }
+    #slideContent li { margin-bottom: 0.4rem; font-size: 1.1rem; }
+    #slideContent code { background: #1e293b; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    #slideContent pre { background: #1e293b; padding: 16px; border-radius: 8px; overflow-x: auto; }
+    #slideContent pre code { background: transparent; padding: 0; }
+    #slideContent p { font-size: 1.1rem; margin-bottom: 0.75rem; }
+    #slideContent a { color: #10b981; }
+    #progressBar {
+      position: fixed;
+      bottom: 0; left: 0;
+      height: 4px;
+      background: #10b981;
+      transition: width 0.2s ease;
+    }
+    #slideNav {
+      position: fixed;
+      bottom: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    #slideCounter {
+      position: fixed;
+      top: 16px; right: 20px;
+      font-size: 0.85rem;
+      opacity: 0.6;
+    }
+    #exitBtn {
+      position: fixed;
+      top: 16px; left: 20px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #f8fafc;
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .slide-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #f8fafc;
+      padding: 8px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .slide-btn:hover { background: rgba(255,255,255,0.2); }
+    /* Slide deck preview */
+    #deckPreview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .slide-thumb {
+      border: 2px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      min-height: 90px;
+      overflow: hidden;
+      position: relative;
+      background: var(--card-bg, #fff);
+    }
+    .slide-thumb:hover { border-color: #10b981; }
+    .slide-thumb .thumb-num {
+      position: absolute;
+      top: 4px; right: 6px;
+      font-size: 0.65rem;
+      opacity: 0.5;
+    }
+    .slide-thumb h2, .slide-thumb h3 { font-size: 0.8rem; margin: 0 0 4px; }
+  </style>
+</head>
+<body>
+  <!-- Fullscreen Presentation Overlay -->
+  <div id="presentOverlay" role="dialog" aria-modal="true" aria-label="Presentation">
+    <button id="exitBtn">✕ Exit (Esc)</button>
+    <div id="slideCounter">1 / 1</div>
+    <div id="slideContent"></div>
+    <div id="slideNav">
+      <button class="slide-btn" id="prevBtn">← Prev</button>
+      <button class="slide-btn" id="nextBtn">Next →</button>
+    </div>
+    <div id="progressBar" style="width:0%"></div>
+  </div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+        <a href="/tools/syntax-highlighter.html">Syntax Highlighter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Markdown to Slides</h1>
+          <p class="tool-subtitle">Write Markdown, present fullscreen, export as standalone HTML. Separate slides with <code>---</code> or <code>## </code> headings.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="edit">Edit</button>
+            <button class="option-chip" data-mode="present">Present</button>
+            <button class="option-chip" data-mode="export">Export</button>
+          </div>
+
+          <!-- Edit mode -->
+          <div id="editPane">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Markdown</span>
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+                <textarea id="mdInput" rows="18" placeholder="# Slide 1 Title
+Your content here...
+
+---
+
+## Slide 2
+
+- Bullet point one
+- Bullet point two
+- Bullet point three
+
+---
+
+## Code Example
+
+\`\`\`js
+console.log('Hello, DevToolbox!');
+\`\`\`" spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label"><span>Slide Deck Preview</span></div>
+                <div id="deckPreview"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Export mode -->
+          <div id="exportPane" style="display:none;padding:20px 0;">
+            <p style="margin-bottom:12px;">Download a fully standalone HTML file — no internet connection needed to present it.</p>
+            <button class="btn btn-primary" id="downloadHtmlBtn">Download HTML Presentation</button>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Write Markdown above — separate slides with <code>---</code> or <code>## </code> headings.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use Markdown to Slides</h2>
+          <ol>
+            <li><strong>Write your content</strong> in the Markdown editor. Each slide is separated by a <code>---</code> divider or starts at a <code>## </code> heading.</li>
+            <li><strong>Preview the deck</strong> — thumbnail cards on the right show each slide. Click any thumbnail to jump to that slide in Present mode.</li>
+            <li><strong>Click "Present"</strong> to enter fullscreen mode. Use arrow keys or the on-screen buttons to navigate.</li>
+            <li><strong>Export</strong> your presentation as a standalone HTML file to share or present offline.</li>
+          </ol>
+
+          <h2>Why Markdown for Presentations?</h2>
+          <p>Writing slides in Markdown is dramatically faster than dragging text boxes in PowerPoint or Google Slides. For developers and technical writers, the keyboard-first workflow means you can sketch out an entire 20-slide deck in the time it takes to format a single slide in a traditional tool. The plain-text format also means your slides are version-controllable in Git, diffable, and portable.</p>
+
+          <h3>Supported Markdown Elements</h3>
+          <ul>
+            <li><strong>Headings</strong> — <code># H1</code>, <code>## H2</code>, <code>### H3</code> with distinct sizes</li>
+            <li><strong>Text formatting</strong> — <code>**bold**</code>, <code>*italic*</code>, <code>`inline code`</code></li>
+            <li><strong>Lists</strong> — unordered (<code>- item</code>) and ordered (<code>1. item</code>)</li>
+            <li><strong>Code blocks</strong> — fenced with <code>```</code>, rendered with monospace font and distinct background</li>
+            <li><strong>Links</strong> — <code>[text](url)</code> rendered as clickable hyperlinks</li>
+          </ul>
+
+          <h3>Keyboard Shortcuts in Present Mode</h3>
+          <ul>
+            <li><strong>Right Arrow / Space</strong> — next slide</li>
+            <li><strong>Left Arrow</strong> — previous slide</li>
+            <li><strong>Escape</strong> — exit presentation and return to editor</li>
+          </ul>
+
+          <h3>Exporting Your Presentation</h3>
+          <p>The HTML export generates a self-contained file with all styles inlined. No external dependencies, no CDN links — just a single HTML file you can email, host on any static file server, or open directly from your file system. The presentation uses the same dark theme as the in-browser viewer, with keyboard navigation built in.</p>
+
+          <h3>Use Cases</h3>
+          <ul>
+            <li><strong>Tech talks and conference talks</strong> — write slides close to your code in your IDE, then present directly from the browser</li>
+            <li><strong>Internal reviews</strong> — quick sprint retrospectives or architecture reviews without the overhead of slide software</li>
+            <li><strong>Documentation walkthroughs</strong> — convert existing Markdown docs into a step-by-step presentation format</li>
+            <li><strong>Teaching and tutorials</strong> — code-heavy tutorials benefit from the fenced code block rendering</li>
+          </ul>
+
+          <h3>Alternatives and When to Use Them</h3>
+          <p>For production-quality slide decks with images, custom fonts, animations, and brand assets, dedicated tools like Reveal.js, Marp, or Slidev offer more control. This tool is optimised for speed — when you need to create a readable, shareable presentation from Markdown text in under five minutes without installing anything. For more advanced Markdown editing, try our <a href="/tools/markdown-preview.html">Markdown Preview</a> tool.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">How do I create slides from Markdown?</button>
+            <div class="faq-answer">Write your Markdown in the editor. Slides are separated either by a line containing only '---' or automatically at each '## ' heading. Click 'Present' to enter fullscreen mode and use the arrow keys to navigate.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What Markdown formatting is supported?</button>
+            <div class="faq-answer">The renderer supports headings (# ## ###), bold (**text**), italic (*text*), inline code (`code`), fenced code blocks (```), unordered lists (- item), ordered lists (1. item), and links ([text](url)).</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I export the presentation?</button>
+            <div class="faq-answer">Click the 'Export' chip and then 'Download HTML'. The exported file is a fully standalone single-page HTML file with all styles inlined — no internet connection required to present it.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What keyboard shortcuts are available?</button>
+            <div class="faq-answer">In Present mode: Right Arrow or Space to go to the next slide, Left Arrow to go back, Escape to exit fullscreen and return to the editor.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I use this for technical presentations and code demos?</button>
+            <div class="faq-answer">Yes. Fenced code blocks are rendered with monospace styling and a distinct background, making them ideal for code demos. The tool is especially popular for developer talks, internal tech reviews, and documentation walkthroughs.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text &amp; Markdown</h4>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+        <a href="/tools/markdown-to-slides.html">Markdown to Slides</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/syntax-highlighter.html">Syntax Highlighter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var mdInput = document.getElementById('mdInput');
+    var statusBar = document.getElementById('statusBar');
+    var deckPreview = document.getElementById('deckPreview');
+    var editPane = document.getElementById('editPane');
+    var exportPane = document.getElementById('exportPane');
+    var overlay = document.getElementById('presentOverlay');
+    var slideContent = document.getElementById('slideContent');
+    var slideCounter = document.getElementById('slideCounter');
+    var progressBar = document.getElementById('progressBar');
+    var currentMode = 'edit';
+    var slides = [];
+    var currentSlide = 0;
+
+    var EXAMPLE_MD = [
+      '# DevToolbox Markdown Slides',
+      'Write Markdown. Present instantly.',
+      '',
+      '---',
+      '',
+      '## Why Markdown Slides?',
+      '',
+      '- No slide software needed',
+      '- Version control friendly',
+      '- Focus on content, not formatting',
+      '- Export as standalone HTML',
+      '',
+      '---',
+      '',
+      '## Code Example',
+      '',
+      '```js',
+      'function greet(name) {',
+      '  return `Hello, ${name}!`;',
+      '}',
+      'console.log(greet("DevToolbox"));',
+      '```',
+      '',
+      '---',
+      '',
+      '## Key Features',
+      '',
+      '1. Fullscreen present mode',
+      '2. Arrow key navigation',
+      '3. Progress bar',
+      '4. HTML export',
+      '',
+      '---',
+      '',
+      '## Get Started',
+      '',
+      'Visit **thisdevtool.com** for more free developer tools.',
+      '',
+      '[Open DevToolbox](https://thisdevtool.com)'
+    ].join('\n');
+
+    // --- Markdown renderer ---
+    function renderMd(text) {
+      var html = text;
+      // Escape HTML entities first
+      html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      // Fenced code blocks
+      html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function (_, lang, code) {
+        return '<pre><code>' + code + '</code></pre>';
+      });
+      // Headings
+      html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+      html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+      html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+      // Bold and italic
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      // Inline code
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // Links
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      // Ordered lists
+      html = html.replace(/((?:^\d+\. .+\n?)+)/gm, function (block) {
+        var items = block.trim().split('\n').map(function (l) {
+          return '<li>' + l.replace(/^\d+\. /, '') + '</li>';
+        }).join('');
+        return '<ol>' + items + '</ol>';
+      });
+      // Unordered lists
+      html = html.replace(/((?:^- .+\n?)+)/gm, function (block) {
+        var items = block.trim().split('\n').map(function (l) {
+          return '<li>' + l.replace(/^- /, '') + '</li>';
+        }).join('');
+        return '<ul>' + items + '</ul>';
+      });
+      // Paragraphs (lines not already wrapped)
+      html = html.replace(/^(?!<[huo]|<li|<pre|<code)(.+)$/gm, '<p>$1</p>');
+      return html;
+    }
+
+    function parseSlides(md) {
+      if (!md.trim()) return [];
+      // Split on --- divider lines
+      var parts = md.split(/\n---\n/);
+      var result = [];
+      parts.forEach(function (part) {
+        var trimmed = part.trim();
+        if (!trimmed) return;
+        // Further split on ## headings within a part (if no --- was used)
+        if (parts.length === 1) {
+          var sections = trimmed.split(/(?=^## )/m);
+          sections.forEach(function (s) {
+            if (s.trim()) result.push(s.trim());
+          });
+        } else {
+          result.push(trimmed);
+        }
+      });
+      return result.length ? result : [md.trim()];
+    }
+
+    function updateDeckPreview() {
+      deckPreview.innerHTML = '';
+      slides.forEach(function (slide, i) {
+        var div = document.createElement('div');
+        div.className = 'slide-thumb';
+        var num = document.createElement('span');
+        num.className = 'thumb-num';
+        num.textContent = i + 1;
+        div.appendChild(num);
+        var inner = document.createElement('div');
+        inner.innerHTML = renderMd(slide);
+        div.appendChild(inner);
+        div.addEventListener('click', function () {
+          currentSlide = i;
+          enterPresent();
+        });
+        deckPreview.appendChild(div);
+      });
+    }
+
+    function showSlide(idx) {
+      if (!slides.length) return;
+      currentSlide = Math.max(0, Math.min(idx, slides.length - 1));
+      slideContent.innerHTML = renderMd(slides[currentSlide]);
+      slideCounter.textContent = (currentSlide + 1) + ' / ' + slides.length;
+      var pct = slides.length > 1 ? (currentSlide / (slides.length - 1)) * 100 : 100;
+      progressBar.style.width = pct + '%';
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = slides.length + ' slides — Slide ' + (currentSlide + 1) + ' of ' + slides.length;
+    }
+
+    function enterPresent() {
+      if (!slides.length) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'No slides to present. Write some Markdown first.';
+        return;
+      }
+      overlay.classList.add('active');
+      showSlide(currentSlide);
+      document.body.style.overflow = 'hidden';
+      DT.trackTool('markdown-to-slides');
+    }
+
+    function exitPresent() {
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    function process() {
+      var md = mdInput.value;
+      slides = parseSlides(md);
+      updateDeckPreview();
+      if (!md.trim()) {
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Write Markdown above — separate slides with --- or ## headings.';
+      } else {
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = slides.length + ' slide' + (slides.length !== 1 ? 's' : '') + ' detected';
+      }
+    }
+
+    var debouncedProcess = DT.debounce(process, 250);
+    mdInput.addEventListener('input', debouncedProcess);
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        editPane.style.display = currentMode === 'edit' ? '' : 'none';
+        exportPane.style.display = currentMode === 'export' ? '' : 'none';
+        if (currentMode === 'present') {
+          enterPresent();
+          // switch back chip to edit after presenting
+          setTimeout(function () {
+            document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+            document.querySelector('[data-mode="edit"]').classList.add('active');
+            currentMode = 'edit';
+            editPane.style.display = '';
+            exportPane.style.display = 'none';
+          }, 100);
+        }
+      });
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      mdInput.value = '';
+      process();
+      mdInput.focus();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      mdInput.value = EXAMPLE_MD;
+      process();
+    });
+
+    // Navigation
+    document.getElementById('prevBtn').addEventListener('click', function () { showSlide(currentSlide - 1); });
+    document.getElementById('nextBtn').addEventListener('click', function () { showSlide(currentSlide + 1); });
+    document.getElementById('exitBtn').addEventListener('click', exitPresent);
+
+    document.addEventListener('keydown', function (e) {
+      if (!overlay.classList.contains('active')) return;
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); showSlide(currentSlide + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); showSlide(currentSlide - 1); }
+      if (e.key === 'Escape') exitPresent();
+    });
+
+    // Export
+    document.getElementById('downloadHtmlBtn').addEventListener('click', function () {
+      if (!slides.length) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'No slides to export. Write some Markdown first.';
+        return;
+      }
+      var slidesJson = JSON.stringify(slides);
+      var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Presentation</title><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:system-ui,sans-serif;background:#0f172a;color:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px;}#slide{max-width:880px;width:100%;line-height:1.6;}h1{font-size:2.2rem;color:#10b981;margin-bottom:.5rem;}h2{font-size:1.8rem;color:#10b981;margin-bottom:.5rem;}h3{font-size:1.4rem;margin-bottom:.4rem;}ul,ol{padding-left:1.5rem;}li{margin-bottom:.4rem;font-size:1.1rem;}code{background:#1e293b;padding:2px 6px;border-radius:4px;font-family:monospace;}pre{background:#1e293b;padding:16px;border-radius:8px;overflow-x:auto;}pre code{background:transparent;padding:0;}p{font-size:1.1rem;margin-bottom:.75rem;}a{color:#10b981;}#nav{position:fixed;bottom:20px;display:flex;gap:12px;}#counter{position:fixed;top:16px;right:20px;font-size:.85rem;opacity:.6;}#bar{position:fixed;bottom:0;left:0;height:4px;background:#10b981;transition:width .2s;}button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#f8fafc;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:1rem;}button:hover{background:rgba(255,255,255,.2);}</style></head><body><div id="counter"></div><div id="slide"></div><div id="nav"><button onclick="go(-1)">&#8592; Prev</button><button onclick="go(1)">Next &#8594;</button></div><div id="bar"></div><script>var slides=' + slidesJson + ';var cur=0;function renderMd(t){var h=t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");h=h.replace(/```(\\w*)\\n([\\s\\S]*?)```/g,function(_,l,c){return"<pre><code>"+c+"</code></pre>";});h=h.replace(/^### (.+)$/gm,"<h3>$1</h3>");h=h.replace(/^## (.+)$/gm,"<h2>$1</h2>");h=h.replace(/^# (.+)$/gm,"<h1>$1</h1>");h=h.replace(/\\*\\*(.+?)\\*\\*/g,"<strong>$1</strong>");h=h.replace(/\\*(.+?)\\*/g,"<em>$1</em>");h=h.replace(/`([^`]+)`/g,"<code>$1</code>");h=h.replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g,"<a href=\\"$2\\">$1</a>");h=h.replace(/((?:^\\d+\\. .+\\n?)+)/gm,function(b){return"<ol>"+b.trim().split("\\n").map(function(l){return"<li>"+l.replace(/^\\d+\\. /,"")+"</li>";}).join("")+"</ol>";});h=h.replace(/((?:^- .+\\n?)+)/gm,function(b){return"<ul>"+b.trim().split("\\n").map(function(l){return"<li>"+l.replace(/^- /,"")+"</li>";}).join("")+"</ul>";});h=h.replace(/^(?!<[huo]|<li|<pre|<code)(.+)$/gm,"<p>$1</p>");return h;}function show(i){cur=Math.max(0,Math.min(i,slides.length-1));document.getElementById("slide").innerHTML=renderMd(slides[cur]);document.getElementById("counter").textContent=(cur+1)+" / "+slides.length;var p=slides.length>1?cur/(slides.length-1)*100:100;document.getElementById("bar").style.width=p+"%";}function go(d){show(cur+d);}document.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();go(1);}if(e.key==="ArrowLeft")go(-1);});show(0);<\/script></body></html>';
+      DT.downloadText(html, 'presentation.html', 'text/html');
+      DT.trackTool('markdown-to-slides-export');
+    });
+
+    mdInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        var s = this.selectionStart, en = this.selectionEnd;
+        this.value = this.value.substring(0, s) + '  ' + this.value.substring(en);
+        this.selectionStart = this.selectionEnd = s + 2;
+        debouncedProcess();
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

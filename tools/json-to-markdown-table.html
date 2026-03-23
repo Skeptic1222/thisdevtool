@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JSON to Markdown Table — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert JSON arrays, objects, or CSV data into Markdown tables instantly. Choose columns, set alignment, preview the result. Free, browser-only, no signup.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/json-to-markdown-table.html">
+  <meta property="og:title" content="JSON to Markdown Table — DevToolbox">
+  <meta property="og:description" content="Free online converter: JSON arrays, objects, and CSV to Markdown tables. Set alignment per column, pick fields, preview instantly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/json-to-markdown-table.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON to Markdown Table",
+    "url": "https://thisdevtool.com/tools/json-to-markdown-table.html",
+    "description": "Convert JSON arrays, objects, or CSV data to Markdown tables. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What input formats does this tool accept?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool accepts three input formats: JSON arrays of objects (the most common), JSON objects (converted to a two-column key/value table), and CSV text (comma-separated values with a header row). Select the appropriate mode chip before pasting your data."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I set column alignment in a Markdown table?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "After conversion, click on any column header in the alignment controls area. You can cycle through left (:---), center (:---:), and right (---:) alignment for each column independently. The Markdown output updates immediately."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I choose which columns to include?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. When converting a JSON array, checkboxes appear below the tool for every field found in your data. Uncheck any field to exclude that column from the generated Markdown table."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Everything runs in your browser using JavaScript. Your JSON or CSV data never leaves your machine — there is no server, no API call, and no logging."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where can I use Markdown tables?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Markdown tables are supported in GitHub READMEs, GitLab, Bitbucket, Notion, Confluence, Obsidian, VS Code preview, Reddit, and most static site generators (Jekyll, Hugo, Gatsby). They are the standard way to display tabular data in documentation."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/csv-json.html">CSV ↔ JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>JSON to Markdown Table</h1>
+          <p class="tool-subtitle">Paste JSON or CSV — get a Markdown table with alignment control and column selection.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="array">Array → Table</button>
+            <button class="option-chip" data-mode="object">Object → Table</button>
+            <button class="option-chip" data-mode="csv">CSV → Table</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="mainInput" rows="16" placeholder='Paste JSON array here...
+
+Example:
+[
+  {"name":"Alice","role":"Dev","score":95},
+  {"name":"Bob","role":"QA","score":87}
+]' spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Markdown Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="mdOutput" style="min-height:200px;white-space:pre;"></div>
+              <div id="previewWrap" style="display:none;margin-top:12px;">
+                <div class="pane-label"><span>Rendered Preview</span></div>
+                <div id="tablePreview" style="overflow-x:auto;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column controls (shown after parse) -->
+          <div id="columnControls" style="display:none;margin-top:12px;">
+            <div class="pane-label"><span>Columns — click alignment to cycle Left / Center / Right</span></div>
+            <div id="colList" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste JSON or CSV above to generate a Markdown table.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Convert JSON to a Markdown Table</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — "Array → Table" for JSON arrays of objects, "Object → Table" for a single JSON object, or "CSV → Table" for comma-separated data.</li>
+            <li><strong>Paste your data</strong> into the input area or click "Try Example" to load sample data.</li>
+            <li><strong>Adjust columns</strong> — after parsing, checkboxes let you exclude columns, and alignment badges cycle through Left, Center, and Right.</li>
+            <li><strong>Copy or Download</strong> the finished Markdown.</li>
+          </ol>
+
+          <h2>What Is a Markdown Table?</h2>
+          <p>A Markdown table uses pipe characters (<code>|</code>) as column separators and a separator row of dashes to define the header boundary. Column alignment is set in the separator row: <code>:---</code> for left, <code>:---:</code> for center, <code>---:</code> for right. Most Markdown renderers — GitHub, GitLab, Notion, Obsidian, and VS Code — support the GFM (GitHub Flavored Markdown) table specification that this tool generates.</p>
+
+          <h3>Input Format Details</h3>
+          <ul>
+            <li><strong>Array mode</strong> — expects a JSON array of flat objects. Nested objects are JSON-stringified into a single cell. All unique keys across all objects become columns; missing values render as empty cells.</li>
+            <li><strong>Object mode</strong> — converts a single JSON object into a two-column Key/Value table. Useful for configuration summaries or metadata blocks.</li>
+            <li><strong>CSV mode</strong> — expects a header row followed by data rows. Commas inside quoted fields (<code>"a,b"</code>) are handled correctly. Rows with fewer columns than the header are padded with empty cells.</li>
+          </ul>
+
+          <h3>Column Alignment</h3>
+          <p>Alignment matters for readability in rendered tables. Left-align descriptive text columns, right-align numeric columns (scores, prices, counts), and center-align short labels or status values. Click the alignment badge next to each column name to cycle through the three options — the Markdown output regenerates immediately.</p>
+
+          <h3>Supported Markdown Renderers</h3>
+          <p>This tool generates GFM tables which are supported in: GitHub READMEs and wikis, GitLab Markdown, Bitbucket, Confluence (with Markdown macro), Notion, Obsidian, Typora, VS Code preview, Hugo, Jekyll, Gatsby, Docusaurus, and most other Markdown-based documentation systems. If your renderer does not support tables, consider our <a href="/tools/json-formatter.html">JSON Formatter</a> to display data as structured JSON instead.</p>
+
+          <h3>Common Use Cases</h3>
+          <ul>
+            <li><strong>API documentation</strong> — convert a JSON schema or example response into a readable parameters table.</li>
+            <li><strong>GitHub README</strong> — display features, comparisons, or changelogs as a formatted table.</li>
+            <li><strong>Sprint reports</strong> — paste a CSV export from Jira or Linear and generate a Markdown table for a daily standup or retrospective document.</li>
+            <li><strong>Config documentation</strong> — convert environment variable objects into a two-column reference table.</li>
+            <li><strong>Data exploration</strong> — quickly visualise a small dataset from a REST API without spinning up a spreadsheet.</li>
+          </ul>
+
+          <h3>Limitations and Edge Cases</h3>
+          <p>Markdown tables are designed for flat, tabular data. Deeply nested JSON objects are serialised as JSON strings inside cells, which can make the table hard to read. For nested data, consider flattening with a tool like <a href="/tools/json-formatter.html">JSON Formatter</a> first. Very wide tables (20+ columns) render poorly on mobile screens — use column selection to show only the most important fields. Cells containing pipe characters (<code>|</code>) are automatically escaped to prevent breaking the table structure.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What input formats does this tool accept?</button>
+            <div class="faq-answer">This tool accepts three input formats: JSON arrays of objects (the most common), JSON objects (converted to a two-column key/value table), and CSV text (comma-separated values with a header row). Select the appropriate mode chip before pasting your data.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I set column alignment in a Markdown table?</button>
+            <div class="faq-answer">After conversion, click on any alignment badge next to a column name. Each click cycles through Left (:---), Center (:---:), and Right (---:) alignment for that column independently. The Markdown output updates immediately.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I choose which columns to include?</button>
+            <div class="faq-answer">Yes. When converting a JSON array, checkboxes appear below the tool for every field found in your data. Uncheck any field to exclude that column from the generated Markdown table.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my data sent to a server?</button>
+            <div class="faq-answer">No. Everything runs in your browser using JavaScript. Your JSON or CSV data never leaves your machine — there is no server, no API call, and no logging.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Where can I use Markdown tables?</button>
+            <div class="faq-answer">Markdown tables are supported in GitHub READMEs, GitLab, Bitbucket, Notion, Confluence, Obsidian, VS Code preview, Reddit, and most static site generators (Jekyll, Hugo, Gatsby). They are the standard way to display tabular data in documentation.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/csv-json.html">CSV ↔ JSON</a>
+        <a href="/tools/yaml-json.html">YAML ↔ JSON</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var input = document.getElementById('mainInput');
+    var mdOutput = document.getElementById('mdOutput');
+    var statusBar = document.getElementById('statusBar');
+    var colList = document.getElementById('colList');
+    var columnControls = document.getElementById('columnControls');
+    var previewWrap = document.getElementById('previewWrap');
+    var tablePreview = document.getElementById('tablePreview');
+    var currentMode = 'array';
+
+    // State
+    var parsedColumns = []; // [{key, align, enabled}]
+    var parsedRows = [];    // array of arrays
+
+    var EXAMPLES = {
+      array: '[{"name":"Alice","role":"Engineer","score":95,"active":true},{"name":"Bob","role":"QA","score":87,"active":true},{"name":"Carol","role":"Designer","score":92,"active":false}]',
+      object: '{"name":"DevToolbox","version":"2.0","license":"MIT","homepage":"https://thisdevtool.com","stars":1200}',
+      csv: 'Name,Role,Score,Active\nAlice,Engineer,95,true\nBob,QA,87,true\nCarol,Designer,92,false'
+    };
+
+    function escapeCell(v) {
+      if (v === null || v === undefined) return '';
+      var s = typeof v === 'object' ? JSON.stringify(v) : String(v);
+      return s.replace(/\|/g, '\\|').replace(/\n/g, ' ');
+    }
+
+    function alignSep(a) {
+      if (a === 'center') return ':---:';
+      if (a === 'right') return '---:';
+      return ':---';
+    }
+
+    function buildTable() {
+      if (!parsedColumns.length) return '';
+      var active = parsedColumns.filter(function (c) { return c.enabled; });
+      if (!active.length) return '';
+      var lines = [];
+      var header = '| ' + active.map(function (c) { return c.key; }).join(' | ') + ' |';
+      var sep    = '| ' + active.map(function (c) { return alignSep(c.align); }).join(' | ') + ' |';
+      lines.push(header, sep);
+      parsedRows.forEach(function (row) {
+        var cells = active.map(function (c) { return escapeCell(row[c.key]); });
+        lines.push('| ' + cells.join(' | ') + ' |');
+      });
+      return lines.join('\n');
+    }
+
+    function buildPreview(md) {
+      var lines = md.split('\n');
+      if (lines.length < 2) return '';
+      var html = '<table style="border-collapse:collapse;width:100%;font-size:0.875rem;">';
+      lines.forEach(function (line, i) {
+        if (i === 1) return; // skip separator
+        var cells = line.split('|').slice(1, -1).map(function (c) { return c.trim(); });
+        var tag = i === 0 ? 'th' : 'td';
+        var style = 'padding:6px 10px;border:1px solid var(--border,#e2e8f0);';
+        html += '<tr>' + cells.map(function (c) {
+          return '<' + tag + ' style="' + style + '">' + c + '</' + tag + '>';
+        }).join('') + '</tr>';
+      });
+      html += '</table>';
+      return html;
+    }
+
+    function renderOutput() {
+      var md = buildTable();
+      mdOutput.textContent = md;
+      if (md) {
+        previewWrap.style.display = '';
+        tablePreview.innerHTML = buildPreview(md);
+        var active = parsedColumns.filter(function (c) { return c.enabled; });
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Generated table — ' + active.length + ' columns, ' + parsedRows.length + ' rows';
+      } else {
+        previewWrap.style.display = 'none';
+      }
+    }
+
+    function renderColControls() {
+      colList.innerHTML = '';
+      parsedColumns.forEach(function (col, idx) {
+        var wrap = document.createElement('label');
+        wrap.style.cssText = 'display:flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--border,#e2e8f0);border-radius:6px;cursor:pointer;font-size:0.8rem;';
+
+        var cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = col.enabled;
+        cb.addEventListener('change', function () {
+          parsedColumns[idx].enabled = cb.checked;
+          renderOutput();
+        });
+
+        var name = document.createElement('span');
+        name.textContent = col.key;
+
+        var alignBtn = document.createElement('button');
+        alignBtn.className = 'btn btn-sm';
+        alignBtn.style.cssText = 'padding:2px 6px;font-size:0.75rem;background:var(--chip-bg,#f1f5f9);border:none;border-radius:4px;cursor:pointer;';
+        alignBtn.textContent = col.align === 'left' ? 'L' : col.align === 'center' ? 'C' : 'R';
+        alignBtn.title = 'Click to cycle alignment';
+        alignBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          var cycle = { left: 'center', center: 'right', right: 'left' };
+          parsedColumns[idx].align = cycle[parsedColumns[idx].align] || 'left';
+          alignBtn.textContent = parsedColumns[idx].align === 'left' ? 'L' : parsedColumns[idx].align === 'center' ? 'C' : 'R';
+          renderOutput();
+        });
+
+        wrap.appendChild(cb);
+        wrap.appendChild(name);
+        wrap.appendChild(alignBtn);
+        colList.appendChild(wrap);
+      });
+      columnControls.style.display = parsedColumns.length ? '' : 'none';
+    }
+
+    function parseArray(raw) {
+      var data = JSON.parse(raw);
+      if (!Array.isArray(data)) throw new Error('Expected a JSON array.');
+      if (!data.length) throw new Error('Array is empty.');
+      var keys = [];
+      data.forEach(function (row) {
+        if (typeof row !== 'object' || row === null) return;
+        Object.keys(row).forEach(function (k) { if (keys.indexOf(k) === -1) keys.push(k); });
+      });
+      parsedColumns = keys.map(function (k) { return { key: k, align: 'left', enabled: true }; });
+      parsedRows = data.map(function (row) {
+        var r = {};
+        keys.forEach(function (k) { r[k] = (row && row[k] !== undefined) ? row[k] : ''; });
+        return r;
+      });
+    }
+
+    function parseObject(raw) {
+      var obj = JSON.parse(raw);
+      if (typeof obj !== 'object' || obj === null || Array.isArray(obj)) throw new Error('Expected a JSON object.');
+      parsedColumns = [{ key: 'Key', align: 'left', enabled: true }, { key: 'Value', align: 'left', enabled: true }];
+      parsedRows = Object.keys(obj).map(function (k) { return { Key: k, Value: obj[k] }; });
+    }
+
+    function parseCSV(raw) {
+      var lines = raw.trim().split('\n');
+      if (lines.length < 2) throw new Error('CSV needs at least a header row and one data row.');
+      function splitCSVLine(line) {
+        var result = [], cur = '', inQ = false;
+        for (var i = 0; i < line.length; i++) {
+          var ch = line[i];
+          if (ch === '"') { inQ = !inQ; }
+          else if (ch === ',' && !inQ) { result.push(cur); cur = ''; }
+          else { cur += ch; }
+        }
+        result.push(cur);
+        return result;
+      }
+      var headers = splitCSVLine(lines[0]);
+      parsedColumns = headers.map(function (h) { return { key: h.trim(), align: 'left', enabled: true }; });
+      parsedRows = [];
+      for (var i = 1; i < lines.length; i++) {
+        var cells = splitCSVLine(lines[i]);
+        var row = {};
+        headers.forEach(function (h, j) { row[h.trim()] = cells[j] !== undefined ? cells[j].trim() : ''; });
+        parsedRows.push(row);
+      }
+    }
+
+    function process() {
+      var raw = input.value.trim();
+      if (!raw) {
+        mdOutput.textContent = '';
+        parsedColumns = [];
+        parsedRows = [];
+        columnControls.style.display = 'none';
+        previewWrap.style.display = 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste JSON or CSV above to generate a Markdown table.';
+        return;
+      }
+      try {
+        if (currentMode === 'array') parseArray(raw);
+        else if (currentMode === 'object') parseObject(raw);
+        else parseCSV(raw);
+        renderColControls();
+        renderOutput();
+        DT.trackTool('json-to-markdown-table');
+      } catch (e) {
+        mdOutput.textContent = '';
+        parsedColumns = [];
+        parsedRows = [];
+        columnControls.style.display = 'none';
+        previewWrap.style.display = 'none';
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    var debouncedProcess = DT.debounce(process, 200);
+    input.addEventListener('input', debouncedProcess);
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        process();
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var text = mdOutput.textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var text = mdOutput.textContent;
+      if (text) DT.downloadText(text, 'table.md', 'text/markdown');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      input.value = '';
+      process();
+      input.focus();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      input.value = EXAMPLES[currentMode];
+      process();
+    });
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        var s = this.selectionStart, en = this.selectionEnd;
+        this.value = this.value.substring(0, s) + '  ' + this.value.substring(en);
+        this.selectionStart = this.selectionEnd = s + 2;
+        debouncedProcess();
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

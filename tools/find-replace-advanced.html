@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Advanced Find &amp; Replace — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Advanced find and replace online. Simple text, regex with capture groups, multi-rule batch replace, and diff preview. Free, instant, 100% in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/find-replace-advanced.html">
+  <meta property="og:title" content="Advanced Find &amp; Replace — DevToolbox">
+  <meta property="og:description" content="Find and replace with regex, capture groups, multi-rule batch mode and diff preview. Free, instant, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/find-replace-advanced.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Advanced Find &amp; Replace — DevToolbox">
+  <meta name="twitter:description" content="Find and replace with regex, capture groups, multi-rule batch mode and diff preview.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Advanced Find & Replace",
+    "url": "https://thisdevtool.com/tools/find-replace-advanced.html",
+    "description": "Online find and replace tool with regex support, capture groups, multi-rule batch replace and diff preview. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I use capture groups in the regex find and replace?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In Regex mode, use parentheses in your find pattern to create capture groups: (\\w+). Then reference them in the replacement using $1, $2, etc. For example, find '(\\w+)\\s+(\\w+)' and replace with '$2 $1' to swap two words. Backreferences work the same as in most regex engines."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Multi-Rule mode?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Multi-Rule mode lets you define multiple find/replace pairs and apply them all at once in a single pass. Each rule is entered as a JSON array of [find, replace] pairs. Rules are applied in order from top to bottom. This is useful for batch-renaming variables, applying multiple text substitutions, or transforming data formats."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the Preview mode work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Preview mode shows a color-coded diff of the changes before they are applied. Removed text appears in red, added text appears in green. This lets you verify that your find and replace rules are correct before committing to the changes. Preview mode is especially useful for complex regex replacements."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I do case-insensitive find and replace?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. In Simple mode, check the 'Case Insensitive' checkbox. In Regex mode, add the 'i' flag to your regex pattern (e.g., /pattern/i is achieved by enabling the Case Insensitive option, which adds the 'i' flag automatically)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a limit to the text size I can process?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Since everything runs in your browser, the limit depends on available memory. The tool handles texts up to several megabytes without issues. For very large files (10MB+), consider using command-line tools like sed or awk which can stream files without loading them entirely into memory."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .fr-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-bottom: .5rem; }
+    .fr-fields input { width: 100%; padding: .45rem .65rem; font-size: .9rem; }
+    .fr-field-wrap { display: flex; flex-direction: column; gap: .25rem; }
+    .fr-field-wrap label { font-size: .8rem; font-weight: 600; color: var(--text-secondary); }
+    .fr-options { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: .5rem; }
+    .fr-options label { display: flex; align-items: center; gap: .3rem; font-size: .85rem; cursor: pointer; }
+    .fr-options input[type=checkbox] { accent-color: var(--accent); }
+    .multi-rules-wrap { margin-bottom: .5rem; }
+    .multi-rules-wrap label { font-size: .85rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: .25rem; }
+    #multiRulesInput { width: 100%; font-family: monospace; font-size: .85rem; min-height: 120px; }
+    .diff-output { font-family: monospace; font-size: .85rem; white-space: pre-wrap; line-height: 1.6; padding: .75rem; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+    .diff-del { background: rgba(239,68,68,0.2); color: #ef4444; text-decoration: line-through; }
+    .diff-ins { background: rgba(16,185,129,0.2); color: #10b981; }
+    .match-highlight { background: rgba(251,191,36,0.4); border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/text-sorter.html">Line Sorter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Advanced Find &amp; Replace</h1>
+          <p class="tool-subtitle">Simple text, regex with capture groups, multi-rule batch replace, and diff preview. All in your browser.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="simple">Simple</button>
+            <button class="option-chip" data-mode="regex">Regex</button>
+            <button class="option-chip" data-mode="multi">Multi-Rule</button>
+            <button class="option-chip" data-mode="preview">Preview</button>
+          </div>
+
+          <!-- Simple & Regex controls -->
+          <div id="panelSimple">
+            <div class="fr-fields">
+              <div class="fr-field-wrap">
+                <label for="findInput">Find</label>
+                <input type="text" id="findInput" placeholder="Text to find..." spellcheck="false">
+              </div>
+              <div class="fr-field-wrap">
+                <label for="replaceInput">Replace with</label>
+                <input type="text" id="replaceInput" placeholder="Replacement text (leave empty to delete)..." spellcheck="false">
+              </div>
+            </div>
+            <div class="fr-options" id="simpleOptions">
+              <label><input type="checkbox" id="optCaseSensitive"> Case Sensitive</label>
+              <label><input type="checkbox" id="optWholeWord"> Whole Word Only</label>
+            </div>
+            <div class="fr-options" id="regexOptions" style="display:none">
+              <label><input type="checkbox" id="optCaseI" checked> Case Insensitive</label>
+              <label><input type="checkbox" id="optMultiline"> Multiline (^/$)</label>
+              <label><input type="checkbox" id="optDotAll"> Dot matches newline</label>
+            </div>
+          </div>
+
+          <!-- Multi-Rule controls -->
+          <div id="panelMulti" style="display:none">
+            <div class="multi-rules-wrap">
+              <label>Rules (JSON array of [find, replace] pairs — plain text, not regex):</label>
+              <textarea id="multiRulesInput" spellcheck="false" placeholder='[
+  ["find this", "replace with this"],
+  ["old text", "new text"],
+  ["foo", "bar"]
+]'></textarea>
+            </div>
+            <div class="fr-options">
+              <label><input type="checkbox" id="optMultiCaseI"> Case Insensitive</label>
+            </div>
+          </div>
+
+          <!-- Text area + output -->
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Input Text</span>
+                <div class="btn-group" style="margin:0">
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+              </div>
+              <textarea id="frInput" rows="16" placeholder="Paste text here..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Output</span>
+                <div class="btn-group" style="margin:0">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div id="frOutputWrap">
+                <div class="code-output" id="frOutput" style="min-height:340px;white-space:pre-wrap;"></div>
+              </div>
+              <div id="frDiffWrap" style="display:none">
+                <div class="diff-output" id="frDiff" style="min-height:340px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter find text and paste your content to begin.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use Advanced Find &amp; Replace</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — Simple for plain text, Regex for pattern matching, Multi-Rule for batch replacements, or Preview to see a diff before applying.</li>
+            <li><strong>Enter your find pattern</strong> and replacement text in the fields above the input area.</li>
+            <li><strong>Paste your text</strong> into the left panel. Replacements apply automatically.</li>
+            <li><strong>Review the output</strong> on the right or see the highlighted diff in Preview mode.</li>
+            <li><strong>Copy or download</strong> the result using the buttons above the output.</li>
+          </ol>
+
+          <h2>Mode Details</h2>
+
+          <h3>Simple Mode</h3>
+          <p>Finds all occurrences of plain text and replaces them. By default, case-sensitive. Enable "Case Sensitive" to force exact case matching. Enable "Whole Word Only" to match only when the pattern appears as a complete word (surrounded by word boundaries, not within a longer word). Leave the Replace field empty to delete all matches.</p>
+
+          <h3>Regex Mode</h3>
+          <p>Full regular expression support using JavaScript's RegExp engine. The find field accepts a regex pattern. Use capture groups <code>(group)</code> and backreferences <code>$1</code>, <code>$2</code> in the replacement. For example, to swap first and last name: find <code>(\w+)\s+(\w+)</code> and replace with <code>$2, $1</code>. All replacements are global (replace all matches). Special replacement patterns like <code>$$</code> (literal $), <code>$&amp;</code> (whole match), <code>$`</code> (before match), <code>$'</code> (after match) are all supported.</p>
+
+          <h3>Multi-Rule Mode</h3>
+          <p>Define multiple find/replace pairs as a JSON array. Each rule is <code>["find", "replace"]</code>. Rules are applied in order — the output of each rule becomes the input of the next. This allows chaining transformations: first normalize line endings, then replace all URLs, then clean up whitespace. Rules in Multi-Rule mode are treated as plain text (not regex). For regex batch rules, switch to Regex mode and apply one at a time.</p>
+
+          <h3>Preview / Diff Mode</h3>
+          <p>Shows a word-level diff highlighting what will be removed (red, strikethrough) and what will be added (green). Use this mode to verify complex regex replacements before committing. The diff uses a simple token-based comparison of lines, so changes are shown in context. This is especially useful when working with large texts where a wrong replacement could be hard to spot in the plain output.</p>
+
+          <h3>Regex Reference</h3>
+          <ul>
+            <li><code>\d</code> — digit, <code>\w</code> — word character, <code>\s</code> — whitespace</li>
+            <li><code>.</code> — any character (except newline without dot-all), <code>*</code> — zero or more, <code>+</code> — one or more</li>
+            <li><code>^</code> — start of line (with multiline flag), <code>$</code> — end of line</li>
+            <li><code>(group)</code> — capture group, <code>(?:group)</code> — non-capturing group</li>
+            <li><code>$1</code>, <code>$2</code> — backreferences in replacement</li>
+            <li><code>[abc]</code> — character class, <code>[^abc]</code> — negated class</li>
+            <li><code>\b</code> — word boundary, <code>|</code> — alternation (OR)</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">How do I use capture groups in the regex find and replace?</button>
+            <div class="faq-answer">In Regex mode, use parentheses in your find pattern to create capture groups: (\w+). Then reference them in the replacement using $1, $2, etc. For example, find '(\w+)\s+(\w+)' and replace with '$2 $1' to swap two words. Backreferences work the same as in most regex engines.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is Multi-Rule mode?</button>
+            <div class="faq-answer">Multi-Rule mode lets you define multiple find/replace pairs and apply them all at once in a single pass. Each rule is entered as a JSON array of [find, replace] pairs. Rules are applied in order from top to bottom. This is useful for batch-renaming variables, applying multiple text substitutions, or transforming data formats.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does the Preview mode work?</button>
+            <div class="faq-answer">Preview mode shows a color-coded diff of the changes before they are applied. Removed text appears in red, added text appears in green. This lets you verify that your find and replace rules are correct before committing to the changes. Preview mode is especially useful for complex regex replacements.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I do case-insensitive find and replace?</button>
+            <div class="faq-answer">Yes. In Simple mode, leave the "Case Sensitive" checkbox unchecked (it is off by default). In Regex mode, the "Case Insensitive" checkbox adds the 'i' flag to your pattern. In Multi-Rule mode, use the "Case Insensitive" checkbox that appears in that panel.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is there a limit to the text size I can process?</button>
+            <div class="faq-answer">Since everything runs in your browser, the limit depends on available memory. The tool handles texts up to several megabytes without issues. For very large files (10MB+), consider using command-line tools like sed or awk which can stream files without loading them entirely into memory.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/find-replace-advanced.html">Find &amp; Replace</a>
+        <a href="/tools/text-sorter.html">Line Sorter</a>
+        <a href="/tools/text-column-extractor.html">Column Extractor</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var frInput     = document.getElementById('frInput');
+    var frOutput    = document.getElementById('frOutput');
+    var frDiff      = document.getElementById('frDiff');
+    var frOutputWrap= document.getElementById('frOutputWrap');
+    var frDiffWrap  = document.getElementById('frDiffWrap');
+    var findInput   = document.getElementById('findInput');
+    var replaceInput= document.getElementById('replaceInput');
+    var statusBar   = document.getElementById('statusBar');
+    var multiRulesInput = document.getElementById('multiRulesInput');
+    var currentMode = 'simple';
+
+    function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Simple word-level diff for preview
+    function simpleDiff(before, after) {
+      if (before === after) return escapeHtml(before);
+      var bWords = before.split(/(\s+)/);
+      var aWords = after.split(/(\s+)/);
+      // LCS-based word diff (O(n*m) — safe for reasonably sized texts)
+      var m = bWords.length, n = aWords.length;
+      // For large texts use line-level diff to avoid perf issues
+      if (m * n > 50000) {
+        var bLines = before.split('\n');
+        var aLines = after.split('\n');
+        var html = '';
+        var maxLines = Math.max(bLines.length, aLines.length);
+        for (var li = 0; li < maxLines; li++) {
+          var bl = bLines[li], al = aLines[li];
+          if (bl === al) { html += escapeHtml(bl !== undefined ? bl : '') + '\n'; }
+          else {
+            if (bl !== undefined) html += '<span class="diff-del">' + escapeHtml(bl) + '</span>\n';
+            if (al !== undefined) html += '<span class="diff-ins">' + escapeHtml(al) + '</span>\n';
+          }
+        }
+        return html;
+      }
+      var dp = [];
+      for (var i = 0; i <= m; i++) { dp[i] = []; for (var j = 0; j <= n; j++) dp[i][j] = 0; }
+      for (var i2 = 1; i2 <= m; i2++) for (var j2 = 1; j2 <= n; j2++) {
+        dp[i2][j2] = bWords[i2-1] === aWords[j2-1] ? dp[i2-1][j2-1] + 1 : Math.max(dp[i2-1][j2], dp[i2][j2-1]);
+      }
+      var result = [], pi = m, pj = n;
+      while (pi > 0 || pj > 0) {
+        if (pi > 0 && pj > 0 && bWords[pi-1] === aWords[pj-1]) {
+          result.unshift({ type: 'eq', val: bWords[pi-1] }); pi--; pj--;
+        } else if (pj > 0 && (pi === 0 || dp[pi][pj-1] >= dp[pi-1][pj])) {
+          result.unshift({ type: 'ins', val: aWords[pj-1] }); pj--;
+        } else {
+          result.unshift({ type: 'del', val: bWords[pi-1] }); pi--;
+        }
+      }
+      return result.map(function (t) {
+        if (t.type === 'eq') return escapeHtml(t.val);
+        if (t.type === 'del') return '<span class="diff-del">' + escapeHtml(t.val) + '</span>';
+        return '<span class="diff-ins">' + escapeHtml(t.val) + '</span>';
+      }).join('');
+    }
+
+    function doSimpleReplace(text) {
+      var find = findInput.value;
+      if (!find) return { result: text, count: 0 };
+      var caseSensitive = document.getElementById('optCaseSensitive').checked;
+      var wholeWord = document.getElementById('optWholeWord').checked;
+      var pattern = escapeRegex(find);
+      if (wholeWord) pattern = '\\b' + pattern + '\\b';
+      var flags = 'g' + (caseSensitive ? '' : 'i');
+      var re = new RegExp(pattern, flags);
+      var count = 0;
+      var result = text.replace(re, function (m) { count++; return replaceInput.value; });
+      return { result: result, count: count };
+    }
+
+    function doRegexReplace(text) {
+      var find = findInput.value;
+      if (!find) return { result: text, count: 0 };
+      var flags = 'g';
+      if (document.getElementById('optCaseI').checked) flags += 'i';
+      if (document.getElementById('optMultiline').checked) flags += 'm';
+      if (document.getElementById('optDotAll').checked) flags += 's';
+      try {
+        var re = new RegExp(find, flags);
+        var count = 0;
+        var result = text.replace(re, function () { count++; return replaceInput.value.replace(/\$(\d+)/g, function (_, n) { return arguments[parseInt(n, 10)] || ''; }); });
+        // recount properly
+        count = 0;
+        var m2;
+        var re2 = new RegExp(find, flags);
+        while ((m2 = re2.exec(text)) !== null) {
+          count++;
+          if (!re2.global) break;
+        }
+        return { result: result, count: count };
+      } catch (e) {
+        return { result: text, count: 0, error: e.message };
+      }
+    }
+
+    function doMultiReplace(text) {
+      var raw = multiRulesInput.value.trim();
+      if (!raw) return { result: text, count: 0 };
+      try {
+        var rules = JSON.parse(raw);
+        if (!Array.isArray(rules)) throw new Error('Expected array');
+        var caseI = document.getElementById('optMultiCaseI').checked;
+        var totalCount = 0;
+        var result = text;
+        rules.forEach(function (rule) {
+          if (!Array.isArray(rule) || rule.length < 2) return;
+          var find = String(rule[0]);
+          var rep = String(rule[1]);
+          var flags = 'g' + (caseI ? 'i' : '');
+          var re = new RegExp(escapeRegex(find), flags);
+          var cnt = 0;
+          result = result.replace(re, function () { cnt++; return rep; });
+          totalCount += cnt;
+        });
+        return { result: result, count: totalCount };
+      } catch (e) {
+        return { result: text, count: 0, error: 'Invalid JSON rules: ' + e.message };
+      }
+    }
+
+    function process() {
+      var text = frInput.value;
+      var opResult;
+
+      if (currentMode === 'simple') {
+        opResult = doSimpleReplace(text);
+      } else if (currentMode === 'regex') {
+        opResult = doRegexReplace(text);
+      } else if (currentMode === 'multi') {
+        opResult = doMultiReplace(text);
+      } else if (currentMode === 'preview') {
+        // Use whichever last non-preview mode logic applies; default to simple
+        opResult = doSimpleReplace(text);
+      }
+
+      if (opResult.error) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Error: ' + opResult.error;
+        return;
+      }
+
+      if (currentMode === 'preview') {
+        frOutputWrap.style.display = 'none';
+        frDiffWrap.style.display = '';
+        frDiff.innerHTML = simpleDiff(text, opResult.result);
+        document.getElementById('outputLabel').textContent = 'Diff Preview';
+      } else {
+        frOutputWrap.style.display = '';
+        frDiffWrap.style.display = 'none';
+        frOutput.textContent = opResult.result;
+        document.getElementById('outputLabel').textContent = 'Output';
+      }
+
+      if (!text.trim()) {
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter find text and paste your content to begin.';
+        return;
+      }
+
+      statusBar.className = opResult.count > 0 ? 'status-bar valid' : 'status-bar info';
+      statusBar.textContent = opResult.count + ' match' + (opResult.count !== 1 ? 'es' : '') + ' found \u2014 ' + opResult.count + ' replacement' + (opResult.count !== 1 ? 's' : '') + ' made';
+
+      DT.trackTool('find-replace-advanced');
+    }
+
+    var debouncedProcess = DT.debounce(process, 150);
+    frInput.addEventListener('input', debouncedProcess);
+    findInput.addEventListener('input', debouncedProcess);
+    replaceInput.addEventListener('input', debouncedProcess);
+    multiRulesInput.addEventListener('input', DT.debounce(process, 300));
+    ['optCaseSensitive','optWholeWord','optCaseI','optMultiline','optDotAll','optMultiCaseI'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('change', process);
+    });
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        var isMulti = currentMode === 'multi';
+        var isRegex = currentMode === 'regex';
+        document.getElementById('panelSimple').style.display = isMulti ? 'none' : '';
+        document.getElementById('panelMulti').style.display = isMulti ? '' : 'none';
+        document.getElementById('simpleOptions').style.display = (isRegex || isMulti) ? 'none' : '';
+        document.getElementById('regexOptions').style.display = isRegex ? '' : 'none';
+        process();
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var t = currentMode === 'preview' ? frDiff.textContent : frOutput.textContent;
+      if (t) DT.copyToClipboard(t, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var t = currentMode === 'preview' ? frDiff.textContent : frOutput.textContent;
+      if (t) DT.downloadText(t, 'replaced.txt', 'text/plain');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      frInput.value = '';
+      process();
+      frInput.focus();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      findInput.value = 'foo';
+      replaceInput.value = 'bar';
+      frInput.value = 'The foo jumped over the foo fence.\nFoo is a common placeholder in programming.\nWhen foo meets bar, foobar is born.\nSome developers prefer foo, others prefer baz.';
+      process();
+    });
+
+    // Tab key
+    frInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        var s = this.selectionStart;
+        this.value = this.value.substring(0, s) + '  ' + this.value.substring(this.selectionEnd);
+        this.selectionStart = this.selectionEnd = s + 2;
+        debouncedProcess();
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

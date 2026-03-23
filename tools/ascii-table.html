@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Interactive ASCII Table — Free Online Reference | DevToolbox</title>
+  <meta name="description" content="Complete interactive ASCII table with decimal, hex, octal, binary, and character. Control characters, printable ASCII, and extended ASCII 128-255. Search and convert. Free.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/ascii-table.html">
+  <meta property="og:title" content="Interactive ASCII Table — DevToolbox">
+  <meta property="og:description" content="Full ASCII table with decimal, hex, octal, binary, and character. Includes control characters (NUL, SOH…), printable ASCII, and extended ASCII. Search and convert instantly.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/ascii-table.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Interactive ASCII Table",
+    "url": "https://thisdevtool.com/tools/ascii-table.html",
+    "description": "Complete interactive ASCII table with decimal, hex, octal, binary, character, and description. Control characters, printable ASCII, and extended ASCII 128-255.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is ASCII?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ASCII (American Standard Code for Information Interchange) is a 7-bit character encoding standard that assigns numbers 0–127 to 128 characters. It includes 33 non-printable control characters (0–31 and 127) and 95 printable characters (32–126) including letters, digits, and punctuation. ASCII was first published in 1963 and remains the foundation of virtually all modern character encodings."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are ASCII control characters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ASCII control characters are the first 32 characters (0–31) plus DEL (127). They were originally designed to control peripherals like printers and terminals. The most commonly used today are TAB (9), LF/Line Feed (10), CR/Carriage Return (13), and ESC (27). Others like NUL (0), BEL (7), BS (8), and FF (12) are rarely used in modern applications but appear in binary protocols."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between ASCII and Unicode?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ASCII uses 7 bits to encode 128 characters, covering only basic English letters, digits, and punctuation. Unicode is a superset of ASCII that assigns codepoints to over 149,000 characters from 160+ scripts. Unicode codepoints 0–127 are identical to ASCII. UTF-8, the dominant Unicode encoding, represents ASCII characters as single bytes identical to their ASCII values, making it backward-compatible."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is extended ASCII?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Extended ASCII refers to various 8-bit encodings that assign characters to codepoints 128–255. There is no single extended ASCII standard — ISO 8859-1 (Latin-1), Windows-1252, and CP437 (used in DOS) are all different extended ASCII encodings that assign different characters to the same codepoints. Unicode has largely superseded these, but legacy systems still use them."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I convert a character to its ASCII number?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use the Convert tab in this tool — type any character to instantly see its decimal, hexadecimal, octal, and binary representations. In JavaScript, use charCodeAt(0) to get the ASCII value of a character. In Python, use ord('A') which returns 65. In C, assign the character to an integer: int code = 'A'; gives 65."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .ascii-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; font-family: monospace; }
+    .ascii-table th { background: var(--surface-2,#f3f4f6); padding: 6px 8px; text-align: left; font-size: 0.72rem; color: var(--text-muted,#6b7280); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 2px solid var(--border,#e5e7eb); white-space: nowrap; position: sticky; top: 0; z-index: 1; }
+    .ascii-table td { padding: 4px 8px; border-bottom: 1px solid var(--border,#e5e7eb); vertical-align: middle; white-space: nowrap; cursor: pointer; }
+    .ascii-table tr:hover { background: var(--accent-light, #d1fae5); }
+    .ascii-table tr.selected { background: var(--accent,#10b981); color: #fff; }
+    .ascii-table tr.selected td { color: #fff; }
+    .glyph-big { font-size: 1.3rem; display: inline-block; min-width: 1.5rem; text-align: center; }
+    .ctrl-badge { font-size: 0.65rem; background: #e0f2fe; color: #0369a1; border-radius: 3px; padding: 1px 5px; font-family: monospace; }
+    [data-theme="dark"] .ctrl-badge { background: #0c2a3e; color: #7dd3fc; }
+    .ext-badge { font-size: 0.65rem; background: #f3e8ff; color: #7c3aed; border-radius: 3px; padding: 1px 5px; font-family: monospace; }
+    [data-theme="dark"] .ext-badge { background: #1e1030; color: #c4b5fd; }
+    .table-wrap { max-height: 480px; overflow-y: auto; border: 1px solid var(--border,#e5e7eb); border-radius: 8px; }
+    .search-convert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) { .search-convert-grid { grid-template-columns: 1fr; } }
+    .detail-card { background: var(--surface-2,#f3f4f6); border: 1px solid var(--border,#e5e7eb); border-radius: 8px; padding: 12px 16px; margin-top: 10px; display: none; }
+    .detail-card.show { display: block; }
+    .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+    @media (max-width: 500px) { .detail-grid { grid-template-columns: 1fr 1fr; } }
+    .detail-item { background: var(--surface,#fff); border: 1px solid var(--border,#e5e7eb); border-radius: 6px; padding: 8px 10px; }
+    .detail-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .detail-value { font-family: monospace; font-size: 1rem; font-weight: 600; margin-top: 2px; }
+    .convert-result { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .convert-item { background: var(--surface-2,#f3f4f6); border: 1px solid var(--border,#e5e7eb); border-radius: 6px; padding: 8px 10px; cursor: pointer; }
+    .convert-item:hover { background: var(--accent-light,#d1fae5); }
+    .convert-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .convert-value { font-family: monospace; font-size: 1rem; font-weight: 600; margin-top: 2px; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/unicode-search.html">Unicode Search</a>
+        <a href="/tools/unicode-inspector.html">Inspector</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Interactive ASCII Table</h1>
+          <p class="tool-subtitle">Complete ASCII reference: decimal, hex, octal, binary, and character. Click any row to copy. Search or convert instantly.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="table">Table</button>
+            <button class="option-chip" data-mode="search">Search</button>
+            <button class="option-chip" data-mode="convert">Convert</button>
+          </div>
+
+          <!-- Table panel -->
+          <div id="panelTable">
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px;">
+              <label style="font-size:0.85rem;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                <input type="checkbox" id="showControl" checked> Control (0–31)
+              </label>
+              <label style="font-size:0.85rem;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                <input type="checkbox" id="showPrintable" checked> Printable (32–126)
+              </label>
+              <label style="font-size:0.85rem;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                <input type="checkbox" id="showDel" checked> DEL (127)
+              </label>
+              <label style="font-size:0.85rem;display:flex;align-items:center;gap:6px;cursor:pointer;">
+                <input type="checkbox" id="showExtended"> Extended (128–255)
+              </label>
+            </div>
+            <div class="table-wrap" id="tableWrap">
+              <table class="ascii-table" id="asciiTable">
+                <thead>
+                  <tr>
+                    <th>Char</th>
+                    <th>Dec</th>
+                    <th>Hex</th>
+                    <th>Oct</th>
+                    <th>Bin</th>
+                    <th>Name / Description</th>
+                  </tr>
+                </thead>
+                <tbody id="asciiBody"></tbody>
+              </table>
+            </div>
+            <div class="detail-card" id="detailCard">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span id="detailGlyph" style="font-size:3rem; min-width:3rem; text-align:center;"></span>
+                <div>
+                  <div style="font-size:1rem; font-weight:700;" id="detailName"></div>
+                  <div style="font-size:0.8rem; color:var(--text-muted);" id="detailDesc"></div>
+                </div>
+              </div>
+              <div class="detail-grid" id="detailGrid"></div>
+            </div>
+          </div>
+
+          <!-- Search panel -->
+          <div id="panelSearch" style="display:none;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+              <input type="text" id="searchInput" placeholder="Search by decimal (65), hex (41), character (A), or name (ENTER)…" style="flex:1; min-width:200px;" autocomplete="off" spellcheck="false">
+              <button class="btn btn-sm btn-secondary" id="searchClearBtn">Clear</button>
+            </div>
+            <div class="table-wrap" id="searchWrap">
+              <table class="ascii-table">
+                <thead>
+                  <tr><th>Char</th><th>Dec</th><th>Hex</th><th>Oct</th><th>Bin</th><th>Name / Description</th></tr>
+                </thead>
+                <tbody id="searchBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Convert panel -->
+          <div id="panelConvert" style="display:none;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; align-items:flex-end;">
+              <div style="flex:1; min-width:120px;">
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Character</label>
+                <input type="text" id="convChar" placeholder="A" maxlength="1" style="font-size:1.5rem; padding:8px 12px; width:100%; border:1px solid var(--border,#e5e7eb); border-radius:8px; background:var(--surface,#fff); color:var(--text,#111);" autocomplete="off">
+              </div>
+              <div style="flex:1; min-width:120px;">
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Decimal</label>
+                <input type="text" id="convDec" placeholder="65" style="font-size:1.2rem; padding:8px 12px; width:100%; border:1px solid var(--border,#e5e7eb); border-radius:8px; background:var(--surface,#fff); color:var(--text,#111);" autocomplete="off">
+              </div>
+              <div style="flex:1; min-width:120px;">
+                <label style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">Hex</label>
+                <input type="text" id="convHex" placeholder="41" style="font-size:1.2rem; padding:8px 12px; width:100%; border:1px solid var(--border,#e5e7eb); border-radius:8px; background:var(--surface,#fff); color:var(--text,#111);" autocomplete="off">
+              </div>
+            </div>
+            <div class="convert-result" id="convertResult"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            ASCII Table — 128 characters — Showing: Printable (95) + Control (33)
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>About ASCII</h2>
+          <p>ASCII (American Standard Code for Information Interchange) is a character encoding standard first published in 1963 by the American National Standards Institute. It uses 7 bits to represent 128 characters: 33 non-printable control characters (0–31 and 127) and 95 printable characters (32–126). Despite being over 60 years old, ASCII remains foundational to modern computing — all Unicode code points from 0 to 127 are identical to their ASCII values, and UTF-8 encodes these characters as single bytes with the same byte values.</p>
+
+          <h3>Control Characters (0–31)</h3>
+          <p>The first 32 characters (decimal 0–31) are non-printable control characters inherited from the era of teletype machines and early computer peripherals. Many are obsolete, but several remain essential in modern computing: TAB (9) for horizontal tabulation, LF/Line Feed (10) for Unix-style line endings, CR/Carriage Return (13) for Windows line endings (CRLF = 13+10), ESC (27) for terminal escape sequences, and DEL (127) for the Delete key. NUL (0) is used as a string terminator in C. BEL (7) originally rang a physical bell on a teletype terminal and still triggers a system sound on some terminals.</p>
+
+          <h3>Printable Characters (32–126)</h3>
+          <p>The 95 printable characters form the core of English-language computing: Space (32), digits 0–9 (48–57), uppercase A–Z (65–90), lowercase a–z (97–122), and 32 punctuation and special characters. The consistent layout has important implications: subtracting 32 from an uppercase letter gives the lowercase equivalent (A=65, a=97, 65+32=97). The digits 0–9 start at 48, so subtracting 48 from the ASCII value of a digit gives its numeric value. This arithmetic is exploited heavily in low-level programming and text processing.</p>
+
+          <h3>Extended ASCII (128–255)</h3>
+          <p>While standard ASCII defines 128 characters (0–127), 8-bit systems needed to represent more characters and extended the table to 256 values. Unfortunately, there was no single standard for the upper half. ISO 8859-1 (Latin-1) covers Western European languages. Windows-1252 is similar to Latin-1 but uses some codepoints differently. CP437 (used in DOS and early IBM PCs) contains box-drawing characters, Greek letters, and mathematical symbols in the 128–255 range. The extended ASCII section in this tool shows the Latin-1/Windows-1252 values, which are the most commonly encountered in web contexts.</p>
+
+          <h3>ASCII in Programming</h3>
+          <p>ASCII values appear throughout programming. In C and C++, character literals like <code>'A'</code> are integers with ASCII values, enabling arithmetic comparisons: <code>if (c &gt;= 'a' &amp;&amp; c &lt;= 'z')</code> checks for lowercase letters. In Python, <code>ord('A')</code> returns 65 and <code>chr(65)</code> returns 'A'. In JavaScript, <code>'A'.charCodeAt(0)</code> returns 65 and <code>String.fromCharCode(65)</code> returns 'A'. Regular expressions use ASCII ranges extensively: <code>[A-Z]</code> matches uppercase letters because they occupy a contiguous range (65–90) in ASCII.</p>
+
+          <h3>Common ASCII Values to Memorize</h3>
+          <p>Several ASCII values are worth memorising for efficient programming: NUL=0 (string terminator), TAB=9, LF=10 (Unix newline), CR=13 (Windows newline component), Space=32, '0'=48 (digits start), 'A'=65 (uppercase letters start), 'a'=97 (lowercase letters start, exactly 32 more than uppercase), DEL=127. The difference of 32 between uppercase and lowercase corresponds to the bit position 5 (0x20), so toggling bit 5 of an ASCII letter switches case — a classic low-level optimization still used in performance-critical code.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is ASCII?</button>
+            <div class="faq-answer">ASCII (American Standard Code for Information Interchange) is a 7-bit character encoding standard published in 1963. It defines 128 characters: 33 non-printable control characters (0–31 and 127) and 95 printable characters (32–126) including English letters, digits, and punctuation. ASCII is the foundation of Unicode — code points 0–127 are identical in both.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What are ASCII control characters?</button>
+            <div class="faq-answer">Control characters are the first 32 ASCII characters (0–31) plus DEL (127). Originally designed for controlling teletype machines, the ones still commonly used today are TAB (9), LF/Line Feed (10, Unix line ending), CR/Carriage Return (13, part of Windows CRLF), and ESC (27, used in terminal escape sequences). NUL (0) marks string termination in C.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between ASCII and Unicode?</button>
+            <div class="faq-answer">ASCII uses 7 bits to encode 128 characters (basic English only). Unicode assigns codepoints to over 149,000 characters across 160+ scripts. Crucially, Unicode code points 0–127 are identical to ASCII values, and UTF-8 encodes them as single bytes with the same values — making UTF-8 backward-compatible with ASCII. Unicode extends far beyond ASCII to cover all human writing systems.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is extended ASCII?</button>
+            <div class="faq-answer">Extended ASCII refers to various 8-bit encodings that add 128 characters (128–255) to standard ASCII. There is no single extended ASCII standard — ISO 8859-1 (Latin-1), Windows-1252, and CP437 (DOS) all use the same codepoints for different characters. Unicode and UTF-8 have largely superseded extended ASCII encodings in modern systems.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I convert a character to its ASCII number?</button>
+            <div class="faq-answer">Use the Convert tab in this tool — type any character to instantly see decimal, hex, octal, and binary. In JavaScript: 'A'.charCodeAt(0) returns 65. In Python: ord('A') returns 65, chr(65) returns 'A'. In C: assign the character to an int: int code = 'A'; gives 65. In most languages, character literals can be used directly in arithmetic comparisons with ASCII values.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Unicode Tools</h4>
+        <a href="/tools/unicode-search.html">Unicode Search</a>
+        <a href="/tools/unicode-inspector.html">Character Inspector</a>
+        <a href="/tools/homoglyph-detector.html">Homoglyph Detector</a>
+        <a href="/tools/zero-width-encoder.html">Zero-Width Encoder</a>
+        <a href="/tools/ascii-table.html">ASCII Table</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    // ── Character database ────────────────────────────────────────────────────
+    var CTRL_NAMES = [
+      'NUL','SOH','STX','ETX','EOT','ENQ','ACK','BEL',
+      'BS','HT','LF','VT','FF','CR','SO','SI',
+      'DLE','DC1','DC2','DC3','DC4','NAK','SYN','ETB',
+      'CAN','EM','SUB','ESC','FS','GS','RS','US'
+    ];
+    var CTRL_DESC = [
+      'Null character','Start of Heading','Start of Text','End of Text',
+      'End of Transmission','Enquiry','Acknowledge','Bell (alert)',
+      'Backspace','Horizontal Tab','Line Feed (newline)','Vertical Tab',
+      'Form Feed','Carriage Return','Shift Out','Shift In',
+      'Data Link Escape','Device Control 1 (XON)','Device Control 2','Device Control 3 (XOFF)',
+      'Device Control 4','Negative Acknowledge','Synchronous Idle','End of Transmission Block',
+      'Cancel','End of Medium','Substitute','Escape',
+      'File Separator','Group Separator','Record Separator','Unit Separator'
+    ];
+
+    // Extended ASCII (Latin-1/Windows-1252 printable subset 128-255)
+    var EXT_CHARS = {
+      128:'€',129:'',130:'‚',131:'ƒ',132:'„',133:'…',134:'†',135:'‡',136:'ˆ',137:'‰',138:'Š',139:'‹',140:'Œ',141:'',142:'Ž',143:'',
+      144:'',145:'\u2018',146:'\u2019',147:'"',148:'"',149:'•',150:'–',151:'—',152:'˜',153:'™',154:'š',155:'›',156:'œ',157:'',158:'ž',159:'Ÿ',
+      160:'\u00A0',161:'¡',162:'¢',163:'£',164:'¤',165:'¥',166:'¦',167:'§',168:'¨',169:'©',170:'ª',171:'«',172:'¬',173:'\u00AD',174:'®',175:'¯',
+      176:'°',177:'±',178:'²',179:'³',180:'´',181:'µ',182:'¶',183:'·',184:'¸',185:'¹',186:'º',187:'»',188:'¼',189:'½',190:'¾',191:'¿',
+      192:'À',193:'Á',194:'Â',195:'Ã',196:'Ä',197:'Å',198:'Æ',199:'Ç',200:'È',201:'É',202:'Ê',203:'Ë',204:'Ì',205:'Í',206:'Î',207:'Ï',
+      208:'Ð',209:'Ñ',210:'Ò',211:'Ó',212:'Ô',213:'Õ',214:'Ö',215:'×',216:'Ø',217:'Ù',218:'Ú',219:'Û',220:'Ü',221:'Ý',222:'Þ',223:'ß',
+      224:'à',225:'á',226:'â',227:'ã',228:'ä',229:'å',230:'æ',231:'ç',232:'è',233:'é',234:'ê',235:'ë',236:'ì',237:'í',238:'î',239:'ï',
+      240:'ð',241:'ñ',242:'ò',243:'ó',244:'ô',245:'õ',246:'ö',247:'÷',248:'ø',249:'ù',250:'ú',251:'û',252:'ü',253:'ý',254:'þ',255:'ÿ'
+    };
+
+    function getChar(code) {
+      if (code < 32) return '';
+      if (code === 127) return '';
+      if (code > 127) return EXT_CHARS[code] || '?';
+      return String.fromCharCode(code);
+    }
+
+    function getName(code) {
+      if (code < 32) return CTRL_NAMES[code];
+      if (code === 32) return 'SP (Space)';
+      if (code === 127) return 'DEL (Delete)';
+      if (code > 127) return 'Extended';
+      return String.fromCharCode(code);
+    }
+
+    function getDesc(code) {
+      if (code < 32) return CTRL_DESC[code];
+      if (code === 32) return 'Space (blank)';
+      if (code === 33) return 'Exclamation mark';
+      if (code === 34) return 'Quotation mark (double quote)';
+      if (code === 35) return 'Number sign (hash, pound)';
+      if (code === 36) return 'Dollar sign';
+      if (code === 37) return 'Percent sign';
+      if (code === 38) return 'Ampersand';
+      if (code === 39) return 'Apostrophe (single quote)';
+      if (code === 40) return 'Left parenthesis';
+      if (code === 41) return 'Right parenthesis';
+      if (code === 42) return 'Asterisk';
+      if (code === 43) return 'Plus sign';
+      if (code === 44) return 'Comma';
+      if (code === 45) return 'Hyphen-minus';
+      if (code === 46) return 'Full stop (period)';
+      if (code === 47) return 'Solidus (forward slash)';
+      if (code >= 48 && code <= 57) return 'Digit ' + (code - 48);
+      if (code === 58) return 'Colon';
+      if (code === 59) return 'Semicolon';
+      if (code === 60) return 'Less-than sign';
+      if (code === 61) return 'Equals sign';
+      if (code === 62) return 'Greater-than sign';
+      if (code === 63) return 'Question mark';
+      if (code === 64) return 'Commercial at (@)';
+      if (code >= 65 && code <= 90) return 'Latin capital letter ' + String.fromCharCode(code);
+      if (code === 91) return 'Left square bracket';
+      if (code === 92) return 'Reverse solidus (backslash)';
+      if (code === 93) return 'Right square bracket';
+      if (code === 94) return 'Circumflex accent (caret)';
+      if (code === 95) return 'Low line (underscore)';
+      if (code === 96) return 'Grave accent (backtick)';
+      if (code >= 97 && code <= 122) return 'Latin small letter ' + String.fromCharCode(code);
+      if (code === 123) return 'Left curly bracket';
+      if (code === 124) return 'Vertical line (pipe)';
+      if (code === 125) return 'Right curly bracket';
+      if (code === 126) return 'Tilde';
+      if (code === 127) return 'Delete (DEL)';
+      if (code === 160) return 'Non-breaking space';
+      if (code === 169) return 'Copyright sign ©';
+      if (code === 174) return 'Registered sign ®';
+      if (code === 176) return 'Degree sign °';
+      return 'Extended ASCII ' + code;
+    }
+
+    var selectedRow = null;
+
+    function makeRow(code, includeExt) {
+      var ch = getChar(code);
+      var isCtrl = code < 32 || code === 127;
+      var isExt = code > 127;
+      var tr = document.createElement('tr');
+      tr.dataset.code = code;
+
+      var glyphCell = document.createElement('td');
+      if (isCtrl) {
+        glyphCell.innerHTML = '<span class="ctrl-badge">' + getName(code) + '</span>';
+      } else if (isExt) {
+        glyphCell.innerHTML = '<span class="glyph-big">' + (ch || '?') + '</span>';
+      } else {
+        glyphCell.innerHTML = '<span class="glyph-big">' + (ch.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')) + '</span>';
+      }
+      tr.appendChild(glyphCell);
+
+      var cells = [
+        code,
+        code.toString(16).toUpperCase().padStart(2,'0'),
+        code.toString(8).padStart(3,'0'),
+        code.toString(2).padStart(8,'0'),
+        getDesc(code)
+      ];
+      cells.forEach(function(v){
+        var td = document.createElement('td');
+        td.textContent = v;
+        tr.appendChild(td);
+      });
+
+      tr.addEventListener('click', function() {
+        if (selectedRow) selectedRow.classList.remove('selected');
+        tr.classList.add('selected');
+        selectedRow = tr;
+        showDetail(code);
+        // Copy char if printable
+        if (!isCtrl && ch) DT.copyToClipboard(ch);
+        var statusBar = document.getElementById('statusBar');
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = (isCtrl ? 'Selected ' + getName(code) + ' (' : 'Copied "' + ch + '" (') + 'decimal ' + code + ', hex 0x' + code.toString(16).toUpperCase() + ')';
+      });
+      return tr;
+    }
+
+    function showDetail(code) {
+      var card = document.getElementById('detailCard');
+      var ch = getChar(code);
+      var isCtrl = code < 32 || code === 127;
+      document.getElementById('detailGlyph').textContent = isCtrl ? (CTRL_NAMES[code] || 'DEL') : ch;
+      document.getElementById('detailName').textContent = getName(code);
+      document.getElementById('detailDesc').textContent = getDesc(code);
+      var items = [
+        ['Decimal', code],
+        ['Hexadecimal', '0x' + code.toString(16).toUpperCase().padStart(2,'0')],
+        ['Octal', '0' + code.toString(8).padStart(3,'0')],
+        ['Binary', code.toString(2).padStart(8,'0')],
+        ['HTML entity', isCtrl ? 'N/A' : '&#' + code + ';'],
+        ['Hex entity', isCtrl ? 'N/A' : '&#x' + code.toString(16).toUpperCase() + ';'],
+        ['JS escape', isCtrl ? '\\u00' + code.toString(16).toUpperCase().padStart(2,'0') : '"' + (ch || '') + '"'],
+        ['C char', "'" + (isCtrl ? '\\' + (code===7?'a':code===8?'b':code===9?'t':code===10?'n':code===11?'v':code===12?'f':code===13?'r':code===27?'e':code===0?'0':'?') : ch) + "'"],
+        ['Unicode', 'U+' + code.toString(16).toUpperCase().padStart(4,'0')],
+      ];
+      document.getElementById('detailGrid').innerHTML = items.map(function(it){
+        return '<div class="detail-item"><div class="detail-label">' + it[0] + '</div><div class="detail-value">' + it[1] + '</div></div>';
+      }).join('');
+      card.classList.add('show');
+      DT.trackTool('ascii-table');
+    }
+
+    function buildTable() {
+      var tbody = document.getElementById('asciiBody');
+      tbody.innerHTML = '';
+      var showCtrl = document.getElementById('showControl').checked;
+      var showPrint = document.getElementById('showPrintable').checked;
+      var showDel = document.getElementById('showDel').checked;
+      var showExt = document.getElementById('showExtended').checked;
+      var shown = 0;
+      for (var i = 0; i <= (showExt ? 255 : 127); i++) {
+        var include = (i < 32 && showCtrl) || (i >= 32 && i <= 126 && showPrint) || (i === 127 && showDel) || (i > 127 && showExt);
+        if (include) { tbody.appendChild(makeRow(i)); shown++; }
+      }
+      var statusBar = document.getElementById('statusBar');
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'ASCII Table — ' + shown + ' character' + (shown!==1?'s':'') + ' shown — click any row to copy character';
+    }
+
+    ['showControl','showPrintable','showDel','showExtended'].forEach(function(id){
+      document.getElementById(id).addEventListener('change', buildTable);
+    });
+
+    // ── Search mode ──────────────────────────────────────────────────────────
+    function doSearch() {
+      var q = document.getElementById('searchInput').value.trim();
+      var tbody = document.getElementById('searchBody');
+      tbody.innerHTML = '';
+      if (!q) {
+        document.getElementById('statusBar').textContent = 'Enter decimal, hex, character, or name to search.';
+        return;
+      }
+      var results = [];
+      var qLow = q.toLowerCase();
+      // Try decimal
+      var decVal = parseInt(q, 10);
+      // Try hex
+      var hexQ = q.replace(/^0x/i,'');
+      var hexVal = /^[0-9a-f]{1,3}$/i.test(hexQ) ? parseInt(hexQ, 16) : -1;
+      // Try single char
+      var charVal = q.length === 1 ? q.charCodeAt(0) : -1;
+
+      for (var i = 0; i <= 255; i++) {
+        var match = false;
+        if (!isNaN(decVal) && i === decVal) match = true;
+        if (hexVal >= 0 && i === hexVal) match = true;
+        if (charVal >= 0 && i === charVal) match = true;
+        if (getDesc(i).toLowerCase().indexOf(qLow) !== -1) match = true;
+        if (i < 32 && CTRL_NAMES[i] && CTRL_NAMES[i].toLowerCase().indexOf(qLow) !== -1) match = true;
+        if (match) results.push(i);
+      }
+      results.forEach(function(code){ tbody.appendChild(makeRow(code)); });
+      var statusBar = document.getElementById('statusBar');
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Found ' + results.length + ' result' + (results.length!==1?'s':'') + ' for "' + q + '"';
+    }
+
+    var debouncedSearch = DT.debounce(doSearch, 150);
+    document.getElementById('searchInput').addEventListener('input', debouncedSearch);
+    document.getElementById('searchClearBtn').addEventListener('click', function(){
+      document.getElementById('searchInput').value = '';
+      document.getElementById('searchBody').innerHTML = '';
+    });
+
+    // ── Convert mode ─────────────────────────────────────────────────────────
+    var updating = false;
+    function updateConvert(from, code) {
+      if (updating) return;
+      updating = true;
+      if (isNaN(code) || code < 0 || code > 255) {
+        document.getElementById('convertResult').innerHTML = '';
+        updating = false;
+        return;
+      }
+      var ch = getChar(code);
+      var isCtrl = code < 32 || code === 127;
+      if (from !== 'char') document.getElementById('convChar').value = isCtrl ? '' : ch;
+      if (from !== 'dec') document.getElementById('convDec').value = code;
+      if (from !== 'hex') document.getElementById('convHex').value = code.toString(16).toUpperCase();
+      var items = [
+        ['Character', isCtrl ? CTRL_NAMES[code]||'DEL' : ch],
+        ['Decimal', code],
+        ['Hexadecimal', '0x' + code.toString(16).toUpperCase().padStart(2,'0')],
+        ['Octal', '0' + code.toString(8).padStart(3,'0')],
+        ['Binary', code.toString(2).padStart(8,'0')],
+        ['HTML entity', isCtrl ? 'N/A' : '&#' + code + ';'],
+        ['Hex entity', isCtrl ? 'N/A' : '&#x' + code.toString(16).toUpperCase() + ';'],
+        ['JS escape', '\\u' + code.toString(16).toUpperCase().padStart(4,'0')],
+        ['Name', getName(code)],
+        ['Description', getDesc(code)],
+      ];
+      document.getElementById('convertResult').innerHTML = items.map(function(it){
+        return '<div class="convert-item" title="Click to copy" onclick="DevToolbox.copyToClipboard(\'' + String(it[1]).replace(/'/g,"\\'") + '\')">' +
+          '<div class="convert-label">' + it[0] + '</div>' +
+          '<div class="convert-value">' + String(it[1]).replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</div>' +
+          '</div>';
+      }).join('');
+      var statusBar = document.getElementById('statusBar');
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = (isCtrl ? getName(code) : '"' + ch + '"') + ' — decimal ' + code + ', hex 0x' + code.toString(16).toUpperCase().padStart(2,'0') + ', ' + getDesc(code);
+      updating = false;
+      DT.trackTool('ascii-convert');
+    }
+
+    document.getElementById('convChar').addEventListener('input', function() {
+      var ch = this.value;
+      if (ch) updateConvert('char', ch.charCodeAt(0));
+    });
+    document.getElementById('convDec').addEventListener('input', function() {
+      updateConvert('dec', parseInt(this.value, 10));
+    });
+    document.getElementById('convHex').addEventListener('input', function() {
+      updateConvert('hex', parseInt(this.value.replace(/^0x/i,''), 16));
+    });
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        var mode = chip.dataset.mode;
+        document.getElementById('panelTable').style.display = mode === 'table' ? '' : 'none';
+        document.getElementById('panelSearch').style.display = mode === 'search' ? '' : 'none';
+        document.getElementById('panelConvert').style.display = mode === 'convert' ? '' : 'none';
+        var statusBar = document.getElementById('statusBar');
+        if (mode === 'table') { statusBar.className='status-bar info'; statusBar.textContent = 'Click any row to see details and copy the character.'; }
+        else if (mode === 'search') { statusBar.className='status-bar info'; statusBar.textContent = 'Search by decimal, hex, character, or name.'; }
+        else { statusBar.className='status-bar info'; statusBar.textContent = 'Type a character, decimal, or hex value to convert.'; }
+      });
+    });
+
+    // Initial table build
+    buildTable();
+  })();
+  </script>
+</body>
+</html>

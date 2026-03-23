@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Text Hash Compare — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Hash two texts with SHA-256, SHA-512, or SHA-1 and compare them side by side. Visual match/mismatch indicator. Web Crypto API — 100% client-side, no data sent to server.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/text-hash-compare.html">
+  <meta property="og:title" content="Text Hash Compare — DevToolbox">
+  <meta property="og:description" content="Compare SHA-256, SHA-512, and SHA-1 hashes of two texts. Instant visual match indicator. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/text-hash-compare.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Text Hash Compare",
+    "url": "https://thisdevtool.com/tools/text-hash-compare.html",
+    "description": "Hash two texts with SHA-256, SHA-512, or SHA-1 using the Web Crypto API and compare them visually. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is SHA-256 and how does it work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SHA-256 (Secure Hash Algorithm 256-bit) is a cryptographic hash function that produces a fixed-length 64-character hexadecimal string from any input. It is deterministic (same input always produces the same hash), one-way (you cannot reverse a hash to get the original text), and collision-resistant (it is computationally infeasible to find two different inputs that produce the same hash)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my text sent to a server when I hash it?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool uses the browser's built-in Web Crypto API (window.crypto.subtle) to compute hashes entirely within your browser. Your text never leaves your device. There is no server, no logging, and no data collection of any kind."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When should I use SHA-256 vs SHA-512?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SHA-256 produces a 64-character (256-bit) hash and is the most widely used algorithm for general integrity verification, digital signatures, and blockchain. SHA-512 produces a 128-character (512-bit) hash and offers a higher security margin at the cost of larger output size. For most applications SHA-256 is sufficient. SHA-1 is considered broken for security-sensitive uses and is included for legacy compatibility only."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do two texts that look identical produce different hashes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cryptographic hash functions are sensitive to every single character, including invisible ones. Common causes of unexpected differences include: trailing spaces or newlines, different line endings (CRLF on Windows vs LF on Unix), different encodings (UTF-8 vs UTF-16), Unicode normalization differences, or a single mistyped character anywhere in the text."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this to verify a file download?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool compares text content. To verify a file download, you would need a tool that reads binary file contents and hashes them. Most download pages provide a SHA-256 checksum that you can verify using your OS: sha256sum on Linux/macOS or Get-FileHash in PowerShell on Windows. This text hash tool is best used for comparing configuration files, code snippets, API responses, and other text-based content."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .hash-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0.75rem 0; }
+    .hash-result-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; }
+    .hash-result-block { padding: 0.75rem; border-radius: 8px; border: 2px solid var(--border); }
+    .hash-result-block.match { border-color: #10b981; background: #10b9810d; }
+    .hash-result-block.mismatch { border-color: #ef4444; background: #ef44440d; }
+    .hash-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.25rem; }
+    .hash-value { font-family: monospace; font-size: 0.78rem; word-break: break-all; line-height: 1.5; cursor: pointer; }
+    .hash-value:hover { text-decoration: underline; }
+    .hash-char { display: inline; }
+    .hash-char.diff { color: #ef4444; font-weight: 700; }
+    .compare-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 700; font-size: 1rem; margin: 0.75rem 0; }
+    .compare-badge.match { background: #10b9811a; color: #10b981; }
+    .compare-badge.mismatch { background: #ef44441a; color: #ef4444; }
+    .compare-badge.pending { background: var(--bg-secondary); color: var(--text-muted); }
+    .all-mode-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.75rem; }
+    .all-mode-table th { background: var(--bg-secondary); padding: 0.4rem 0.6rem; text-align: left; font-weight: 600; }
+    .all-mode-table td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); font-family: monospace; word-break: break-all; }
+    .all-mode-table tr.match td:first-child { color: #10b981; font-family: sans-serif; font-weight: 700; }
+    .all-mode-table tr.mismatch td:first-child { color: #ef4444; font-family: sans-serif; font-weight: 700; }
+    @media (max-width: 640px) {
+      .hash-inputs, .hash-result-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Text Hash Compare</h1>
+          <p class="tool-subtitle">Hash two texts and compare them side by side. Instant visual match/mismatch indicator using SHA-256, SHA-512, or SHA-1.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-algo="SHA-256">SHA-256</button>
+            <button class="option-chip" data-algo="SHA-512">SHA-512</button>
+            <button class="option-chip" data-algo="SHA-1">SHA-1</button>
+            <button class="option-chip" data-algo="all">All</button>
+          </div>
+
+          <div class="hash-inputs">
+            <div>
+              <div class="pane-label">
+                <span>Text A</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              </div>
+              <textarea id="textA" rows="8" placeholder="Paste first text here..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Text B</span>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear Both</button>
+              </div>
+              <textarea id="textB" rows="8" placeholder="Paste second text here..." spellcheck="false"></textarea>
+            </div>
+          </div>
+
+          <!-- Comparison result badge -->
+          <div id="compareBadge" class="compare-badge pending">
+            &mdash; Waiting for input &mdash;
+          </div>
+
+          <!-- Hash output (single algo) -->
+          <div id="singleMode">
+            <div class="hash-result-row">
+              <div class="hash-result-block" id="hashBlockA">
+                <div class="hash-label" id="algoLabelA">SHA-256 of Text A</div>
+                <div class="hash-value" id="hashValueA" title="Click to copy">&mdash;</div>
+              </div>
+              <div class="hash-result-block" id="hashBlockB">
+                <div class="hash-label" id="algoLabelB">SHA-256 of Text B</div>
+                <div class="hash-value" id="hashValueB" title="Click to copy">&mdash;</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- All mode table -->
+          <div id="allMode" style="display:none;">
+            <table class="all-mode-table">
+              <thead>
+                <tr>
+                  <th style="width:80px">Match</th>
+                  <th>Algorithm</th>
+                  <th>Hash of Text A</th>
+                  <th>Hash of Text B</th>
+                </tr>
+              </thead>
+              <tbody id="allModeBody"></tbody>
+            </table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste text into both fields to compare their hashes.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use Text Hash Compare</h2>
+          <ol>
+            <li><strong>Choose an algorithm</strong> — SHA-256 (recommended), SHA-512 (stronger), SHA-1 (legacy), or All to compare all three at once.</li>
+            <li><strong>Paste Text A</strong> — into the left text area (first file, original, or expected value).</li>
+            <li><strong>Paste Text B</strong> — into the right text area (second file, copy, or received value).</li>
+            <li><strong>Read the result</strong> — a green badge means the hashes match; red means they differ. In single-algo mode, differing characters in the hash are highlighted red.</li>
+            <li><strong>Copy a hash</strong> — click any hash value to copy it to the clipboard.</li>
+          </ol>
+
+          <h2>What Are Cryptographic Hash Functions?</h2>
+          <p>A cryptographic hash function takes any input — a word, a paragraph, an entire file — and produces a fixed-length output called a digest or hash. SHA-256 always produces a 64-character hexadecimal string regardless of whether the input is 1 byte or 1 gigabyte. The same input always produces the same hash (deterministic), but any change — even adding a single space — produces a completely different hash (the avalanche effect). This makes hashes ideal for integrity verification: if two hashes match, the inputs are identical.</p>
+
+          <h3>SHA-256 vs SHA-512 vs SHA-1</h3>
+          <p>SHA-256 is part of the SHA-2 family and produces a 256-bit (64-character hex) output. It is the industry standard for most security applications including TLS certificates, code signing, blockchain (Bitcoin uses SHA-256), and API signature verification (AWS Signature Version 4, GitHub webhooks). SHA-512 produces a 512-bit (128-character hex) output. It offers a larger security margin and can be faster than SHA-256 on 64-bit processors when processing large inputs. SHA-1 produces a 160-bit (40-character hex) output and is considered cryptographically broken — it is vulnerable to collision attacks demonstrated in practice. SHA-1 should not be used for security-sensitive applications; it appears here only for verifying legacy checksums and comparing with old systems.</p>
+
+          <h3>When Hashes Don't Match Despite "Identical" Text</h3>
+          <p>The most common surprise when using hash comparisons is that two texts that appear identical in a text editor produce different hashes. The most frequent culprits are: trailing newlines (many editors automatically add a newline at the end of a file), Windows vs Unix line endings (CRLF \r\n vs LF \n), leading or trailing spaces that are invisible in most editors, different Unicode normalization forms (NFC vs NFD — affects accented characters), and byte-order marks (BOM) at the start of UTF-8 files created by certain Windows tools. When debugging a hash mismatch, try pasting both texts into a hex editor or using our <a href="/tools/diff-checker.html">Diff Checker</a> to find the exact difference.</p>
+
+          <h3>Practical Use Cases</h3>
+          <p>Hash comparison is useful in numerous developer workflows. When copying a configuration file between servers, hash both copies to verify they are identical. When an API response seems to have changed, hash the response body before and after to confirm. When comparing two versions of a private key or certificate, hashing them is safer than pasting the sensitive data into a diff tool. Software distributors publish SHA-256 checksums alongside downloads so users can verify the file hasn't been tampered with during transit. In CI/CD pipelines, hash comparisons detect unexpected changes to build artifacts. Database administrators hash table exports to verify successful migrations.</p>
+
+          <h3>Limitations of Text Hashing</h3>
+          <p>This tool operates on text content as interpreted by your browser. For binary files (images, executables, PDFs), the browser may apply encoding transformations that change the raw bytes, making the hash not match what a file system hash utility (sha256sum, Get-FileHash) would report. For binary file verification, use your operating system's built-in hash utility. For text files and configuration files where you control the encoding, this browser-based tool is fast, private, and requires no software installation. See also our standalone <a href="/tools/hash-generator.html">Hash Generator</a> which generates hashes for a single input across all algorithms.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is SHA-256 and how does it work?</button>
+            <div class="faq-answer">SHA-256 is a cryptographic hash function that produces a fixed 64-character hexadecimal string from any input. It is deterministic (same input = same hash), one-way (cannot reverse), and collision-resistant. It is the industry standard for integrity verification, digital signatures, and blockchain applications.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my text sent to a server when I hash it?</button>
+            <div class="faq-answer">No. This tool uses the browser's built-in Web Crypto API (window.crypto.subtle) to compute hashes entirely within your browser. Your text never leaves your device. There is no server, no logging, and no data collection.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">When should I use SHA-256 vs SHA-512?</button>
+            <div class="faq-answer">SHA-256 is the standard choice for most applications. SHA-512 offers a larger security margin and can be faster on 64-bit systems for large inputs. SHA-1 is cryptographically broken and should only be used for legacy compatibility. For new projects, always use SHA-256 or SHA-512.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why do two texts that look identical produce different hashes?</button>
+            <div class="faq-answer">Hash functions are sensitive to every character including invisible ones. Common causes: trailing spaces or newlines, different line endings (CRLF vs LF), byte-order marks (BOM), Unicode normalization differences, or a single mistyped character. Use the Diff Checker to find the exact difference.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I use this to verify a file download?</button>
+            <div class="faq-answer">This tool is best for text content. For binary file verification, use your OS's built-in utility: sha256sum on Linux/macOS, or Get-FileHash in PowerShell on Windows. Browser file reading can apply encoding transformations that affect the hash of binary files.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Compare</h4>
+        <a href="/tools/text-hash-compare.html">Text Hash Compare</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/csv-json.html">CSV to JSON</a>
+        <a href="/tools/yaml-json.html">YAML to JSON</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentAlgo = 'SHA-256';
+
+    /* ── Hash via Web Crypto API ── */
+    function hashText(algo, text) {
+      var encoder = new TextEncoder();
+      var data = encoder.encode(text);
+      return crypto.subtle.digest(algo, data).then(function(buf) {
+        return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+      });
+    }
+
+    /* ── Diff-highlight two hash strings ── */
+    function buildDiffHTML(a, b) {
+      var html = '';
+      var len = Math.max(a.length, b.length);
+      for (var i = 0; i < len; i++) {
+        var ca = a[i] || '';
+        var cb = b[i] || '';
+        html += '<span class="hash-char' + (ca !== cb ? ' diff' : '') + '">' + (ca || '?') + '</span>';
+      }
+      return html;
+    }
+
+    function buildDiffHTMLB(a, b) {
+      var html = '';
+      var len = Math.max(a.length, b.length);
+      for (var i = 0; i < len; i++) {
+        var ca = a[i] || '';
+        var cb = b[i] || '';
+        html += '<span class="hash-char' + (ca !== cb ? ' diff' : '') + '">' + (cb || '?') + '</span>';
+      }
+      return html;
+    }
+
+    /* ── Render single algo ── */
+    function renderSingle(hashA, hashB) {
+      var badge  = document.getElementById('compareBadge');
+      var blockA = document.getElementById('hashBlockA');
+      var blockB = document.getElementById('hashBlockB');
+      var valA   = document.getElementById('hashValueA');
+      var valB   = document.getElementById('hashValueB');
+      var sb     = document.getElementById('statusBar');
+
+      document.getElementById('algoLabelA').textContent = currentAlgo + ' of Text A';
+      document.getElementById('algoLabelB').textContent = currentAlgo + ' of Text B';
+
+      var matched = hashA === hashB;
+
+      if (matched) {
+        badge.className = 'compare-badge match';
+        badge.textContent = '\u2714 Match! Hashes are identical';
+        blockA.className = 'hash-result-block match';
+        blockB.className = 'hash-result-block match';
+        valA.textContent = hashA;
+        valB.textContent = hashB;
+        sb.className = 'status-bar valid';
+        sb.textContent = currentAlgo + ' \u2014 Match! \u2014 ' + hashA.length + ' hex characters';
+      } else {
+        badge.className = 'compare-badge mismatch';
+        badge.textContent = '\u2718 Mismatch \u2014 Hashes differ';
+        blockA.className = 'hash-result-block mismatch';
+        blockB.className = 'hash-result-block mismatch';
+        valA.innerHTML = buildDiffHTML(hashA, hashB);
+        valB.innerHTML = buildDiffHTMLB(hashA, hashB);
+        // Count differing positions
+        var diffCount = 0;
+        for (var i = 0; i < Math.max(hashA.length, hashB.length); i++) {
+          if ((hashA[i]||'') !== (hashB[i]||'')) diffCount++;
+        }
+        sb.className = 'status-bar invalid';
+        sb.textContent = currentAlgo + ' \u2014 Mismatch \u2014 ' + diffCount + ' of ' + hashA.length + ' characters differ';
+      }
+
+      // Click to copy hashes
+      valA.onclick = function() { DT.copyToClipboard(hashA, null); DT.toast('Hash A copied', 'info'); };
+      valB.onclick = function() { DT.copyToClipboard(hashB, null); DT.toast('Hash B copied', 'info'); };
+    }
+
+    /* ── Render all algos ── */
+    function renderAll(results) {
+      var body = document.getElementById('allModeBody');
+      body.innerHTML = '';
+      var allMatch = true;
+      ['SHA-256', 'SHA-512', 'SHA-1'].forEach(function(algo) {
+        var r = results[algo];
+        var matched = r.a === r.b;
+        if (!matched) allMatch = false;
+        var tr = document.createElement('tr');
+        tr.className = matched ? 'match' : 'mismatch';
+        var icon = matched ? '\u2714' : '\u2718';
+        tr.innerHTML = '<td>' + icon + '</td><td>' + algo + '</td>' +
+          '<td style="cursor:pointer" title="Click to copy">' + r.a + '</td>' +
+          '<td style="cursor:pointer" title="Click to copy">' + r.b + '</td>';
+        tr.querySelectorAll('td')[2].onclick = function(){ DT.copyToClipboard(r.a, null); DT.toast(algo + ' hash A copied', 'info'); };
+        tr.querySelectorAll('td')[3].onclick = function(){ DT.copyToClipboard(r.b, null); DT.toast(algo + ' hash B copied', 'info'); };
+        body.appendChild(tr);
+      });
+      var badge = document.getElementById('compareBadge');
+      if (allMatch) {
+        badge.className = 'compare-badge match';
+        badge.textContent = '\u2714 All 3 algorithms match';
+      } else {
+        badge.className = 'compare-badge mismatch';
+        badge.textContent = '\u2718 Mismatch detected';
+      }
+      var sb = document.getElementById('statusBar');
+      sb.className = allMatch ? 'status-bar valid' : 'status-bar invalid';
+      sb.textContent = 'All algorithms \u2014 ' + (allMatch ? 'All hashes match' : 'Hashes differ');
+    }
+
+    /* ── Main compare function ── */
+    var processing = false;
+    function compare() {
+      var a = document.getElementById('textA').value;
+      var b = document.getElementById('textB').value;
+
+      if (!a && !b) {
+        document.getElementById('compareBadge').className = 'compare-badge pending';
+        document.getElementById('compareBadge').textContent = '\u2014 Waiting for input \u2014';
+        document.getElementById('statusBar').className = 'status-bar info';
+        document.getElementById('statusBar').textContent = 'Paste text into both fields to compare their hashes.';
+        return;
+      }
+
+      if (currentAlgo === 'all') {
+        var algos = ['SHA-256', 'SHA-512', 'SHA-1'];
+        var promises = {};
+        algos.forEach(function(algo) {
+          promises[algo] = Promise.all([hashText(algo, a), hashText(algo, b)]);
+        });
+        Promise.all(algos.map(function(al){ return promises[al]; })).then(function(results) {
+          var mapped = {};
+          algos.forEach(function(al, i){ mapped[al] = { a: results[i][0], b: results[i][1] }; });
+          renderAll(mapped);
+          DT.trackTool('text-hash-compare');
+        });
+      } else {
+        Promise.all([hashText(currentAlgo, a), hashText(currentAlgo, b)]).then(function(res) {
+          renderSingle(res[0], res[1]);
+          DT.trackTool('text-hash-compare');
+        });
+      }
+    }
+
+    var debouncedCompare = DT.debounce(compare, 300);
+
+    /* ── Algo chips ── */
+    document.querySelectorAll('.option-chip[data-algo]').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip[data-algo]').forEach(function(c){ c.classList.remove('active'); });
+        this.classList.add('active');
+        currentAlgo = this.getAttribute('data-algo');
+        var isAll = currentAlgo === 'all';
+        document.getElementById('singleMode').style.display = isAll ? 'none' : '';
+        document.getElementById('allMode').style.display = isAll ? '' : 'none';
+        compare();
+      });
+    });
+
+    /* ── Inputs ── */
+    document.getElementById('textA').addEventListener('input', debouncedCompare);
+    document.getElementById('textB').addEventListener('input', debouncedCompare);
+
+    /* ── Buttons ── */
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      document.getElementById('textA').value = 'Hello, DevToolbox! This is text A for comparison.';
+      document.getElementById('textB').value = 'Hello, DevToolbox! This is text A for comparison.';
+      compare();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      document.getElementById('textA').value = '';
+      document.getElementById('textB').value = '';
+      compare();
+    });
+
+    /* ── Tab support in textareas ── */
+    ['textA','textB'].forEach(function(id) {
+      document.getElementById(id).addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          var s = this.selectionStart, en = this.selectionEnd;
+          this.value = this.value.substring(0, s) + '  ' + this.value.substring(en);
+          this.selectionStart = this.selectionEnd = s + 2;
+          debouncedCompare();
+        }
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Code Syntax Highlighter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Highlight code syntax online for JavaScript, Python, HTML, CSS, SQL, and more. Output styled HTML, inline-styled HTML for email, or CSS-classed HTML. Free, browser-only.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/syntax-highlighter.html">
+  <meta property="og:title" content="Code Syntax Highlighter — DevToolbox">
+  <meta property="og:description" content="Free online syntax highlighter. Paste code, choose a language, get styled HTML output for blogs, emails, and documentation.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/syntax-highlighter.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Code Syntax Highlighter",
+    "url": "https://thisdevtool.com/tools/syntax-highlighter.html",
+    "description": "Highlight code syntax online for JavaScript, Python, HTML, CSS, SQL and more. Output styled HTML for blogs, emails, and documentation.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What languages does the syntax highlighter support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The highlighter supports JavaScript (including JSX patterns), Python, HTML/XML, CSS, and SQL. Select 'Auto' to let the tool guess the language based on patterns in your code."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between the three output modes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Styled HTML uses a linked stylesheet class (suitable for web pages that include your CSS). Inline-Styled HTML embeds all color styles directly in span tags — ideal for HTML emails where external CSS is stripped. CSS Classes HTML outputs semantic class names only (e.g., .kw, .str) for use with your own stylesheet."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I add line numbers to the output?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Enable the 'Line Numbers' option chip. Line numbers are added as a separate styled column using CSS counters, so they appear visually but are not selected when you copy the code text."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use the highlighted HTML in email newsletters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes — use the 'Inline Styled' output mode. Most email clients (Gmail, Outlook, Apple Mail) strip linked stylesheets and style blocks, but preserve inline style attributes on individual elements. The inline output includes all colors directly in each span tag."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the highlighting done server-side?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The syntax highlighting runs entirely in your browser using a regex-based tokenizer. Your code never leaves your machine — there is no server processing, no logging, and no data collection."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .hl-dark  { background:#1e1e2e; color:#cdd6f4; padding:16px; border-radius:8px; font-family:monospace; font-size:.875rem; line-height:1.6; overflow-x:auto; white-space:pre; }
+    .hl-light { background:#f8f9fa; color:#24292e; padding:16px; border-radius:8px; font-family:monospace; font-size:.875rem; line-height:1.6; overflow-x:auto; white-space:pre; }
+    /* Dark token colors */
+    .hl-dark .kw  { color:#cba6f7; }
+    .hl-dark .str { color:#a6e3a1; }
+    .hl-dark .num { color:#fab387; }
+    .hl-dark .cmt { color:#6c7086; font-style:italic; }
+    .hl-dark .fn  { color:#89b4fa; }
+    .hl-dark .op  { color:#94e2d5; }
+    .hl-dark .tag { color:#89dceb; }
+    .hl-dark .attr{ color:#f9e2af; }
+    .hl-dark .val { color:#a6e3a1; }
+    /* Light token colors */
+    .hl-light .kw  { color:#d73a49; }
+    .hl-light .str { color:#032f62; }
+    .hl-light .num { color:#005cc5; }
+    .hl-light .cmt { color:#6a737d; font-style:italic; }
+    .hl-light .fn  { color:#6f42c1; }
+    .hl-light .op  { color:#22863a; }
+    .hl-light .tag { color:#22863a; }
+    .hl-light .attr{ color:#6f42c1; }
+    .hl-light .val { color:#032f62; }
+    /* Line numbers */
+    .with-ln { counter-reset: line; }
+    .with-ln .ln-line { counter-increment: line; display: block; }
+    .with-ln .ln-line::before { content: counter(line); display: inline-block; width: 2.5em; text-align: right; margin-right: 1em; opacity: 0.4; user-select: none; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Code Syntax Highlighter</h1>
+          <p class="tool-subtitle">Paste code, choose a language, get highlighted HTML for blogs, emails, and documentation.</p>
+
+          <!-- Language chips -->
+          <div class="option-chips" id="langChips">
+            <button class="option-chip active" data-lang="auto">Auto</button>
+            <button class="option-chip" data-lang="js">JavaScript</button>
+            <button class="option-chip" data-lang="python">Python</button>
+            <button class="option-chip" data-lang="html">HTML</button>
+            <button class="option-chip" data-lang="css">CSS</button>
+            <button class="option-chip" data-lang="sql">SQL</button>
+          </div>
+
+          <!-- Output format chips -->
+          <div class="option-chips" id="outChips" style="margin-top:8px;">
+            <button class="option-chip active" data-out="styled">Styled HTML</button>
+            <button class="option-chip" data-out="inline">Inline Styled</button>
+            <button class="option-chip" data-out="classes">CSS Classes</button>
+          </div>
+
+          <!-- Theme + line numbers -->
+          <div class="option-chips" id="optChips" style="margin-top:8px;">
+            <button class="option-chip active" data-opt="dark">Theme: Dark</button>
+            <button class="option-chip" data-opt="light">Theme: Light</button>
+            <button class="option-chip" data-opt="ln">Line Numbers: Off</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Code Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="codeInput" rows="16" placeholder="Paste your code here..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Highlighted Preview</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyHtmlBtn">Copy HTML</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div id="hlPreview" style="min-height:340px;"></div>
+            </div>
+          </div>
+
+          <!-- HTML output -->
+          <div style="margin-top:12px;">
+            <div class="pane-label"><span>HTML Output</span></div>
+            <div class="code-output" id="htmlOutput" style="min-height:80px;font-size:0.75rem;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste code above to generate highlighted HTML.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Syntax Highlighter</h2>
+          <ol>
+            <li><strong>Paste your code</strong> into the input area or click "Try Example" to load a JavaScript demo.</li>
+            <li><strong>Select a language</strong> — JavaScript, Python, HTML, CSS, SQL, or Auto-detect.</li>
+            <li><strong>Choose output format</strong> — Styled HTML (external CSS), Inline Styled (for emails), or CSS Classes only.</li>
+            <li><strong>Set theme and line numbers</strong> — Dark or Light code theme, optional line numbers.</li>
+            <li><strong>Copy the HTML</strong> from the output panel and paste it into your blog post, email, or documentation.</li>
+          </ol>
+
+          <h2>Output Format Comparison</h2>
+          <ul>
+            <li><strong>Styled HTML</strong> — wraps tokens in <code>&lt;span class="kw"&gt;</code> etc. You must include the CSS classes in your page's stylesheet. Best for CMS blogs and static sites where you control the CSS.</li>
+            <li><strong>Inline Styled HTML</strong> — embeds <code>style="color:#cba6f7"</code> directly on each span. No external CSS needed. Best for HTML email newsletters (Gmail, Outlook, Mailchimp).</li>
+            <li><strong>CSS Classes HTML</strong> — outputs only the semantic class names (<code>.kw</code>, <code>.str</code>, <code>.num</code>, etc.) without any colors. Write your own stylesheet for full theme control.</li>
+          </ul>
+
+          <h3>Language Token Reference</h3>
+          <ul>
+            <li><strong>Keywords</strong> — language reserved words (<code>if</code>, <code>function</code>, <code>def</code>, <code>SELECT</code>)</li>
+            <li><strong>Strings</strong> — single-quoted, double-quoted, and template literals</li>
+            <li><strong>Numbers</strong> — integer and floating-point literals</li>
+            <li><strong>Comments</strong> — single-line (<code>//</code>, <code>#</code>, <code>--</code>) and multi-line (<code>/* */</code>, <code><!-- --></code>)</li>
+            <li><strong>Function names</strong> — identifiers immediately followed by <code>(</code></li>
+            <li><strong>Operators</strong> — arithmetic and logical symbols</li>
+            <li><strong>HTML tags and attributes</strong> — in HTML mode, tag names and attribute names are coloured separately</li>
+          </ul>
+
+          <h3>Use Cases</h3>
+          <ul>
+            <li><strong>Blog posts</strong> — add syntax-highlighted code snippets to WordPress, Ghost, Substack, or any CMS that accepts raw HTML</li>
+            <li><strong>Email newsletters</strong> — use inline-styled output to send code to subscribers via Mailchimp, ConvertKit, or Beehiiv</li>
+            <li><strong>Documentation</strong> — embed highlighted examples in Notion, Confluence, or GitBook</li>
+            <li><strong>Slide decks</strong> — paste inline-styled HTML into Google Slides or PowerPoint's HTML editor for styled code blocks</li>
+            <li><strong>Stack Overflow answers</strong> — copy the HTML to use in answers that accept formatted code</li>
+          </ul>
+
+          <h3>How the Tokenizer Works</h3>
+          <p>This tool uses a regex-based tokenizer that processes code in a single pass. Tokens are matched in priority order: multi-line comments first, then single-line comments, then string literals, then numbers, then function calls, then keywords, then operators. This order ensures that code inside strings and comments is not re-tokenized. The approach is lighter than a full parser but handles the vast majority of real-world code snippets correctly.</p>
+
+          <h3>Limitations</h3>
+          <p>Regex-based tokenization has edge cases: very complex templates, nested quotes, or unusual Unicode identifiers may not highlight perfectly. For production documentation where precise highlighting matters, consider integrating a full library like Prism.js or Highlight.js. This tool is optimised for quick one-off formatting rather than being a build-time plugin. For more Markdown and code tools, see our <a href="/tools/markdown-preview.html">Markdown Preview</a> and <a href="/tools/diff-checker.html">Diff Checker</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What languages does the syntax highlighter support?</button>
+            <div class="faq-answer">The highlighter supports JavaScript, Python, HTML/XML, CSS, and SQL. Select 'Auto' to let the tool guess the language based on patterns in your code.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between the three output modes?</button>
+            <div class="faq-answer">Styled HTML uses CSS class names (external stylesheet needed). Inline-Styled HTML embeds all colors directly in span tags — ideal for HTML emails. CSS Classes HTML outputs semantic class names only for use with your own stylesheet.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I add line numbers to the output?</button>
+            <div class="faq-answer">Click the 'Line Numbers: Off' chip to toggle it on. Line numbers use CSS counters so they appear visually but are not selected when you copy the code text.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I use the highlighted HTML in email newsletters?</button>
+            <div class="faq-answer">Yes — use the 'Inline Styled' output mode. Most email clients strip linked stylesheets but preserve inline style attributes. The inline output includes all colors directly in each span tag.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is the highlighting done server-side?</button>
+            <div class="faq-answer">No. The syntax highlighting runs entirely in your browser using a regex-based tokenizer. Your code never leaves your machine — there is no server processing, no logging, and no data collection.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+        <a href="/tools/markdown-to-slides.html">Markdown to Slides</a>
+        <a href="/tools/html-markdown.html">HTML ↔ Markdown</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var codeInput = document.getElementById('codeInput');
+    var hlPreview = document.getElementById('hlPreview');
+    var htmlOutput = document.getElementById('htmlOutput');
+    var statusBar = document.getElementById('statusBar');
+    var currentLang = 'auto';
+    var currentOut = 'styled';
+    var currentTheme = 'dark';
+    var lineNumbers = false;
+
+    // --- Token colors for inline mode ---
+    var DARK_COLORS = { kw:'#cba6f7', str:'#a6e3a1', num:'#fab387', cmt:'#6c7086', fn:'#89b4fa', op:'#94e2d5', tag:'#89dceb', attr:'#f9e2af', val:'#a6e3a1' };
+    var LIGHT_COLORS = { kw:'#d73a49', str:'#032f62', num:'#005cc5', cmt:'#6a737d', fn:'#6f42c1', op:'#22863a', tag:'#22863a', attr:'#6f42c1', val:'#032f62' };
+
+    // --- Language definitions ---
+    var LANGS = {
+      js: {
+        keywords: /\b(break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|finally|for|function|if|import|in|instanceof|let|new|of|return|static|super|switch|this|throw|try|typeof|var|void|while|with|yield|async|await|from|null|true|false|undefined)\b/g,
+        singleComment: /\/\/.*/g,
+        multiComment: /\/\*[\s\S]*?\*\//g,
+        strings: /(`[^`]*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/g,
+        numbers: /\b(\d+\.?\d*([eE][+-]?\d+)?|0x[0-9a-fA-F]+)\b/g,
+        functions: /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g,
+        operators: /([+\-*/%&|^~<>=!?:]+)/g
+      },
+      python: {
+        keywords: /\b(and|as|assert|async|await|break|class|continue|def|del|elif|else|except|False|finally|for|from|global|if|import|in|is|lambda|None|nonlocal|not|or|pass|raise|return|True|try|while|with|yield)\b/g,
+        singleComment: /#.*/g,
+        multiComment: /("""[\s\S]*?"""|'''[\s\S]*?''')/g,
+        strings: /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/g,
+        numbers: /\b(\d+\.?\d*([eE][+-]?\d+)?)\b/g,
+        functions: /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g,
+        operators: /([+\-*/%&|^~<>=!]+)/g
+      },
+      html: {
+        tag: /(&lt;\/?[a-zA-Z][a-zA-Z0-9-]*)/g,
+        tagEnd: /\/?&gt;/g,
+        attr: /\b([a-zA-Z-:]+)(?=\s*=)/g,
+        val: /(=\s*"[^"]*"|=\s*'[^']*')/g,
+        comment: /&lt;!--[\s\S]*?--&gt;/g,
+        strings: /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g
+      },
+      css: {
+        singleComment: /\/\/.*/g,
+        multiComment: /\/\*[\s\S]*?\*\//g,
+        strings: /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/g,
+        keyword: /\b(important|inherit|initial|unset|auto|none|normal|bold|italic|underline|solid|dashed|dotted|relative|absolute|fixed|sticky|flex|grid|block|inline|hidden|visible|scroll|overflow|transform|transition|animation|var)\b/g,
+        selector: /^([a-zA-Z.#\[\*:,\n][^{]*)\{/gm,
+        property: /\b([a-z-]+)\s*(?=:)/g,
+        numbers: /\b(\d+\.?\d*(?:px|em|rem|%|vh|vw|s|ms|deg)?)\b/g,
+        operators: /([:{};,])/g
+      },
+      sql: {
+        keywords: /\b(SELECT|FROM|WHERE|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|DROP|ALTER|ADD|COLUMN|PRIMARY|KEY|FOREIGN|REFERENCES|INDEX|JOIN|LEFT|RIGHT|INNER|OUTER|ON|AS|AND|OR|NOT|IN|IS|NULL|LIKE|BETWEEN|ORDER|BY|GROUP|HAVING|LIMIT|OFFSET|DISTINCT|ALL|UNION|EXISTS|CASE|WHEN|THEN|ELSE|END|COUNT|SUM|AVG|MAX|MIN|COALESCE|CAST|IF)\b/gi,
+        strings: /('(?:[^'\\]|\\.)*')/g,
+        numbers: /\b(\d+\.?\d*)\b/g,
+        singleComment: /--[^\n]*/g,
+        multiComment: /\/\*[\s\S]*?\*\//g,
+        operators: /([=<>!*+\-,;()])/g
+      }
+    };
+
+    function detectLang(code) {
+      if (/<\s*[a-zA-Z]/.test(code) && /<\//.test(code)) return 'html';
+      if (/def\s+\w+\s*\(|import\s+\w+|print\s*\(/.test(code)) return 'python';
+      if (/SELECT\s+.+FROM|INSERT\s+INTO|CREATE\s+TABLE/i.test(code)) return 'sql';
+      if (/^\s*[.#a-z]/m.test(code) && /\{[^{}]*:[^{}]*;/.test(code)) return 'css';
+      return 'js';
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function tokenize(code, lang) {
+      // We work on escaped HTML for html/css, raw for others
+      var isHtml = lang === 'html';
+      var src = isHtml ? escHtml(code) : code;
+      // We'll build an array of {type, text} tokens
+      // Strategy: replace each pattern with a placeholder, collect tokens
+      var PLACEHOLDER = '\x00';
+      var tokens = [];
+      var idx = 0;
+
+      function addToken(type, text) {
+        tokens.push({ type: type, text: text });
+      }
+
+      // Simple pass: scan character by character with regexes applied in priority order
+      // For simplicity use a series of replace passes on a marker array
+      var result = src;
+      var map = {}; // marker -> {type, text}
+
+      function protect(regex, type) {
+        result = result.replace(regex, function (m) {
+          var key = '\x01' + (idx++) + '\x01';
+          map[key] = { type: type, text: m };
+          return key;
+        });
+      }
+
+      if (lang === 'html') {
+        protect(/&lt;!--[\s\S]*?--&gt;/g, 'cmt');
+        protect(/&lt;\/?[a-zA-Z][a-zA-Z0-9-]*/g, 'tag');
+        protect(/\/?&gt;/g, 'op');
+        protect(/\b([a-zA-Z-:]+)(?=\s*=)/g, 'attr');
+        protect(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, 'val');
+      } else if (lang === 'css') {
+        protect(/\/\*[\s\S]*?\*\//g, 'cmt');
+        protect(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, 'str');
+        protect(/\b(\d+\.?\d*(?:px|em|rem|%|vh|vw|s|ms|deg)?)\b/g, 'num');
+        protect(/\b([a-z-]+)\s*(?=:)/g, 'attr');
+        protect(/\b(important|inherit|initial|unset|auto|none|normal)\b/g, 'kw');
+      } else if (lang === 'sql') {
+        protect(/\/\*[\s\S]*?\*\//g, 'cmt');
+        protect(/--[^\n]*/g, 'cmt');
+        protect(/'(?:[^'\\]|\\.)*'/g, 'str');
+        protect(/\b(SELECT|FROM|WHERE|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|DROP|ALTER|ADD|COLUMN|PRIMARY|KEY|FOREIGN|REFERENCES|INDEX|JOIN|LEFT|RIGHT|INNER|OUTER|ON|AS|AND|OR|NOT|IN|IS|NULL|LIKE|BETWEEN|ORDER|BY|GROUP|HAVING|LIMIT|OFFSET|DISTINCT|ALL|UNION|EXISTS|CASE|WHEN|THEN|ELSE|END|COUNT|SUM|AVG|MAX|MIN|COALESCE|CAST|IF)\b/gi, 'kw');
+        protect(/\b\d+\.?\d*\b/g, 'num');
+      } else {
+        // js / python
+        protect(/\/\*[\s\S]*?\*\//g, 'cmt');
+        protect(/("""[\s\S]*?"""|'''[\s\S]*?''')/g, 'cmt');
+        if (lang === 'js') protect(/\/\/[^\n]*/g, 'cmt');
+        if (lang === 'python') protect(/#[^\n]*/g, 'cmt');
+        protect(/(`[^`]*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/g, 'str');
+        protect(/\b\d+\.?\d*([eE][+-]?\d+)?|0x[0-9a-fA-F]+\b/g, 'num');
+        protect(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g, 'fn');
+        if (lang === 'js') {
+          protect(/\b(break|case|catch|class|const|continue|debugger|default|delete|do|else|export|extends|finally|for|function|if|import|in|instanceof|let|new|of|return|static|super|switch|this|throw|try|typeof|var|void|while|with|yield|async|await|from|null|true|false|undefined)\b/g, 'kw');
+        } else {
+          protect(/\b(and|as|assert|async|await|break|class|continue|def|del|elif|else|except|False|finally|for|from|global|if|import|in|is|lambda|None|nonlocal|not|or|pass|raise|return|True|try|while|with|yield)\b/g, 'kw');
+        }
+        protect(/[+\-*/%&|^~<>=!?:]+/g, 'op');
+      }
+
+      return { result: result, map: map };
+    }
+
+    function buildHtml(code, lang, outMode, theme, ln) {
+      var escaped = lang === 'html' ? code : escHtml(code);
+      var tokData = tokenize(code, lang);
+      var result = tokData.result;
+      var map = tokData.map;
+      var colors = theme === 'dark' ? DARK_COLORS : LIGHT_COLORS;
+
+      // Replace placeholders with span tags
+      var html = result.replace(/\x01\d+\x01/g, function (key) {
+        var t = map[key];
+        if (!t) return key;
+        var esc = lang === 'html' ? t.text : escHtml(t.text);
+        if (outMode === 'inline') {
+          var c = colors[t.type] || '';
+          var extra = t.type === 'cmt' ? 'font-style:italic;' : '';
+          return c ? '<span style="color:' + c + ';' + extra + '">' + esc + '</span>' : esc;
+        } else {
+          return '<span class="' + t.type + '">' + esc + '</span>';
+        }
+      });
+
+      // Escape any remaining raw code (non-HTML langs)
+      if (lang !== 'html') {
+        html = html.replace(/[^\x01-\x7e\u0080-\uffff]/g, function (c) { return c; });
+      }
+
+      var bgColor = theme === 'dark' ? '#1e1e2e' : '#f8f9fa';
+      var fgColor = theme === 'dark' ? '#cdd6f4' : '#24292e';
+
+      if (ln) {
+        // Wrap each line
+        html = html.split('\n').map(function (line) {
+          return '<span class="ln-line">' + line + '</span>';
+        }).join('\n');
+      }
+
+      var themeClass = 'hl-' + theme;
+      var lnClass = ln ? ' with-ln' : '';
+      if (outMode === 'inline') {
+        return '<pre style="background:' + bgColor + ';color:' + fgColor + ';padding:16px;border-radius:8px;font-family:monospace;font-size:.875rem;line-height:1.6;overflow-x:auto;"' + (ln ? ' class="with-ln"' : '') + '><code>' + html + '</code></pre>';
+      } else if (outMode === 'classes') {
+        return '<pre class="' + themeClass + lnClass + '"><code>' + html + '</code></pre>';
+      } else {
+        return '<pre class="' + themeClass + lnClass + '"><code>' + html + '</code></pre>';
+      }
+    }
+
+    function process() {
+      var code = codeInput.value;
+      if (!code.trim()) {
+        hlPreview.innerHTML = '';
+        htmlOutput.textContent = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste code above to generate highlighted HTML.';
+        return;
+      }
+      var lang = currentLang === 'auto' ? detectLang(code) : currentLang;
+      var lines = code.split('\n').length;
+      var html = buildHtml(code, lang, currentOut, currentTheme, lineNumbers);
+      hlPreview.innerHTML = html;
+      htmlOutput.textContent = html;
+      var detectedLabel = currentLang === 'auto' ? lang + ' (auto-detected)' : lang;
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = detectedLabel + ' — ' + lines + ' lines — Theme: ' + (currentTheme === 'dark' ? 'Dark' : 'Light');
+      DT.trackTool('syntax-highlighter');
+    }
+
+    var debouncedProcess = DT.debounce(process, 200);
+    codeInput.addEventListener('input', debouncedProcess);
+
+    document.getElementById('langChips').querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.getElementById('langChips').querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentLang = chip.getAttribute('data-lang');
+        process();
+      });
+    });
+
+    document.getElementById('outChips').querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.getElementById('outChips').querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentOut = chip.getAttribute('data-out');
+        process();
+      });
+    });
+
+    document.getElementById('optChips').querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var opt = chip.getAttribute('data-opt');
+        if (opt === 'dark' || opt === 'light') {
+          document.getElementById('optChips').querySelectorAll('[data-opt="dark"],[data-opt="light"]').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentTheme = opt;
+        } else if (opt === 'ln') {
+          lineNumbers = !lineNumbers;
+          chip.textContent = 'Line Numbers: ' + (lineNumbers ? 'On' : 'Off');
+          chip.classList.toggle('active', lineNumbers);
+        }
+        process();
+      });
+    });
+
+    document.getElementById('copyHtmlBtn').addEventListener('click', function () {
+      var text = htmlOutput.textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var text = htmlOutput.textContent;
+      if (text) DT.downloadText(text, 'highlighted.html', 'text/html');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      codeInput.value = '';
+      process();
+      codeInput.focus();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      codeInput.value = [
+        'async function fetchUsers(page = 1) {',
+        '  // Fetch paginated user list from API',
+        '  const BASE_URL = "https://api.example.com";',
+        '  const url = `${BASE_URL}/users?page=${page}&limit=20`;',
+        '  try {',
+        '    const response = await fetch(url);',
+        '    if (!response.ok) {',
+        '      throw new Error(`HTTP error: ${response.status}`);',
+        '    }',
+        '    const data = await response.json();',
+        '    return data.users.map(user => ({',
+        '      id: user.id,',
+        '      name: user.name,',
+        '      email: user.email.toLowerCase()',
+        '    }));',
+        '  } catch (err) {',
+        '    console.error("Failed to fetch users:", err);',
+        '    return [];',
+        '  }',
+        '}'
+      ].join('\n');
+      // Set to JS mode
+      document.getElementById('langChips').querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      document.querySelector('[data-lang="js"]').classList.add('active');
+      currentLang = 'js';
+      process();
+    });
+
+    codeInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        var s = this.selectionStart, en = this.selectionEnd;
+        this.value = this.value.substring(0, s) + '  ' + this.value.substring(en);
+        this.selectionStart = this.selectionEnd = s + 2;
+        debouncedProcess();
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

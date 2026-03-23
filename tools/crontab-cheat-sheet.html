@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Crontab Cheat Sheet &amp; Builder — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Interactive cron expression builder with visual field selectors, human-readable descriptions, 30+ examples, and a full special-character reference. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/crontab-cheat-sheet.html">
+  <meta property="og:title" content="Crontab Cheat Sheet &amp; Builder — DevToolbox">
+  <meta property="og:description" content="Build cron expressions visually, see human-readable descriptions, and browse 30+ common cron examples. Free and 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/crontab-cheat-sheet.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Crontab Cheat Sheet & Builder",
+    "url": "https://thisdevtool.com/tools/crontab-cheat-sheet.html",
+    "description": "Interactive cron expression builder with visual selectors, human-readable output, and a 30+ example library.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a cron expression?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A cron expression is a string of five (or six) fields separated by spaces that define a schedule for automated tasks. The fields represent minute, hour, day-of-month, month, and day-of-week. For example, '0 9 * * 1-5' means every weekday at 9:00 AM."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the asterisk (*) mean in a cron job?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An asterisk (*) in a cron field means 'every valid value' for that field. For example, * in the minute field means every minute, * in the hour field means every hour, and so on."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I run a cron job every 5 minutes?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use the step notation: */5 * * * *. The slash (/) in a cron expression means 'every N units'. So */5 in the minute field means every 5 minutes starting from 0 (0, 5, 10, 15...)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between cron and crontab?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cron is the daemon (background process) that executes scheduled tasks on Unix-like systems. Crontab (cron table) is the configuration file that lists the scheduled jobs. You edit your crontab with the command 'crontab -e' and each line follows the five-field cron expression format."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does cron support seconds?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Standard Unix cron does not support a seconds field — the smallest granularity is one minute. However, some tools like Quartz Scheduler (Java), Spring @Scheduled, and AWS EventBridge cron support a six-field format with a leading seconds field. Check your specific platform's documentation."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .cron-builder { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin: 1rem 0; }
+    .cron-field { display: flex; flex-direction: column; gap: 0.25rem; }
+    .cron-field label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .cron-field input { font-family: monospace; font-size: 1.1rem; text-align: center; padding: 0.5rem; border: 2px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); }
+    .cron-field input:focus { border-color: #10b981; outline: none; }
+    .cron-expr { font-family: monospace; font-size: 1.5rem; text-align: center; letter-spacing: 0.1em; color: #10b981; padding: 0.75rem; background: var(--bg-secondary); border-radius: 8px; margin: 0.5rem 0; word-break: break-all; }
+    .cron-desc { text-align: center; font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0.5rem; min-height: 1.4em; }
+    .cron-actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .ref-table th, .ref-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
+    .ref-table th { background: var(--bg-secondary); font-weight: 600; }
+    .ref-table td:first-child { font-family: monospace; font-size: 1rem; color: #10b981; white-space: nowrap; }
+    .examples-grid { display: grid; gap: 0.5rem; }
+    .example-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+    .example-row:hover { background: var(--bg-secondary); }
+    .example-expr { font-family: monospace; font-size: 0.9rem; color: #10b981; min-width: 160px; flex-shrink: 0; }
+    .example-desc { font-size: 0.88rem; color: var(--text-secondary); }
+    .view-hidden { display: none; }
+    @media (max-width: 640px) {
+      .cron-builder { grid-template-columns: repeat(3, 1fr); }
+      .example-expr { min-width: 120px; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/cron-parser.html">Cron Parser</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Crontab Cheat Sheet &amp; Builder</h1>
+          <p class="tool-subtitle">Build cron expressions visually, get human-readable descriptions, and browse 30+ common examples.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-view="builder">Builder</button>
+            <button class="option-chip" data-view="reference">Reference</button>
+            <button class="option-chip" data-view="examples">Examples</button>
+          </div>
+
+          <!-- Builder View -->
+          <div id="view-builder">
+            <div class="cron-builder">
+              <div class="cron-field">
+                <label>Minute</label>
+                <input id="fMinute" value="*" maxlength="20" spellcheck="false">
+                <span style="font-size:0.7rem;color:var(--text-muted)">0-59</span>
+              </div>
+              <div class="cron-field">
+                <label>Hour</label>
+                <input id="fHour" value="*" maxlength="20" spellcheck="false">
+                <span style="font-size:0.7rem;color:var(--text-muted)">0-23</span>
+              </div>
+              <div class="cron-field">
+                <label>Day (month)</label>
+                <input id="fDom" value="*" maxlength="20" spellcheck="false">
+                <span style="font-size:0.7rem;color:var(--text-muted)">1-31</span>
+              </div>
+              <div class="cron-field">
+                <label>Month</label>
+                <input id="fMonth" value="*" maxlength="20" spellcheck="false">
+                <span style="font-size:0.7rem;color:var(--text-muted)">1-12</span>
+              </div>
+              <div class="cron-field">
+                <label>Day (week)</label>
+                <input id="fDow" value="*" maxlength="20" spellcheck="false">
+                <span style="font-size:0.7rem;color:var(--text-muted)">0-6 (Sun=0)</span>
+              </div>
+            </div>
+
+            <div class="cron-expr" id="cronExpr">* * * * *</div>
+            <div class="cron-desc" id="cronDesc">Every minute</div>
+
+            <div class="cron-actions">
+              <button class="btn btn-primary" id="copyExprBtn">Copy Expression</button>
+              <button class="btn btn-secondary" id="clearExprBtn">Reset</button>
+            </div>
+
+            <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+              Edit any field above — use * for every, */5 for every 5, 1-5 for ranges, 1,3,5 for lists.
+            </div>
+
+            <!-- Quick presets -->
+            <div style="margin-top:1rem;">
+              <p style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;">Quick Presets</p>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-secondary" data-preset="* * * * *">Every minute</button>
+                <button class="btn btn-sm btn-secondary" data-preset="0 * * * *">Every hour</button>
+                <button class="btn btn-sm btn-secondary" data-preset="0 0 * * *">Daily midnight</button>
+                <button class="btn btn-sm btn-secondary" data-preset="0 9 * * 1-5">Weekdays 9am</button>
+                <button class="btn btn-sm btn-secondary" data-preset="0 0 1 * *">Monthly</button>
+                <button class="btn btn-sm btn-secondary" data-preset="0 0 1 1 *">Yearly</button>
+                <button class="btn btn-sm btn-secondary" data-preset="*/5 * * * *">Every 5 min</button>
+                <button class="btn btn-sm btn-secondary" data-preset="0 0 * * 0">Weekly Sunday</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reference View -->
+          <div id="view-reference" class="view-hidden">
+            <h3 style="margin-top:0.5rem;">Field Positions</h3>
+            <div class="cron-expr" style="font-size:1rem;letter-spacing:0.05em;">┌─ minute (0-59)<br>│ ┌─ hour (0-23)<br>│ │ ┌─ day of month (1-31)<br>│ │ │ ┌─ month (1-12 or Jan-Dec)<br>│ │ │ │ ┌─ day of week (0-6 or Sun-Sat)<br>* * * * *</div>
+
+            <h3>Special Characters</h3>
+            <table class="ref-table">
+              <thead><tr><th>Character</th><th>Meaning</th><th>Example</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td>*</td><td>Any value</td><td>* in hour</td><td>Every hour</td></tr>
+                <tr><td>,</td><td>List separator</td><td>1,3,5</td><td>1st, 3rd, and 5th</td></tr>
+                <tr><td>-</td><td>Range</td><td>1-5</td><td>1 through 5 inclusive</td></tr>
+                <tr><td>/</td><td>Step values</td><td>*/15</td><td>Every 15 units (0, 15, 30, 45)</td></tr>
+                <tr><td>L</td><td>Last (day fields)</td><td>L in DOM</td><td>Last day of month</td></tr>
+                <tr><td>W</td><td>Nearest weekday</td><td>15W</td><td>Nearest weekday to the 15th</td></tr>
+                <tr><td>#</td><td>Nth weekday</td><td>2#3</td><td>3rd Tuesday of the month</td></tr>
+                <tr><td>?</td><td>No specific value</td><td>? in DOW</td><td>Used when DOM or DOW is specified (Quartz)</td></tr>
+              </tbody>
+            </table>
+
+            <h3 style="margin-top:1.5rem;">Month Names</h3>
+            <table class="ref-table">
+              <thead><tr><th>Number</th><th>Name</th><th>Abbreviation</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>January</td><td>Jan</td></tr>
+                <tr><td>2</td><td>February</td><td>Feb</td></tr>
+                <tr><td>3</td><td>March</td><td>Mar</td></tr>
+                <tr><td>4</td><td>April</td><td>Apr</td></tr>
+                <tr><td>5</td><td>May</td><td>May</td></tr>
+                <tr><td>6</td><td>June</td><td>Jun</td></tr>
+                <tr><td>7</td><td>July</td><td>Jul</td></tr>
+                <tr><td>8</td><td>August</td><td>Aug</td></tr>
+                <tr><td>9</td><td>September</td><td>Sep</td></tr>
+                <tr><td>10</td><td>October</td><td>Oct</td></tr>
+                <tr><td>11</td><td>November</td><td>Nov</td></tr>
+                <tr><td>12</td><td>December</td><td>Dec</td></tr>
+              </tbody>
+            </table>
+
+            <h3 style="margin-top:1.5rem;">Day of Week Names</h3>
+            <table class="ref-table">
+              <thead><tr><th>Number</th><th>Name</th><th>Abbreviation</th></tr></thead>
+              <tbody>
+                <tr><td>0</td><td>Sunday</td><td>Sun</td></tr>
+                <tr><td>1</td><td>Monday</td><td>Mon</td></tr>
+                <tr><td>2</td><td>Tuesday</td><td>Tue</td></tr>
+                <tr><td>3</td><td>Wednesday</td><td>Wed</td></tr>
+                <tr><td>4</td><td>Thursday</td><td>Thu</td></tr>
+                <tr><td>5</td><td>Friday</td><td>Fri</td></tr>
+                <tr><td>6</td><td>Saturday</td><td>Sat</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Examples View -->
+          <div id="view-examples" class="view-hidden">
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.75rem;">Click any example to load it into the Builder.</p>
+            <div class="examples-grid" id="examplesGrid"></div>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Crontab Builder</h2>
+          <ol>
+            <li><strong>Open the Builder tab</strong> — edit any of the five fields (minute, hour, day-of-month, month, day-of-week).</li>
+            <li><strong>Watch the expression update</strong> — the full cron expression and its human-readable description update instantly as you type.</li>
+            <li><strong>Use quick presets</strong> — click any preset button to populate the fields with a common schedule.</li>
+            <li><strong>Browse examples</strong> — switch to the Examples tab and click any row to load it into the builder.</li>
+            <li><strong>Copy the expression</strong> — click "Copy Expression" to copy the finished cron string to your clipboard.</li>
+          </ol>
+
+          <h2>Understanding Cron Expressions</h2>
+          <p>A cron expression consists of five space-separated fields representing minute (0-59), hour (0-23), day of month (1-31), month (1-12), and day of week (0-6, where Sunday is 0). Each field can contain a single value, a range (1-5), a list (1,3,5), a step value (*/15), or an asterisk (*) meaning "every valid value." Mastering these five fields lets you schedule virtually any recurring task — from simple daily backups to complex multi-conditional schedules.</p>
+
+          <h3>Step Values — The Most Useful Pattern</h3>
+          <p>The slash (/) character defines step values. The expression */5 in the minute field means "starting at 0, every 5 minutes" — so 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55. You can also write 10/5 to start at 10 instead of 0. Step values work in all five fields: */6 in the hour field means every 6 hours (midnight, 6am, noon, 6pm). This single feature covers the majority of real-world scheduling needs like health checks, cache warming, metrics aggregation, and report generation.</p>
+
+          <h3>Ranges and Lists</h3>
+          <p>Ranges (1-5) and lists (1,3,5) give you fine-grained control. The expression 0 9 * * 1-5 means 9:00 AM every weekday. The expression 0 9,13,17 * * 1-5 means 9 AM, 1 PM, and 5 PM on weekdays — useful for sending three digest emails per business day. You can combine ranges and lists: 1,3,5,7-9 in the hour field means hours 1, 3, 5, 7, 8, and 9. Mixing step values with ranges is also valid: 0-30/5 means every 5 minutes between the 0th and 30th minute of each hour.</p>
+
+          <h3>Special Strings (@reboot, @daily, etc.)</h3>
+          <p>Many cron implementations support shorthand strings as alternatives to the five-field format. @reboot runs once at system startup. @yearly (equivalent to 0 0 1 1 *) runs at midnight on January 1st. @monthly (0 0 1 * *) runs at midnight on the first of each month. @weekly (0 0 * * 0) runs at midnight on Sunday. @daily and @midnight both mean 0 0 * * *. @hourly means 0 * * * *. These aliases make crontabs easier to read at a glance, especially in shared server environments.</p>
+
+          <h3>Debugging Cron Jobs</h3>
+          <p>The most common mistake with cron is forgetting that the environment is minimal — cron runs with a restricted PATH and no shell aliases. Always use absolute paths in your cron commands (e.g., /usr/bin/python3 instead of python3). Redirect output to a log file to capture errors: * * * * * /path/to/script.sh &gt;&gt; /var/log/cron.log 2&gt;&amp;1. Check /var/log/syslog or /var/log/cron for execution records. Use crontab -l to list your current jobs and crontab -e to edit them. For complex schedules, always test with a more frequent expression first (like */5 * * * *) before setting the real schedule.</p>
+
+          <h3>Cron vs. Systemd Timers vs. Cloud Schedulers</h3>
+          <p>While cron is universal on Linux systems, modern alternatives offer more features. Systemd timers support calendar expressions, monotonic timers (run X minutes after last run), and restart-on-failure. AWS EventBridge, Google Cloud Scheduler, and Azure Logic Apps provide cloud-native scheduling with retry logic, monitoring, and dead-letter queues. GitHub Actions and GitLab CI support cron-syntax schedules for workflow automation. For high-reliability production jobs, consider pairing cron with a job monitoring service like Healthchecks.io, which pings your endpoint after each successful run and alerts you if a job is missed. See our <a href="/tools/cron-parser.html">Cron Parser</a> to validate and explain any existing cron expression.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a cron expression?</button>
+            <div class="faq-answer">A cron expression is a string of five space-separated fields that define a recurring schedule: minute (0-59), hour (0-23), day of month (1-31), month (1-12), and day of week (0-6, where Sunday is 0). For example, "0 9 * * 1-5" means every weekday at 9:00 AM.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does the asterisk (*) mean in a cron job?</button>
+            <div class="faq-answer">An asterisk (*) means "every valid value" for that field. An asterisk in the minute field means every minute, in the hour field means every hour, etc. A fully asterisked expression (* * * * *) runs every single minute.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I run a cron job every 5 minutes?</button>
+            <div class="faq-answer">Use */5 * * * *. The slash notation (*/N) means "every N units starting from 0." So */5 in the minute field triggers at minutes 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, and 55 of every hour.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between cron and crontab?</button>
+            <div class="faq-answer">Cron is the background daemon that reads schedules and runs commands. Crontab is the configuration file that lists those scheduled commands. Each user on a Unix system can have their own crontab, edited with "crontab -e" and listed with "crontab -l".</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does cron support seconds?</button>
+            <div class="faq-answer">Standard Unix cron does not support seconds — the minimum granularity is one minute. Some platforms add a sixth leading field for seconds: Quartz Scheduler (Java), Spring @Scheduled, and AWS EventBridge cron. Check your platform's documentation before using a six-field expression.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/cron-parser.html">Cron Parser</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Reference</h4>
+        <a href="/tools/keyboard-shortcuts.html">Keyboard Shortcuts</a>
+        <a href="/tools/crontab-cheat-sheet.html">Crontab Cheat Sheet</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    /* ── Examples data ── */
+    var EXAMPLES = [
+      { expr: '* * * * *',        desc: 'Every minute' },
+      { expr: '*/5 * * * *',      desc: 'Every 5 minutes' },
+      { expr: '*/15 * * * *',     desc: 'Every 15 minutes' },
+      { expr: '*/30 * * * *',     desc: 'Every 30 minutes' },
+      { expr: '0 * * * *',        desc: 'Every hour (on the hour)' },
+      { expr: '0 */2 * * *',      desc: 'Every 2 hours' },
+      { expr: '0 */6 * * *',      desc: 'Every 6 hours' },
+      { expr: '0 */12 * * *',     desc: 'Every 12 hours' },
+      { expr: '0 0 * * *',        desc: 'Every day at midnight' },
+      { expr: '0 6 * * *',        desc: 'Every day at 6:00 AM' },
+      { expr: '0 9 * * *',        desc: 'Every day at 9:00 AM' },
+      { expr: '0 12 * * *',       desc: 'Every day at noon' },
+      { expr: '0 18 * * *',       desc: 'Every day at 6:00 PM' },
+      { expr: '0 23 * * *',       desc: 'Every day at 11:00 PM' },
+      { expr: '0 9 * * 1-5',      desc: 'Weekdays at 9:00 AM' },
+      { expr: '0 17 * * 1-5',     desc: 'Weekdays at 5:00 PM (end of business)' },
+      { expr: '0 9,13,17 * * 1-5',desc: 'Weekdays at 9 AM, 1 PM, 5 PM' },
+      { expr: '0 0 * * 0',        desc: 'Every Sunday at midnight' },
+      { expr: '0 9 * * 1',        desc: 'Every Monday at 9:00 AM' },
+      { expr: '0 0 * * 6,0',      desc: 'Every weekend at midnight' },
+      { expr: '0 0 1 * *',        desc: 'First day of every month at midnight' },
+      { expr: '0 0 15 * *',       desc: '15th of every month at midnight' },
+      { expr: '0 0 L * *',        desc: 'Last day of every month at midnight' },
+      { expr: '0 0 1 1 *',        desc: 'January 1st at midnight (yearly)' },
+      { expr: '0 0 1 */3 *',      desc: 'First day of every quarter' },
+      { expr: '30 6 * * 1-5',     desc: 'Weekdays at 6:30 AM' },
+      { expr: '0 2 * * *',        desc: 'Every day at 2:00 AM (off-peak backup)' },
+      { expr: '5 4 * * 0',        desc: 'Every Sunday at 4:05 AM' },
+      { expr: '0 4 1 * *',        desc: 'Monthly report at 4:00 AM on the 1st' },
+      { expr: '*/10 9-17 * * 1-5',desc: 'Every 10 min during business hours (weekdays)' },
+      { expr: '0 0,12 * * *',     desc: 'Twice daily — midnight and noon' },
+      { expr: '15 10 * * *',      desc: 'Every day at 10:15 AM' },
+      { expr: '0 22 * * 1-5',     desc: 'Every weeknight at 10 PM' },
+      { expr: '0 0 * * 3',        desc: 'Every Wednesday at midnight' }
+    ];
+
+    /* ── Describe a cron expression ── */
+    var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    function padTwo(n) { return n < 10 ? '0' + n : '' + n; }
+
+    function describeField(val, type) {
+      if (val === '*') return null;
+      if (val.indexOf('/') !== -1) {
+        var parts = val.split('/');
+        var step = parts[1];
+        var base = parts[0] === '*' ? '0' : parts[0];
+        if (type === 'minute') return 'every ' + step + ' minute' + (step === '1' ? '' : 's');
+        if (type === 'hour')   return 'every ' + step + ' hour'   + (step === '1' ? '' : 's');
+        return 'every ' + step;
+      }
+      if (val.indexOf(',') !== -1) {
+        var items = val.split(',');
+        if (type === 'dow') return items.map(function(d){ return DAYS[parseInt(d, 10)] || d; }).join(', ');
+        if (type === 'month') return items.map(function(m){ return MONTHS_LONG[(parseInt(m,10)||1)-1] || m; }).join(', ');
+        return val;
+      }
+      if (val.indexOf('-') !== -1) {
+        var r = val.split('-');
+        if (type === 'dow') {
+          var d0 = parseInt(r[0], 10), d1 = parseInt(r[1], 10);
+          return (DAYS[d0] || r[0]) + '\u2013' + (DAYS[d1] || r[1]);
+        }
+        return val;
+      }
+      // single value
+      if (type === 'hour')  return 'at ' + padTwo(parseInt(val, 10)) + ':00';
+      if (type === 'minute') return 'at minute ' + val;
+      if (type === 'dow')   return 'on ' + (DAYS[parseInt(val, 10)] || val);
+      if (type === 'month') return 'in ' + (MONTHS_LONG[(parseInt(val,10)||1)-1] || val);
+      if (type === 'dom')   return 'on day ' + val;
+      return val;
+    }
+
+    function describeCron(expr) {
+      var parts = expr.trim().split(/\s+/);
+      if (parts.length !== 5) return 'Invalid cron expression (need 5 fields)';
+      var min = parts[0], hr = parts[1], dom = parts[2], mon = parts[3], dow = parts[4];
+
+      if (expr === '* * * * *') return 'Every minute';
+
+      var pieces = [];
+      var minDesc = describeField(min, 'minute');
+      var hrDesc  = describeField(hr,  'hour');
+      var domDesc = describeField(dom, 'dom');
+      var monDesc = describeField(mon, 'month');
+      var dowDesc = describeField(dow, 'dow');
+
+      // Build readable string
+      if (min === '*' && hr === '*') {
+        pieces.push('Every minute');
+      } else if (min === '0' && hr !== '*') {
+        var h = hrDesc || ('at ' + padTwo(parseInt(hr,10)) + ':00');
+        pieces.push('At ' + h.replace(/^at /,'').replace(/^every /,'every ') );
+      } else if (hr === '*') {
+        pieces.push('At minute ' + min + ' of every hour');
+      } else if (minDesc && minDesc.indexOf('every') === 0) {
+        pieces.push(minDesc.charAt(0).toUpperCase() + minDesc.slice(1));
+        if (hr !== '*') pieces.push('between ' + (hrDesc || hr));
+      } else {
+        var hh = parseInt(hr, 10), mm = parseInt(min, 10);
+        if (!isNaN(hh) && !isNaN(mm)) {
+          pieces.push('At ' + padTwo(hh) + ':' + padTwo(mm));
+        } else {
+          if (minDesc) pieces.push(minDesc);
+          if (hrDesc)  pieces.push(hrDesc);
+        }
+      }
+
+      if (dow !== '*') pieces.push('on ' + (dowDesc || dow));
+      else if (dom !== '*') pieces.push(domDesc || ('on day ' + dom));
+
+      if (mon !== '*') pieces.push(monDesc ? 'in ' + monDesc : 'in month ' + mon);
+
+      return pieces.join(', ');
+    }
+
+    /* ── DOM refs ── */
+    var fields = {
+      minute: document.getElementById('fMinute'),
+      hour:   document.getElementById('fHour'),
+      dom:    document.getElementById('fDom'),
+      month:  document.getElementById('fMonth'),
+      dow:    document.getElementById('fDow')
+    };
+    var cronExprEl = document.getElementById('cronExpr');
+    var cronDescEl = document.getElementById('cronDesc');
+    var statusBar  = document.getElementById('statusBar');
+
+    function getExpr() {
+      return [fields.minute.value||'*', fields.hour.value||'*', fields.dom.value||'*', fields.month.value||'*', fields.dow.value||'*'].join(' ');
+    }
+
+    function updateBuilder() {
+      var expr = getExpr();
+      cronExprEl.textContent = expr;
+      cronDescEl.textContent = describeCron(expr);
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = expr + ' \u2014 ' + describeCron(expr);
+      DT.trackTool('crontab-cheat-sheet');
+    }
+
+    Object.keys(fields).forEach(function(k) {
+      fields[k].addEventListener('input', DT.debounce(updateBuilder, 200));
+    });
+
+    function loadExpr(expr) {
+      var p = expr.trim().split(/\s+/);
+      if (p.length !== 5) return;
+      fields.minute.value = p[0];
+      fields.hour.value   = p[1];
+      fields.dom.value    = p[2];
+      fields.month.value  = p[3];
+      fields.dow.value    = p[4];
+      updateBuilder();
+      // Switch to builder view
+      document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+      document.querySelector('[data-view="builder"]').classList.add('active');
+      document.getElementById('view-builder').style.display = '';
+      document.getElementById('view-reference').classList.add('view-hidden');
+      document.getElementById('view-examples').classList.add('view-hidden');
+    }
+
+    document.getElementById('copyExprBtn').addEventListener('click', function() {
+      DT.copyToClipboard(getExpr(), this);
+    });
+
+    document.getElementById('clearExprBtn').addEventListener('click', function() {
+      Object.keys(fields).forEach(function(k){ fields[k].value = '*'; });
+      updateBuilder();
+    });
+
+    document.querySelectorAll('[data-preset]').forEach(function(btn) {
+      btn.addEventListener('click', function() { loadExpr(this.getAttribute('data-preset')); });
+    });
+
+    /* ── View switching ── */
+    document.querySelectorAll('.option-chip[data-view]').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        var v = this.getAttribute('data-view');
+        document.querySelectorAll('.option-chip[data-view]').forEach(function(c){ c.classList.remove('active'); });
+        this.classList.add('active');
+        ['builder','reference','examples'].forEach(function(id) {
+          var el = document.getElementById('view-' + id);
+          if (id === v) { el.style.display = ''; el.classList.remove('view-hidden'); }
+          else { el.classList.add('view-hidden'); }
+        });
+      });
+    });
+
+    /* ── Populate examples ── */
+    var grid = document.getElementById('examplesGrid');
+    EXAMPLES.forEach(function(ex) {
+      var row = document.createElement('div');
+      row.className = 'example-row';
+      row.innerHTML = '<span class="example-expr">' + ex.expr + '</span><span class="example-desc">' + ex.desc + '</span>';
+      row.addEventListener('click', function() { loadExpr(ex.expr); });
+      grid.appendChild(row);
+    });
+
+    updateBuilder();
+  })();
+  </script>
+</body>
+</html>

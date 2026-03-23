@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Homoglyph Detector — Look-Alike Character Finder | DevToolbox</title>
+  <meta name="description" content="Detect homoglyph attacks in text, URLs, and emails. Find Unicode look-alike characters that impersonate ASCII letters. Generate confusable strings. Free, 100% in-browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/homoglyph-detector.html">
+  <meta property="og:title" content="Homoglyph Detector — Look-Alike Character Finder | DevToolbox">
+  <meta property="og:description" content="Detect Unicode homoglyphs and confusable characters in text, URLs, and email addresses. Generate homoglyph strings for security testing. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/homoglyph-detector.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Homoglyph Detector",
+    "url": "https://thisdevtool.com/tools/homoglyph-detector.html",
+    "description": "Detect Unicode look-alike characters (homoglyphs) in text and URLs. Find confusable characters, generate homoglyph strings for security testing.",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a homoglyph attack?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A homoglyph attack (also called a homograph attack) uses Unicode characters that look identical or very similar to ASCII characters to impersonate legitimate domain names, email addresses, or text. For example, the Cyrillic letter а (U+0430) is visually identical to the Latin letter a (U+0061). A phishing site could register pаypal.com using the Cyrillic а, making it look like paypal.com to a human reader."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do browsers protect against homoglyph domain attacks?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Modern browsers display internationalized domain names (IDNs) in Punycode notation (e.g., xn--pypal-4ve.com) when the domain mixes scripts or contains characters from scripts not used in the label's language. Chrome, Firefox, and Safari all have heuristics to detect confusable domains and show the Punycode form to warn users. However, domains using only characters from a single confusable script (all-Cyrillic, for example) may still display as Unicode."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are Unicode confusable characters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Unicode Consortium maintains an official confusables.txt data file that lists pairs of characters that can be visually confused with each other. This includes Cyrillic letters that look like Latin letters, Greek letters that resemble Latin letters, and many other cross-script lookalikes. The official list is used by security tools and browser implementations to detect potential spoofing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How can I protect my domain from homoglyph spoofing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Register defensive variants of your domain name using IDN homoglyphs. Use DMARC, DKIM, and SPF email authentication to prevent email spoofing. Implement certificate transparency monitoring to detect fraudulent certificates for lookalike domains. Train users to check URLs carefully and hover over links before clicking. Major domain registrars also block registrations of known confusable domains for popular brands."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is homoglyph generation illegal?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Generating homoglyph strings is a legitimate security research and testing technique. This tool is intended for security professionals to test their defenses, developers to understand the attack surface, and educators. Using homoglyphs to actually deceive users — for example, registering a phishing domain — is illegal in most jurisdictions and violates ICANN policies."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .highlight-homoglyph { background: #fef3c7; color: #92400e; border-radius: 3px; padding: 0 2px; cursor: pointer; border-bottom: 2px solid #f59e0b; }
+    [data-theme="dark"] .highlight-homoglyph { background: #3b2e0a; color: #fcd34d; }
+    .homoglyph-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 12px; }
+    .homoglyph-table th { background: var(--surface-2,#f3f4f6); padding: 6px 10px; text-align: left; font-size: 0.75rem; color: var(--text-muted,#6b7280); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 2px solid var(--border,#e5e7eb); }
+    .homoglyph-table td { padding: 5px 10px; border-bottom: 1px solid var(--border,#e5e7eb); font-family: monospace; }
+    .homoglyph-table tr:hover { background: var(--surface-2,#f3f4f6); }
+    .compare-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .rendered-text { font-size: 1.2rem; line-height: 1.8; padding: 10px; background: var(--surface-2,#f3f4f6); border-radius: 6px; margin-bottom: 8px; word-break: break-all; min-height: 48px; }
+    .alert-badge { display: inline-block; background: #ef4444; color: #fff; border-radius: 9999px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; vertical-align: middle; }
+    .safe-badge { display: inline-block; background: #10b981; color: #fff; border-radius: 9999px; padding: 2px 8px; font-size: 0.7rem; font-weight: 700; vertical-align: middle; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/unicode-search.html">Unicode Search</a>
+        <a href="/tools/unicode-inspector.html">Inspector</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Homoglyph Detector</h1>
+          <p class="tool-subtitle">Detect Unicode look-alike characters in text, URLs, and emails. Generate confusable strings for security testing. Compare visually identical strings.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="detect">Detect</button>
+            <button class="option-chip" data-mode="generate">Generate</button>
+            <button class="option-chip" data-mode="compare">Compare</button>
+          </div>
+
+          <!-- Detect panel -->
+          <div id="panelDetect">
+            <div class="pane-label" style="margin-bottom:6px;">
+              <span>Input text, URL, or email address</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="exampleDetectBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearDetectBtn">Clear</button>
+              </div>
+            </div>
+            <textarea id="detectInput" rows="4" placeholder="Paste text, a URL, or email address to scan for homoglyphs…" spellcheck="false" style="width:100%;font-size:1rem;padding:10px;border:1px solid var(--border,#e5e7eb);border-radius:8px;background:var(--surface,#fff);color:var(--text,#111);resize:vertical;"></textarea>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;">Suspicious characters are highlighted in yellow below. Click any highlighted character for details.</p>
+            <div class="rendered-text" id="renderedDetect" aria-label="Rendered text with highlights"></div>
+            <div id="detectTable"></div>
+          </div>
+
+          <!-- Generate panel -->
+          <div id="panelGenerate" style="display:none;">
+            <div class="pane-label" style="margin-bottom:6px;">
+              <span>ASCII text to encode with homoglyphs</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="exampleGenBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearGenBtn">Clear</button>
+              </div>
+            </div>
+            <div class="split-pane">
+              <div>
+                <div class="pane-label"><span>ASCII Input</span></div>
+                <textarea id="genInput" rows="6" placeholder="Type ASCII text to replace with look-alike Unicode characters…" spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Homoglyph Output</span>
+                  <button class="btn btn-sm btn-primary" id="copyGenBtn">Copy</button>
+                </div>
+                <div class="code-output" id="genOutput" style="min-height:160px;"></div>
+              </div>
+            </div>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;">For security testing only. Each replaceable ASCII character is substituted with a visually identical Unicode alternative.</p>
+          </div>
+
+          <!-- Compare panel -->
+          <div id="panelCompare" style="display:none;">
+            <div class="compare-pair">
+              <div>
+                <label style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:4px;">String A</label>
+                <input type="text" id="cmpA" placeholder="Paste first string…" spellcheck="false" style="width:100%;font-size:1.1rem;padding:8px 10px;border:1px solid var(--border,#e5e7eb);border-radius:8px;background:var(--surface,#fff);color:var(--text,#111);">
+              </div>
+              <div>
+                <label style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:4px;">String B</label>
+                <input type="text" id="cmpB" placeholder="Paste second string…" spellcheck="false" style="width:100%;font-size:1.1rem;padding:8px 10px;border:1px solid var(--border,#e5e7eb);border-radius:8px;background:var(--surface,#fff);color:var(--text,#111);">
+              </div>
+            </div>
+            <button class="btn btn-sm btn-secondary" id="cmpExBtn" style="margin-top:8px;">Try Example</button>
+            <div id="cmpResult" style="margin-top:12px;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste text, a URL, or email address to scan for confusable characters.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>What Is a Homoglyph Attack?</h2>
+          <p>A homoglyph attack (also called a homograph attack or Unicode spoofing) exploits the visual similarity between characters from different scripts. The most common attack vector is domain name spoofing: an attacker registers a domain that looks identical to a legitimate domain but uses Cyrillic, Greek, or other Unicode characters instead of ASCII letters. For example, the Cyrillic letter "а" (U+0430) is indistinguishable from the Latin letter "a" (U+0061) in most fonts. A domain like pаypal.com using the Cyrillic а would look exactly like paypal.com to most users.</p>
+
+          <h3>Common Confusable Character Pairs</h3>
+          <p>The most frequently exploited homoglyphs are cross-script lookalikes between Latin and other alphabets. Latin "a" (U+0061) is confused with Cyrillic "а" (U+0430) and Greek "α" (U+03B1). Latin "c" (U+0063) looks identical to Cyrillic "с" (U+0441). Latin "e" (U+0065) is confused with Cyrillic "е" (U+0435). Latin "o" (U+006F) resembles Cyrillic "о" (U+043E), Greek "ο" (U+03BF), and Armenian "օ" (U+0585). Latin "p" (U+0070) looks like Cyrillic "р" (U+0440). Latin "x" (U+0078) resembles Cyrillic "х" (U+0445). These pairings are documented in the official Unicode confusables.txt data file maintained by the Unicode Consortium.</p>
+
+          <h3>How to Detect Homoglyph Attacks</h3>
+          <p>The primary detection method is checking for mixed-script identifiers — strings that contain characters from more than one Unicode script. A domain like "pаypal.com" that mixes Latin and Cyrillic is a strong indicator of a spoofing attempt. Modern browsers display such domains in Punycode (xn-- notation) to warn users. At the application level, you can normalize strings using Unicode NFKC normalization and compare codepoints, or use the Unicode Consortium's confusables data to check every character against known lookalike mappings. This tool implements a subset of the most dangerous confusable pairs for quick detection.</p>
+
+          <h3>Protecting Against Homoglyph Attacks</h3>
+          <p>For web applications, always display the Punycode representation of domain names when they contain non-ASCII characters. For user input validation, reject or warn when identifiers contain mixed scripts. Implement email authentication (DMARC, DKIM, SPF) to prevent email spoofing. For brand protection, register defensive IDN variants of your domain. ICANN and major registrars have policies restricting IDN registrations that confuse with existing well-known domains, but coverage is incomplete. Certificate transparency logs (crt.sh) can be monitored for suspicious certificates issued for lookalike domains.</p>
+
+          <h3>Security Research Applications</h3>
+          <p>The Generate mode in this tool allows security researchers to create homoglyph variants of strings for testing purposes. This is useful for testing email filters, URL scanners, domain name validation logic, and phishing detection systems. When building these defenses, it is important to test with a comprehensive set of confusables rather than just the most obvious Latin-Cyrillic pairs. The Unicode Consortium's confusables.txt lists thousands of character pairs across all scripts.</p>
+
+          <h3>Zero-Width and Invisible Characters</h3>
+          <p>In addition to look-alike characters, attackers also use invisible Unicode characters like Zero Width Space (U+200B), Zero Width Non-Joiner (U+200C), and the Soft Hyphen (U+00AD) to create strings that look identical visually but differ at the byte level. These are especially dangerous in URLs, where they can bypass regex-based blacklists, and in email addresses, where they can defeat spam filters. Our <a href="/tools/zero-width-encoder.html">Zero-Width Encoder</a> tool demonstrates this technique.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a homoglyph attack?</button>
+            <div class="faq-answer">A homoglyph attack uses Unicode characters that look identical to ASCII letters to impersonate legitimate domain names, email addresses, or text. For example, the Cyrillic "а" (U+0430) is visually identical to the Latin "a" (U+0061). An attacker can register pаypal.com using Cyrillic а to create a phishing domain that looks exactly like paypal.com.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do browsers protect against homoglyph domain attacks?</button>
+            <div class="faq-answer">Modern browsers display internationalized domain names (IDNs) in Punycode notation (e.g., xn--pypal-4ve.com) when the domain mixes scripts or contains characters that could be confused with ASCII. Chrome, Firefox, and Safari all have heuristics to detect confusable domains. However, all-Cyrillic or all-Greek domains that don't mix scripts may still display in Unicode, so the protection is not complete.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What are Unicode confusable characters?</button>
+            <div class="faq-answer">The Unicode Consortium maintains an official confusables.txt data file listing character pairs that can be visually confused. This includes Cyrillic-Latin pairs (а/a, с/c, е/e, о/o), Greek-Latin pairs (ο/o, α/a), and many others across all scripts. The official list contains thousands of pairs and is used by security tools and browsers.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How can I protect my domain from homoglyph spoofing?</button>
+            <div class="faq-answer">Register defensive IDN variants of your domain. Implement DMARC, DKIM, and SPF for email authentication. Monitor certificate transparency logs (crt.sh) for suspicious lookalike certificates. Train users to check URLs carefully. Major registrars block known confusable registrations for popular brands, but coverage is incomplete for smaller brands.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is homoglyph generation illegal?</button>
+            <div class="faq-answer">Generating homoglyph strings is a legitimate security research technique used by penetration testers and developers. This tool is designed for testing defenses and understanding the attack surface. Using homoglyphs to actually deceive users — registering phishing domains, sending deceptive emails — is illegal in most jurisdictions and violates ICANN policies.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Unicode Tools</h4>
+        <a href="/tools/unicode-search.html">Unicode Search</a>
+        <a href="/tools/unicode-inspector.html">Character Inspector</a>
+        <a href="/tools/homoglyph-detector.html">Homoglyph Detector</a>
+        <a href="/tools/zero-width-encoder.html">Zero-Width Encoder</a>
+        <a href="/tools/ascii-table.html">ASCII Table</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    // ── Confusables database ─────────────────────────────────────────────────
+    // Map from confusable codepoint → ASCII target codepoint + label
+    var CONFUSABLES = {
+      // Cyrillic → Latin
+      0x0430: {ascii: 0x0061, label: 'a', src: 'Cyrillic а'},
+      0x0435: {ascii: 0x0065, label: 'e', src: 'Cyrillic е'},
+      0x043E: {ascii: 0x006F, label: 'o', src: 'Cyrillic о'},
+      0x0440: {ascii: 0x0070, label: 'p', src: 'Cyrillic р'},
+      0x0441: {ascii: 0x0063, label: 'c', src: 'Cyrillic с'},
+      0x0445: {ascii: 0x0078, label: 'x', src: 'Cyrillic х'},
+      0x0443: {ascii: 0x0079, label: 'y', src: 'Cyrillic у'},
+      0x0456: {ascii: 0x0069, label: 'i', src: 'Cyrillic і'},
+      0x0458: {ascii: 0x006A, label: 'j', src: 'Cyrillic ј'},
+      0x04CF: {ascii: 0x006C, label: 'l', src: 'Cyrillic ӏ'},
+      0x0455: {ascii: 0x0073, label: 's', src: 'Cyrillic ѕ'},
+      0x0501: {ascii: 0x0064, label: 'd', src: 'Cyrillic ԁ'},
+      0x0261: {ascii: 0x0067, label: 'g', src: 'Latin small script g'},
+      0x0274: {ascii: 0x006E, label: 'n', src: 'Latin letter small capital N'},
+      // Greek → Latin
+      0x03BF: {ascii: 0x006F, label: 'o', src: 'Greek ο (omicron)'},
+      0x03B1: {ascii: 0x0061, label: 'a', src: 'Greek α (alpha)'},
+      0x03B5: {ascii: 0x0065, label: 'e', src: 'Greek ε (epsilon)'},
+      0x03BA: {ascii: 0x006B, label: 'k', src: 'Greek κ (kappa)'},
+      0x03BD: {ascii: 0x0076, label: 'v', src: 'Greek ν (nu)'},
+      0x03C5: {ascii: 0x0075, label: 'u', src: 'Greek υ (upsilon)'},
+      0x03C9: {ascii: 0x0077, label: 'w', src: 'Greek ω (omega)'},
+      0x0391: {ascii: 0x0041, label: 'A', src: 'Greek Α (Alpha)'},
+      0x0392: {ascii: 0x0042, label: 'B', src: 'Greek Β (Beta)'},
+      0x0395: {ascii: 0x0045, label: 'E', src: 'Greek Ε (Epsilon)'},
+      0x0396: {ascii: 0x005A, label: 'Z', src: 'Greek Ζ (Zeta)'},
+      0x0397: {ascii: 0x0048, label: 'H', src: 'Greek Η (Eta)'},
+      0x0399: {ascii: 0x0049, label: 'I', src: 'Greek Ι (Iota)'},
+      0x039A: {ascii: 0x004B, label: 'K', src: 'Greek Κ (Kappa)'},
+      0x039C: {ascii: 0x004D, label: 'M', src: 'Greek Μ (Mu)'},
+      0x039D: {ascii: 0x004E, label: 'N', src: 'Greek Ν (Nu)'},
+      0x039F: {ascii: 0x004F, label: 'O', src: 'Greek Ο (Omicron)'},
+      0x03A1: {ascii: 0x0050, label: 'P', src: 'Greek Ρ (Rho)'},
+      0x03A4: {ascii: 0x0054, label: 'T', src: 'Greek Τ (Tau)'},
+      0x03A5: {ascii: 0x0059, label: 'Y', src: 'Greek Υ (Upsilon)'},
+      0x03A7: {ascii: 0x0058, label: 'X', src: 'Greek Χ (Chi)'},
+      // Armenian → Latin
+      0x0570: {ascii: 0x0068, label: 'h', src: 'Armenian հ'},
+      0x0578: {ascii: 0x006E, label: 'n', src: 'Armenian ո'},
+      0x0579: {ascii: 0x0063, label: 'c', src: 'Armenian չ'},
+      // Look-alike symbols
+      0x01A0: {ascii: 0x004F, label: 'O', src: 'Latin Ơ'},
+      0x00D8: {ascii: 0x004F, label: 'O', src: 'Latin Ø'},
+      0x0D20: {ascii: 0x0054, label: 'T', src: 'Sinhala ට'},
+      // Digit-letter confusables
+      0x006C: {ascii: 0x006C, label: 'l', src: 'Note: l/1/I confusion (not strictly homoglyph)'},
+    };
+
+    // Reverse map: ASCII char → list of confusable codepoints
+    var ASCII_TO_CONFUSABLE = {};
+    Object.keys(CONFUSABLES).forEach(function(cpStr) {
+      var cp = parseInt(cpStr);
+      var rec = CONFUSABLES[cp];
+      var key = String.fromCharCode(rec.ascii);
+      if (!ASCII_TO_CONFUSABLE[key]) ASCII_TO_CONFUSABLE[key] = [];
+      ASCII_TO_CONFUSABLE[key].push(cp);
+    });
+
+    var statusBar = document.getElementById('statusBar');
+
+    function cpHex(cp) { return 'U+' + cp.toString(16).toUpperCase().padStart(4,'0'); }
+
+    // ── Detect mode ──────────────────────────────────────────────────────────
+    function detect(text) {
+      var rendered = document.getElementById('renderedDetect');
+      var tableDiv = document.getElementById('detectTable');
+      if (!text) {
+        rendered.innerHTML = '';
+        tableDiv.innerHTML = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste text, a URL, or email address to scan for confusable characters.';
+        return;
+      }
+      var found = [];
+      var html = '';
+      for (var i = 0; i < text.length; ) {
+        var cp = text.codePointAt(i);
+        var ch = cp > 0xFFFF ? String.fromCodePoint(cp) : String.fromCharCode(cp);
+        var adv = cp > 0xFFFF ? 2 : 1;
+        if (CONFUSABLES[cp]) {
+          var rec = CONFUSABLES[cp];
+          found.push({cp: cp, ch: ch, rec: rec, pos: i});
+          html += '<span class="highlight-homoglyph" data-cp="' + cp + '" title="' + rec.src + ' — looks like \'' + rec.label + '\' (U+' + rec.ascii.toString(16).toUpperCase().padStart(4,'0') + ')">' + ch + '</span>';
+        } else {
+          // Escape HTML
+          var esc = ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '&' ? '&amp;' : ch;
+          html += esc;
+        }
+        i += adv;
+      }
+      rendered.innerHTML = html;
+
+      if (!found.length) {
+        tableDiv.innerHTML = '';
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'No confusable characters detected. Text appears safe.';
+        return;
+      }
+      var rows = found.map(function(f) {
+        return '<tr>' +
+          '<td style="font-size:1.4rem;text-align:center;width:44px">' + f.ch + '</td>' +
+          '<td>' + cpHex(f.cp) + '</td>' +
+          '<td>' + f.rec.src + '</td>' +
+          '<td>Looks like &quot;' + f.rec.label + '&quot; (' + cpHex(f.rec.ascii) + ')</td>' +
+          '<td><span class="alert-badge">CONFUSABLE</span></td>' +
+          '</tr>';
+      }).join('');
+      tableDiv.innerHTML = '<table class="homoglyph-table"><thead><tr><th>Char</th><th>Codepoint</th><th>Source</th><th>Looks like</th><th>Risk</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      statusBar.className = 'status-bar invalid';
+      statusBar.textContent = 'Found ' + found.length + ' confusable character' + (found.length !== 1 ? 's' : '') + ' — potential homoglyph attack.';
+      DT.trackTool('homoglyph-detector');
+    }
+
+    var debouncedDetect = DT.debounce(function(){ detect(document.getElementById('detectInput').value); }, 200);
+    document.getElementById('detectInput').addEventListener('input', debouncedDetect);
+
+    document.getElementById('exampleDetectBtn').addEventListener('click', function() {
+      // Use actual Cyrillic characters that look like Latin
+      document.getElementById('detectInput').value = 'Visit http://pаypal.com or emаil support@аpple.com for help.';
+      detect(document.getElementById('detectInput').value);
+    });
+    document.getElementById('clearDetectBtn').addEventListener('click', function() {
+      document.getElementById('detectInput').value = '';
+      detect('');
+      document.getElementById('detectInput').focus();
+    });
+
+    // ── Generate mode ────────────────────────────────────────────────────────
+    function generate() {
+      var input = document.getElementById('genInput').value;
+      var output = document.getElementById('genOutput');
+      if (!input) { output.textContent = ''; return; }
+      var result = '';
+      for (var i = 0; i < input.length; i++) {
+        var ch = input[i];
+        var alts = ASCII_TO_CONFUSABLE[ch];
+        if (alts && alts.length) {
+          result += String.fromCodePoint ? String.fromCodePoint(alts[0]) : String.fromCharCode(alts[0]);
+        } else {
+          result += ch;
+        }
+      }
+      output.textContent = result;
+      statusBar.className = 'status-bar info';
+      statusBar.textContent = 'Generated homoglyph string. For security testing only.';
+      DT.trackTool('homoglyph-detector-generate');
+    }
+
+    var debouncedGen = DT.debounce(generate, 150);
+    document.getElementById('genInput').addEventListener('input', debouncedGen);
+    document.getElementById('copyGenBtn').addEventListener('click', function() {
+      var text = document.getElementById('genOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+    document.getElementById('exampleGenBtn').addEventListener('click', function() {
+      document.getElementById('genInput').value = 'paypal.com';
+      generate();
+    });
+    document.getElementById('clearGenBtn').addEventListener('click', function() {
+      document.getElementById('genInput').value = '';
+      document.getElementById('genOutput').textContent = '';
+      document.getElementById('genInput').focus();
+    });
+
+    // ── Compare mode ─────────────────────────────────────────────────────────
+    function doCompare() {
+      var a = document.getElementById('cmpA').value;
+      var b = document.getElementById('cmpB').value;
+      var div = document.getElementById('cmpResult');
+      if (!a || !b) { div.innerHTML = ''; return; }
+      var same = (a === b);
+      var diffs = [];
+      var maxLen = Math.max(a.length, b.length);
+      var html = '<table class="homoglyph-table"><thead><tr><th>#</th><th>Char A</th><th>CP A</th><th>Char B</th><th>CP B</th><th>Confusable?</th></tr></thead><tbody>';
+      for (var i = 0; i < maxLen; i++) {
+        var cpA = i < a.length ? a.codePointAt(i) : null;
+        var cpB = i < b.length ? b.codePointAt(i) : null;
+        var identical = cpA === cpB;
+        if (!identical) diffs.push(i);
+        var confusable = !identical && cpA !== null && cpB !== null && (
+          (CONFUSABLES[cpA] && CONFUSABLES[cpA].ascii === cpB) ||
+          (CONFUSABLES[cpB] && CONFUSABLES[cpB].ascii === cpA)
+        );
+        var rowCls = identical ? '' : ' style="background:#fef3c7"';
+        html += '<tr' + rowCls + '>' +
+          '<td>' + (i+1) + '</td>' +
+          '<td style="font-size:1.3rem;text-align:center">' + (cpA !== null ? (cpA > 0xFFFF ? String.fromCodePoint(cpA) : String.fromCharCode(cpA)) : '—') + '</td>' +
+          '<td>' + (cpA !== null ? cpHex(cpA) : '—') + '</td>' +
+          '<td style="font-size:1.3rem;text-align:center">' + (cpB !== null ? (cpB > 0xFFFF ? String.fromCodePoint(cpB) : String.fromCharCode(cpB)) : '—') + '</td>' +
+          '<td>' + (cpB !== null ? cpHex(cpB) : '—') + '</td>' +
+          '<td>' + (identical ? '<span class="safe-badge">SAME</span>' : confusable ? '<span class="alert-badge">HOMOGLYPH</span>' : '<span class="alert-badge">DIFFER</span>') + '</td>' +
+          '</tr>';
+      }
+      html += '</tbody></table>';
+      div.innerHTML = html;
+      if (diffs.length === 0) {
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Strings are identical — no hidden character differences found.';
+      } else {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Strings differ at ' + diffs.length + ' position' + (diffs.length !== 1 ? 's' : '') + '.';
+      }
+    }
+
+    var debouncedCmp = DT.debounce(doCompare, 200);
+    document.getElementById('cmpA').addEventListener('input', debouncedCmp);
+    document.getElementById('cmpB').addEventListener('input', debouncedCmp);
+    document.getElementById('cmpExBtn').addEventListener('click', function() {
+      document.getElementById('cmpA').value = 'paypal.com';
+      document.getElementById('cmpB').value = 'p\u0430ypal.com'; // Cyrillic а
+      doCompare();
+    });
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        var mode = chip.dataset.mode;
+        document.getElementById('panelDetect').style.display = mode === 'detect' ? '' : 'none';
+        document.getElementById('panelGenerate').style.display = mode === 'generate' ? '' : 'none';
+        document.getElementById('panelCompare').style.display = mode === 'compare' ? '' : 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Ready.';
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

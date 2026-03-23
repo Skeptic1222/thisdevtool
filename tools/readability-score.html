@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Readability Score Checker — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Check readability scores free online. Flesch-Kincaid, Gunning Fog, SMOG, Coleman-Liau, ARI. Instant grade level, sentence stats and reading ease gauge.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/readability-score.html">
+  <meta property="og:title" content="Readability Score Checker — DevToolbox">
+  <meta property="og:description" content="Calculate Flesch-Kincaid, Gunning Fog, SMOG, Coleman-Liau and ARI readability scores. Free, instant, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/readability-score.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Readability Score Checker — DevToolbox">
+  <meta name="twitter:description" content="Calculate Flesch-Kincaid, Gunning Fog, SMOG, Coleman-Liau and ARI readability scores instantly.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Readability Score Checker",
+    "url": "https://thisdevtool.com/tools/readability-score.html",
+    "description": "Calculate multiple readability scores including Flesch-Kincaid, Gunning Fog, SMOG, Coleman-Liau and ARI. Free, instant, 100% client-side.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a good Flesch Reading Ease score?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Flesch Reading Ease score of 60-70 is considered standard and targets a 7th-8th grade reading level. Scores above 70 are easy to read. Scores below 30 are very difficult (academic or legal text). Most web content should aim for 60-80 to reach the widest possible audience."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between Flesch-Kincaid and Gunning Fog?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Flesch-Kincaid Grade Level uses average sentence length and syllables per word to estimate the US grade level needed to understand the text. Gunning Fog uses sentence length and the percentage of complex words (3+ syllables) and tends to produce slightly higher grade estimates. Both measure similar things but with different weightings."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What grade level should blog posts target?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For general audience blog posts, aim for grade 6-8 (Flesch-Kincaid). For technical or professional audiences, grade 10-12 is acceptable. For popular consumer content, grade 5-7 maximizes accessibility. Publications like Time magazine typically write at grade 10, while Reader's Digest targets grade 8."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the SMOG index differ from other scores?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The SMOG (Simple Measure of Gobbledygook) index measures how many years of education a reader needs to understand a piece of writing. It focuses specifically on polysyllabic words (3+ syllables) and is considered one of the most accurate readability formulas for health communications and medical documents."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do different readability formulas give different scores?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Each formula weighs linguistic features differently. Flesch-Kincaid emphasizes syllable count and sentence length. Gunning Fog focuses on complex (polysyllabic) words. Coleman-Liau uses character counts instead of syllables. ARI (Automated Readability Index) counts characters per word and words per sentence. The variation reflects different theories about what makes text difficult to read."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .rs-layout { display: flex; flex-direction: column; gap: 1rem; }
+    #rsInput { width: 100%; min-height: 200px; font-size: 1rem; line-height: 1.7; resize: vertical; }
+    .rs-scores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .75rem; margin-top: .5rem; }
+    .rs-score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; text-align: center; }
+    .rs-score-card .score-name { font-size: .75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .25rem; }
+    .rs-score-card .score-value { font-size: 1.75rem; font-weight: 700; color: var(--accent); line-height: 1; }
+    .rs-score-card .score-label { font-size: .75rem; color: var(--text-secondary); margin-top: .2rem; }
+    .rs-stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .5rem; margin-top: .5rem; }
+    .rs-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: .5rem .75rem; }
+    .rs-stat-val { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .rs-stat-label { font-size: .72rem; color: var(--text-secondary); }
+    .rs-gauge-wrap { margin-top: .75rem; }
+    .rs-gauge-label { display: flex; justify-content: space-between; font-size: .75rem; color: var(--text-secondary); margin-bottom: .25rem; }
+    .rs-gauge-track { height: 14px; background: var(--border); border-radius: 7px; overflow: hidden; position: relative; }
+    .rs-gauge-fill { height: 100%; border-radius: 7px; transition: width .4s; background: linear-gradient(90deg, #ef4444 0%, #f59e0b 40%, #10b981 70%, #3b82f6 100%); }
+    .rs-gauge-marker { position: absolute; top: 0; height: 100%; width: 3px; background: var(--text); border-radius: 2px; transition: left .4s; }
+    .rs-difficulty { font-size: 1rem; font-weight: 600; margin-top: .5rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/text-to-speech.html">Text to Speech</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Readability Score Checker</h1>
+          <p class="tool-subtitle">Analyze your text's reading level using 6 industry-standard formulas. Instant results, 100% in your browser.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="fk">Flesch-Kincaid</button>
+            <button class="option-chip" data-mode="fog">Gunning Fog</button>
+            <button class="option-chip" data-mode="all">All Scores</button>
+          </div>
+
+          <div class="rs-layout">
+            <div>
+              <div class="pane-label">
+                <span>Your Text</span>
+                <div class="btn-group" style="margin:0">
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+              </div>
+              <textarea id="rsInput" placeholder="Paste your text here to analyze its readability..." spellcheck="true"></textarea>
+            </div>
+
+            <!-- Gauge -->
+            <div id="rsGaugeSection" style="display:none">
+              <div class="rs-gauge-wrap">
+                <div class="rs-gauge-label">
+                  <span>Very Difficult (0)</span>
+                  <span>Standard (60)</span>
+                  <span>Very Easy (100)</span>
+                </div>
+                <div class="rs-gauge-track">
+                  <div class="rs-gauge-fill" style="width:100%"></div>
+                  <div class="rs-gauge-marker" id="gaugeMarker" style="left:60%"></div>
+                </div>
+              </div>
+              <div class="rs-difficulty" id="rsDifficulty"></div>
+            </div>
+
+            <!-- Score cards -->
+            <div id="rsScoresSection" style="display:none">
+              <div class="rs-scores-grid" id="rsScoresGrid"></div>
+            </div>
+
+            <!-- Stats row -->
+            <div id="rsStatsSection" style="display:none">
+              <div class="rs-stats-row" id="rsStatsRow"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste text above to analyze its readability.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Readability Score Checker</h2>
+          <ol>
+            <li><strong>Paste your text</strong> into the input area. The analysis updates automatically as you type.</li>
+            <li><strong>Choose a formula</strong> — Flesch-Kincaid for standard grade level, Gunning Fog for complex word analysis, or All Scores to see every metric.</li>
+            <li><strong>Read the gauge</strong> — the green zone (60-70) represents standard readability for most audiences.</li>
+            <li><strong>Review statistics</strong> — sentence count, word count, syllable count, and averages help you understand what's driving the score.</li>
+            <li><strong>Revise and re-test</strong> — to improve readability, break up long sentences and replace complex words with simpler alternatives.</li>
+          </ol>
+
+          <h2>Understanding the Readability Formulas</h2>
+
+          <h3>Flesch Reading Ease</h3>
+          <p>The oldest and most widely used formula, developed by Rudolf Flesch in 1948. Scores range from 0 (very difficult) to 100 (very easy). The formula is <code>206.835 − 1.015 × (words/sentences) − 84.6 × (syllables/words)</code>. Most web content should target 60-80. Legal and technical documents often score below 30. Easy children's books score 90+.</p>
+
+          <h3>Flesch-Kincaid Grade Level</h3>
+          <p>Converts the Flesch Reading Ease score into a US school grade level. A score of 8.0 means a typical 8th grader can understand the text. The New York Times averages around grade 10. Twitter posts average grade 5. Academic journal articles often exceed grade 16. Most content marketing experts recommend writing at grade 6-8 for maximum reach.</p>
+
+          <h3>Gunning Fog Index</h3>
+          <p>Developed by Robert Gunning in 1952. Uses sentence length and percentage of "complex" words (words with 3 or more syllables) to estimate grade level. The formula: <code>0.4 × (words/sentences + 100 × complex_words/words)</code>. Scores above 17 indicate college-graduate level. Fog scores above 12 are considered hard to read for most audiences.</p>
+
+          <h3>Coleman-Liau Index</h3>
+          <p>Unlike other formulas, Coleman-Liau uses character counts rather than syllable counts, making it easier to compute algorithmically. It was designed for use on computer-parsed text. The formula estimates grade level from letters per 100 words and sentences per 100 words. It tends to produce slightly different results from syllable-based formulas on texts with many long words but short syllable counts.</p>
+
+          <h3>SMOG Index</h3>
+          <p>The Simple Measure of Gobbledygook (SMOG) was developed by G. Harry McLaughlin in 1969. It counts polysyllabic words (3+ syllables) in 30 sentences and estimates the years of education needed to understand the text. SMOG is considered one of the most accurate measures for healthcare and medical communications and is recommended by the US Centers for Disease Control for health literacy assessments.</p>
+
+          <h3>Automated Readability Index (ARI)</h3>
+          <p>The ARI uses characters per word and words per sentence. It was developed for real-time monitoring of typewritten output. The ARI tends to be more conservative (higher grade estimates) than Flesch-Kincaid for texts with short, multi-syllable technical words. Formula: <code>4.71 × (chars/words) + 0.5 × (words/sentences) − 21.43</code>.</p>
+
+          <h3>Tips for Improving Readability</h3>
+          <ul>
+            <li>Break sentences longer than 20 words into two shorter sentences</li>
+            <li>Replace three-syllable words with one- or two-syllable synonyms where possible</li>
+            <li>Use active voice instead of passive voice</li>
+            <li>Prefer common, everyday words over formal or technical jargon</li>
+            <li>Add subheadings every 200-300 words to give readers natural break points</li>
+            <li>Use bullet points and numbered lists for multi-part information</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a good Flesch Reading Ease score?</button>
+            <div class="faq-answer">A Flesch Reading Ease score of 60-70 is considered standard and targets a 7th-8th grade reading level. Scores above 70 are easy to read. Scores below 30 are very difficult (academic or legal text). Most web content should aim for 60-80 to reach the widest possible audience.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between Flesch-Kincaid and Gunning Fog?</button>
+            <div class="faq-answer">Flesch-Kincaid Grade Level uses average sentence length and syllables per word to estimate the US grade level needed to understand the text. Gunning Fog uses sentence length and the percentage of complex words (3+ syllables) and tends to produce slightly higher grade estimates. Both measure similar things but with different weightings.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What grade level should blog posts target?</button>
+            <div class="faq-answer">For general audience blog posts, aim for grade 6-8 (Flesch-Kincaid). For technical or professional audiences, grade 10-12 is acceptable. For popular consumer content, grade 5-7 maximizes accessibility. Publications like Time magazine typically write at grade 10, while Reader's Digest targets grade 8.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does the SMOG index differ from other scores?</button>
+            <div class="faq-answer">The SMOG (Simple Measure of Gobbledygook) index measures how many years of education a reader needs to understand a piece of writing. It focuses specifically on polysyllabic words (3+ syllables) and is considered one of the most accurate readability formulas for health communications and medical documents.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why do different readability formulas give different scores?</button>
+            <div class="faq-answer">Each formula weighs linguistic features differently. Flesch-Kincaid emphasizes syllable count and sentence length. Gunning Fog focuses on complex (polysyllabic) words. Coleman-Liau uses character counts instead of syllables. ARI counts characters per word and words per sentence. The variation reflects different theories about what makes text difficult to read.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/readability-score.html">Readability Score</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/text-to-speech.html">Text to Speech</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/text-sorter.html">Line Sorter</a>
+        <a href="/tools/find-replace-advanced.html">Find &amp; Replace</a>
+        <a href="/tools/lorem-ipsum.html">Lorem Ipsum</a>
+        <a href="/tools/slug-generator.html">Slug Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var input = document.getElementById('rsInput');
+    var statusBar = document.getElementById('statusBar');
+    var gaugeMarker = document.getElementById('gaugeMarker');
+    var rsDifficulty = document.getElementById('rsDifficulty');
+    var rsScoresGrid = document.getElementById('rsScoresGrid');
+    var rsStatsRow = document.getElementById('rsStatsRow');
+    var currentMode = 'fk';
+
+    // --- Syllable counting (English heuristic) ---
+    function countSyllables(word) {
+      word = word.toLowerCase().replace(/[^a-z]/g, '');
+      if (!word.length) return 0;
+      if (word.length <= 3) return 1;
+      word = word.replace(/(?:[^laeiouy]es|[^laeiouy]ed|[aeiouy]$)/, '');
+      var m = word.match(/[aeiouy]{1,2}/g);
+      return m ? m.length : 1;
+    }
+
+    function isComplex(word) { return countSyllables(word) >= 3; }
+
+    function analyze(text) {
+      var sentences = text.match(/[^.!?]+[.!?]+/g) || (text.trim() ? [text] : []);
+      var sentCount = Math.max(1, sentences.length);
+      var words = text.trim().split(/\s+/).filter(function (w) { return /[a-zA-Z0-9]/.test(w); });
+      var wordCount = words.length || 1;
+      var charCount = text.replace(/\s/g, '').length;
+
+      var syllableCount = 0;
+      var complexCount = 0;
+      words.forEach(function (w) {
+        var s = countSyllables(w);
+        syllableCount += s;
+        if (s >= 3) complexCount++;
+      });
+
+      var avgWordLen = charCount / wordCount;
+      var avgSentLen = wordCount / sentCount;
+      var avgSyllables = syllableCount / wordCount;
+
+      // Flesch Reading Ease
+      var fre = 206.835 - 1.015 * avgSentLen - 84.6 * avgSyllables;
+      fre = Math.max(0, Math.min(100, fre));
+
+      // Flesch-Kincaid Grade
+      var fkg = 0.39 * avgSentLen + 11.8 * avgSyllables - 15.59;
+      fkg = Math.max(0, fkg);
+
+      // Gunning Fog
+      var fog = 0.4 * (avgSentLen + 100 * complexCount / wordCount);
+
+      // Coleman-Liau
+      var l = (charCount / wordCount) * 100;
+      var s2 = (sentCount / wordCount) * 100;
+      var cli = 0.0588 * l - 0.296 * s2 - 15.8;
+
+      // SMOG (needs 30 sentences ideally)
+      var smog = 3 + Math.sqrt(complexCount * (30 / sentCount));
+
+      // ARI
+      var ari = 4.71 * avgWordLen + 0.5 * avgSentLen - 21.43;
+      ari = Math.max(1, ari);
+
+      return {
+        fre: fre, fkg: fkg, fog: fog, cli: cli, smog: smog, ari: ari,
+        wordCount: wordCount, sentCount: sentCount, syllableCount: syllableCount,
+        charCount: charCount, complexCount: complexCount,
+        avgSentLen: avgSentLen, avgSyllables: avgSyllables
+      };
+    }
+
+    function freLabel(fre) {
+      if (fre >= 90) return 'Very Easy';
+      if (fre >= 80) return 'Easy';
+      if (fre >= 70) return 'Fairly Easy';
+      if (fre >= 60) return 'Standard';
+      if (fre >= 50) return 'Fairly Difficult';
+      if (fre >= 30) return 'Difficult';
+      return 'Very Difficult';
+    }
+
+    function gradeLabel(grade) {
+      var g = Math.round(grade);
+      if (g <= 5) return 'Elementary';
+      if (g <= 8) return 'Middle School';
+      if (g <= 12) return 'High School';
+      if (g <= 16) return 'College';
+      return 'Post-Graduate';
+    }
+
+    function scoreCard(name, value, label) {
+      return '<div class="rs-score-card">' +
+        '<div class="score-name">' + name + '</div>' +
+        '<div class="score-value">' + value + '</div>' +
+        '<div class="score-label">' + label + '</div>' +
+        '</div>';
+    }
+
+    function statCard(val, label) {
+      return '<div class="rs-stat"><div class="rs-stat-val">' + val + '</div><div class="rs-stat-label">' + label + '</div></div>';
+    }
+
+    function process() {
+      var text = input.value;
+      if (!text.trim()) {
+        document.getElementById('rsGaugeSection').style.display = 'none';
+        document.getElementById('rsScoresSection').style.display = 'none';
+        document.getElementById('rsStatsSection').style.display = 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste text above to analyze its readability.';
+        return;
+      }
+
+      var r = analyze(text);
+      document.getElementById('rsGaugeSection').style.display = '';
+      document.getElementById('rsScoresSection').style.display = '';
+      document.getElementById('rsStatsSection').style.display = '';
+
+      // Gauge
+      gaugeMarker.style.left = r.fre.toFixed(0) + '%';
+      var difficulty = freLabel(r.fre);
+      rsDifficulty.textContent = 'Flesch Reading Ease: ' + r.fre.toFixed(1) + ' \u2014 ' + difficulty;
+      rsDifficulty.style.color = r.fre >= 60 ? 'var(--accent)' : (r.fre >= 40 ? '#f59e0b' : '#ef4444');
+
+      // Score cards based on mode
+      var cards = '';
+      if (currentMode === 'fk' || currentMode === 'all') {
+        cards += scoreCard('Reading Ease', r.fre.toFixed(1), freLabel(r.fre));
+        cards += scoreCard('FK Grade', r.fkg.toFixed(1), gradeLabel(r.fkg));
+      }
+      if (currentMode === 'fog' || currentMode === 'all') {
+        cards += scoreCard('Gunning Fog', r.fog.toFixed(1), gradeLabel(r.fog));
+      }
+      if (currentMode === 'all') {
+        cards += scoreCard('Coleman-Liau', r.cli.toFixed(1), gradeLabel(r.cli));
+        cards += scoreCard('SMOG', r.smog.toFixed(1), gradeLabel(r.smog));
+        cards += scoreCard('ARI', r.ari.toFixed(1), gradeLabel(r.ari));
+      }
+      rsScoresGrid.innerHTML = cards;
+
+      // Stats
+      rsStatsRow.innerHTML =
+        statCard(r.wordCount.toLocaleString(), 'Words') +
+        statCard(r.sentCount.toLocaleString(), 'Sentences') +
+        statCard(r.syllableCount.toLocaleString(), 'Syllables') +
+        statCard(r.complexCount.toLocaleString(), 'Complex Words') +
+        statCard(r.avgSentLen.toFixed(1), 'Avg. Words/Sentence') +
+        statCard(r.avgSyllables.toFixed(2), 'Avg. Syllables/Word');
+
+      // Status
+      var mainGrade = currentMode === 'fog' ? r.fog : r.fkg;
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Grade ' + mainGrade.toFixed(1) + ' \u2014 ' + freLabel(r.fre) + ' \u2014 ' + r.avgSentLen.toFixed(1) + ' words/sentence';
+
+      DT.trackTool('readability-score');
+    }
+
+    var debouncedProcess = DT.debounce(process, 200);
+    input.addEventListener('input', debouncedProcess);
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        process();
+      });
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      input.value = 'The quick brown fox jumps over the lazy dog. This is a simple sentence. However, more sophisticated linguistic constructions, particularly those incorporating polysyllabic terminology and complex grammatical arrangements, can substantially elevate readability difficulty scores. Writers who prioritize accessibility often choose shorter sentences and prefer common words over technical jargon. This approach maximizes comprehension across diverse audiences, regardless of their educational background or familiarity with specialized vocabulary.';
+      process();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      input.value = '';
+      process();
+      input.focus();
+    });
+  })();
+  </script>
+</body>
+</html>

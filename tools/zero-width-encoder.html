@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Zero-Width Hidden Message Encoder — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Hide secret messages inside visible text using zero-width Unicode characters. Encode and decode hidden steganographic text. Free, 100% in-browser, no data sent to servers.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/zero-width-encoder.html">
+  <meta property="og:title" content="Zero-Width Hidden Message Encoder — DevToolbox">
+  <meta property="og:description" content="Encode hidden messages inside visible text using zero-width Unicode characters (ZWS/ZWNJ). Decode steganographic text. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/zero-width-encoder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Zero-Width Hidden Message Encoder",
+    "url": "https://thisdevtool.com/tools/zero-width-encoder.html",
+    "description": "Hide secret messages in visible text using zero-width Unicode characters. Encode and decode steganographic text entirely in your browser.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are zero-width characters?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Zero-width characters are Unicode code points that have no visible width when rendered. The most commonly used ones are Zero Width Space (U+200B), Zero Width Non-Joiner (U+200C), Zero Width Joiner (U+200D), and Zero Width No-Break Space (U+FEFF). They are invisible in text but present in the underlying byte sequence, making them ideal for steganographic encoding."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does zero-width steganography work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The technique converts each character of the secret message into its binary representation, then maps 0 bits to Zero Width Space (U+200B) and 1 bits to Zero Width Non-Joiner (U+200C). These invisible characters are then inserted between the characters of the visible carrier text. The recipient can extract the hidden message by filtering out only the zero-width characters and reversing the binary mapping."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can zero-width characters be detected?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Zero-width characters can be detected by inspecting the raw bytes of the text, using a Unicode property inspector (like our inspector tool), or with regex patterns that match Unicode category Cf (Format characters). Security tools and document analysis software routinely scan for hidden zero-width characters. However, casual readers looking at rendered text will not notice them."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is Unicode steganography used for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Legitimate uses include watermarking leaked documents to identify the source of leaks, adding provenance information to text snippets, and academic research into information hiding techniques. Malicious uses include bypassing content filters (since zero-width characters are invisible but alter string comparisons) and embedding covert channels in plain text communication."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does encoding change the visible text?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The visible text appears completely unchanged after encoding. The hidden message is encoded entirely in the zero-width characters inserted between the visible characters. The only way to detect the encoding without a tool like this is to examine the raw bytes or character count, which will be longer than expected."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .binary-viz { font-family: monospace; font-size: 0.75rem; background: var(--surface-2,#f3f4f6); border: 1px solid var(--border,#e5e7eb); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; line-height: 1.8; max-height: 150px; overflow-y: auto; }
+    .bit-0 { color: #6b7280; }
+    .bit-1 { color: #10b981; font-weight: 700; }
+    .zw-char { display: inline-block; background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; border-radius: 2px; font-size: 0.65rem; padding: 0 3px; vertical-align: middle; font-family: monospace; }
+    [data-theme="dark"] .zw-char { background: #3b2e0a; color: #fcd34d; }
+    .howit-step { background: var(--surface-2,#f3f4f6); border: 1px solid var(--border,#e5e7eb); border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; }
+    .howit-step h4 { margin: 0 0 6px; font-size: 0.9rem; color: var(--accent,#10b981); }
+    .howit-step p { margin: 0; font-size: 0.85rem; }
+    .mapping-table { display: grid; grid-template-columns: repeat(4, auto); gap: 4px 16px; font-family: monospace; font-size: 0.85rem; margin: 8px 0; }
+    .encode-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) { .encode-fields { grid-template-columns: 1fr; } }
+    .field-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
+    .field-group textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--border,#e5e7eb); border-radius: 8px; background: var(--surface,#fff); color: var(--text,#111); resize: vertical; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/unicode-inspector.html">Inspector</a>
+        <a href="/tools/homoglyph-detector.html">Homoglyphs</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Zero-Width Hidden Message Encoder</h1>
+          <p class="tool-subtitle">Hide a secret message inside visible text using invisible zero-width Unicode characters. Decode any text to reveal hidden messages.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Encode</button>
+            <button class="option-chip" data-mode="decode">Decode</button>
+            <button class="option-chip" data-mode="howto">How It Works</button>
+          </div>
+
+          <!-- Encode panel -->
+          <div id="panelEncode">
+            <div class="encode-fields">
+              <div class="field-group">
+                <label>Visible carrier text</label>
+                <textarea id="carrierInput" rows="5" placeholder="Type or paste the visible text that will carry the hidden message…" spellcheck="false"></textarea>
+              </div>
+              <div class="field-group">
+                <label>Secret message to hide</label>
+                <textarea id="secretInput" rows="5" placeholder="Type the secret message to hide inside the carrier text…" spellcheck="false"></textarea>
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; margin-bottom:8px;">
+              <button class="btn btn-sm btn-secondary" id="encodeExBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="encodeClearBtn">Clear</button>
+              <button class="btn btn-sm btn-primary" id="encodeBtn">Encode →</button>
+            </div>
+
+            <div class="field-group" style="margin-top:4px;">
+              <label>Output (looks identical — but contains hidden message)</label>
+              <div class="code-output" id="encodeOutput" style="min-height:60px; cursor:pointer;" title="Click to copy"></div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+              <button class="btn btn-sm btn-primary" id="copyEncodeBtn">Copy Output</button>
+              <button class="btn btn-sm btn-secondary" id="downloadEncodeBtn">Download .txt</button>
+            </div>
+
+            <div style="margin-top:12px;">
+              <label style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:4px;">Binary representation of hidden message</label>
+              <div class="binary-viz" id="binaryViz">Binary encoding will appear here after encoding…</div>
+            </div>
+          </div>
+
+          <!-- Decode panel -->
+          <div id="panelDecode" style="display:none;">
+            <div class="field-group">
+              <label>Paste text that may contain a hidden message</label>
+              <textarea id="decodeInput" rows="6" placeholder="Paste text here to scan for hidden zero-width encoded messages…" spellcheck="false" style="width:100%;padding:8px 10px;border:1px solid var(--border,#e5e7eb);border-radius:8px;background:var(--surface,#fff);color:var(--text,#111);resize:vertical;font-size:0.9rem;"></textarea>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; margin-bottom:8px;">
+              <button class="btn btn-sm btn-secondary" id="decodeExBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="decodeClearBtn">Clear</button>
+            </div>
+            <div class="field-group" style="margin-top:4px;">
+              <label>Decoded hidden message</label>
+              <div class="code-output" id="decodeOutput" style="min-height:60px;"></div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+              <button class="btn btn-sm btn-primary" id="copyDecodeBtn">Copy Message</button>
+            </div>
+            <div style="margin-top:12px;">
+              <label style="font-size:0.8rem;color:var(--text-muted);display:block;margin-bottom:4px;">Zero-width character inventory</label>
+              <div id="zwInventory"></div>
+            </div>
+          </div>
+
+          <!-- How It Works panel -->
+          <div id="panelHowto" style="display:none;">
+            <div class="howit-step">
+              <h4>Step 1 — Convert secret message to binary</h4>
+              <p>Each character in the secret message is converted to its UTF-8 byte representation, then expressed as a sequence of 8-bit binary values. For example, the letter <strong>A</strong> (ASCII 65, or 0x41) becomes <span class="binary-viz" style="display:inline;padding:2px 6px;">0 1 0 0 0 0 0 1</span>.</p>
+            </div>
+            <div class="howit-step">
+              <h4>Step 2 — Map binary to zero-width characters</h4>
+              <p>Each binary digit is replaced with an invisible Unicode character:</p>
+              <div class="mapping-table">
+                <span>Bit 0</span><span>→</span><span><span class="zw-char">ZWS</span></span><span>U+200B (Zero Width Space)</span>
+                <span>Bit 1</span><span>→</span><span><span class="zw-char">ZWNJ</span></span><span>U+200C (Zero Width Non-Joiner)</span>
+              </div>
+              <p>The letter <strong>A</strong> (01000001) becomes: <span class="zw-char">ZWS</span><span class="zw-char">ZWNJ</span><span class="zw-char">ZWS</span><span class="zw-char">ZWS</span><span class="zw-char">ZWS</span><span class="zw-char">ZWS</span><span class="zw-char">ZWS</span><span class="zw-char">ZWNJ</span></p>
+            </div>
+            <div class="howit-step">
+              <h4>Step 3 — Insert between carrier text characters</h4>
+              <p>The zero-width sequence is distributed between characters of the visible carrier text. Since zero-width characters have no visible width, the carrier text appears completely unchanged to any reader. The complete hidden message is interleaved throughout the carrier.</p>
+            </div>
+            <div class="howit-step">
+              <h4>Step 4 — Decode by extracting zero-width characters</h4>
+              <p>To recover the hidden message, the decoder scans the text for any ZWS (U+200B) or ZWNJ (U+200C) characters, collects them in order, groups them into 8-bit chunks, converts each chunk back to a decimal value, and interprets the values as UTF-8 text.</p>
+            </div>
+            <div class="howit-step" style="border-color:#f59e0b;">
+              <h4>Capacity</h4>
+              <p>Each character of the secret message requires 8 zero-width characters. So a 10-character message needs 80 zero-width characters. These are distributed between characters of the carrier text. The carrier must be at least as long as the zero-width sequence to allow interleaving, though all zero-width characters can also be appended to the end.</p>
+            </div>
+            <div class="howit-step" style="border-color:#ef4444;">
+              <h4>Detection</h4>
+              <p>This encoding can be detected by examining raw bytes, checking character counts, or using a Unicode property inspector. Security tools and document analysis software can detect zero-width characters. This tool is provided for educational and legitimate watermarking purposes only.</p>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter carrier text and a secret message, then click Encode.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>What Are Zero-Width Characters?</h2>
+          <p>Zero-width characters are Unicode code points that have no visible rendering — they take up no horizontal space in text. The most important ones are Zero Width Space (U+200B), Zero Width Non-Joiner (U+200C), Zero Width Joiner (U+200D), and Zero Width No-Break Space (U+FEFF, also the Byte Order Mark). While these characters were designed for legitimate typographic purposes — ZWJ joins emoji components, ZWNJ prevents unwanted ligatures in scripts like Devanagari — their invisibility makes them usable for information hiding.</p>
+
+          <h3>Unicode Steganography</h3>
+          <p>Text steganography using zero-width characters exploits the fact that these characters are invisible to readers but present in the underlying byte sequence. By mapping the binary representation of a secret message to sequences of zero-width characters and inserting them into ordinary text, a hidden message can be embedded in plain sight. The technique works in any medium that preserves the exact Unicode codepoints: email, social media posts, documents, and web pages all transmit zero-width characters without modification.</p>
+
+          <h3>Legitimate Use Cases</h3>
+          <p>The most practical legitimate application of zero-width steganography is document watermarking. A confidential document distributed to multiple recipients can contain a unique hidden message for each recipient. If the document is leaked, the watermark identifies the source. This technique is used by intelligence agencies, law firms, financial institutions, and any organization that needs to track document provenance without visible markings. The hidden message can include a timestamp, recipient identifier, or any other provenance information.</p>
+
+          <h3>Security Implications</h3>
+          <p>Zero-width characters pose several security risks beyond steganography. They can be used to bypass content filters and keyword detection systems, since the string "hello" and "h&#x200B;ello" look identical but are different byte sequences. Phishing attacks can use zero-width characters to make malicious text pass filters while appearing legitimate to users. In code review, adversarial invisible characters have been used to make malicious code appear as benign no-ops. The Trojan Source attack demonstrated how bidirectional Unicode control characters (including invisible ones) can make source code appear different from what the compiler actually executes.</p>
+
+          <h3>Detecting Zero-Width Characters</h3>
+          <p>To detect zero-width characters in text, use our <a href="/tools/unicode-inspector.html">Unicode Character Inspector</a> — it shows every character including invisible ones. In JavaScript, you can test for common zero-width characters with a regex: <code>/[\u200B\u200C\u200D\uFEFF]/</code>. For more thorough detection, check for any character with Unicode category Cf (Format character) or Cs (Surrogate). Text editors like VS Code show zero-width characters as highlighted invisible glyphs when configured to display whitespace. The <code>wc -c</code> command on Unix will show a byte count higher than expected if zero-width characters are present.</p>
+
+          <h3>Encoding Capacity and Limitations</h3>
+          <p>The binary encoding used here represents each secret character as 8 bits, requiring 8 zero-width characters per byte. For ASCII text (1 byte per character), a 100-character secret message requires 800 zero-width characters. For Unicode text with multi-byte characters, the requirement is higher. While zero-width characters are invisible, their presence can be inferred from an unusually large file size or character count. More advanced steganographic schemes use multiple zero-width character types to encode higher bit densities or employ error-correcting codes for robustness.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What are zero-width characters?</button>
+            <div class="faq-answer">Zero-width characters are Unicode code points with no visible width when rendered. Key ones include Zero Width Space (U+200B), Zero Width Non-Joiner (U+200C), Zero Width Joiner (U+200D), and Zero Width No-Break Space (U+FEFF). They are invisible to readers but present in the raw byte sequence of the text.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does zero-width steganography work?</button>
+            <div class="faq-answer">Each character of the secret message is converted to 8-bit binary. Bit 0 maps to Zero Width Space (U+200B) and bit 1 maps to Zero Width Non-Joiner (U+200C). These invisible characters are inserted between characters of the visible carrier text. To decode, extract all ZWS/ZWNJ characters, group into 8-bit chunks, and convert back to text.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can zero-width characters be detected?</button>
+            <div class="faq-answer">Yes. Zero-width characters can be detected by examining the raw bytes or character count of the text, using a Unicode inspector, or with regex patterns matching Unicode category Cf. The text will have more bytes than visible characters. Security tools, document analysis software, and careful manual inspection can all reveal hidden zero-width characters.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is Unicode steganography used for?</button>
+            <div class="faq-answer">Legitimate uses include watermarking documents to identify the source of leaks, adding invisible provenance metadata to text, and security research. Malicious uses include bypassing content filters (since invisible characters alter string comparisons without being visible), embedding covert communication channels, and the Trojan Source attack on source code. This tool is for educational and legitimate purposes only.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does encoding change the visible text?</button>
+            <div class="faq-answer">No. The visible text appears completely unchanged. The hidden message is encoded entirely in zero-width characters inserted between visible characters. The only detectable differences are a longer byte sequence, a higher character count, and potential issues with text processing that does not expect non-printable characters.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Unicode Tools</h4>
+        <a href="/tools/unicode-search.html">Unicode Search</a>
+        <a href="/tools/unicode-inspector.html">Character Inspector</a>
+        <a href="/tools/homoglyph-detector.html">Homoglyph Detector</a>
+        <a href="/tools/zero-width-encoder.html">Zero-Width Encoder</a>
+        <a href="/tools/ascii-table.html">ASCII Table</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var ZWS  = '\u200B'; // bit 0
+    var ZWNJ = '\u200C'; // bit 1
+
+    // ── Encode ────────────────────────────────────────────────────────────────
+    function textToBits(text) {
+      var bits = '';
+      for (var i = 0; i < text.length; i++) {
+        var code = text.charCodeAt(i);
+        if (code > 127) {
+          // UTF-8 multi-byte
+          var bytes = encodeURIComponent(text[i]).replace(/%([0-9A-F]{2})/g, function(m, h) {
+            return String.fromCharCode(parseInt(h, 16));
+          });
+          for (var b = 0; b < bytes.length; b++) {
+            bits += bytes.charCodeAt(b).toString(2).padStart(8, '0');
+          }
+        } else {
+          bits += code.toString(2).padStart(8, '0');
+        }
+      }
+      return bits;
+    }
+
+    function bitsToZW(bits) {
+      return bits.split('').map(function(b){ return b === '0' ? ZWS : ZWNJ; }).join('');
+    }
+
+    function encodeMessage(carrier, secret) {
+      var bits = textToBits(secret);
+      var zw = bitsToZW(bits);
+      // Distribute zw characters between carrier characters
+      var result = '';
+      var zwIdx = 0;
+      var charsPerSlot = carrier.length > 0 ? Math.floor(zw.length / carrier.length) : 0;
+      var remainder = carrier.length > 0 ? zw.length % carrier.length : zw.length;
+      for (var i = 0; i < carrier.length; i++) {
+        result += carrier[i];
+        var insertCount = charsPerSlot + (i < remainder ? 1 : 0);
+        result += zw.slice(zwIdx, zwIdx + insertCount);
+        zwIdx += insertCount;
+      }
+      // Append any remaining zw chars
+      if (zwIdx < zw.length) result += zw.slice(zwIdx);
+      return result;
+    }
+
+    function formatBinaryViz(bits) {
+      var html = '';
+      for (var i = 0; i < bits.length; i++) {
+        if (i > 0 && i % 8 === 0) html += ' ';
+        html += '<span class="bit-' + bits[i] + '">' + bits[i] + '</span>';
+      }
+      return html;
+    }
+
+    document.getElementById('encodeBtn').addEventListener('click', function() {
+      var carrier = document.getElementById('carrierInput').value;
+      var secret = document.getElementById('secretInput').value;
+      if (!carrier) { alert('Please enter carrier text.'); return; }
+      if (!secret) { alert('Please enter a secret message.'); return; }
+      var encoded = encodeMessage(carrier, secret);
+      document.getElementById('encodeOutput').textContent = encoded;
+      var bits = textToBits(secret);
+      document.getElementById('binaryViz').innerHTML = formatBinaryViz(bits);
+      var statusBar = document.getElementById('statusBar');
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Encoded "' + secret.substring(0, 30) + (secret.length > 30 ? '…' : '') +
+        '" into ' + bits.length + ' zero-width characters (' + (bits.length / 8) + ' bytes).';
+      DT.trackTool('zero-width-encoder');
+    });
+
+    document.getElementById('encodeOutput').addEventListener('click', function() {
+      if (this.textContent) DT.copyToClipboard(this.textContent);
+    });
+
+    document.getElementById('copyEncodeBtn').addEventListener('click', function() {
+      var text = document.getElementById('encodeOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadEncodeBtn').addEventListener('click', function() {
+      var text = document.getElementById('encodeOutput').textContent;
+      if (text) DT.downloadText(text, 'encoded-text.txt', 'text/plain');
+    });
+
+    document.getElementById('encodeExBtn').addEventListener('click', function() {
+      document.getElementById('carrierInput').value = 'The quick brown fox jumps over the lazy dog. This is a perfectly ordinary sentence.';
+      document.getElementById('secretInput').value = 'secret';
+      document.getElementById('encodeBtn').click();
+    });
+
+    document.getElementById('encodeClearBtn').addEventListener('click', function() {
+      document.getElementById('carrierInput').value = '';
+      document.getElementById('secretInput').value = '';
+      document.getElementById('encodeOutput').textContent = '';
+      document.getElementById('binaryViz').innerHTML = 'Binary encoding will appear here after encoding…';
+      document.getElementById('statusBar').className = 'status-bar info';
+      document.getElementById('statusBar').textContent = 'Enter carrier text and a secret message, then click Encode.';
+    });
+
+    // ── Decode ────────────────────────────────────────────────────────────────
+    function decodeMessage(text) {
+      var bits = '';
+      var counts = {ZWS: 0, ZWNJ: 0, ZWJ: 0, FEFF: 0};
+      for (var i = 0; i < text.length; i++) {
+        var c = text[i];
+        if (c === ZWS)  { bits += '0'; counts.ZWS++; }
+        else if (c === ZWNJ) { bits += '1'; counts.ZWNJ++; }
+        else if (c === '\u200D') counts.ZWJ++;
+        else if (c === '\uFEFF') counts.FEFF++;
+      }
+      if (!bits.length) return null;
+      // Pad to multiple of 8
+      while (bits.length % 8 !== 0) bits += '0';
+      var result = '';
+      for (var j = 0; j < bits.length; j += 8) {
+        var charCode = parseInt(bits.slice(j, j + 8), 2);
+        if (charCode === 0) break;
+        result += String.fromCharCode(charCode);
+      }
+      return {message: result, counts: counts, totalBits: bits.length};
+    }
+
+    function doDecodeInput() {
+      var text = document.getElementById('decodeInput').value;
+      var out = document.getElementById('decodeOutput');
+      var inv = document.getElementById('zwInventory');
+      var statusBar = document.getElementById('statusBar');
+      if (!text) {
+        out.textContent = '';
+        inv.innerHTML = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste text to decode.';
+        return;
+      }
+      var result = decodeMessage(text);
+      if (!result || !result.totalBits) {
+        out.textContent = '';
+        inv.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No zero-width encoded message found in this text.</p>';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'No hidden message detected in this text.';
+        return;
+      }
+      out.textContent = result.message;
+      var rows = [
+        result.counts.ZWS ? '<tr><td>ZWS (U+200B)</td><td>' + result.counts.ZWS + '</td><td>Encodes bit 0</td></tr>' : '',
+        result.counts.ZWNJ ? '<tr><td>ZWNJ (U+200C)</td><td>' + result.counts.ZWNJ + '</td><td>Encodes bit 1</td></tr>' : '',
+        result.counts.ZWJ ? '<tr><td>ZWJ (U+200D)</td><td>' + result.counts.ZWJ + '</td><td>Not used in encoding</td></tr>' : '',
+        result.counts.FEFF ? '<tr><td>BOM/ZWNBS (U+FEFF)</td><td>' + result.counts.FEFF + '</td><td>Byte order mark</td></tr>' : '',
+      ].filter(Boolean).join('');
+      inv.innerHTML = '<table class="homoglyph-table" style="font-size:0.82rem;"><thead><tr><th>Character</th><th>Count</th><th>Role</th></tr></thead><tbody>' + rows + '</tbody></table>';
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Decoded hidden message from ' + result.totalBits + ' zero-width bits (' + (result.totalBits / 8) + ' bytes).';
+      DT.trackTool('zero-width-decoder');
+    }
+
+    var debouncedDecode = DT.debounce(doDecodeInput, 200);
+    document.getElementById('decodeInput').addEventListener('input', debouncedDecode);
+
+    document.getElementById('copyDecodeBtn').addEventListener('click', function() {
+      var text = document.getElementById('decodeOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('decodeExBtn').addEventListener('click', function() {
+      // Generate an encoded example
+      var encoded = encodeMessage('The quick brown fox jumps over the lazy dog.', 'secret');
+      document.getElementById('decodeInput').value = encoded;
+      doDecodeInput();
+    });
+
+    document.getElementById('decodeClearBtn').addEventListener('click', function() {
+      document.getElementById('decodeInput').value = '';
+      doDecodeInput();
+    });
+
+    // Mode chips
+    var statusBar = document.getElementById('statusBar');
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        var mode = chip.dataset.mode;
+        document.getElementById('panelEncode').style.display = mode === 'encode' ? '' : 'none';
+        document.getElementById('panelDecode').style.display = mode === 'decode' ? '' : 'none';
+        document.getElementById('panelHowto').style.display = mode === 'howto' ? '' : 'none';
+        statusBar.className = 'status-bar info';
+        if (mode === 'encode') statusBar.textContent = 'Enter carrier text and a secret message, then click Encode.';
+        else if (mode === 'decode') statusBar.textContent = 'Paste text to scan for hidden zero-width messages.';
+        else statusBar.textContent = 'Learn how zero-width steganography works.';
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

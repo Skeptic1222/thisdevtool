@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>String Length Calculator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Calculate string length in characters, bytes (UTF-8/UTF-16/ASCII), codepoints, and graphemes. Compare two strings and see encoding breakdowns. Free, instant.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/string-length-calculator.html">
+  <meta property="og:title" content="String Length Calculator — DevToolbox">
+  <meta property="og:description" content="Get character count, byte count (UTF-8/UTF-16/ASCII), codepoint count, grapheme count, URL-encoded length, and Base64 length for any string.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/string-length-calculator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="String Length Calculator — DevToolbox">
+  <meta name="twitter:description" content="String length in chars, bytes, codepoints, graphemes, URL-encoded, and Base64. Compare two strings side-by-side.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "String Length Calculator",
+    "url": "https://thisdevtool.com/tools/string-length-calculator.html",
+    "description": "Calculate string length in characters, bytes (UTF-8/UTF-16/ASCII), Unicode codepoints, and grapheme clusters. Encoding breakdown, compare mode, and per-character table.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between character count and byte count?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Character count is the number of Unicode codepoints or grapheme clusters in the string. Byte count is the number of bytes needed to store the string in a specific encoding. In UTF-8, ASCII characters take 1 byte each, characters with diacritics take 2 bytes, most CJK characters take 3 bytes, and emoji take 4 bytes. A string of 10 emoji has a character count of 10 but a UTF-8 byte count of 40."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does JavaScript report emoji as having length 2?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JavaScript strings are sequences of UTF-16 code units. Emoji and other characters outside the Basic Multilingual Plane (BMP) are encoded as surrogate pairs — two UTF-16 code units each. The .length property counts code units, not characters, so a single emoji reports as length 2. This tool shows both the code unit count (what JavaScript sees) and the grapheme count (what humans perceive)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between UTF-8 and UTF-16 byte counts?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "UTF-8 uses 1-4 bytes per character depending on the codepoint value. ASCII characters (U+0000–U+007F) use 1 byte, characters U+0080–U+07FF use 2 bytes, U+0800–U+FFFF use 3 bytes, and characters above U+FFFF (including most emoji) use 4 bytes. UTF-16 uses 2 bytes per BMP character and 4 bytes for characters above U+FFFF. For ASCII text, UTF-8 is more compact; for CJK-heavy text, they are similar in size."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does URL-encoded length mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "URL encoding (percent-encoding) converts non-ASCII and special characters to %XX sequences where XX is the hex value of each UTF-8 byte. Each reserved character becomes 3 characters (%XX). The URL-encoded length shown is the length of the string after encodeURIComponent() is applied — useful for checking if a string will fit within URL length limits (browsers typically support 2000-8000 characters in URLs)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a grapheme cluster?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A grapheme cluster is the smallest unit of text that a user perceives as a single character. It may consist of multiple Unicode codepoints — for example, a base letter plus a combining diacritic, an emoji with a skin tone modifier, or a complex script sequence. The grapheme count is what most people mean when they say 'character count' in a user-facing context, and it determines how many characters appear in a rendered text box."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; margin: 0.75rem 0; }
+    .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1rem; }
+    .metric-card .metric-value { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+    .metric-card .metric-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .metric-card.highlight { border-color: var(--accent); }
+    .encoding-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-top: 0.75rem; }
+    .encoding-table th { text-align: left; padding: 0.4rem 0.6rem; background: var(--surface); color: var(--text-muted); font-weight: 600; border-bottom: 2px solid var(--border); }
+    .encoding-table td { padding: 0.35rem 0.6rem; border-bottom: 1px solid var(--border); font-family: monospace; }
+    .encoding-table tr:hover td { background: var(--surface); }
+    .compare-col { display: flex; flex-direction: column; gap: 0.5rem; }
+    .compare-col label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+    .compare-diff { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; margin-top: 0.75rem; font-size: 0.85rem; }
+    .compare-diff .diff-row { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+    .compare-diff .diff-row:last-child { border-bottom: none; }
+    .char-table-wrap { max-height: 280px; overflow-y: auto; margin-top: 0.75rem; }
+    .char-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .char-table th { position: sticky; top: 0; background: var(--surface); padding: 0.35rem 0.5rem; text-align: left; border-bottom: 2px solid var(--border); color: var(--text-muted); font-weight: 600; }
+    .char-table td { padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--border); font-family: monospace; }
+    .char-table tr:hover td { background: var(--surface); }
+    .char-display { display: inline-block; min-width: 1.5em; text-align: center; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 1px 4px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>String Length Calculator</h1>
+          <p class="tool-subtitle">Characters, bytes (UTF-8/UTF-16/ASCII), codepoints, graphemes, URL-encoded length, and Base64 length — all at once.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="summary">Summary</button>
+            <button class="option-chip" data-mode="encoding">Encoding</button>
+            <button class="option-chip" data-mode="compare">Compare</button>
+          </div>
+
+          <!-- Summary / Encoding view -->
+          <div id="singleView">
+            <div class="pane-label" style="margin-top:0.75rem;">
+              <span>Input String</span>
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+            <textarea id="strInput" rows="6" placeholder="Type or paste your string here..." spellcheck="false"></textarea>
+
+            <div class="metrics-grid" id="metricsGrid"></div>
+
+            <!-- Encoding table (shown in encoding mode) -->
+            <div id="encodingSection" style="display:none;">
+              <h3 style="margin:0.75rem 0 0.5rem; font-size:1rem;">Per-Character Encoding Breakdown</h3>
+              <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">Shown for strings up to 200 characters. UTF-8 bytes shown as hex.</p>
+              <div class="char-table-wrap" id="charTableWrap"></div>
+            </div>
+          </div>
+
+          <!-- Compare view -->
+          <div id="compareView" style="display:none;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:0.75rem;">
+              <div class="compare-col">
+                <label>String A</label>
+                <textarea id="strA" rows="5" placeholder="Paste string A..." spellcheck="false"></textarea>
+              </div>
+              <div class="compare-col">
+                <label>String B</label>
+                <textarea id="strB" rows="5" placeholder="Paste string B..." spellcheck="false"></textarea>
+              </div>
+            </div>
+            <div class="compare-diff" id="compareDiff">
+              <p style="color:var(--text-muted);font-size:0.85rem;">Paste strings above to compare their lengths.</p>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type or paste a string above to measure its length.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the String Length Calculator</h2>
+          <ol>
+            <li><strong>Paste your string</strong> into the input area. Metrics update instantly as you type.</li>
+            <li><strong>Summary mode</strong> — shows all key length metrics at a glance: characters, bytes (UTF-8, UTF-16, ASCII), codepoints, graphemes, URL-encoded length, and Base64 length.</li>
+            <li><strong>Encoding mode</strong> — adds a per-character breakdown table showing each character's codepoint and UTF-8 byte sequence.</li>
+            <li><strong>Compare mode</strong> — paste two strings side by side and see a difference table for all metrics.</li>
+          </ol>
+
+          <h2>Understanding String Length Metrics</h2>
+
+          <h3>Character Count vs. Grapheme Count</h3>
+          <p>Most people want the grapheme count when they ask "how many characters is this?" — the number of symbols a human would count by pointing at each one. This is distinct from JavaScript's <code>string.length</code>, which counts UTF-16 code units, and from the Unicode codepoint count, which counts atomic Unicode values. A family emoji like 👨‍👩‍👧 is 1 grapheme, 8 Unicode codepoints, and 16 UTF-16 code units. This tool shows all three counts so you know exactly what each API or database field will measure.</p>
+
+          <h3>UTF-8 Byte Count</h3>
+          <p>UTF-8 is the standard encoding for web content, JSON, and most databases. It uses a variable number of bytes: 1 byte for ASCII characters (U+0000–U+007F), 2 bytes for characters with diacritics and many European scripts (U+0080–U+07FF), 3 bytes for most CJK (Chinese, Japanese, Korean) characters and common symbols (U+0800–U+FFFF), and 4 bytes for emoji and supplementary characters (U+10000+). The UTF-8 byte count is what determines database column size requirements when using VARCHAR or TEXT columns with byte limits.</p>
+
+          <h3>UTF-16 Byte Count</h3>
+          <p>UTF-16 is the internal string format used by JavaScript, Java, C#, and Windows APIs. It uses 2 bytes for most characters (the Basic Multilingual Plane) and 4 bytes for supplementary characters (emoji, historic scripts). UTF-16 is common in Windows file system APIs and .NET string handling. Knowing the UTF-16 byte count is useful when working with Windows native APIs, Java's <code>String.length()</code>, or .NET's <code>string.Length</code>, all of which count UTF-16 code units.</p>
+
+          <h3>ASCII Byte Count</h3>
+          <p>ASCII-compatible byte count assumes the string will be passed through a system that only supports 7-bit ASCII. Non-ASCII characters are counted as they would be encoded in ASCII with a percent-encoding scheme — each non-ASCII byte as 3 bytes (%XX). This approximates the length overhead of transmitting the string through protocols that require ASCII encoding. Note that true ASCII does not support non-ASCII characters — this metric shows what the length would be if the string were URL-encoded (encodeURIComponent).</p>
+
+          <h3>URL-Encoded Length</h3>
+          <p>URL encoding (percent-encoding) converts each non-ASCII and reserved character to a %XX sequence. The URL-encoded length is the length of the string after <code>encodeURIComponent()</code> is applied. This is the relevant length for query string parameters, path segments, and form data submitted via GET. Most browsers support URLs up to about 2,000 characters, though the HTTP spec has no defined limit. If your URL-encoded string approaches 2,000 characters, consider using POST instead of GET.</p>
+
+          <h3>Base64 Length</h3>
+          <p>Base64 encodes binary data (or UTF-8 text) as ASCII characters using 4 base-64 characters for every 3 bytes, with padding to make the output length a multiple of 4. The Base64 length of a string is approximately <code>ceil(utf8_bytes / 3) * 4</code>. Base64 is commonly used in data URIs (embedding images in CSS), JSON Web Tokens (JWT), and HTTP Basic Authentication headers. Knowing the Base64 length helps when you need to check if a Base64-encoded value will fit within a database column, cookie size limit, or API field length restriction.</p>
+
+          <h3>Compare Mode</h3>
+          <p>Compare mode is useful for debugging encoding mismatches between two versions of the same string, checking whether a field was trimmed or modified by a system, or verifying that two strings that look identical are truly identical at the byte level. Paste both strings and the tool shows the difference in every length metric. If two strings look the same but have different byte counts, there is likely a hidden character (zero-width space, non-breaking space, or BOM) in one of them — use the Zero-Width Character Detector or Whitespace Visualizer to find it.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between character count and byte count?</button>
+            <div class="faq-answer">Character count is the number of Unicode codepoints or grapheme clusters in the string. Byte count is the number of bytes needed to store the string in a specific encoding. In UTF-8, ASCII characters take 1 byte, diacritics take 2 bytes, CJK characters take 3 bytes, and emoji take 4 bytes. A string of 10 emoji has a character count of 10 but a UTF-8 byte count of 40.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why does JavaScript report emoji as having length 2?</button>
+            <div class="faq-answer">JavaScript strings are sequences of UTF-16 code units. Emoji outside the Basic Multilingual Plane are encoded as surrogate pairs — two UTF-16 code units each. The .length property counts code units, not characters, so a single emoji reports as length 2. This tool shows both the code unit count (what JavaScript sees) and the grapheme count (what humans perceive).</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between UTF-8 and UTF-16 byte counts?</button>
+            <div class="faq-answer">UTF-8 uses 1-4 bytes per character depending on the codepoint value. UTF-16 uses 2 bytes per BMP character and 4 bytes for characters above U+FFFF (most emoji). For ASCII text, UTF-8 is more compact. For CJK-heavy text they are similar. UTF-16 is used internally by JavaScript, Java, C#, and Windows APIs.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does URL-encoded length mean?</button>
+            <div class="faq-answer">URL encoding converts non-ASCII and special characters to %XX sequences. The URL-encoded length is the length of the string after encodeURIComponent() is applied — useful for checking if a string fits within URL length limits (typically 2,000 characters in browsers). Each non-ASCII byte becomes 3 characters (%XX), so emoji can expand from 1 character to 12+ in a URL.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a grapheme cluster?</button>
+            <div class="faq-answer">A grapheme cluster is the smallest unit of text that a user perceives as a single character. It may consist of multiple Unicode codepoints — a base letter plus a combining diacritic, an emoji with a skin tone modifier, or a flag emoji. The grapheme count determines how many characters appear in a rendered text box and is what most people mean when they say "character count."</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/string-length-calculator.html">String Length</a>
+        <a href="/tools/word-counter.html">Word Counter</a>
+        <a href="/tools/case-converter.html">Case Converter</a>
+        <a href="/tools/text-reverser.html">Text Reverser</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var strInput = document.getElementById('strInput');
+      var strA = document.getElementById('strA');
+      var strB = document.getElementById('strB');
+      var metricsGrid = document.getElementById('metricsGrid');
+      var encodingSection = document.getElementById('encodingSection');
+      var charTableWrap = document.getElementById('charTableWrap');
+      var compareDiff = document.getElementById('compareDiff');
+      var statusBar = document.getElementById('statusBar');
+      var singleView = document.getElementById('singleView');
+      var compareView = document.getElementById('compareView');
+      var currentMode = 'summary';
+
+      function splitGraphemes(str) {
+        if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+          var seg = new Intl.Segmenter();
+          var segs = [];
+          for (var s of seg.segment(str)) segs.push(s.segment);
+          return segs;
+        }
+        return str.match(/[\uD800-\uDBFF][\uDC00-\uDFFF][\u0300-\u036F]*|[\s\S]/g) || [];
+      }
+
+      function utf8Bytes(str) {
+        return new TextEncoder().encode(str).length;
+      }
+
+      function utf16Bytes(str) { return str.length * 2; }
+
+      function countCodepoints(str) {
+        var count = 0;
+        for (var i = 0; i < str.length; ) {
+          var c = str.codePointAt(i);
+          count++;
+          i += (c > 0xFFFF) ? 2 : 1;
+        }
+        return count;
+      }
+
+      function urlEncodedLength(str) {
+        return encodeURIComponent(str).length;
+      }
+
+      function base64Length(str) {
+        var bytes = new TextEncoder().encode(str).length;
+        return Math.ceil(bytes / 3) * 4;
+      }
+
+      function calcMetrics(str) {
+        return {
+          jsLength: str.length,
+          codepoints: countCodepoints(str),
+          graphemes: splitGraphemes(str).length,
+          utf8: utf8Bytes(str),
+          utf16: utf16Bytes(str),
+          urlEncoded: urlEncodedLength(str),
+          base64: base64Length(str)
+        };
+      }
+
+      function metricCard(value, label, highlight) {
+        return '<div class="metric-card' + (highlight ? ' highlight' : '') + '"><div class="metric-value">' + value.toLocaleString() + '</div><div class="metric-label">' + label + '</div></div>';
+      }
+
+      function renderMetrics(str) {
+        if (!str) {
+          metricsGrid.innerHTML = '';
+          return;
+        }
+        var m = calcMetrics(str);
+        var html = '';
+        html += metricCard(m.graphemes, 'Graphemes (visual chars)', true);
+        html += metricCard(m.codepoints, 'Unicode Codepoints', false);
+        html += metricCard(m.jsLength, 'JS .length (UTF-16 units)', false);
+        html += metricCard(m.utf8, 'Bytes (UTF-8)', false);
+        html += metricCard(m.utf16, 'Bytes (UTF-16)', false);
+        html += metricCard(m.urlEncoded, 'URL-Encoded Length', false);
+        html += metricCard(m.base64, 'Base64 Length', false);
+        metricsGrid.innerHTML = html;
+      }
+
+      function getCharUtf8Hex(cp) {
+        var char = String.fromCodePoint(cp);
+        var bytes = new TextEncoder().encode(char);
+        var hex = [];
+        bytes.forEach(function (b) { hex.push(b.toString(16).padStart(2, '0').toUpperCase()); });
+        return hex.map(function (h) { return '0x' + h; }).join(' ');
+      }
+
+      function renderCharTable(str) {
+        if (!str || str.length > 200) {
+          if (str.length > 200) {
+            charTableWrap.innerHTML = '<p style="color:var(--text-muted);font-size:0.82rem;">Character table is shown for strings up to 200 characters. Your string has ' + str.length + ' JS units.</p>';
+          } else {
+            charTableWrap.innerHTML = '';
+          }
+          return;
+        }
+
+        var graphemes = splitGraphemes(str);
+        var html = '<table class="char-table"><thead><tr><th>#</th><th>Char</th><th>Codepoint(s)</th><th>UTF-8 Bytes</th><th>Name (approx)</th></tr></thead><tbody>';
+        graphemes.forEach(function (g, i) {
+          var cps = [];
+          for (var j = 0; j < g.length; ) {
+            var cp = g.codePointAt(j);
+            cps.push('U+' + cp.toString(16).toUpperCase().padStart(4, '0'));
+            j += cp > 0xFFFF ? 2 : 1;
+          }
+          var utf8 = getCharUtf8Hex(g.codePointAt(0));
+          var display = g === '<' ? '&lt;' : (g === '>' ? '&gt;' : (g === '&' ? '&amp;' : g));
+          html += '<tr><td>' + (i + 1) + '</td><td><span class="char-display">' + display + '</span></td><td>' + cps.join(' + ') + '</td><td>' + utf8 + '</td><td>' + getCategoryName(g.codePointAt(0)) + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        charTableWrap.innerHTML = html;
+      }
+
+      function getCategoryName(cp) {
+        if (cp < 0x0080) return 'ASCII';
+        if (cp < 0x0100) return 'Latin Extended';
+        if (cp < 0x0400) return 'Extended Script';
+        if (cp < 0x0600) return 'Cyrillic/Greek';
+        if (cp < 0x0900) return 'Arabic/Hebrew';
+        if (cp < 0x2000) return 'South/SE Asian';
+        if (cp < 0x2C00) return 'Symbols/Punct.';
+        if (cp < 0x3000) return 'CJK Extension';
+        if (cp < 0xA000) return 'CJK Unified';
+        if (cp < 0xD800) return 'Extended';
+        if (cp >= 0x1F300 && cp < 0x1FA00) return 'Emoji';
+        if (cp >= 0x1FA00 && cp < 0x20000) return 'Extended Emoji';
+        return 'Other';
+      }
+
+      function renderCompare() {
+        var a = strA.value;
+        var b = strB.value;
+        if (!a && !b) {
+          compareDiff.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">Paste strings above to compare their lengths.</p>';
+          return;
+        }
+        var ma = calcMetrics(a);
+        var mb = calcMetrics(b);
+
+        var rows = [
+          ['Graphemes', ma.graphemes, mb.graphemes],
+          ['Unicode Codepoints', ma.codepoints, mb.codepoints],
+          ['JS .length', ma.jsLength, mb.jsLength],
+          ['UTF-8 Bytes', ma.utf8, mb.utf8],
+          ['UTF-16 Bytes', ma.utf16, mb.utf16],
+          ['URL-Encoded Length', ma.urlEncoded, mb.urlEncoded],
+          ['Base64 Length', ma.base64, mb.base64]
+        ];
+
+        var html = '<div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:0;margin-bottom:0.5rem;font-size:0.8rem;font-weight:600;color:var(--text-muted)"><span>Metric</span><span>String A</span><span>String B</span><span>Difference</span></div>';
+        rows.forEach(function (r) {
+          var diff = r[2] - r[1];
+          var diffStr = diff === 0 ? '=' : (diff > 0 ? '+' + diff : '' + diff);
+          var diffColor = diff === 0 ? 'var(--text-muted)' : (diff > 0 ? '#34d399' : '#f87171');
+          html += '<div class="diff-row" style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;font-size:0.83rem;">'
+            + '<span>' + r[0] + '</span>'
+            + '<span style="font-family:monospace">' + r[1].toLocaleString() + '</span>'
+            + '<span style="font-family:monospace">' + r[2].toLocaleString() + '</span>'
+            + '<span style="color:' + diffColor + ';font-family:monospace">' + diffStr + '</span>'
+            + '</div>';
+        });
+        compareDiff.innerHTML = html;
+
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'A: ' + ma.graphemes + ' graphemes, ' + ma.utf8 + ' UTF-8 bytes | B: ' + mb.graphemes + ' graphemes, ' + mb.utf8 + ' UTF-8 bytes';
+      }
+
+      function process() {
+        var raw = strInput.value;
+        renderMetrics(raw);
+
+        if (currentMode === 'encoding') {
+          renderCharTable(raw);
+        }
+
+        if (raw) {
+          var m = calcMetrics(raw);
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = m.graphemes + ' chars, ' + m.utf8 + ' bytes (UTF-8), ' + m.utf16 + ' bytes (UTF-16), ' + m.codepoints + ' codepoints, ' + m.graphemes + ' graphemes';
+        } else {
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Type or paste a string above to measure its length.';
+        }
+
+        DT.trackTool('string-length-calculator');
+      }
+
+      var debouncedProcess = DT.debounce(process, 100);
+      strInput.addEventListener('input', debouncedProcess);
+
+      var debouncedCompare = DT.debounce(renderCompare, 100);
+      strA.addEventListener('input', debouncedCompare);
+      strB.addEventListener('input', debouncedCompare);
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+
+          if (currentMode === 'compare') {
+            singleView.style.display = 'none';
+            compareView.style.display = 'block';
+            renderCompare();
+          } else {
+            singleView.style.display = 'block';
+            compareView.style.display = 'none';
+            encodingSection.style.display = currentMode === 'encoding' ? 'block' : 'none';
+            process();
+          }
+        });
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        strInput.value = '';
+        process();
+        strInput.focus();
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        strInput.value = 'Hello 🌍 café naïve résumé 日本語 한국어 العربية';
+        process();
+      });
+    })();
+  </script>
+</body>
+</html>

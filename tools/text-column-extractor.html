@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Text Column Extractor — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Extract columns from delimited text, fixed-width files, regex groups or JSON paths. Preview as table, re-join with custom delimiter. Free, instant, browser-based.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/text-column-extractor.html">
+  <meta property="og:title" content="Text Column Extractor — DevToolbox">
+  <meta property="og:description" content="Extract columns from CSV, TSV, fixed-width, regex or JSON. Preview as table, re-join columns. Free, instant, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/text-column-extractor.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Text Column Extractor — DevToolbox">
+  <meta name="twitter:description" content="Extract columns from CSV, TSV, fixed-width, regex or JSON. Preview as table, re-join columns.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Text Column Extractor",
+    "url": "https://thisdevtool.com/tools/text-column-extractor.html",
+    "description": "Extract specific columns from delimited text, fixed-width files, regex capture groups or JSON paths. Preview as table and re-join. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I extract a specific column from a CSV file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Paste your CSV text into the input area, select the 'By Delimiter' mode, choose 'Comma' as the delimiter, and enter the column numbers you want to extract (e.g., '1,3' for the first and third columns). The preview table will show your extracted columns instantly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is fixed-width column extraction?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Fixed-width extraction splits each line by character positions rather than a delimiter. You define column ranges as start-end pairs (e.g., '0-10,10-25,25-40'). This is used for legacy mainframe data, bank statement exports, and any file where columns are defined by character position rather than separators."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I extract data using regex capture groups?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In Regex mode, enter a pattern with capture groups using parentheses. Each capture group becomes a column. For example, the pattern '(\\w+)\\s+(\\d+)' applied to 'Alice 42' would extract two columns: 'Alice' and '42'. Lines that don't match the pattern are skipped."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is JSON Path extraction?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JSON Path mode reads one JSON object per line (NDJSON/JSONL format) and extracts specified property paths. Enter paths like 'name,age,address.city' and each becomes a column. Nested properties use dot notation. Array indices use bracket notation like 'items[0].name'."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I re-join the extracted columns with a different delimiter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. After extracting columns, use the 'Output Delimiter' option to choose how columns are joined in the text output. You can join with comma (for CSV), tab (for TSV), pipe, space, or any custom character. The preview table always shows columns separated regardless of the output delimiter."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .ce-config { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .75rem; }
+    .ce-row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+    .ce-row label { font-size: .85rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+    .ce-row input[type=text], .ce-row select { padding: .35rem .6rem; font-size: .85rem; }
+    .ce-row input[type=text] { width: 180px; }
+    .ce-table-wrap { overflow-x: auto; margin-top: .5rem; max-height: 320px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+    .ce-table { border-collapse: collapse; font-size: .82rem; min-width: 100%; }
+    .ce-table th { background: var(--surface); font-weight: 700; padding: .4rem .6rem; border-bottom: 2px solid var(--border); text-align: left; position: sticky; top: 0; }
+    .ce-table td { padding: .35rem .6rem; border-bottom: 1px solid var(--border); white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis; }
+    .ce-table tr:hover td { background: var(--surface); }
+    .fw-hint { font-size: .78rem; color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/text-sorter.html">Line Sorter</a>
+        <a href="/tools/find-replace-advanced.html">Find &amp; Replace</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Text Column Extractor</h1>
+          <p class="tool-subtitle">Extract specific columns from CSV, TSV, fixed-width, regex or JSON data. Preview as table, re-join with any delimiter.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="delim">By Delimiter</button>
+            <button class="option-chip" data-mode="fixed">Fixed Width</button>
+            <button class="option-chip" data-mode="regex">Regex</button>
+            <button class="option-chip" data-mode="json">JSON Path</button>
+          </div>
+
+          <!-- By Delimiter config -->
+          <div id="cfgDelim" class="ce-config">
+            <div class="ce-row">
+              <label>Delimiter:
+                <select id="delimSel">
+                  <option value=",">Comma (CSV)</option>
+                  <option value="&#9;">Tab (TSV)</option>
+                  <option value="|">Pipe</option>
+                  <option value=" ">Space</option>
+                  <option value="custom">Custom...</option>
+                </select>
+              </label>
+              <span id="delimCustomWrap" style="display:none">
+                <label>Char: <input type="text" id="delimCustom" maxlength="5" value=";" style="width:60px"></label>
+              </span>
+              <label>Columns (e.g. 1,3 or 1-3): <input type="text" id="delimCols" placeholder="1,2,3" value="1"></label>
+              <label><input type="checkbox" id="delimHasHeader" style="accent-color:var(--accent)"> Has Header</label>
+            </div>
+          </div>
+
+          <!-- Fixed Width config -->
+          <div id="cfgFixed" class="ce-config" style="display:none">
+            <div class="ce-row">
+              <label>Column ranges (start-end, comma separated):<br>
+                <span class="fw-hint">e.g. 0-10,10-25,25-40 (0-based character positions)</span>
+              </label>
+            </div>
+            <div class="ce-row">
+              <input type="text" id="fixedRanges" placeholder="0-10,10-25,25-40" style="width:280px">
+            </div>
+          </div>
+
+          <!-- Regex config -->
+          <div id="cfgRegex" class="ce-config" style="display:none">
+            <div class="ce-row">
+              <label>Pattern (capture groups = columns): <input type="text" id="regexPattern" placeholder="(\w+)\s+(\d+)" style="width:240px" spellcheck="false"></label>
+              <label><input type="checkbox" id="regexCaseI" style="accent-color:var(--accent)"> Case Insensitive</label>
+            </div>
+          </div>
+
+          <!-- JSON Path config -->
+          <div id="cfgJson" class="ce-config" style="display:none">
+            <div class="ce-row">
+              <label>Paths (comma separated, dot notation): <input type="text" id="jsonPaths" placeholder="name,age,address.city" style="width:280px" spellcheck="false"></label>
+            </div>
+            <div class="fw-hint" style="margin-left:.5rem">One JSON object per line (NDJSON format). Nested: <code>a.b.c</code></div>
+          </div>
+
+          <!-- Output delimiter -->
+          <div class="ce-config">
+            <div class="ce-row">
+              <label>Output Delimiter:
+                <select id="outputDelim">
+                  <option value=",">Comma</option>
+                  <option value="&#9;" selected>Tab</option>
+                  <option value="|">Pipe</option>
+                  <option value=" ">Space</option>
+                  <option value="custom">Custom...</option>
+                </select>
+              </label>
+              <span id="outputDelimCustomWrap" style="display:none">
+                <label>Char: <input type="text" id="outputDelimCustom" maxlength="5" value=" | " style="width:60px"></label>
+              </span>
+              <label><input type="checkbox" id="optSkipEmpty" style="accent-color:var(--accent)"> Skip empty rows</label>
+            </div>
+          </div>
+
+          <!-- Input + Preview -->
+          <div>
+            <div class="pane-label">
+              <span>Input Data</span>
+              <div class="btn-group" style="margin:0">
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+            </div>
+            <textarea id="ceInput" rows="10" placeholder="Paste your delimited text, fixed-width data, or JSON lines here..." spellcheck="false"></textarea>
+          </div>
+
+          <!-- Table Preview -->
+          <div id="ceTableSection" style="display:none">
+            <div class="pane-label">
+              <span>Column Preview</span>
+              <div class="btn-group" style="margin:0">
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy as Text</button>
+                <button class="btn btn-sm btn-secondary" id="downloadBtn">Download CSV</button>
+              </div>
+            </div>
+            <div class="ce-table-wrap">
+              <table class="ce-table" id="ceTable"><thead></thead><tbody></tbody></table>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste data above and configure extraction options.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Column Extractor</h2>
+          <ol>
+            <li><strong>Choose an extraction mode</strong> — By Delimiter for CSV/TSV, Fixed Width for positional data, Regex for pattern-based extraction, or JSON Path for NDJSON files.</li>
+            <li><strong>Configure the options</strong> — set the delimiter, column numbers, ranges, pattern, or paths.</li>
+            <li><strong>Paste your data</strong> into the input area. The preview table updates instantly.</li>
+            <li><strong>Choose an output delimiter</strong> to control how columns are joined in the text output.</li>
+            <li><strong>Copy or download</strong> the extracted columns.</li>
+          </ol>
+
+          <h2>Extraction Modes Explained</h2>
+
+          <h3>By Delimiter</h3>
+          <p>The most common mode for CSV, TSV, pipe-delimited, and space-separated data. Specify the delimiter and a comma-separated list of column numbers (1-based) to extract. You can also specify ranges like <code>1-3</code> (columns 1 through 3) or mix both: <code>1,3-5,7</code>. Enable "Has Header" to use the first row as column headers in the preview table. The delimiter can be any character including tab, pipe, semicolon, or a multi-character string.</p>
+
+          <h3>Fixed Width</h3>
+          <p>For data where columns are defined by character positions, not separators. This format is common in mainframe exports, financial data files, government data releases, and legacy system outputs. Specify column ranges as <code>start-end</code> pairs (zero-based, end-exclusive). For example, <code>0-10,10-25,25-40</code> extracts three columns of 10, 15, and 15 characters respectively. Trailing whitespace in each extracted value is trimmed automatically.</p>
+
+          <h3>Regex Capture Groups</h3>
+          <p>Applies a regular expression to each line and treats each capture group as a column. For example, <code>(\d{4}-\d{2}-\d{2})\s+(.+)\s+\$(\d+\.\d+)</code> applied to a log line like <code>2026-03-22 Purchase $49.99</code> would extract three columns: date, description, and amount. Lines that don't match the pattern are skipped. This mode is ideal for extracting structured data from logs, reports, or text with a consistent but non-standard format.</p>
+
+          <h3>JSON Path</h3>
+          <p>For NDJSON (newline-delimited JSON) files, where each line is a separate JSON object. Specify dot-notation paths to extract properties as columns. For example, <code>name,age,address.city</code> extracts three columns from objects like <code>{"name":"Alice","age":30,"address":{"city":"NYC"}}</code>. Array access uses bracket notation: <code>tags[0]</code>. This is useful for processing API response dumps, database exports, or log files in JSONL format.</p>
+
+          <h3>Common Use Cases</h3>
+          <ul>
+            <li>Extracting email addresses from a CSV with many columns</li>
+            <li>Pulling name and price from a product export to create a price list</li>
+            <li>Extracting date and amount columns from a bank statement export</li>
+            <li>Parsing log files by capturing timestamps and error messages with regex</li>
+            <li>Converting NDJSON API exports to CSV for spreadsheet import</li>
+            <li>Processing fixed-width government data files into structured CSV</li>
+            <li>Re-ordering columns by extracting and re-joining in a different order</li>
+          </ul>
+
+          <h3>Working with Large Datasets</h3>
+          <p>This tool handles data up to several megabytes in your browser. For very large files (100MB+), consider command-line tools: <code>cut</code> (Unix) for delimiter-based and fixed-width extraction, <code>awk</code> for pattern-based extraction, <code>jq</code> for JSON processing. These stream files without loading them into memory. For files that fit in your browser, this tool offers the advantage of instant visual feedback with the table preview — making it easy to verify you are extracting the right columns before saving the result.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">How do I extract a specific column from a CSV file?</button>
+            <div class="faq-answer">Paste your CSV text into the input area, select the "By Delimiter" mode, choose "Comma" as the delimiter, and enter the column numbers you want to extract (e.g., "1,3" for the first and third columns). The preview table will show your extracted columns instantly.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is fixed-width column extraction?</button>
+            <div class="faq-answer">Fixed-width extraction splits each line by character positions rather than a delimiter. You define column ranges as start-end pairs (e.g., "0-10,10-25,25-40"). This is used for legacy mainframe data, bank statement exports, and any file where columns are defined by character position rather than separators.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I extract data using regex capture groups?</button>
+            <div class="faq-answer">In Regex mode, enter a pattern with capture groups using parentheses. Each capture group becomes a column. For example, the pattern '(\w+)\s+(\d+)' applied to 'Alice 42' would extract two columns: 'Alice' and '42'. Lines that don't match the pattern are skipped.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is JSON Path extraction?</button>
+            <div class="faq-answer">JSON Path mode reads one JSON object per line (NDJSON/JSONL format) and extracts specified property paths. Enter paths like 'name,age,address.city' and each becomes a column. Nested properties use dot notation. Array indices use bracket notation like 'items[0].name'.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I re-join the extracted columns with a different delimiter?</button>
+            <div class="faq-answer">Yes. After extracting columns, use the "Output Delimiter" option to choose how columns are joined in the text output. You can join with comma (for CSV), tab (for TSV), pipe, space, or any custom character. The preview table always shows columns separated regardless of the output delimiter.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Text Tools</h4>
+        <a href="/tools/text-column-extractor.html">Column Extractor</a>
+        <a href="/tools/text-sorter.html">Line Sorter</a>
+        <a href="/tools/find-replace-advanced.html">Find &amp; Replace</a>
+        <a href="/tools/list-deduper.html">List Deduper</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var ceInput    = document.getElementById('ceInput');
+    var ceTable    = document.getElementById('ceTable');
+    var ceTableSection = document.getElementById('ceTableSection');
+    var statusBar  = document.getElementById('statusBar');
+    var currentMode = 'delim';
+    var lastExtracted = [];
+    var lastHeaders  = [];
+
+    function getOutputDelim() {
+      var sel = document.getElementById('outputDelim');
+      if (sel.value === 'custom') return document.getElementById('outputDelimCustom').value || ',';
+      return sel.value;
+    }
+
+    function getInputDelim() {
+      var sel = document.getElementById('delimSel');
+      if (sel.value === 'custom') return document.getElementById('delimCustom').value || ',';
+      return sel.value;
+    }
+
+    // Parse column spec like "1,2-4,6" into array of 0-based indices
+    function parseColSpec(spec, maxCols) {
+      var indices = [];
+      spec.split(',').forEach(function (part) {
+        part = part.trim();
+        var dash = part.indexOf('-');
+        if (dash > 0) {
+          var start = parseInt(part.substring(0, dash), 10) - 1;
+          var end   = parseInt(part.substring(dash + 1), 10) - 1;
+          for (var i = start; i <= end && i < maxCols; i++) if (i >= 0) indices.push(i);
+        } else {
+          var idx = parseInt(part, 10) - 1;
+          if (!isNaN(idx) && idx >= 0) indices.push(idx);
+        }
+      });
+      return indices;
+    }
+
+    // Deep get by dot-path
+    function deepGet(obj, path) {
+      return path.split('.').reduce(function (o, key) {
+        if (o === null || o === undefined) return '';
+        var arrMatch = key.match(/^([^\[]+)\[(\d+)\]$/);
+        if (arrMatch) {
+          var arr = o[arrMatch[1]];
+          return Array.isArray(arr) ? arr[parseInt(arrMatch[2], 10)] : '';
+        }
+        return o[key] !== undefined ? o[key] : '';
+      }, obj);
+    }
+
+    function extractDelim(lines) {
+      var delim = getInputDelim();
+      var hasHeader = document.getElementById('delimHasHeader').checked;
+      var colSpec = document.getElementById('delimCols').value.trim() || '1';
+      var skipEmpty = document.getElementById('optSkipEmpty').checked;
+
+      var startRow = 0;
+      var headers = [];
+      if (hasHeader && lines.length > 0) {
+        var hParts = lines[0].split(delim);
+        startRow = 1;
+        var hIndices = parseColSpec(colSpec, hParts.length);
+        headers = hIndices.map(function (i) { return hParts[i] !== undefined ? hParts[i].trim() : ('Col ' + (i + 1)); });
+      }
+
+      var rows = [];
+      for (var i = startRow; i < lines.length; i++) {
+        var line = lines[i];
+        if (skipEmpty && !line.trim()) continue;
+        var parts = line.split(delim);
+        var indices = parseColSpec(colSpec, parts.length);
+        if (!headers.length) headers = indices.map(function (idx) { return 'Col ' + (idx + 1); });
+        rows.push(indices.map(function (idx) { return parts[idx] !== undefined ? parts[idx] : ''; }));
+      }
+      return { headers: headers, rows: rows };
+    }
+
+    function extractFixed(lines) {
+      var rangesStr = document.getElementById('fixedRanges').value.trim();
+      if (!rangesStr) return { headers: [], rows: [] };
+      var ranges = rangesStr.split(',').map(function (r) {
+        var parts = r.trim().split('-');
+        return { start: parseInt(parts[0], 10) || 0, end: parseInt(parts[1], 10) || 0 };
+      });
+      var skipEmpty = document.getElementById('optSkipEmpty').checked;
+      var headers = ranges.map(function (r, i) { return 'Col ' + (i + 1) + ' (' + r.start + '-' + r.end + ')'; });
+      var rows = [];
+      lines.forEach(function (line) {
+        if (skipEmpty && !line.trim()) return;
+        rows.push(ranges.map(function (r) { return line.substring(r.start, r.end).trimEnd(); }));
+      });
+      return { headers: headers, rows: rows };
+    }
+
+    function extractRegex(lines) {
+      var pattern = document.getElementById('regexPattern').value;
+      if (!pattern) return { headers: [], rows: [] };
+      var flags = 'g' + (document.getElementById('regexCaseI').checked ? 'i' : '');
+      var skipEmpty = document.getElementById('optSkipEmpty').checked;
+      try {
+        var re = new RegExp(pattern, flags);
+        var headers = [];
+        var rows = [];
+        lines.forEach(function (line) {
+          if (skipEmpty && !line.trim()) return;
+          re.lastIndex = 0;
+          var m = re.exec(line);
+          if (!m) return;
+          var groups = m.slice(1);
+          if (!headers.length) headers = groups.map(function (_, i) { return 'Group ' + (i + 1); });
+          rows.push(groups);
+        });
+        return { headers: headers, rows: rows };
+      } catch (e) {
+        return { headers: [], rows: [], error: e.message };
+      }
+    }
+
+    function extractJson(lines) {
+      var pathsStr = document.getElementById('jsonPaths').value.trim();
+      if (!pathsStr) return { headers: [], rows: [] };
+      var paths = pathsStr.split(',').map(function (p) { return p.trim(); });
+      var skipEmpty = document.getElementById('optSkipEmpty').checked;
+      var headers = paths;
+      var rows = [];
+      lines.forEach(function (line) {
+        if (skipEmpty && !line.trim()) return;
+        try {
+          var obj = JSON.parse(line);
+          rows.push(paths.map(function (p) {
+            var v = deepGet(obj, p);
+            return v === null || v === undefined ? '' : String(v);
+          }));
+        } catch (e) {}
+      });
+      return { headers: headers, rows: rows };
+    }
+
+    function renderTable(headers, rows) {
+      var thead = ceTable.querySelector('thead');
+      var tbody = ceTable.querySelector('tbody');
+      thead.innerHTML = '';
+      tbody.innerHTML = '';
+      if (!rows.length) { ceTableSection.style.display = 'none'; return; }
+      ceTableSection.style.display = '';
+
+      if (headers.length) {
+        var tr = document.createElement('tr');
+        headers.forEach(function (h) {
+          var th = document.createElement('th');
+          th.textContent = h;
+          tr.appendChild(th);
+        });
+        thead.appendChild(tr);
+      }
+
+      var maxRows = Math.min(rows.length, 500);
+      for (var i = 0; i < maxRows; i++) {
+        var tr2 = document.createElement('tr');
+        rows[i].forEach(function (cell) {
+          var td = document.createElement('td');
+          td.textContent = String(cell);
+          tr2.appendChild(td);
+        });
+        tbody.appendChild(tr2);
+      }
+    }
+
+    function process() {
+      var raw = ceInput.value;
+      if (!raw.trim()) {
+        ceTableSection.style.display = 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste data above and configure extraction options.';
+        lastExtracted = [];
+        lastHeaders = [];
+        return;
+      }
+
+      var lines = raw.split('\n');
+      var result;
+      if (currentMode === 'delim')  result = extractDelim(lines);
+      else if (currentMode === 'fixed')  result = extractFixed(lines);
+      else if (currentMode === 'regex')  result = extractRegex(lines);
+      else if (currentMode === 'json')   result = extractJson(lines);
+      else result = { headers: [], rows: [] };
+
+      if (result.error) {
+        statusBar.className = 'status-bar invalid';
+        statusBar.textContent = 'Error: ' + result.error;
+        return;
+      }
+
+      lastHeaders   = result.headers;
+      lastExtracted = result.rows;
+
+      renderTable(result.headers, result.rows);
+
+      var colCount = result.headers.length || (result.rows[0] ? result.rows[0].length : 0);
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Extracted ' + colCount + ' column' + (colCount !== 1 ? 's' : '') +
+        ' from ' + result.rows.length + ' row' + (result.rows.length !== 1 ? 's' : '');
+
+      DT.trackTool('text-column-extractor');
+    }
+
+    function buildTextOutput() {
+      var delim = getOutputDelim();
+      var lines = [];
+      if (lastHeaders.length) lines.push(lastHeaders.join(delim));
+      lastExtracted.forEach(function (row) { lines.push(row.join(delim)); });
+      return lines.join('\n');
+    }
+
+    var debouncedProcess = DT.debounce(process, 200);
+    ceInput.addEventListener('input', debouncedProcess);
+
+    var watchIds = ['delimSel','delimCustom','delimCols','delimHasHeader','fixedRanges','regexPattern','regexCaseI','jsonPaths','outputDelim','outputDelimCustom','optSkipEmpty'];
+    watchIds.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('change', process);
+      if (el.tagName === 'INPUT' && el.type !== 'checkbox') el.addEventListener('input', DT.debounce(process, 300));
+    });
+
+    document.getElementById('delimSel').addEventListener('change', function () {
+      document.getElementById('delimCustomWrap').style.display = this.value === 'custom' ? '' : 'none';
+    });
+    document.getElementById('outputDelim').addEventListener('change', function () {
+      document.getElementById('outputDelimCustomWrap').style.display = this.value === 'custom' ? '' : 'none';
+    });
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        document.getElementById('cfgDelim').style.display  = currentMode === 'delim'  ? '' : 'none';
+        document.getElementById('cfgFixed').style.display  = currentMode === 'fixed'  ? '' : 'none';
+        document.getElementById('cfgRegex').style.display  = currentMode === 'regex'  ? '' : 'none';
+        document.getElementById('cfgJson').style.display   = currentMode === 'json'   ? '' : 'none';
+        process();
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var t = buildTextOutput();
+      if (t) DT.copyToClipboard(t, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var t = buildTextOutput();
+      if (t) DT.downloadText(t, 'extracted-columns.csv', 'text/csv');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      ceInput.value = '';
+      process();
+      ceInput.focus();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      currentMode = 'delim';
+      document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+      document.querySelector('[data-mode="delim"]').classList.add('active');
+      document.getElementById('cfgDelim').style.display = '';
+      document.getElementById('cfgFixed').style.display = 'none';
+      document.getElementById('cfgRegex').style.display = 'none';
+      document.getElementById('cfgJson').style.display  = 'none';
+      document.getElementById('delimSel').value = ',';
+      document.getElementById('delimCols').value = '1,2,4';
+      document.getElementById('delimHasHeader').checked = true;
+      ceInput.value = [
+        'Name,Email,Phone,City,Country',
+        'Alice Johnson,alice@example.com,555-1234,New York,USA',
+        'Bob Smith,bob@example.com,555-5678,London,UK',
+        'Carol White,carol@example.com,555-9012,Toronto,Canada',
+        'David Lee,david@example.com,555-3456,Sydney,Australia',
+        'Eva Brown,eva@example.com,555-7890,Berlin,Germany'
+      ].join('\n');
+      process();
+    });
+
+    // Tab in textarea
+    ceInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        var s = this.selectionStart;
+        this.value = this.value.substring(0, s) + '\t' + this.value.substring(this.selectionEnd);
+        this.selectionStart = this.selectionEnd = s + 1;
+        debouncedProcess();
+      }
+    });
+  })();
+  </script>
+</body>
+</html>
