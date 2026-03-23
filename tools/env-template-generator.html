@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>.env.example Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate .env.example files from your .env, build environment templates, or compare two .env files. Sensitive values auto-redacted. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/env-template-generator.html">
+  <meta property="og:title" content=".env.example Generator — DevToolbox">
+  <meta property="og:description" content="Parse .env files to create .env.example templates with sensitive values redacted. Build, compare, and document environment variables. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/env-template-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": ".env.example Generator",
+    "url": "https://thisdevtool.com/tools/env-template-generator.html",
+    "description": "Generate .env.example files by parsing your .env, build environment variable templates, or compare two .env files. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a .env.example file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A .env.example file is a template that shows which environment variables a project requires, without including any real values. It is safe to commit to version control. Developers clone the repo, copy .env.example to .env, and fill in their own values. It serves as living documentation for required configuration."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should I commit my .env file to Git?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Never commit your .env file to Git. It typically contains API keys, database passwords, and other secrets. Add .env to your .gitignore file. Instead, commit a .env.example file with all values replaced by empty strings or placeholder descriptions. This way, new team members know which variables to configure without exposing secrets."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does the sensitive value detection work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool flags a value as sensitive if the variable name contains keywords like KEY, SECRET, PASSWORD, TOKEN, PASS, PRIVATE, CREDENTIAL, AUTH, or CERT. Flagged values are replaced with a placeholder description in the generated .env.example. You can review and adjust the output before downloading."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between .env and .env.local?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": ".env is the default environment file loaded by dotenv and most frameworks. .env.local overrides .env and is gitignored by default in frameworks like Next.js and Create React App, making it suitable for machine-specific secrets. .env.development and .env.production are loaded for their respective environments. .env.development.local and .env.production.local are gitignored overrides for those environments."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my .env data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool runs entirely in your browser. Your environment variables and secrets are never sent anywhere. All parsing, redaction, and generation happens locally using JavaScript. Close the tab and your data is gone."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .form-group { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.6rem; }
+    .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
+    .form-group input, .form-group select { width: 100%; padding: 0.45rem 0.7rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); font-size: 0.88rem; font-family: inherit; }
+    .section-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin: 0.6rem 0 0.35rem; }
+    .var-row { display: grid; grid-template-columns: auto 1fr 1fr 1fr auto; gap: 0.4rem; align-items: center; margin-bottom: 0.35rem; }
+    .var-row input, .var-row select { padding: 0.38rem 0.55rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-secondary); color: var(--text); font-size: 0.8rem; }
+    .var-row .col-section { width: 100px; }
+    .var-row .col-name { min-width: 0; }
+    .var-row .col-default { min-width: 0; }
+    .var-row .col-desc { min-width: 0; }
+    .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 0.2rem 0.4rem; color: var(--text-secondary); }
+    .btn-icon:hover { color: #ef4444; }
+    .required-badge { font-size: 0.7rem; background: #dcfce7; color: #15803d; padding: 0.1rem 0.4rem; border-radius: 3px; white-space: nowrap; }
+    [data-theme=dark] .required-badge { background: #14532d; color: #86efac; }
+    .sensitive-badge { font-size: 0.7rem; background: #fee2e2; color: #dc2626; padding: 0.1rem 0.4rem; border-radius: 3px; }
+    [data-theme=dark] .sensitive-badge { background: #450a0a; color: #fca5a5; }
+    .diff-added { color: #15803d; background: #f0fdf4; }
+    .diff-removed { color: #dc2626; background: #fff1f2; }
+    [data-theme=dark] .diff-added { color: #86efac; background: #052e16; }
+    [data-theme=dark] .diff-removed { color: #fca5a5; background: #2d0a0a; }
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .parse-warning { background: #fffbeb; border-left: 3px solid #f59e0b; padding: 0.5rem 0.75rem; border-radius: 0 4px 4px 0; font-size: 0.8rem; color: #92400e; margin-bottom: 0.5rem; }
+    [data-theme=dark] .parse-warning { background: #292108; color: #fcd34d; border-color: #d97706; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/github-actions-generator.html">GitHub Actions</a>
+        <a href="/tools/readme-generator.html">README</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>.env.example Generator</h1>
+          <p class="tool-subtitle">Parse your .env to create a safe template, build one from scratch, or compare two .env files side-by-side.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="parse">Parse</button>
+            <button class="option-chip" data-mode="build">Build</button>
+            <button class="option-chip" data-mode="compare">Compare</button>
+          </div>
+
+          <!-- PARSE MODE -->
+          <div id="parsePane">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Paste your .env file</span>
+                  <button class="btn btn-sm btn-secondary" id="parseExampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="parseClearBtn">Clear</button>
+                </div>
+                <textarea id="parseInput" rows="16" placeholder="DATABASE_URL=postgres://user:pass@localhost/mydb
+SECRET_KEY=abc123supersecret
+API_KEY=sk-1234567890abcdef
+REDIS_URL=redis://localhost:6379
+NODE_ENV=production
+PORT=3000
+DEBUG=false" spellcheck="false" style="font-family:monospace;font-size:0.82rem;"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Generated .env.example</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="parseCopyBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="parseDownloadBtn">Download</button>
+                  </div>
+                </div>
+                <div class="code-output" id="parseOutput" style="min-height:340px;white-space:pre;font-size:0.8rem;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BUILD MODE -->
+          <div id="buildPane" style="display:none;">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Variables</span>
+                  <button class="btn btn-sm btn-secondary" id="buildExampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="buildClearBtn">Clear</button>
+                </div>
+                <div id="buildVarsList" style="max-height:480px;overflow-y:auto;padding-right:4px;"></div>
+                <div style="margin-top:0.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+                  <button class="btn btn-sm btn-primary" id="buildAddBtn">+ Add Variable</button>
+                  <button class="btn btn-sm btn-secondary" id="buildAddSectionBtn">+ Section Comment</button>
+                </div>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Generated .env.example</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="buildCopyBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="buildDownloadBtn">Download</button>
+                  </div>
+                </div>
+                <div class="code-output" id="buildOutput" style="min-height:340px;white-space:pre;font-size:0.8rem;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COMPARE MODE -->
+          <div id="comparePane" style="display:none;">
+            <div class="compare-grid" style="margin-bottom:0.75rem;">
+              <div>
+                <div class="pane-label"><span>.env (current)</span></div>
+                <textarea id="compareA" rows="14" placeholder="DATABASE_URL=postgres://user:pass@localhost/mydb&#10;API_KEY=sk-abc123&#10;PORT=3000&#10;NODE_ENV=development" spellcheck="false" style="font-family:monospace;font-size:0.82rem;width:100%;"></textarea>
+              </div>
+              <div>
+                <div class="pane-label"><span>.env.example (reference)</span></div>
+                <textarea id="compareB" rows="14" placeholder="DATABASE_URL=&#10;API_KEY=&#10;PORT=3000&#10;NEW_FEATURE_FLAG=false" spellcheck="false" style="font-family:monospace;font-size:0.82rem;width:100%;"></textarea>
+              </div>
+            </div>
+            <div class="pane-label">
+              <span>Comparison Result</span>
+              <button class="btn btn-sm btn-primary" id="compareCopyBtn">Copy</button>
+            </div>
+            <div class="code-output" id="compareOutput" style="min-height:240px;white-space:pre;font-size:0.8rem;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste your .env file to generate a safe .env.example template.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the .env.example Generator</h2>
+          <ol>
+            <li><strong>Parse mode</strong> — paste your existing .env file. Sensitive values (keys, passwords, tokens) are automatically detected and replaced with placeholder descriptions. Non-sensitive values with obvious defaults (ports, flags) are kept as-is.</li>
+            <li><strong>Build mode</strong> — construct a .env.example from scratch by adding variables with names, default values, descriptions, and required flags. Group them by section (Database, API, Auth, etc.).</li>
+            <li><strong>Compare mode</strong> — paste two .env files to see which variables exist in one but not the other. Useful when syncing .env files across environments or finding missing variables.</li>
+            <li><strong>Download or copy</strong> the generated .env.example and commit it to your repository.</li>
+          </ol>
+
+          <h2>Why .env Files Matter</h2>
+          <p>Environment variables are the standard way to configure applications across different environments (development, staging, production) without hardcoding values in source code. The twelve-factor app methodology specifically requires storing configuration in the environment as one of its core principles. A .env file is a convenient local way to set these variables during development. The <code>dotenv</code> package for Node.js popularized this pattern, and it is now standard practice across virtually all web frameworks.</p>
+
+          <h3>Security Best Practices</h3>
+          <p>Your .env file contains secrets that must never be committed to version control. Add <code>.env</code> and <code>.env.local</code> to your <code>.gitignore</code> immediately after creating a new project. A .env.example file serves as the safe, committable documentation of what variables the application needs. Anyone who clones the repository copies .env.example to .env and fills in their own credentials. This pattern prevents accidental secret exposure while ensuring developers know exactly what to configure.</p>
+
+          <h3>Detecting Sensitive Values</h3>
+          <p>This tool automatically flags values as sensitive when the variable name contains keywords like <code>KEY</code>, <code>SECRET</code>, <code>PASSWORD</code>, <code>TOKEN</code>, <code>PASS</code>, <code>PRIVATE</code>, <code>CREDENTIAL</code>, or <code>AUTH</code>. These are replaced with descriptive placeholders like <code>your-api-key-here</code> in the output. Non-sensitive values with obvious defaults — like <code>PORT=3000</code> or <code>NODE_ENV=production</code> — are preserved as-is, since they do not expose any secrets.</p>
+
+          <h3>Environment File Hierarchy</h3>
+          <p>Frameworks like Next.js, Vite, and Create React App support multiple .env files with a defined priority order. From lowest to highest priority: <code>.env</code> (base defaults), <code>.env.local</code> (local overrides, always gitignored), <code>.env.development</code> / <code>.env.production</code> (environment-specific), <code>.env.development.local</code> / <code>.env.production.local</code> (local environment-specific overrides). Understanding this hierarchy prevents confusion when variables seem to be ignored — a higher-priority file is likely overriding them. Use our <a href="/tools/github-actions-generator.html">GitHub Actions Generator</a> to see how to use secrets in CI/CD pipelines.</p>
+
+          <h3>Grouping Variables by Section</h3>
+          <p>For larger applications with many environment variables, organizing them into sections with comment headers significantly improves readability. Common sections include Database (connection strings, pool size), External APIs (API keys, base URLs), Authentication (JWT secrets, OAuth credentials), Storage (S3 buckets, CDN URLs), Feature Flags (boolean toggles), and Application Settings (port, log level, environment name). The Build mode in this generator lets you assign each variable to a named section, which then appears as a comment block in the output.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a .env.example file?</button>
+            <div class="faq-answer">A .env.example file is a template showing which environment variables a project requires, without real values. It is safe to commit to Git. Developers copy it to .env and fill in their own credentials. It serves as living documentation for required configuration.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Should I commit my .env file to Git?</button>
+            <div class="faq-answer">No. Never commit your .env file to Git. Add .env to your .gitignore. It typically contains API keys, passwords, and secrets. Instead, commit .env.example with all secrets replaced by placeholders so team members know what to configure.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does the sensitive value detection work?</button>
+            <div class="faq-answer">The tool flags values as sensitive when the variable name contains keywords like KEY, SECRET, PASSWORD, TOKEN, PASS, PRIVATE, CREDENTIAL, AUTH, or CERT. Flagged values are replaced with placeholder descriptions in the generated .env.example.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between .env and .env.local?</button>
+            <div class="faq-answer">.env is the default environment file. .env.local overrides it and is gitignored by default in frameworks like Next.js and Vite, making it suitable for machine-specific secrets. .env.development and .env.production are loaded for their respective environments.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my .env data sent to a server?</button>
+            <div class="faq-answer">No. This tool runs entirely in your browser. Your environment variables and secrets are never sent anywhere. All parsing, redaction, and generation happens locally using JavaScript. Close the tab and your data is gone.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CI/CD Tools</h4>
+        <a href="/tools/github-actions-generator.html">GitHub Actions</a>
+        <a href="/tools/systemd-service-generator.html">Systemd Service</a>
+        <a href="/tools/env-template-generator.html">.env Builder</a>
+        <a href="/tools/readme-generator.html">README Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'parse';
+
+    // ── Sensitive key detection ───────────────────────────────────────
+    var SENSITIVE_PATTERN = /key|secret|password|token|pass|private|credential|auth|cert|jwt|signing/i;
+    function isSensitive(name) { return SENSITIVE_PATTERN.test(name); }
+
+    function placeholder(name) {
+      name = name.toLowerCase();
+      if (/password|pass/.test(name)) return 'your-password-here';
+      if (/secret/.test(name)) return 'your-secret-here';
+      if (/api.?key|key/.test(name)) return 'your-api-key-here';
+      if (/token/.test(name)) return 'your-token-here';
+      if (/jwt|signing/.test(name)) return 'your-jwt-secret-here';
+      if (/cert/.test(name)) return '/path/to/cert.pem';
+      return 'your-value-here';
+    }
+
+    // ── Parse .env content ────────────────────────────────────────────
+    function parseEnvContent(raw) {
+      var vars = [];
+      raw.split('\n').forEach(function(line) {
+        var trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) {
+          vars.push({ type: 'comment', value: line });
+          return;
+        }
+        var eqIdx = trimmed.indexOf('=');
+        if (eqIdx === -1) { vars.push({ type: 'comment', value: line }); return; }
+        var name = trimmed.slice(0, eqIdx).trim();
+        var value = trimmed.slice(eqIdx + 1).replace(/^["']|["']$/g, '').trim();
+        vars.push({ type: 'var', name: name, value: value, sensitive: isSensitive(name) });
+      });
+      return vars;
+    }
+
+    // ── Parse mode ────────────────────────────────────────────────────
+    function runParse() {
+      var raw = document.getElementById('parseInput').value;
+      if (!raw.trim()) {
+        document.getElementById('parseOutput').textContent = '';
+        document.getElementById('statusBar').className = 'status-bar info';
+        document.getElementById('statusBar').textContent = 'Paste your .env file to generate a safe .env.example template.';
+        return;
+      }
+      var vars = parseEnvContent(raw);
+      var lines = ['# .env.example — copy to .env and fill in your values', '# Generated by DevToolbox: https://thisdevtool.com', ''];
+      var totalVars = 0, sensitive = 0;
+      vars.forEach(function(v) {
+        if (v.type === 'comment') { lines.push(v.value); return; }
+        totalVars++;
+        if (v.sensitive) { sensitive++; lines.push(v.name + '=' + placeholder(v.name)); }
+        else { lines.push(v.name + '=' + v.value); }
+      });
+      document.getElementById('parseOutput').textContent = lines.join('\n');
+      var statusEl = document.getElementById('statusBar');
+      statusEl.className = 'status-bar valid';
+      statusEl.textContent = totalVars + ' variables \u2014 ' + sensitive + ' sensitive values redacted';
+      DT.trackTool('env-template-generator');
+    }
+
+    document.getElementById('parseInput').addEventListener('input', DT.debounce(runParse, 200));
+    document.getElementById('parseExampleBtn').addEventListener('click', function() {
+      document.getElementById('parseInput').value = 'DATABASE_URL=postgres://admin:superSecretPass@localhost:5432/mydb\nDB_HOST=localhost\nDB_PORT=5432\nDB_NAME=mydb\nDB_USER=admin\nDB_PASSWORD=superSecretPass\n\n# API Keys\nOPENAI_API_KEY=sk-1234567890abcdefghijklmnopqrstu\nSTRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxxxxxx\nSTRIPE_PUBLISHABLE_KEY=pk_live_xxxxxxxxxxxxxxxxxxxx\n\n# Auth\nJWT_SECRET=my-super-secret-jwt-signing-key\nSESSION_SECRET=random-session-secret\n\n# App\nNODE_ENV=production\nPORT=3000\nDEBUG=false\nLOG_LEVEL=info';
+      runParse();
+    });
+    document.getElementById('parseClearBtn').addEventListener('click', function() {
+      document.getElementById('parseInput').value = ''; runParse();
+    });
+    document.getElementById('parseCopyBtn').addEventListener('click', function() {
+      var t = document.getElementById('parseOutput').textContent;
+      if (t) DT.copyToClipboard(t, this);
+    });
+    document.getElementById('parseDownloadBtn').addEventListener('click', function() {
+      var t = document.getElementById('parseOutput').textContent;
+      if (t) DT.downloadText(t, '.env.example', 'text/plain');
+    });
+
+    // ── Build mode ────────────────────────────────────────────────────
+    var buildItems = []; // {type:'section'|'var', name, default, desc, required, section}
+
+    function renderBuildList() {
+      var list = document.getElementById('buildVarsList');
+      list.innerHTML = '';
+      if (buildItems.length === 0) {
+        list.innerHTML = '<div style="color:var(--text-secondary);font-size:0.8rem;padding:0.4rem;">Add variables using the buttons below.</div>';
+        return;
+      }
+      buildItems.forEach(function(item, i) {
+        var row = document.createElement('div');
+        if (item.type === 'section') {
+          row.style.cssText = 'display:flex;align-items:center;gap:0.4rem;margin-bottom:0.35rem;';
+          row.innerHTML = '<span style="font-size:0.75rem;color:var(--accent);font-weight:700;">#</span>' +
+            '<input type="text" value="' + (item.value||'') + '" placeholder="Section name (e.g. Database)" style="flex:1;padding:0.38rem 0.6rem;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.82rem;">' +
+            '<button class="btn-icon">\u00d7</button>';
+          row.querySelector('input').addEventListener('input', function() { buildItems[i].value = this.value; runBuild(); });
+          row.querySelector('.btn-icon').addEventListener('click', function() { buildItems.splice(i,1); renderBuildList(); runBuild(); });
+          list.appendChild(row);
+          return;
+        }
+        // var row
+        row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr auto auto;gap:0.35rem;align-items:center;margin-bottom:0.35rem;';
+        var requiredChecked = item.required ? 'checked' : '';
+        row.innerHTML = '<input type="text" placeholder="VARIABLE_NAME" value="' + (item.name||'') + '" style="padding:0.38rem 0.55rem;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.8rem;">' +
+          '<input type="text" placeholder="default value" value="' + (item.default||'') + '" style="padding:0.38rem 0.55rem;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.8rem;">' +
+          '<input type="text" placeholder="description" value="' + (item.desc||'') + '" style="padding:0.38rem 0.55rem;border:1px solid var(--border);border-radius:4px;background:var(--bg-secondary);color:var(--text);font-size:0.8rem;">' +
+          '<label style="display:flex;align-items:center;gap:0.25rem;font-size:0.75rem;white-space:nowrap;"><input type="checkbox" ' + requiredChecked + ' style="accent-color:#10b981;"> req</label>' +
+          '<button class="btn-icon">\u00d7</button>';
+        var inputs = row.querySelectorAll('input[type=text]');
+        inputs[0].addEventListener('input', function() { buildItems[i].name = this.value; runBuild(); });
+        inputs[1].addEventListener('input', function() { buildItems[i].default = this.value; runBuild(); });
+        inputs[2].addEventListener('input', function() { buildItems[i].desc = this.value; runBuild(); });
+        row.querySelector('input[type=checkbox]').addEventListener('change', function() { buildItems[i].required = this.checked; runBuild(); });
+        row.querySelector('.btn-icon').addEventListener('click', function() { buildItems.splice(i,1); renderBuildList(); runBuild(); });
+        list.appendChild(row);
+      });
+    }
+
+    function runBuild() {
+      var lines = ['# .env.example', '# Generated by DevToolbox: https://thisdevtool.com', ''];
+      var totalVars = 0, required = 0;
+      buildItems.forEach(function(item) {
+        if (item.type === 'section') {
+          lines.push(''); lines.push('# ─── ' + (item.value || 'Section') + ' ───────────────────────────────────────');
+          return;
+        }
+        totalVars++;
+        if (item.required) required++;
+        if (item.desc) lines.push('# ' + item.desc + (item.required ? ' [REQUIRED]' : ''));
+        lines.push((item.name || 'VARIABLE') + '=' + (item.default || ''));
+      });
+      document.getElementById('buildOutput').textContent = lines.join('\n');
+      if (totalVars > 0) {
+        var statusEl = document.getElementById('statusBar');
+        statusEl.className = 'status-bar valid';
+        statusEl.textContent = totalVars + ' variables \u2014 ' + required + ' required';
+      }
+      DT.trackTool('env-template-generator');
+    }
+
+    document.getElementById('buildAddBtn').addEventListener('click', function() {
+      buildItems.push({ type: 'var', name: '', default: '', desc: '', required: false });
+      renderBuildList(); runBuild();
+    });
+    document.getElementById('buildAddSectionBtn').addEventListener('click', function() {
+      buildItems.push({ type: 'section', value: '' });
+      renderBuildList(); runBuild();
+    });
+    document.getElementById('buildExampleBtn').addEventListener('click', function() {
+      buildItems = [
+        { type: 'section', value: 'Database' },
+        { type: 'var', name: 'DATABASE_URL', default: '', desc: 'Full PostgreSQL connection string', required: true },
+        { type: 'var', name: 'DB_POOL_SIZE', default: '10', desc: 'Connection pool size', required: false },
+        { type: 'section', value: 'External APIs' },
+        { type: 'var', name: 'OPENAI_API_KEY', default: '', desc: 'OpenAI API key for AI features', required: true },
+        { type: 'var', name: 'STRIPE_SECRET_KEY', default: '', desc: 'Stripe secret key for payments', required: true },
+        { type: 'section', value: 'Application' },
+        { type: 'var', name: 'NODE_ENV', default: 'development', desc: 'Environment (development|production)', required: false },
+        { type: 'var', name: 'PORT', default: '3000', desc: 'Server port', required: false },
+        { type: 'var', name: 'LOG_LEVEL', default: 'info', desc: 'Logging level (debug|info|warn|error)', required: false }
+      ];
+      renderBuildList(); runBuild();
+    });
+    document.getElementById('buildClearBtn').addEventListener('click', function() {
+      buildItems = []; renderBuildList(); runBuild();
+    });
+    document.getElementById('buildCopyBtn').addEventListener('click', function() {
+      var t = document.getElementById('buildOutput').textContent;
+      if (t) DT.copyToClipboard(t, this);
+    });
+    document.getElementById('buildDownloadBtn').addEventListener('click', function() {
+      var t = document.getElementById('buildOutput').textContent;
+      if (t) DT.downloadText(t, '.env.example', 'text/plain');
+    });
+
+    // ── Compare mode ──────────────────────────────────────────────────
+    function parseEnvKeys(raw) {
+      var map = {};
+      raw.split('\n').forEach(function(line) {
+        line = line.trim();
+        if (!line || line.startsWith('#')) return;
+        var eqIdx = line.indexOf('=');
+        if (eqIdx === -1) return;
+        var name = line.slice(0, eqIdx).trim();
+        var value = line.slice(eqIdx + 1).trim();
+        map[name] = value;
+      });
+      return map;
+    }
+
+    function runCompare() {
+      var rawA = document.getElementById('compareA').value;
+      var rawB = document.getElementById('compareB').value;
+      if (!rawA.trim() && !rawB.trim()) {
+        document.getElementById('compareOutput').textContent = '';
+        return;
+      }
+      var mapA = parseEnvKeys(rawA);
+      var mapB = parseEnvKeys(rawB);
+      var keysA = Object.keys(mapA);
+      var keysB = Object.keys(mapB);
+      var allKeys = [];
+      keysA.concat(keysB).forEach(function(k){ if (allKeys.indexOf(k) === -1) allKeys.push(k); });
+      allKeys.sort();
+      var lines = ['# .env comparison', '# + only in .env (current) | - only in .env.example | = in both', ''];
+      var onlyA = 0, onlyB = 0, inBoth = 0;
+      allKeys.forEach(function(key) {
+        var inA = mapA.hasOwnProperty(key);
+        var inB = mapB.hasOwnProperty(key);
+        if (inA && inB) { inBoth++; lines.push('  ' + key + '=...'); }
+        else if (inA) { onlyA++; lines.push('+ ' + key + '=' + (isSensitive(key) ? '[redacted]' : mapA[key])); }
+        else { onlyB++; lines.push('- ' + key + '=...'); }
+      });
+      lines.push('');
+      lines.push('# Summary:');
+      lines.push('# ' + inBoth + ' keys in both | ' + onlyA + ' only in .env | ' + onlyB + ' only in .env.example');
+      if (onlyB > 0) lines.push('# WARNING: ' + onlyB + ' variable(s) in .env.example are missing from your .env!');
+      document.getElementById('compareOutput').textContent = lines.join('\n');
+      var statusEl = document.getElementById('statusBar');
+      statusEl.className = (onlyB > 0) ? 'status-bar invalid' : 'status-bar valid';
+      statusEl.textContent = inBoth + ' matching \u2014 ' + onlyA + ' only in .env \u2014 ' + onlyB + ' missing from .env';
+      DT.trackTool('env-template-generator');
+    }
+
+    var debouncedCompare = DT.debounce(runCompare, 200);
+    document.getElementById('compareA').addEventListener('input', debouncedCompare);
+    document.getElementById('compareB').addEventListener('input', debouncedCompare);
+    document.getElementById('compareCopyBtn').addEventListener('click', function() {
+      var t = document.getElementById('compareOutput').textContent;
+      if (t) DT.copyToClipboard(t, this);
+    });
+
+    // ── Mode switching ────────────────────────────────────────────────
+    var panes = { parse: 'parsePane', build: 'buildPane', compare: 'comparePane' };
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        Object.keys(panes).forEach(function(k) {
+          var el = document.getElementById(panes[k]);
+          if (el) el.style.display = k === currentMode ? '' : 'none';
+        });
+        if (currentMode === 'parse') runParse();
+        else if (currentMode === 'build') runBuild();
+        else runCompare();
+      });
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────
+    renderBuildList();
+  })();
+  </script>
+</body>
+</html>

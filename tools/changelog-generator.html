@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CHANGELOG Entry Builder — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate CHANGELOG.md entries in Keep a Changelog or Conventional Commits format. Add versioned sections, append to existing changelogs, copy or download. Free, browser-only.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/changelog-generator.html">
+  <meta property="og:title" content="CHANGELOG Entry Builder — DevToolbox">
+  <meta property="og:description" content="Build structured CHANGELOG.md entries in Keep a Changelog or Conventional Commits format. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/changelog-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CHANGELOG Entry Builder",
+    "url": "https://thisdevtool.com/tools/changelog-generator.html",
+    "description": "Generate CHANGELOG.md entries in Keep a Changelog or Conventional Commits format. Free, browser-only.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Keep a Changelog format?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Keep a Changelog (keepachangelog.com) is a standard format for maintaining a CHANGELOG.md file. It groups changes under version headings, each dated, and categorises entries as Added, Changed, Deprecated, Removed, Fixed, or Security. The format is human-readable and machine-parseable."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are Conventional Commits?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Conventional Commits is a specification for commit messages that makes them machine-readable. Messages follow the pattern type(scope): description — for example feat(auth): add OAuth login. Tools like semantic-release and standard-version use Conventional Commits to automatically determine version bumps and generate changelogs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I append to an existing CHANGELOG?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Switch to the 'Append' mode, paste your existing CHANGELOG.md content into the 'Existing changelog' textarea, then fill in the new version details. The tool places the new version section at the top (below the title) and preserves all older entries."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What version number format should I use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use Semantic Versioning (SemVer): MAJOR.MINOR.PATCH, e.g. 2.1.0. MAJOR bumps for breaking changes, MINOR for new backward-compatible features, PATCH for bug fixes. Pre-release identifiers like 1.0.0-alpha.1 or build metadata like 1.0.0+build.123 are also valid SemVer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool runs entirely in your browser. No data is transmitted, logged, or stored anywhere outside your device."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .cl-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .cl-meta label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 0.25rem; }
+    .cl-meta input { width: 100%; }
+    .cl-section { margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .cl-section-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; background: var(--surface-2); cursor: pointer; user-select: none; }
+    .cl-section-header h4 { margin: 0; font-size: 0.9rem; }
+    .cl-section-badge { font-size: 0.75rem; background: var(--accent); color: #fff; border-radius: 12px; padding: 1px 8px; }
+    .cl-entries { padding: 0.5rem 0.75rem; display: none; }
+    .cl-section.open .cl-entries { display: block; }
+    .cl-entry-row { display: flex; gap: 0.5rem; margin-bottom: 0.4rem; align-items: center; }
+    .cl-entry-row input { flex: 1; font-size: 0.88rem; }
+    .cl-entry-row button { flex-shrink: 0; }
+    .cl-add-btn { margin-top: 0.4rem; font-size: 0.82rem; }
+    .cc-input { width: 100%; height: 120px; font-family: var(--font-mono); font-size: 0.85rem; resize: vertical; }
+    .existing-area { width: 100%; height: 100px; font-family: var(--font-mono); font-size: 0.82rem; resize: vertical; }
+    @media (max-width: 600px) { .cl-meta { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/semver-comparator.html">SemVer</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CHANGELOG Entry Builder</h1>
+          <p class="tool-subtitle">Generate structured CHANGELOG.md entries in Keep a Changelog, Conventional Commits, or Simple format.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="keepachangelog">Keep a Changelog</button>
+            <button class="option-chip" data-mode="conventional">Conventional</button>
+            <button class="option-chip" data-mode="simple">Simple</button>
+            <button class="option-chip" data-mode="append">Append</button>
+          </div>
+
+          <!-- Keep a Changelog Mode -->
+          <div id="mode-keepachangelog">
+            <div class="cl-meta">
+              <div>
+                <label for="klVersion">Version</label>
+                <input type="text" id="klVersion" placeholder="2.1.0" value="">
+              </div>
+              <div>
+                <label for="klDate">Release Date</label>
+                <input type="date" id="klDate">
+              </div>
+            </div>
+            <div id="klSections"></div>
+            <div class="btn-group" style="margin-top:0.5rem;">
+              <button class="btn btn-sm btn-secondary" id="klExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="klClearBtn">Clear All</button>
+            </div>
+          </div>
+
+          <!-- Conventional Mode -->
+          <div id="mode-conventional" style="display:none;">
+            <div class="cl-meta">
+              <div>
+                <label for="ccVersion">Version</label>
+                <input type="text" id="ccVersion" placeholder="2.1.0">
+              </div>
+              <div>
+                <label for="ccDate">Release Date</label>
+                <input type="date" id="ccDate">
+              </div>
+            </div>
+            <label style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:0.25rem;">Commit Messages (one per line)</label>
+            <textarea class="cc-input" id="ccCommits" placeholder="feat(auth): add OAuth2 login&#10;fix(api): handle null response correctly&#10;docs: update README&#10;chore(deps): bump lodash to 4.17.21&#10;feat!: drop Node 14 support"></textarea>
+            <div class="btn-group" style="margin-top:0.5rem;">
+              <button class="btn btn-sm btn-secondary" id="ccExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="ccClearBtn">Clear</button>
+            </div>
+          </div>
+
+          <!-- Simple Mode -->
+          <div id="mode-simple" style="display:none;">
+            <div class="cl-meta">
+              <div>
+                <label for="simVersion">Version</label>
+                <input type="text" id="simVersion" placeholder="2.1.0">
+              </div>
+              <div>
+                <label for="simDate">Release Date</label>
+                <input type="date" id="simDate">
+              </div>
+            </div>
+            <label style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:0.25rem;">Changes (one per line)</label>
+            <textarea class="cc-input" id="simChanges" placeholder="Added dark mode toggle&#10;Fixed crash on empty input&#10;Updated dependencies"></textarea>
+            <div class="btn-group" style="margin-top:0.5rem;">
+              <button class="btn btn-sm btn-secondary" id="simExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="simClearBtn">Clear</button>
+            </div>
+          </div>
+
+          <!-- Append Mode -->
+          <div id="mode-append" style="display:none;">
+            <div class="cl-meta">
+              <div>
+                <label for="appVersion">New Version</label>
+                <input type="text" id="appVersion" placeholder="2.1.0">
+              </div>
+              <div>
+                <label for="appDate">Release Date</label>
+                <input type="date" id="appDate">
+              </div>
+            </div>
+            <label style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:0.25rem;">New Entries (one per line, prefix with Added:, Fixed:, etc.)</label>
+            <textarea class="cc-input" id="appEntries" placeholder="Added: dark mode toggle&#10;Fixed: crash on empty input&#10;Changed: updated API endpoint"></textarea>
+            <label style="font-size:0.85rem;font-weight:600;color:var(--text-secondary);display:block;margin:0.5rem 0 0.25rem;">Existing CHANGELOG.md (paste here)</label>
+            <textarea class="existing-area" id="appExisting" placeholder="# Changelog&#10;&#10;## [2.0.0] - 2025-01-01&#10;..."></textarea>
+            <div class="btn-group" style="margin-top:0.5rem;">
+              <button class="btn btn-sm btn-secondary" id="appExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="appClearBtn">Clear</button>
+            </div>
+          </div>
+
+          <!-- Output -->
+          <div style="margin-top:1rem;">
+            <div class="pane-label">
+              <span>Generated CHANGELOG</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+              </div>
+            </div>
+            <div class="code-output" id="clOutput" style="min-height:220px;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Fill in the version and entries above to generate your changelog.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the CHANGELOG Entry Builder</h2>
+          <ol>
+            <li><strong>Choose a format</strong> — Keep a Changelog for structured category-based entries, Conventional for commit-message parsing, Simple for a plain bulleted list, or Append to add a new release to an existing file.</li>
+            <li><strong>Enter your version number</strong> — use Semantic Versioning (e.g. <code>2.1.0</code>). The date defaults to today.</li>
+            <li><strong>Add your entries</strong> — in Keep a Changelog mode, click each section to expand it and type entries one by one. In Conventional mode, paste raw commit messages and the tool auto-categorises them.</li>
+            <li><strong>Copy or download</strong> — the output updates live. Download it as <code>CHANGELOG.md</code> or copy directly.</li>
+          </ol>
+
+          <h2>What is a CHANGELOG?</h2>
+          <p>A CHANGELOG (or change log) is a file that documents all notable changes made to a project between each release. It is one of the most important files in any software project — developers need it to understand what changed between versions before upgrading a dependency, and end-users rely on it to see what bugs were fixed or features were added. A well-maintained CHANGELOG builds trust and reduces support burden.</p>
+
+          <h3>Keep a Changelog Format</h3>
+          <p>The <a href="https://keepachangelog.com" rel="noopener noreferrer" target="_blank">Keep a Changelog</a> specification, created by Olivier Lacan, defines six standard change categories:</p>
+          <ul>
+            <li><strong>Added</strong> — new features</li>
+            <li><strong>Changed</strong> — changes in existing functionality</li>
+            <li><strong>Deprecated</strong> — soon-to-be removed features</li>
+            <li><strong>Removed</strong> — features removed in this release</li>
+            <li><strong>Fixed</strong> — bug fixes</li>
+            <li><strong>Security</strong> — vulnerability fixes</li>
+          </ul>
+          <p>Each version section is a second-level heading: <code>## [2.1.0] - 2026-03-22</code>. An <code>## [Unreleased]</code> section at the top collects work in progress. This format is recommended by many open-source projects including npm, Composer, and Homebrew packages.</p>
+
+          <h3>Conventional Commits</h3>
+          <p>The <a href="https://www.conventionalcommits.org" rel="noopener noreferrer" target="_blank">Conventional Commits</a> specification defines a lightweight commit message convention. Each message starts with a type — <code>feat</code>, <code>fix</code>, <code>docs</code>, <code>chore</code>, <code>refactor</code>, <code>perf</code>, <code>test</code>, <code>ci</code>, <code>build</code>, or <code>style</code> — optionally followed by a scope in parentheses and an exclamation mark for breaking changes. Tools like <code>semantic-release</code> and <code>standard-version</code> parse these messages to automatically bump the version number (feat = minor, fix = patch, feat! = major) and generate a changelog. This builder parses the same convention so you can go from raw git log output to a polished CHANGELOG entry in seconds.</p>
+
+          <h3>Semantic Versioning Quick Reference</h3>
+          <p>SemVer uses three numbers: <code>MAJOR.MINOR.PATCH</code>. Increment MAJOR when you make incompatible API changes, MINOR when you add functionality in a backward-compatible manner, and PATCH when you make backward-compatible bug fixes. Pre-release versions (1.0.0-alpha.1) and build metadata (1.0.0+build.20260322) are appended after a hyphen or plus respectively. The <a href="/tools/semver-comparator.html">SemVer Comparator</a> tool can help you compare versions and plan your next increment.</p>
+
+          <h3>Best Practices</h3>
+          <ul>
+            <li>Write entries for <strong>humans</strong>, not compilers — explain what changed and why, not how.</li>
+            <li>Keep an <strong>[Unreleased]</strong> section while developing, then rename it when you cut a release.</li>
+            <li>Date every release in <strong>ISO 8601</strong> format (YYYY-MM-DD) for unambiguous international reading.</li>
+            <li>Link version numbers to your repository's compare URL so readers can browse the actual diff.</li>
+            <li>Never rewrite or remove old changelog entries — they are a historical record.</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is Keep a Changelog format?</button>
+            <div class="faq-answer">Keep a Changelog (keepachangelog.com) is a standard format for maintaining a CHANGELOG.md file. It groups changes under version headings, each dated, and categorises entries as Added, Changed, Deprecated, Removed, Fixed, or Security. The format is human-readable and machine-parseable.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are Conventional Commits?</button>
+            <div class="faq-answer">Conventional Commits is a specification for commit messages that makes them machine-readable. Messages follow the pattern type(scope): description — for example feat(auth): add OAuth login. Tools like semantic-release and standard-version use Conventional Commits to automatically determine version bumps and generate changelogs.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I append to an existing CHANGELOG?</button>
+            <div class="faq-answer">Switch to the 'Append' mode, paste your existing CHANGELOG.md content into the 'Existing changelog' textarea, then fill in the new version details. The tool places the new version section at the top (below the title) and preserves all older entries.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What version number format should I use?</button>
+            <div class="faq-answer">Use Semantic Versioning (SemVer): MAJOR.MINOR.PATCH, e.g. 2.1.0. MAJOR bumps for breaking changes, MINOR for new backward-compatible features, PATCH for bug fixes. Pre-release identifiers like 1.0.0-alpha.1 or build metadata like 1.0.0+build.123 are also valid SemVer.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my data sent to a server?</button>
+            <div class="faq-answer">No. This tool runs entirely in your browser. No data is transmitted, logged, or stored anywhere outside your device.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Version Tools</h4>
+        <a href="/tools/changelog-generator.html">CHANGELOG Builder</a>
+        <a href="/tools/semver-comparator.html">SemVer Comparator</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'keepachangelog';
+    var klSectionData = {
+      Added: [], Changed: [], Deprecated: [], Removed: [], Fixed: [], Security: []
+    };
+
+    // --- Keep a Changelog section UI ---
+    function renderKLSections() {
+      var container = document.getElementById('klSections');
+      container.innerHTML = '';
+      var sections = ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security'];
+      sections.forEach(function (sec) {
+        var count = klSectionData[sec].length;
+        var div = document.createElement('div');
+        div.className = 'cl-section' + (count > 0 ? ' open' : '');
+        div.innerHTML = '<div class="cl-section-header"><h4>' + sec + '</h4>' +
+          '<span class="cl-section-badge">' + count + '</span></div>' +
+          '<div class="cl-entries" id="klEntries-' + sec + '"></div>';
+        div.querySelector('.cl-section-header').addEventListener('click', function () {
+          div.classList.toggle('open');
+        });
+        container.appendChild(div);
+        renderSectionEntries(sec);
+      });
+    }
+
+    function renderSectionEntries(sec) {
+      var container = document.getElementById('klEntries-' + sec);
+      if (!container) return;
+      container.innerHTML = '';
+      klSectionData[sec].forEach(function (text, i) {
+        var row = document.createElement('div');
+        row.className = 'cl-entry-row';
+        var inp = document.createElement('input');
+        inp.type = 'text';
+        inp.value = text;
+        inp.placeholder = 'Describe the change...';
+        inp.addEventListener('input', function () {
+          klSectionData[sec][i] = inp.value;
+          updateBadge(sec);
+          processDebounced();
+        });
+        var del = document.createElement('button');
+        del.className = 'btn btn-sm btn-secondary';
+        del.textContent = '✕';
+        del.addEventListener('click', function () {
+          klSectionData[sec].splice(i, 1);
+          renderKLSections();
+          processDebounced();
+        });
+        row.appendChild(inp);
+        row.appendChild(del);
+        container.appendChild(row);
+      });
+      var addBtn = document.createElement('button');
+      addBtn.className = 'btn btn-sm btn-secondary cl-add-btn';
+      addBtn.textContent = '+ Add entry';
+      addBtn.addEventListener('click', function () {
+        klSectionData[sec].push('');
+        var s = document.querySelector('.cl-section:nth-child(' + (Object.keys(klSectionData).indexOf(sec) + 1) + ')');
+        if (s) s.classList.add('open');
+        renderKLSections();
+        // Focus the new input
+        var entries = document.getElementById('klEntries-' + sec);
+        if (entries) {
+          var inputs = entries.querySelectorAll('input');
+          if (inputs.length) inputs[inputs.length - 1].focus();
+        }
+        processDebounced();
+      });
+      container.appendChild(addBtn);
+    }
+
+    function updateBadge(sec) {
+      var badge = document.querySelector('#klEntries-' + sec)
+        .closest('.cl-section').querySelector('.cl-section-badge');
+      if (badge) badge.textContent = klSectionData[sec].filter(function (e) { return e.trim(); }).length;
+    }
+
+    // --- Generate functions ---
+    function genKeepAChangelog() {
+      var version = document.getElementById('klVersion').value.trim() || 'Unreleased';
+      var date = document.getElementById('klDate').value || getTodayISO();
+      var lines = ['# Changelog', '', '## [' + version + '] - ' + date];
+      var sections = ['Added', 'Changed', 'Deprecated', 'Removed', 'Fixed', 'Security'];
+      var totalEntries = 0;
+      var nonEmptySections = 0;
+      sections.forEach(function (sec) {
+        var entries = klSectionData[sec].filter(function (e) { return e.trim(); });
+        if (entries.length) {
+          nonEmptySections++;
+          totalEntries += entries.length;
+          lines.push('### ' + sec);
+          entries.forEach(function (e) { lines.push('- ' + e); });
+          lines.push('');
+        }
+      });
+      return { text: lines.join('\n'), totalEntries: totalEntries, sections: nonEmptySections, version: version };
+    }
+
+    function genConventional() {
+      var version = document.getElementById('ccVersion').value.trim() || 'Unreleased';
+      var date = document.getElementById('ccDate').value || getTodayISO();
+      var raw = document.getElementById('ccCommits').value;
+      var lines = raw.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+      var cats = { 'Features': [], 'Bug Fixes': [], 'Performance': [], 'Refactoring': [],
+        'Documentation': [], 'Tests': [], 'CI/CD': [], 'Dependencies': [], 'Breaking Changes': [], 'Other': [] };
+      var typeMap = { feat: 'Features', fix: 'Bug Fixes', perf: 'Performance', refactor: 'Refactoring',
+        docs: 'Documentation', test: 'Tests', ci: 'CI/CD', build: 'CI/CD', chore: 'Dependencies', style: 'Other' };
+      lines.forEach(function (line) {
+        var m = line.match(/^(\w+)(\([^)]*\))?(!)?:\s*(.+)$/);
+        if (m) {
+          var type = m[1], scope = m[2] ? m[2].slice(1, -1) : '', breaking = !!m[3], desc = m[4];
+          if (breaking) cats['Breaking Changes'].push((scope ? '**' + scope + ':** ' : '') + desc);
+          else {
+            var cat = typeMap[type] || 'Other';
+            cats[cat].push((scope ? '**' + scope + ':** ' : '') + desc);
+          }
+        } else {
+          cats['Other'].push(line);
+        }
+      });
+      var out = ['# Changelog', '', '## [' + version + '] - ' + date];
+      var total = 0;
+      Object.keys(cats).forEach(function (cat) {
+        if (cats[cat].length) {
+          out.push('### ' + cat);
+          cats[cat].forEach(function (e) { out.push('- ' + e); total++; });
+          out.push('');
+        }
+      });
+      return { text: out.join('\n'), totalEntries: total, version: version };
+    }
+
+    function genSimple() {
+      var version = document.getElementById('simVersion').value.trim() || 'Unreleased';
+      var date = document.getElementById('simDate').value || getTodayISO();
+      var raw = document.getElementById('simChanges').value;
+      var entries = raw.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+      var lines = ['# Changelog', '', '## [' + version + '] - ' + date];
+      entries.forEach(function (e) { lines.push('- ' + e); });
+      return { text: lines.join('\n'), totalEntries: entries.length, version: version };
+    }
+
+    function genAppend() {
+      var version = document.getElementById('appVersion').value.trim() || 'Unreleased';
+      var date = document.getElementById('appDate').value || getTodayISO();
+      var raw = document.getElementById('appEntries').value;
+      var entries = raw.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+      var existing = document.getElementById('appExisting').value.trim();
+      var cats = {};
+      entries.forEach(function (line) {
+        var m = line.match(/^(\w+):\s*(.+)$/);
+        if (m) { var cat = m[1]; if (!cats[cat]) cats[cat] = []; cats[cat].push(m[2]); }
+        else { if (!cats['Changed']) cats['Changed'] = []; cats['Changed'].push(line); }
+      });
+      var newSection = ['## [' + version + '] - ' + date];
+      Object.keys(cats).forEach(function (cat) {
+        newSection.push('### ' + cat);
+        cats[cat].forEach(function (e) { newSection.push('- ' + e); });
+        newSection.push('');
+      });
+      var result;
+      if (existing) {
+        var firstHeading = existing.indexOf('\n## ');
+        if (firstHeading !== -1) {
+          result = existing.slice(0, firstHeading) + '\n' + newSection.join('\n') + '\n' + existing.slice(firstHeading + 1);
+        } else {
+          result = existing + '\n\n' + newSection.join('\n');
+        }
+      } else {
+        result = '# Changelog\n\n' + newSection.join('\n');
+      }
+      return { text: result, totalEntries: entries.length, version: version };
+    }
+
+    function process() {
+      var result;
+      try {
+        switch (currentMode) {
+          case 'keepachangelog': result = genKeepAChangelog(); break;
+          case 'conventional': result = genConventional(); break;
+          case 'simple': result = genSimple(); break;
+          case 'append': result = genAppend(); break;
+        }
+        document.getElementById('clOutput').textContent = result.text;
+        var sb = document.getElementById('statusBar');
+        sb.className = 'status-bar valid';
+        sb.textContent = 'v' + result.version + ' — ' + result.totalEntries + ' entr' +
+          (result.totalEntries === 1 ? 'y' : 'ies') +
+          (result.sections ? ' across ' + result.sections + ' section' + (result.sections === 1 ? '' : 's') : '');
+        DT.trackTool('changelog-generator');
+      } catch (e) {
+        document.getElementById('statusBar').className = 'status-bar invalid';
+        document.getElementById('statusBar').textContent = 'Error: ' + e.message;
+      }
+    }
+
+    var processDebounced = DT.debounce(process, 150);
+
+    function getTodayISO() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    // Set default dates
+    document.getElementById('klDate').value = getTodayISO();
+    document.getElementById('ccDate').value = getTodayISO();
+    document.getElementById('simDate').value = getTodayISO();
+    document.getElementById('appDate').value = getTodayISO();
+
+    // Init KL sections
+    renderKLSections();
+
+    // Mode chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        ['keepachangelog', 'conventional', 'simple', 'append'].forEach(function (m) {
+          document.getElementById('mode-' + m).style.display = m === currentMode ? '' : 'none';
+        });
+        process();
+      });
+    });
+
+    // Live inputs
+    ['klVersion', 'klDate'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', processDebounced);
+    });
+    ['ccVersion', 'ccDate', 'ccCommits'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', processDebounced);
+    });
+    ['simVersion', 'simDate', 'simChanges'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', processDebounced);
+    });
+    ['appVersion', 'appDate', 'appEntries', 'appExisting'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', processDebounced);
+    });
+
+    // Examples
+    document.getElementById('klExampleBtn').addEventListener('click', function () {
+      document.getElementById('klVersion').value = '2.1.0';
+      document.getElementById('klDate').value = getTodayISO();
+      klSectionData.Added = ['Dark mode toggle', 'Export to CSV feature'];
+      klSectionData.Fixed = ['Crash when input is empty', 'Tooltip positioning on mobile'];
+      klSectionData.Changed = ['Updated API rate limit to 100 req/min'];
+      klSectionData.Deprecated = [];
+      klSectionData.Removed = [];
+      klSectionData.Security = ['Patched XSS vulnerability in markdown renderer'];
+      renderKLSections();
+      process();
+    });
+    document.getElementById('klClearBtn').addEventListener('click', function () {
+      document.getElementById('klVersion').value = '';
+      Object.keys(klSectionData).forEach(function (k) { klSectionData[k] = []; });
+      renderKLSections();
+      process();
+    });
+
+    document.getElementById('ccExampleBtn').addEventListener('click', function () {
+      document.getElementById('ccVersion').value = '2.1.0';
+      document.getElementById('ccCommits').value = 'feat(auth): add OAuth2 login\nfix(api): handle null response correctly\nperf(db): cache query results\ndocs: update API reference\nchore(deps): bump lodash to 4.17.21\nfeat!: drop Node 14 support';
+      process();
+    });
+    document.getElementById('ccClearBtn').addEventListener('click', function () {
+      document.getElementById('ccVersion').value = '';
+      document.getElementById('ccCommits').value = '';
+      process();
+    });
+
+    document.getElementById('simExampleBtn').addEventListener('click', function () {
+      document.getElementById('simVersion').value = '2.1.0';
+      document.getElementById('simChanges').value = 'Added dark mode toggle\nFixed crash on empty input\nUpdated dependencies';
+      process();
+    });
+    document.getElementById('simClearBtn').addEventListener('click', function () {
+      document.getElementById('simVersion').value = '';
+      document.getElementById('simChanges').value = '';
+      process();
+    });
+
+    document.getElementById('appExampleBtn').addEventListener('click', function () {
+      document.getElementById('appVersion').value = '2.1.0';
+      document.getElementById('appEntries').value = 'Added: dark mode toggle\nFixed: crash on empty input\nChanged: updated rate limit';
+      document.getElementById('appExisting').value = '# Changelog\n\n## [2.0.0] - 2026-01-01\n### Added\n- Initial release\n';
+      process();
+    });
+    document.getElementById('appClearBtn').addEventListener('click', function () {
+      document.getElementById('appVersion').value = '';
+      document.getElementById('appEntries').value = '';
+      document.getElementById('appExisting').value = '';
+      process();
+    });
+
+    // Copy / Download
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var text = document.getElementById('clOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var text = document.getElementById('clOutput').textContent;
+      if (text) DT.downloadText(text, 'CHANGELOG.md', 'text/markdown');
+    });
+
+    process();
+  })();
+  </script>
+</body>
+</html>

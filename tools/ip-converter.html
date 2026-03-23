@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>IPv4 / IPv6 Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert IPv4 to IPv6 mapped addresses, decimal, binary, and back. Validate IP addresses, expand/compress IPv6, and see 32-bit representations. Free, browser-only.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/ip-converter.html">
+  <meta property="og:title" content="IPv4 / IPv6 Converter — DevToolbox">
+  <meta property="og:description" content="Convert and validate IPv4/IPv6 addresses — decimal, binary, mapped forms, expand/compress IPv6. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/ip-converter.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "IPv4 / IPv6 Converter",
+    "url": "https://thisdevtool.com/tools/ip-converter.html",
+    "description": "Convert and validate IPv4/IPv6 addresses — decimal, binary, mapped forms, expand/compress IPv6. Free, browser-only.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is an IPv4-mapped IPv6 address?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An IPv4-mapped IPv6 address is a way to represent an IPv4 address within the IPv6 address space. It has the form ::ffff:x.x.x.x, where x.x.x.x is the IPv4 address. For example, 192.168.1.1 maps to ::ffff:192.168.1.1 or ::ffff:c0a8:0101. This is used in dual-stack networking so IPv6 sockets can communicate with IPv4 hosts."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between IPv4 and IPv6?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "IPv4 uses 32-bit addresses (4.3 billion possible addresses), written as four decimal octets separated by dots (e.g. 192.168.1.1). IPv6 uses 128-bit addresses (340 undecillion possible addresses), written as eight groups of four hexadecimal digits separated by colons (e.g. 2001:0db8:85a3:0000:0000:8a2e:0370:7334). IPv6 was created to address IPv4 exhaustion."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does IPv6 address compression work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "IPv6 allows two compression rules: leading zeros in each group can be omitted (0db8 becomes db8), and one or more consecutive all-zero groups can be replaced with a double colon (::). The double colon can only appear once. So 2001:0db8:0000:0000:0000:0000:0000:0001 compresses to 2001:db8::1."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the decimal equivalent of an IP address?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An IPv4 address is a 32-bit integer. The decimal equivalent is computed by treating the four octets as a base-256 number: decimal = A×16777216 + B×65536 + C×256 + D. For example, 192.168.1.1 = 192×16777216 + 168×65536 + 1×256 + 1 = 3232235777. This single number uniquely identifies the address and is used in database storage and IP range calculations."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I check if an IP address is private?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Private IPv4 ranges (RFC 1918) are: 10.0.0.0–10.255.255.255, 172.16.0.0–172.31.255.255, and 192.168.0.0–192.168.255.255. The loopback range is 127.0.0.0–127.255.255.255. Link-local addresses are 169.254.0.0–169.254.255.255. Any address outside these ranges is public (routable on the internet)."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .ip-input-row { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; align-items: flex-end; }
+    .ip-input-row input { flex: 1; }
+    .ip-result-grid { display: grid; gap: 0.5rem; margin-top: 0.75rem; }
+    .ip-result-row { display: grid; grid-template-columns: 160px 1fr auto; gap: 0.5rem; align-items: center; padding: 0.5rem 0.75rem; background: var(--surface-2); border-radius: 8px; }
+    .ip-result-row .lbl { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+    .ip-result-row .val { font-family: var(--font-mono); font-size: 0.88rem; word-break: break-all; color: var(--text-primary); }
+    .ip-result-row .copy-cell { text-align: right; }
+    .binary-row { grid-template-columns: 160px 1fr auto; }
+    .binary-display { font-family: var(--font-mono); font-size: 0.82rem; letter-spacing: 0.05em; line-height: 1.6; }
+    .binary-display span { display: inline-block; }
+    .binary-display .oct1 { color: #3b82f6; }
+    .binary-display .oct2 { color: #10b981; }
+    .binary-display .oct3 { color: #f59e0b; }
+    .binary-display .oct4 { color: #ef4444; }
+    .v6-expand-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .v6-expand-row input { flex: 1; }
+    .type-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+    .badge-private { background: #fef3c7; color: #92400e; }
+    .badge-public { background: #d1fae5; color: #065f46; }
+    .badge-loopback { background: #ede9fe; color: #4c1d95; }
+    .badge-link-local { background: #fee2e2; color: #991b1b; }
+    [data-theme="dark"] .badge-private { background: #451a03; color: #fbbf24; }
+    [data-theme="dark"] .badge-public { background: #064e3b; color: #6ee7b7; }
+    [data-theme="dark"] .badge-loopback { background: #2e1065; color: #c4b5fd; }
+    [data-theme="dark"] .badge-link-local { background: #450a0a; color: #fca5a5; }
+    @media (max-width: 600px) {
+      .ip-result-row { grid-template-columns: 1fr; }
+      .ip-result-row .copy-cell { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/url-parser.html">URL Parser</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>IPv4 / IPv6 Converter</h1>
+          <p class="tool-subtitle">Convert, validate, and transform IP addresses — decimal, binary, IPv4-mapped IPv6, expand/compress.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="convert">IPv4 ↔ IPv6</button>
+            <button class="option-chip" data-mode="decimal">Decimal</button>
+            <button class="option-chip" data-mode="binary">Binary</button>
+            <button class="option-chip" data-mode="validate">Validate</button>
+          </div>
+
+          <!-- Convert mode -->
+          <div id="mode-convert">
+            <div class="ip-input-row">
+              <input type="text" id="convInput" placeholder="192.168.1.1 or ::ffff:192.168.1.1" autocomplete="off" spellcheck="false">
+              <button class="btn btn-sm btn-secondary" id="convExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="convClearBtn">Clear</button>
+            </div>
+            <div id="convResults" class="ip-result-grid"></div>
+          </div>
+
+          <!-- Decimal mode -->
+          <div id="mode-decimal" style="display:none;">
+            <div class="ip-input-row">
+              <input type="text" id="decInput" placeholder="192.168.1.1 or 3232235777" autocomplete="off" spellcheck="false">
+              <button class="btn btn-sm btn-secondary" id="decExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="decClearBtn">Clear</button>
+            </div>
+            <div id="decResults" class="ip-result-grid"></div>
+          </div>
+
+          <!-- Binary mode -->
+          <div id="mode-binary" style="display:none;">
+            <div class="ip-input-row">
+              <input type="text" id="binInput" placeholder="192.168.1.1" autocomplete="off" spellcheck="false">
+              <button class="btn btn-sm btn-secondary" id="binExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="binClearBtn">Clear</button>
+            </div>
+            <div id="binResults" class="ip-result-grid"></div>
+          </div>
+
+          <!-- Validate mode -->
+          <div id="mode-validate" style="display:none;">
+            <div class="ip-input-row">
+              <input type="text" id="valInput" placeholder="Any IPv4 or IPv6 address" autocomplete="off" spellcheck="false">
+              <button class="btn btn-sm btn-secondary" id="valExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="valClearBtn">Clear</button>
+            </div>
+            <div id="valResults" class="ip-result-grid"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter an IP address above.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the IP Converter</h2>
+          <ol>
+            <li><strong>IPv4 ↔ IPv6</strong> — enter an IPv4 address to see its IPv4-mapped IPv6 form, or an IPv6 mapped address to extract the IPv4. Also shows expanded and compressed IPv6 forms.</li>
+            <li><strong>Decimal</strong> — enter an IPv4 address to get its 32-bit decimal integer, or enter a decimal integer to get the dotted-decimal IPv4.</li>
+            <li><strong>Binary</strong> — enter an IPv4 address to see its 32-bit binary representation, colour-coded by octet.</li>
+            <li><strong>Validate</strong> — enter any IP address to check if it is valid IPv4 or IPv6, and see its classification (public, private, loopback, link-local).</li>
+          </ol>
+
+          <h2>IPv4 vs IPv6</h2>
+          <p>IPv4 (Internet Protocol version 4) uses 32-bit addresses, allowing approximately 4.3 billion unique addresses. Written as four decimal octets separated by dots — for example, <code>192.168.1.1</code> — IPv4 was designed in the 1970s when the internet was a small research network. By the 2010s, available IPv4 addresses were exhausted, which accelerated adoption of IPv6.</p>
+          <p>IPv6 uses 128-bit addresses, written as eight groups of four hexadecimal digits separated by colons: <code>2001:0db8:85a3:0000:0000:8a2e:0370:7334</code>. This provides approximately 3.4 × 10^38 unique addresses — enough for every atom on Earth to have a unique IP. IPv6 also includes improvements over IPv4: mandatory IPsec support, simpler header format, built-in multicast, and no need for NAT.</p>
+
+          <h3>IPv4-Mapped IPv6 Addresses</h3>
+          <p>IPv4-mapped IPv6 addresses allow IPv6 sockets to communicate with IPv4 hosts. They take the form <code>::ffff:a.b.c.d</code> or in pure hex <code>::ffff:aabb:ccdd</code>. When an IPv6 server receives a connection from an IPv4 client, the OS represents the source address in this mapped form. The first 80 bits are zero, the next 16 bits are all ones (FFFF), and the final 32 bits hold the IPv4 address. This is different from IPv4-compatible addresses (<code>::a.b.c.d</code>), which are deprecated.</p>
+
+          <h3>Private IP Ranges (RFC 1918)</h3>
+          <p>Three IPv4 ranges are reserved for private use and are not routed on the public internet:</p>
+          <ul>
+            <li><code>10.0.0.0 – 10.255.255.255</code> (10.0.0.0/8) — Class A, used in large enterprise networks</li>
+            <li><code>172.16.0.0 – 172.31.255.255</code> (172.16.0.0/12) — Class B, used in medium networks</li>
+            <li><code>192.168.0.0 – 192.168.255.255</code> (192.168.0.0/16) — Class C, used in home/small office networks</li>
+          </ul>
+          <p>The loopback range <code>127.0.0.0/8</code> refers to the local machine itself. <code>127.0.0.1</code> (localhost) is the most commonly used loopback address. Link-local addresses <code>169.254.0.0/16</code> are assigned automatically when DHCP fails (APIPA on Windows).</p>
+
+          <h3>IPv6 Address Compression</h3>
+          <p>IPv6 addresses can be abbreviated by two rules defined in RFC 5952. First, leading zeros in any group may be omitted: <code>0db8</code> becomes <code>db8</code>. Second, one or more consecutive groups of all zeros may be replaced by a double colon <code>::</code>, but only once per address. So <code>2001:0db8:0000:0000:0000:0000:0000:0001</code> compresses to <code>2001:db8::1</code>. When expanding, the <code>::</code> is replaced by as many zero groups as needed to bring the total to eight groups.</p>
+
+          <h3>IP Addresses in Databases</h3>
+          <p>Storing IP addresses as decimal integers rather than strings allows fast range queries: instead of string comparisons, you compare integers. For example, to find all IPs in the 192.168.1.0/24 subnet, you check <code>decimal &gt;= 3232235776 AND decimal &lt;= 3232236031</code>. MaxMind GeoIP databases use this approach. In PostgreSQL, the <code>inet</code> and <code>cidr</code> types provide native IP storage with built-in operator support. See our <a href="/tools/url-parser.html">URL Parser</a> for related network tooling.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is an IPv4-mapped IPv6 address?</button>
+            <div class="faq-answer">An IPv4-mapped IPv6 address represents an IPv4 address within the IPv6 address space. It has the form ::ffff:x.x.x.x. For example, 192.168.1.1 maps to ::ffff:192.168.1.1. This is used in dual-stack networking so IPv6 sockets can communicate with IPv4 hosts.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between IPv4 and IPv6?</button>
+            <div class="faq-answer">IPv4 uses 32-bit addresses (4.3 billion possible), written as four decimal octets (e.g. 192.168.1.1). IPv6 uses 128-bit addresses (340 undecillion possible), written as eight groups of four hex digits (e.g. 2001:db8::1). IPv6 was created to address IPv4 exhaustion.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does IPv6 address compression work?</button>
+            <div class="faq-answer">Two rules: leading zeros in each group can be omitted, and one sequence of all-zero groups can be replaced by ::. So 2001:0db8:0000:0000:0000:0000:0000:0001 compresses to 2001:db8::1.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the decimal equivalent of an IP address?</button>
+            <div class="faq-answer">An IPv4 address is a 32-bit integer. The decimal = A×16777216 + B×65536 + C×256 + D. For example, 192.168.1.1 = 3232235777. This is used in database storage and IP range calculations.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I check if an IP address is private?</button>
+            <div class="faq-answer">Private IPv4 ranges (RFC 1918): 10.0.0.0/8, 172.16.0.0/12, and 192.168.0.0/16. Loopback: 127.0.0.0/8. Link-local: 169.254.0.0/16. Any address outside these is public (routable on the internet).</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Network Tools</h4>
+        <a href="/tools/ip-converter.html">IP Converter</a>
+        <a href="/tools/url-parser.html">URL Parser</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'convert';
+
+    // --- IPv4 helpers ---
+    function parseIPv4(str) {
+      str = str.trim();
+      var parts = str.split('.');
+      if (parts.length !== 4) return null;
+      var nums = parts.map(function (p) { return parseInt(p, 10); });
+      if (nums.some(function (n) { return isNaN(n) || n < 0 || n > 255 || String(n) !== p; })) return null;
+      // Re-validate
+      for (var i = 0; i < 4; i++) {
+        if (isNaN(nums[i]) || nums[i] < 0 || nums[i] > 255) return null;
+        if (parts[i] !== String(nums[i])) return null; // no leading zeros
+      }
+      return nums;
+    }
+
+    function ipv4ToDecimal(octets) {
+      return ((octets[0] * 16777216) + (octets[1] * 65536) + (octets[2] * 256) + octets[3]) >>> 0;
+    }
+
+    function decimalToIPv4(num) {
+      num = num >>> 0;
+      return [(num >>> 24) & 255, (num >>> 16) & 255, (num >>> 8) & 255, num & 255].join('.');
+    }
+
+    function ipv4ToBinaryString(octets) {
+      return octets.map(function (o) { return o.toString(2).padStart(8, '0'); }).join('.');
+    }
+
+    function classifyIPv4(octets) {
+      var a = octets[0], b = octets[1];
+      if (a === 127) return { label: 'Loopback', cls: 'badge-loopback' };
+      if (a === 10) return { label: 'Private (RFC 1918)', cls: 'badge-private' };
+      if (a === 172 && b >= 16 && b <= 31) return { label: 'Private (RFC 1918)', cls: 'badge-private' };
+      if (a === 192 && b === 168) return { label: 'Private (RFC 1918)', cls: 'badge-private' };
+      if (a === 169 && b === 254) return { label: 'Link-local (APIPA)', cls: 'badge-link-local' };
+      if (a === 0) return { label: 'Reserved', cls: 'badge-private' };
+      return { label: 'Public', cls: 'badge-public' };
+    }
+
+    // --- IPv6 helpers ---
+    function expandIPv6(str) {
+      str = str.trim().toLowerCase();
+      // Handle ::ffff:a.b.c.d notation
+      var mixedMatch = str.match(/^(.+):(\d+\.\d+\.\d+\.\d+)$/);
+      if (mixedMatch) {
+        var oct = parseIPv4(mixedMatch[2]);
+        if (oct) {
+          var h1 = ((oct[0] << 8) | oct[1]).toString(16).padStart(4, '0');
+          var h2 = ((oct[2] << 8) | oct[3]).toString(16).padStart(4, '0');
+          str = mixedMatch[1] + ':' + h1 + ':' + h2;
+        }
+      }
+      if (str.indexOf('::') !== -1) {
+        var halves = str.split('::');
+        var left = halves[0] ? halves[0].split(':') : [];
+        var right = halves[1] ? halves[1].split(':') : [];
+        var missing = 8 - left.length - right.length;
+        var mid = [];
+        for (var i = 0; i < missing; i++) mid.push('0000');
+        var all = left.concat(mid).concat(right);
+        return all.map(function (g) { return g.padStart(4, '0'); }).join(':');
+      }
+      var groups = str.split(':');
+      if (groups.length !== 8) return null;
+      return groups.map(function (g) { return g.padStart(4, '0'); }).join(':');
+    }
+
+    function compressIPv6(expanded) {
+      var groups = expanded.split(':').map(function (g) {
+        return g.replace(/^0+/, '') || '0';
+      });
+      // Find longest run of zeros
+      var bestStart = -1, bestLen = 0, curStart = -1, curLen = 0;
+      for (var i = 0; i < groups.length; i++) {
+        if (groups[i] === '0') {
+          if (curStart === -1) { curStart = i; curLen = 1; }
+          else { curLen++; }
+          if (curLen > bestLen) { bestLen = curLen; bestStart = curStart; }
+        } else {
+          curStart = -1; curLen = 0;
+        }
+      }
+      if (bestLen >= 2) {
+        var left = groups.slice(0, bestStart).join(':');
+        var right = groups.slice(bestStart + bestLen).join(':');
+        return (left ? left + '::' : '::') + right;
+      }
+      return groups.join(':');
+    }
+
+    function isValidIPv6(str) {
+      return expandIPv6(str) !== null;
+    }
+
+    function isIPv4MappedIPv6(expanded) {
+      return expanded && expanded.startsWith('0000:0000:0000:0000:0000:ffff:');
+    }
+
+    // --- Result row builder ---
+    function resultRow(label, value, id) {
+      return '<div class="ip-result-row">' +
+        '<span class="lbl">' + label + '</span>' +
+        '<span class="val" id="' + id + '">' + value + '</span>' +
+        '<span class="copy-cell"><button class="btn btn-sm btn-secondary" onclick="(function(b){var v=document.getElementById(\'' + id + '\').textContent;DevToolbox.copyToClipboard(v,b);})(this)">Copy</button></span>' +
+        '</div>';
+    }
+
+    // --- Process functions ---
+    function processConvert() {
+      var raw = document.getElementById('convInput').value.trim();
+      var out = document.getElementById('convResults');
+      var sb = document.getElementById('statusBar');
+      if (!raw) { out.innerHTML = ''; sb.className = 'status-bar info'; sb.textContent = 'Enter an IP address.'; return; }
+
+      var html = '';
+      var ipv4 = parseIPv4(raw);
+      if (ipv4) {
+        var dec = ipv4ToDecimal(ipv4);
+        var mapped6 = '::ffff:' + raw;
+        var mapped6Full = '0000:0000:0000:0000:0000:ffff:' +
+          ((ipv4[0] << 8 | ipv4[1]).toString(16).padStart(4, '0')) + ':' +
+          ((ipv4[2] << 8 | ipv4[3]).toString(16).padStart(4, '0'));
+        html += resultRow('IPv4', raw, 'r-ipv4');
+        html += resultRow('IPv4-mapped IPv6', mapped6, 'r-mapped');
+        html += resultRow('IPv6 full form', mapped6Full, 'r-mapped-full');
+        html += resultRow('IPv6 compressed', compressIPv6(mapped6Full), 'r-compressed');
+        var cls = classifyIPv4(ipv4);
+        html += '<div class="ip-result-row"><span class="lbl">Type</span><span class="val"><span class="type-badge ' + cls.cls + '">' + cls.label + '</span></span><span></span></div>';
+        sb.className = 'status-bar valid';
+        sb.textContent = 'Valid IPv4 — Decimal: ' + dec;
+      } else {
+        // Try IPv6
+        var expanded = expandIPv6(raw);
+        if (expanded) {
+          var compressed = compressIPv6(expanded);
+          html += resultRow('IPv6 compressed', compressed, 'r-v6c');
+          html += resultRow('IPv6 expanded', expanded, 'r-v6e');
+          if (isIPv4MappedIPv6(expanded)) {
+            var v4part = expanded.split(':').slice(6).join(':');
+            var p1 = parseInt(v4part.split(':')[0], 16);
+            var p2 = parseInt(v4part.split(':')[1], 16);
+            var recoveredIPv4 = ((p1 >> 8) & 255) + '.' + (p1 & 255) + '.' + ((p2 >> 8) & 255) + '.' + (p2 & 255);
+            html += resultRow('Extracted IPv4', recoveredIPv4, 'r-extracted');
+          }
+          sb.className = 'status-bar valid';
+          sb.textContent = 'Valid IPv6 — ' + (isIPv4MappedIPv6(expanded) ? 'IPv4-mapped' : 'native');
+        } else {
+          html = '<div class="ip-result-row"><span class="lbl">Error</span><span class="val" style="color:var(--error)">Not a valid IPv4 or IPv6 address</span><span></span></div>';
+          sb.className = 'status-bar invalid';
+          sb.textContent = 'Invalid IP address.';
+        }
+      }
+      out.innerHTML = html;
+    }
+
+    function processDecimal() {
+      var raw = document.getElementById('decInput').value.trim();
+      var out = document.getElementById('decResults');
+      var sb = document.getElementById('statusBar');
+      if (!raw) { out.innerHTML = ''; sb.className = 'status-bar info'; sb.textContent = 'Enter an IPv4 address or decimal number.'; return; }
+
+      var html = '';
+      var ipv4 = parseIPv4(raw);
+      if (ipv4) {
+        var dec = ipv4ToDecimal(ipv4);
+        html += resultRow('IPv4 (dotted)', raw, 'r-dotted');
+        html += resultRow('Decimal', String(dec), 'r-dec');
+        html += resultRow('Hex', '0x' + dec.toString(16).toUpperCase().padStart(8, '0'), 'r-hex');
+        html += resultRow('Octal', '0' + dec.toString(8), 'r-oct');
+        sb.className = 'status-bar valid';
+        sb.textContent = 'Valid IPv4 — Decimal: ' + dec;
+      } else {
+        // Try decimal -> IPv4
+        var num = parseInt(raw, 10);
+        if (!isNaN(num) && num >= 0 && num <= 4294967295 && String(num) === raw) {
+          var ip = decimalToIPv4(num);
+          html += resultRow('Decimal', raw, 'r-dec2');
+          html += resultRow('IPv4 (dotted)', ip, 'r-dotted2');
+          html += resultRow('Hex', '0x' + num.toString(16).toUpperCase().padStart(8, '0'), 'r-hex2');
+          var octets = ip.split('.').map(Number);
+          var cls2 = classifyIPv4(octets);
+          html += '<div class="ip-result-row"><span class="lbl">Type</span><span class="val"><span class="type-badge ' + cls2.cls + '">' + cls2.label + '</span></span><span></span></div>';
+          sb.className = 'status-bar valid';
+          sb.textContent = 'Decimal ' + raw + ' = ' + ip;
+        } else {
+          html = '<div class="ip-result-row"><span class="lbl">Error</span><span class="val" style="color:var(--error)">Not a valid IPv4 or decimal (0–4294967295)</span><span></span></div>';
+          sb.className = 'status-bar invalid';
+          sb.textContent = 'Invalid input.';
+        }
+      }
+      out.innerHTML = html;
+    }
+
+    function processBinary() {
+      var raw = document.getElementById('binInput').value.trim();
+      var out = document.getElementById('binResults');
+      var sb = document.getElementById('statusBar');
+      if (!raw) { out.innerHTML = ''; sb.className = 'status-bar info'; sb.textContent = 'Enter an IPv4 address.'; return; }
+
+      var ipv4 = parseIPv4(raw);
+      if (!ipv4) {
+        out.innerHTML = '<div class="ip-result-row"><span class="lbl">Error</span><span class="val" style="color:var(--error)">Not a valid IPv4 address</span><span></span></div>';
+        sb.className = 'status-bar invalid';
+        sb.textContent = 'Invalid IPv4 address.';
+        return;
+      }
+      var bins = ipv4.map(function (o) { return o.toString(2).padStart(8, '0'); });
+      var colors = ['oct1', 'oct2', 'oct3', 'oct4'];
+      var binaryHtml = bins.map(function (b, i) {
+        return '<span class="' + colors[i] + '">' + b + '</span>';
+      }).join('<span style="color:var(--text-secondary)">.</span>');
+
+      var html = '<div class="ip-result-row">' +
+        '<span class="lbl">IPv4</span><span class="val">' + raw + '</span><span></span></div>';
+      html += '<div class="ip-result-row binary-row">' +
+        '<span class="lbl">Binary (32-bit)</span>' +
+        '<span class="val binary-display">' + binaryHtml + '</span>' +
+        '<span class="copy-cell"><button class="btn btn-sm btn-secondary" onclick="DevToolbox.copyToClipboard(\'' + bins.join('.') + '\', this)">Copy</button></span>' +
+        '</div>';
+      html += resultRow('Decimal', String(ipv4ToDecimal(ipv4)), 'r-bindec');
+      html += resultRow('Hex', '0x' + ipv4.map(function (o) { return o.toString(16).padStart(2, '0').toUpperCase(); }).join(''), 'r-binhex');
+      // Subnet info
+      var netmaskOctets = [255, 0, 0, 0]; // just example
+      html += '<div class="ip-result-row"><span class="lbl">Bit positions</span><span class="val" style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-secondary)">31&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;24&nbsp;23&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;16&nbsp;15&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8&nbsp;&nbsp;7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0</span><span></span></div>';
+
+      out.innerHTML = html;
+      sb.className = 'status-bar valid';
+      sb.textContent = raw + ' — Binary: ' + bins.join('.');
+    }
+
+    function processValidate() {
+      var raw = document.getElementById('valInput').value.trim();
+      var out = document.getElementById('valResults');
+      var sb = document.getElementById('statusBar');
+      if (!raw) { out.innerHTML = ''; sb.className = 'status-bar info'; sb.textContent = 'Enter an IP address to validate.'; return; }
+
+      var html = '';
+      var ipv4 = parseIPv4(raw);
+      if (ipv4) {
+        var cls = classifyIPv4(ipv4);
+        var dec = ipv4ToDecimal(ipv4);
+        html += '<div class="ip-result-row"><span class="lbl">Version</span><span class="val">IPv4</span><span></span></div>';
+        html += '<div class="ip-result-row"><span class="lbl">Valid</span><span class="val" style="color:#10b981;font-weight:700;">Yes</span><span></span></div>';
+        html += '<div class="ip-result-row"><span class="lbl">Type</span><span class="val"><span class="type-badge ' + cls.cls + '">' + cls.label + '</span></span><span></span></div>';
+        html += resultRow('Decimal', String(dec), 'r-vdec');
+        html += resultRow('IPv4-mapped IPv6', '::ffff:' + raw, 'r-vmapped');
+        sb.className = 'status-bar valid';
+        sb.textContent = 'Valid IPv4 — ' + cls.label + ' — Decimal: ' + dec;
+      } else {
+        var expanded = expandIPv6(raw);
+        if (expanded) {
+          var isMapped = isIPv4MappedIPv6(expanded);
+          html += '<div class="ip-result-row"><span class="lbl">Version</span><span class="val">IPv6</span><span></span></div>';
+          html += '<div class="ip-result-row"><span class="lbl">Valid</span><span class="val" style="color:#10b981;font-weight:700;">Yes</span><span></span></div>';
+          html += '<div class="ip-result-row"><span class="lbl">Type</span><span class="val"><span class="type-badge badge-public">' + (isMapped ? 'IPv4-mapped' : 'Native IPv6') + '</span></span><span></span></div>';
+          html += resultRow('Compressed', compressIPv6(expanded), 'r-vcomp');
+          html += resultRow('Expanded', expanded, 'r-vexp');
+          if (isMapped) {
+            var v4p = expanded.split(':').slice(6).join(':');
+            var g1 = parseInt(v4p.split(':')[0], 16);
+            var g2 = parseInt(v4p.split(':')[1], 16);
+            var recovIPv4 = ((g1 >> 8) & 255) + '.' + (g1 & 255) + '.' + ((g2 >> 8) & 255) + '.' + (g2 & 255);
+            html += resultRow('Embedded IPv4', recovIPv4, 'r-vembed');
+          }
+          sb.className = 'status-bar valid';
+          sb.textContent = 'Valid IPv6 — ' + (isMapped ? 'IPv4-mapped' : 'native IPv6');
+        } else {
+          html = '<div class="ip-result-row"><span class="lbl">Valid</span><span class="val" style="color:#ef4444;font-weight:700;">No</span><span></span></div>' +
+            '<div class="ip-result-row"><span class="lbl">Error</span><span class="val" style="color:var(--text-secondary)">Not a valid IPv4 or IPv6 address</span><span></span></div>';
+          sb.className = 'status-bar invalid';
+          sb.textContent = 'Invalid IP address.';
+        }
+      }
+      out.innerHTML = html;
+    }
+
+    var processMap = { convert: processConvert, decimal: processDecimal, binary: processBinary, validate: processValidate };
+    var processDebounced = DT.debounce(function () {
+      processMap[currentMode]();
+      DT.trackTool('ip-converter');
+    }, 150);
+
+    // Mode chips
+    document.querySelectorAll('.option-chip[data-mode]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        ['convert', 'decimal', 'binary', 'validate'].forEach(function (m) {
+          document.getElementById('mode-' + m).style.display = m === currentMode ? '' : 'none';
+        });
+        processMap[currentMode]();
+      });
+    });
+
+    // Inputs
+    ['convInput', 'decInput', 'binInput', 'valInput'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', processDebounced);
+    });
+
+    // Examples
+    var examples = { conv: '192.168.1.1', dec: '192.168.1.1', bin: '10.0.0.1', val: '2001:db8::1' };
+    document.getElementById('convExampleBtn').addEventListener('click', function () { document.getElementById('convInput').value = examples.conv; processConvert(); });
+    document.getElementById('convClearBtn').addEventListener('click', function () { document.getElementById('convInput').value = ''; processConvert(); });
+    document.getElementById('decExampleBtn').addEventListener('click', function () { document.getElementById('decInput').value = examples.dec; processDecimal(); });
+    document.getElementById('decClearBtn').addEventListener('click', function () { document.getElementById('decInput').value = ''; processDecimal(); });
+    document.getElementById('binExampleBtn').addEventListener('click', function () { document.getElementById('binInput').value = examples.bin; processBinary(); });
+    document.getElementById('binClearBtn').addEventListener('click', function () { document.getElementById('binInput').value = ''; processBinary(); });
+    document.getElementById('valExampleBtn').addEventListener('click', function () { document.getElementById('valInput').value = examples.val; processValidate(); });
+    document.getElementById('valClearBtn').addEventListener('click', function () { document.getElementById('valInput').value = ''; processValidate(); });
+  })();
+  </script>
+</body>
+</html>

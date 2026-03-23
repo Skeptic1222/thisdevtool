@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>API Mock Data Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate realistic API mock data instantly. Define REST endpoints, create collections, or paste a JSON Schema to produce fake data. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/api-mock-generator.html">
+  <meta property="og:title" content="API Mock Data Generator — DevToolbox">
+  <meta property="og:description" content="Free online API mock data generator. REST endpoint templates, collection arrays, and JSON Schema-based fake data. Runs in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/api-mock-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "API Mock Data Generator",
+    "url": "https://thisdevtool.com/tools/api-mock-generator.html",
+    "description": "Generate realistic mock API responses with fake data using template placeholders, collections, or JSON Schema. Free and 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is API mock data?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "API mock data is synthetic, fake data that mimics the structure and format of real API responses. It is used during development and testing when the real API is unavailable, expensive to call, or returns sensitive production data. Mock data lets frontend developers build and test UI components independently of the backend."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What placeholder tokens does this tool support?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tool supports: {{name}} (full name), {{firstName}}, {{lastName}}, {{email}}, {{uuid}}, {{date}}, {{timestamp}}, {{number(min,max)}}, {{lorem(n)}} (n words of lorem ipsum), {{boolean}}, {{url}}, {{phone}}, {{company}}, {{city}}, {{country}}, {{hex}}, {{color}}, and {{word}}."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All generation happens 100% in your browser. No data is transmitted to any server. You can safely use this tool with proprietary API schemas."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is JSON Schema-based generation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JSON Schema is a standard for describing the structure of JSON data. When you paste a JSON Schema (with type, properties, required, etc.) this tool generates a valid mock object that matches that schema — using appropriate fake values for strings, numbers, booleans, and arrays."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What output formats are available?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "You can output a single JSON object, a JSON array of N objects, or JSON Lines (one JSON object per line, ideal for NDJSON log files or streaming APIs). All formats can be copied to clipboard or downloaded as a .json file."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/openapi-viewer.html">OpenAPI Viewer</a>
+        <a href="/tools/graphql-query-builder.html">GraphQL Builder</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>API Mock Data Generator</h1>
+          <p class="tool-subtitle">Generate realistic fake API responses for development and testing. Use template placeholders, build collections, or generate from JSON Schema.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="rest">REST Endpoint</button>
+            <button class="option-chip" data-mode="collection">Collection</button>
+            <button class="option-chip" data-mode="schema">Schema-Based</button>
+          </div>
+
+          <!-- REST Endpoint Mode -->
+          <div id="modeRest">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Template</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-secondary" id="restExampleBtn">Try Example</button>
+                    <button class="btn btn-sm btn-secondary" id="restClearBtn">Clear</button>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                  <select id="restMethod" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;">
+                    <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
+                  </select>
+                  <input id="restPath" type="text" placeholder="/api/users/{id}" style="flex:1;min-width:120px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;">
+                  <select id="restStatus" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;">
+                    <option value="200">200 OK</option>
+                    <option value="201">201 Created</option>
+                    <option value="204">204 No Content</option>
+                    <option value="400">400 Bad Request</option>
+                    <option value="401">401 Unauthorized</option>
+                    <option value="404">404 Not Found</option>
+                    <option value="500">500 Error</option>
+                  </select>
+                </div>
+                <textarea id="restTemplate" rows="14" placeholder='Paste your JSON template with {{placeholders}}:
+
+{
+  "id": "{{uuid}}",
+  "name": "{{name}}",
+  "email": "{{email}}",
+  "createdAt": "{{date}}",
+  "score": {{number(1,100)}}
+}' spellcheck="false"></textarea>
+                <div style="margin-top:8px;font-size:12px;color:var(--text-muted);">
+                  Tokens: {{name}} {{firstName}} {{lastName}} {{email}} {{uuid}} {{date}} {{timestamp}} {{number(1,100)}} {{lorem(3)}} {{boolean}} {{url}} {{phone}} {{company}} {{city}} {{country}} {{word}} {{hex}} {{color}}
+                </div>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Output</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="restGenBtn">Generate</button>
+                    <button class="btn btn-sm btn-primary" id="restCopyBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="restDownloadBtn">Download</button>
+                  </div>
+                </div>
+                <div class="code-output" id="restOutput" style="min-height:340px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Collection Mode -->
+          <div id="modeCollection" style="display:none;">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Object Template</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-secondary" id="colExampleBtn">Try Example</button>
+                    <button class="btn btn-sm btn-secondary" id="colClearBtn">Clear</button>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+                  <label style="font-size:13px;color:var(--text-muted);">Count:</label>
+                  <input id="colCount" type="number" value="10" min="1" max="1000" style="width:80px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;">
+                  <select id="colFormat" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;">
+                    <option value="array">JSON Array</option>
+                    <option value="jsonlines">JSON Lines</option>
+                    <option value="wrapped">Wrapped {data: []}</option>
+                  </select>
+                </div>
+                <textarea id="colTemplate" rows="14" placeholder='Object template (one object):
+
+{
+  "id": "{{uuid}}",
+  "user": "{{name}}",
+  "email": "{{email}}",
+  "company": "{{company}}",
+  "active": {{boolean}},
+  "score": {{number(0,100)}}
+}' spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Output</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="colGenBtn">Generate</button>
+                    <button class="btn btn-sm btn-primary" id="colCopyBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="colDownloadBtn">Download</button>
+                  </div>
+                </div>
+                <div class="code-output" id="colOutput" style="min-height:340px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schema-Based Mode -->
+          <div id="modeSchema" style="display:none;">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>JSON Schema</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-secondary" id="schExampleBtn">Try Example</button>
+                    <button class="btn btn-sm btn-secondary" id="schClearBtn">Clear</button>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+                  <label style="font-size:13px;color:var(--text-muted);">Count:</label>
+                  <input id="schCount" type="number" value="5" min="1" max="100" style="width:80px;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;">
+                </div>
+                <textarea id="schInput" rows="14" placeholder='Paste a JSON Schema here...' spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Generated Mock</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="schGenBtn">Generate</button>
+                    <button class="btn btn-sm btn-primary" id="schCopyBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="schDownloadBtn">Download</button>
+                  </div>
+                </div>
+                <div class="code-output" id="schOutput" style="min-height:340px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Select a mode and click Generate to create mock data.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the API Mock Data Generator</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — REST Endpoint for a single response, Collection for arrays of objects, Schema-Based to derive data from a JSON Schema.</li>
+            <li><strong>Enter your template</strong> — use <code>{{placeholder}}</code> tokens in your JSON where you want fake values.</li>
+            <li><strong>Click Generate</strong> — the tool replaces every placeholder with a realistic fake value.</li>
+            <li><strong>Copy or download</strong> — use the output for Postman mock servers, Cypress fixtures, Storybook stories, or unit tests.</li>
+          </ol>
+
+          <h2>Available Placeholder Tokens</h2>
+          <p>The template engine supports a rich set of tokens for generating common data types:</p>
+          <ul>
+            <li><code>{{uuid}}</code> — RFC 4122-compliant UUID v4</li>
+            <li><code>{{name}}</code>, <code>{{firstName}}</code>, <code>{{lastName}}</code> — realistic full or partial names</li>
+            <li><code>{{email}}</code> — plausible email address</li>
+            <li><code>{{phone}}</code> — US-style phone number</li>
+            <li><code>{{company}}</code> — company name</li>
+            <li><code>{{url}}</code> — a full HTTPS URL</li>
+            <li><code>{{date}}</code> — ISO 8601 date string within the past two years</li>
+            <li><code>{{timestamp}}</code> — Unix epoch timestamp (milliseconds)</li>
+            <li><code>{{number(min,max)}}</code> — random integer between min and max</li>
+            <li><code>{{lorem(n)}}</code> — n words of Lorem Ipsum filler text</li>
+            <li><code>{{boolean}}</code> — <code>true</code> or <code>false</code></li>
+            <li><code>{{city}}</code>, <code>{{country}}</code> — geographic names</li>
+            <li><code>{{color}}</code> — CSS color name, <code>{{hex}}</code> — hex color code</li>
+            <li><code>{{word}}</code> — a random common English word</li>
+          </ul>
+
+          <h3>Why Use Mock Data During Development?</h3>
+          <p>Working against live APIs during frontend development introduces several problems: network latency slows down your feedback loop, rate limits block rapid iteration, and production data cannot safely appear in screenshots, demos, or test suites due to privacy regulations like GDPR and CCPA. Mock data solves all three problems. You can iterate instantly, run unlimited requests, and share screenshots without redacting anything. Tools like Postman, WireMock, MSW (Mock Service Worker), and Mirage JS all accept JSON mock responses — paste the output of this generator directly into those tools.</p>
+
+          <h3>JSON Schema Generation</h3>
+          <p>JSON Schema is the de facto standard for describing the shape of API request and response bodies. Many API frameworks (OpenAPI, AsyncAPI, Zod, Yup, Ajv) use JSON Schema internally. When you paste a schema into the Schema-Based mode, this tool reads the <code>type</code>, <code>properties</code>, <code>required</code>, <code>minimum</code>, <code>maximum</code>, <code>minLength</code>, <code>maxLength</code>, and <code>enum</code> fields to generate a valid, well-typed mock object. This is particularly useful for contract testing — verifying that your frontend can handle every shape the API is permitted to return.</p>
+
+          <h3>Building Large Collections</h3>
+          <p>The Collection mode lets you generate up to 1,000 objects from a single template in one click. Large collections are essential for testing pagination components, virtual scroll lists, data tables, and search filters. Each object in the collection gets independently randomised values, so no two rows look identical. Use the JSON Lines format when your toolchain expects NDJSON (for example, Elasticsearch bulk import, BigQuery streaming, or Kafka consumers that process one event per line). Use the Wrapped format when your API contract wraps arrays in a response envelope like <code>{ "data": [], "total": 50, "page": 1 }</code>.</p>
+
+          <h3>Integration with API Testing Workflows</h3>
+          <p>Paste generated mock JSON directly into Postman as a mock server response, Cypress as a <code>cy.intercept()</code> fixture, Playwright as a <code>page.route()</code> response, or Jest/Vitest as a module mock. For team workflows, save mock files alongside your source code in a <code>__mocks__</code> or <code>fixtures/</code> folder and commit them to version control so every developer and CI runner has the same stable test data. Use our <a href="/tools/json-formatter.html">JSON Formatter</a> to validate and prettify the output before committing. To view your full API spec in a readable format, try the <a href="/tools/openapi-viewer.html">OpenAPI Viewer</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is API mock data?</button>
+            <div class="faq-answer">API mock data is synthetic fake data that mimics real API responses. It is used during development and testing when the real backend is unavailable, rate-limited, or contains sensitive production data.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What placeholder tokens does this tool support?</button>
+            <div class="faq-answer">Supported tokens include: {{name}}, {{firstName}}, {{lastName}}, {{email}}, {{uuid}}, {{date}}, {{timestamp}}, {{number(min,max)}}, {{lorem(n)}}, {{boolean}}, {{url}}, {{phone}}, {{company}}, {{city}}, {{country}}, {{hex}}, {{color}}, and {{word}}.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my data sent to a server?</button>
+            <div class="faq-answer">No. All generation runs 100% in your browser. No data is transmitted to any server. You can safely use proprietary API schemas.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is JSON Schema-based generation?</button>
+            <div class="faq-answer">Paste a JSON Schema (with type, properties, required, etc.) and this tool generates a valid mock object that matches the schema with appropriate fake values for each field type.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What output formats are available?</button>
+            <div class="faq-answer">Single JSON object, JSON array of N objects, JSON Lines (one object per line / NDJSON), or a wrapped envelope format. All can be copied or downloaded as a .json file.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>API Tools</h4>
+        <a href="/tools/api-mock-generator.html">Mock Generator</a>
+        <a href="/tools/openapi-viewer.html">OpenAPI Viewer</a>
+        <a href="/tools/graphql-query-builder.html">GraphQL Builder</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    // ---- Faker Engine ----
+    var FIRST_NAMES = ['Alice','Bob','Carol','David','Eve','Frank','Grace','Hank','Iris','Jack','Karen','Liam','Mia','Noah','Olivia','Paul','Quinn','Rachel','Sam','Tina','Uma','Victor','Wendy','Xander','Yara','Zoe'];
+    var LAST_NAMES  = ['Smith','Johnson','Williams','Brown','Jones','Garcia','Miller','Davis','Martinez','Wilson','Anderson','Taylor','Thomas','Hernandez','Moore','Martin','Jackson','Lee','Thompson','White'];
+    var COMPANIES   = ['Acme Corp','Globex','Initech','Umbrella Ltd','Hooli','Pied Piper','Dunder Mifflin','Stark Industries','Wayne Enterprises','Cyberdyne','Aperture Science','Weyland Corp'];
+    var CITIES      = ['New York','London','Berlin','Tokyo','Paris','Sydney','Toronto','Singapore','Amsterdam','Dubai','Seoul','Barcelona','Chicago','Los Angeles','Mumbai'];
+    var COUNTRIES   = ['United States','United Kingdom','Germany','Japan','France','Australia','Canada','Singapore','Netherlands','Brazil','India','Spain','Mexico','South Korea'];
+    var COLORS      = ['red','green','blue','orange','purple','teal','pink','yellow','cyan','magenta','indigo','lime','amber','violet'];
+    var WORDS       = ['agile','backend','cache','deploy','edge','filter','graph','hash','index','jest','kernel','lint','merge','node','oauth','patch','query','rest','schema','token','union','vertex','webpack','yield'];
+    var LOREM_WORDS = ['lorem','ipsum','dolor','sit','amet','consectetur','adipiscing','elit','sed','do','eiusmod','tempor','incididunt','ut','labore','et','dolore','magna','aliqua','enim','ad','minim','veniam','quis','nostrud','exercitation','ullamco'];
+
+    function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function rndInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function uuidv4() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+    }
+
+    function rndDate() {
+      var now = Date.now();
+      var past = now - (1000 * 60 * 60 * 24 * 365 * 2);
+      return new Date(past + Math.random() * (now - past)).toISOString().split('T')[0];
+    }
+
+    function rndTimestamp() {
+      var now = Date.now();
+      var past = now - (1000 * 60 * 60 * 24 * 365 * 2);
+      return Math.floor(past + Math.random() * (now - past));
+    }
+
+    function rndEmail(first, last) {
+      var domains = ['gmail.com','yahoo.com','outlook.com','example.com','company.io','mail.com'];
+      return (first || rnd(FIRST_NAMES)).toLowerCase() + '.' + (last || rnd(LAST_NAMES)).toLowerCase() + '@' + rnd(domains);
+    }
+
+    function rndPhone() {
+      return '+1 (' + rndInt(200,999) + ') ' + rndInt(200,999) + '-' + rndInt(1000,9999);
+    }
+
+    function rndUrl() {
+      var tlds = ['com','io','dev','app','co'];
+      var words = ['api','app','cloud','service','platform','hub','base','lab'];
+      return 'https://' + rnd(words) + rndInt(1,99) + '.' + rnd(tlds);
+    }
+
+    function rndHex() {
+      return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+    }
+
+    function lorem(n) {
+      var out = [];
+      for (var i = 0; i < n; i++) out.push(rnd(LOREM_WORDS));
+      return out.join(' ');
+    }
+
+    function fillToken(token) {
+      var t = token.toLowerCase().trim();
+      if (t === 'uuid') return '"' + uuidv4() + '"';
+      if (t === 'name') { var f=rnd(FIRST_NAMES),l=rnd(LAST_NAMES); return '"' + f + ' ' + l + '"'; }
+      if (t === 'firstname') return '"' + rnd(FIRST_NAMES) + '"';
+      if (t === 'lastname') return '"' + rnd(LAST_NAMES) + '"';
+      if (t === 'email') { var f2=rnd(FIRST_NAMES),l2=rnd(LAST_NAMES); return '"' + rndEmail(f2,l2) + '"'; }
+      if (t === 'date') return '"' + rndDate() + '"';
+      if (t === 'timestamp') return String(rndTimestamp());
+      if (t === 'boolean') return Math.random() > 0.5 ? 'true' : 'false';
+      if (t === 'url') return '"' + rndUrl() + '"';
+      if (t === 'phone') return '"' + rndPhone() + '"';
+      if (t === 'company') return '"' + rnd(COMPANIES) + '"';
+      if (t === 'city') return '"' + rnd(CITIES) + '"';
+      if (t === 'country') return '"' + rnd(COUNTRIES) + '"';
+      if (t === 'hex') return '"' + rndHex() + '"';
+      if (t === 'color') return '"' + rnd(COLORS) + '"';
+      if (t === 'word') return '"' + rnd(WORDS) + '"';
+      var numMatch = t.match(/^number\((-?\d+),(-?\d+)\)$/);
+      if (numMatch) return String(rndInt(parseInt(numMatch[1],10), parseInt(numMatch[2],10)));
+      var loremMatch = t.match(/^lorem\((\d+)\)$/);
+      if (loremMatch) return '"' + lorem(parseInt(loremMatch[1],10)) + '"';
+      return '"' + token + '"';
+    }
+
+    function applyTemplate(tmpl) {
+      return tmpl.replace(/\{\{([^}]+)\}\}/g, function (_, token) {
+        return fillToken(token.trim());
+      });
+    }
+
+    function parseAndFill(raw) {
+      var filled = applyTemplate(raw);
+      return JSON.parse(filled);
+    }
+
+    // ---- Schema Generator ----
+    function generateFromSchema(schema) {
+      if (!schema || typeof schema !== 'object') return null;
+      if (schema['enum']) return rnd(schema['enum']);
+      var type = schema.type;
+      if (Array.isArray(type)) type = type[0];
+      switch (type) {
+        case 'string': {
+          var fmt = schema.format;
+          if (fmt === 'email') return rndEmail();
+          if (fmt === 'uuid') return uuidv4();
+          if (fmt === 'date') return rndDate();
+          if (fmt === 'date-time') return new Date(rndTimestamp()).toISOString();
+          if (fmt === 'uri' || fmt === 'url') return rndUrl();
+          var minL = schema.minLength || 3;
+          var maxL = schema.maxLength || 20;
+          return lorem(rndInt(Math.max(1,Math.floor(minL/5)), Math.max(1,Math.floor(maxL/5))));
+        }
+        case 'number':
+        case 'integer': {
+          var mn = schema.minimum !== undefined ? schema.minimum : 0;
+          var mx = schema.maximum !== undefined ? schema.maximum : 1000;
+          var val = rndInt(mn, mx);
+          return type === 'number' ? parseFloat((val + Math.random()).toFixed(2)) : val;
+        }
+        case 'boolean': return Math.random() > 0.5;
+        case 'null': return null;
+        case 'array': {
+          var minI = schema.minItems || 1;
+          var maxI = schema.maxItems || 3;
+          var count = rndInt(minI, maxI);
+          var items = schema.items || { type: 'string' };
+          var arr = [];
+          for (var i = 0; i < count; i++) arr.push(generateFromSchema(items));
+          return arr;
+        }
+        case 'object': {
+          var obj = {};
+          var props = schema.properties || {};
+          Object.keys(props).forEach(function (k) { obj[k] = generateFromSchema(props[k]); });
+          return obj;
+        }
+        default: return null;
+      }
+    }
+
+    // ---- UI Logic ----
+    var currentMode = 'rest';
+    var lastOutput = '';
+
+    function setStatus(msg, type) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + (type || 'info');
+      bar.textContent = msg;
+    }
+
+    // Mode switching
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        document.getElementById('modeRest').style.display = currentMode === 'rest' ? '' : 'none';
+        document.getElementById('modeCollection').style.display = currentMode === 'collection' ? '' : 'none';
+        document.getElementById('modeSchema').style.display = currentMode === 'schema' ? '' : 'none';
+        setStatus('Select a mode and click Generate.', 'info');
+      });
+    });
+
+    // ---- REST Mode ----
+    var REST_EXAMPLE = '{\n  "id": "{{uuid}}",\n  "name": "{{name}}",\n  "email": "{{email}}",\n  "company": "{{company}}",\n  "city": "{{city}}",\n  "score": {{number(1,100)}},\n  "active": {{boolean}},\n  "createdAt": "{{date}}",\n  "website": "{{url}}"\n}';
+
+    document.getElementById('restExampleBtn').addEventListener('click', function () {
+      document.getElementById('restTemplate').value = REST_EXAMPLE;
+    });
+    document.getElementById('restClearBtn').addEventListener('click', function () {
+      document.getElementById('restTemplate').value = '';
+      document.getElementById('restOutput').textContent = '';
+      setStatus('Cleared.', 'info');
+    });
+    document.getElementById('restGenBtn').addEventListener('click', function () {
+      var tmpl = document.getElementById('restTemplate').value.trim();
+      if (!tmpl) { setStatus('Enter a template first.', 'invalid'); return; }
+      try {
+        var obj = parseAndFill(tmpl);
+        var out = JSON.stringify(obj, null, 2);
+        lastOutput = out;
+        document.getElementById('restOutput').textContent = out;
+        var status = document.getElementById('restStatus') ? document.getElementById('restStatus').value : '200';
+        var method = document.getElementById('restMethod').value;
+        var path = document.getElementById('restPath').value || '/api/resource';
+        setStatus(method + ' ' + path + ' → ' + document.getElementById('restStatus').value + ' — ' + DT.formatBytes(new Blob([out]).size), 'valid');
+        DT.trackTool('api-mock-generator');
+      } catch (e) {
+        setStatus('Template error: ' + e.message, 'invalid');
+      }
+    });
+    document.getElementById('restCopyBtn').addEventListener('click', function () {
+      if (lastOutput) DT.copyToClipboard(lastOutput, this);
+    });
+    document.getElementById('restDownloadBtn').addEventListener('click', function () {
+      if (lastOutput) DT.downloadText(lastOutput, 'mock-response.json', 'application/json');
+    });
+
+    // ---- Collection Mode ----
+    var COL_EXAMPLE = '{\n  "id": "{{uuid}}",\n  "user": "{{name}}",\n  "email": "{{email}}",\n  "company": "{{company}}",\n  "active": {{boolean}},\n  "score": {{number(0,100)}},\n  "joinedAt": "{{date}}"\n}';
+
+    document.getElementById('colExampleBtn').addEventListener('click', function () {
+      document.getElementById('colTemplate').value = COL_EXAMPLE;
+    });
+    document.getElementById('colClearBtn').addEventListener('click', function () {
+      document.getElementById('colTemplate').value = '';
+      document.getElementById('colOutput').textContent = '';
+      setStatus('Cleared.', 'info');
+    });
+    document.getElementById('colGenBtn').addEventListener('click', function () {
+      var tmpl = document.getElementById('colTemplate').value.trim();
+      var count = Math.min(1000, Math.max(1, parseInt(document.getElementById('colCount').value, 10) || 10));
+      var fmt = document.getElementById('colFormat').value;
+      if (!tmpl) { setStatus('Enter an object template first.', 'invalid'); return; }
+      try {
+        var arr = [];
+        for (var i = 0; i < count; i++) arr.push(parseAndFill(tmpl));
+        var out;
+        if (fmt === 'array') {
+          out = JSON.stringify(arr, null, 2);
+        } else if (fmt === 'jsonlines') {
+          out = arr.map(function (o) { return JSON.stringify(o); }).join('\n');
+        } else {
+          out = JSON.stringify({ data: arr, total: count, page: 1, perPage: count }, null, 2);
+        }
+        lastOutput = out;
+        document.getElementById('colOutput').textContent = out;
+        setStatus('Generated ' + count + ' mock objects — ' + DT.formatBytes(new Blob([out]).size), 'valid');
+        DT.trackTool('api-mock-generator');
+      } catch (e) {
+        setStatus('Template error: ' + e.message, 'invalid');
+      }
+    });
+    document.getElementById('colCopyBtn').addEventListener('click', function () {
+      if (lastOutput) DT.copyToClipboard(lastOutput, this);
+    });
+    document.getElementById('colDownloadBtn').addEventListener('click', function () {
+      if (lastOutput) DT.downloadText(lastOutput, 'mock-collection.json', 'application/json');
+    });
+
+    // ---- Schema Mode ----
+    var SCH_EXAMPLE = JSON.stringify({
+      "type": "object",
+      "properties": {
+        "id":        { "type": "string", "format": "uuid" },
+        "name":      { "type": "string", "minLength": 5, "maxLength": 30 },
+        "email":     { "type": "string", "format": "email" },
+        "age":       { "type": "integer", "minimum": 18, "maximum": 80 },
+        "active":    { "type": "boolean" },
+        "score":     { "type": "number", "minimum": 0, "maximum": 100 },
+        "tags":      { "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 4 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    }, null, 2);
+
+    document.getElementById('schExampleBtn').addEventListener('click', function () {
+      document.getElementById('schInput').value = SCH_EXAMPLE;
+    });
+    document.getElementById('schClearBtn').addEventListener('click', function () {
+      document.getElementById('schInput').value = '';
+      document.getElementById('schOutput').textContent = '';
+      setStatus('Cleared.', 'info');
+    });
+    document.getElementById('schGenBtn').addEventListener('click', function () {
+      var raw = document.getElementById('schInput').value.trim();
+      var count = Math.min(100, Math.max(1, parseInt(document.getElementById('schCount').value, 10) || 1));
+      if (!raw) { setStatus('Paste a JSON Schema first.', 'invalid'); return; }
+      try {
+        var schema = JSON.parse(raw);
+        var arr = [];
+        for (var i = 0; i < count; i++) arr.push(generateFromSchema(schema));
+        var out = count === 1 ? JSON.stringify(arr[0], null, 2) : JSON.stringify(arr, null, 2);
+        lastOutput = out;
+        document.getElementById('schOutput').textContent = out;
+        setStatus('Generated ' + count + ' object' + (count > 1 ? 's' : '') + ' from schema — ' + DT.formatBytes(new Blob([out]).size), 'valid');
+        DT.trackTool('api-mock-generator');
+      } catch (e) {
+        setStatus('Schema error: ' + e.message, 'invalid');
+      }
+    });
+    document.getElementById('schCopyBtn').addEventListener('click', function () {
+      if (lastOutput) DT.copyToClipboard(lastOutput, this);
+    });
+    document.getElementById('schDownloadBtn').addEventListener('click', function () {
+      if (lastOutput) DT.downloadText(lastOutput, 'mock-schema.json', 'application/json');
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JSON Size Analyzer & Treemap — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Analyze JSON size breakdown by key with a visual treemap. See which fields consume the most bytes, compare two JSON objects, and get optimization suggestions. Free, browser-only.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/json-size-analyzer.html">
+  <meta property="og:title" content="JSON Size Analyzer & Treemap — DevToolbox">
+  <meta property="og:description" content="Visual JSON size breakdown with treemap, key-level byte analysis, comparison mode, and optimization tips. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/json-size-analyzer.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON Size Analyzer & Treemap",
+    "url": "https://thisdevtool.com/tools/json-size-analyzer.html",
+    "description": "Visual JSON size breakdown with treemap, key-level byte analysis, comparison mode, and optimization tips. Free, browser-only.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why does JSON size matter?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JSON size directly affects API response times, bandwidth costs, and mobile data usage. Large API payloads slow page load times, increase time-to-interactive, and can cause timeouts on slow connections. Optimising JSON size — by removing unused fields, shortening key names, or switching to binary formats — can significantly improve application performance."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is JSON size calculated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "JSON size is measured in bytes of UTF-8 encoded text. ASCII characters take 1 byte each; non-ASCII characters (accents, emoji, CJK characters) take 2-4 bytes. This tool uses the Blob API (new Blob([str]).size) to get the accurate UTF-8 byte count. Minified JSON is smaller than formatted JSON because whitespace is removed."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are common ways to reduce JSON payload size?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Common optimisations: (1) Remove null and undefined fields — they add key overhead with no value. (2) Use shorter key names (e.g. 'id' instead of 'identifier'). (3) Use numbers instead of strings for numeric values. (4) Remove empty arrays and objects. (5) Enable GZIP/Brotli compression on the server — text compresses very well. (6) Use GraphQL or sparse fieldsets to request only needed fields. (7) Consider binary formats like MessagePack or Protocol Buffers for high-volume APIs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a treemap visualization?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A treemap is a visualization that uses nested rectangles to show hierarchical data. The area of each rectangle is proportional to its value — in this case, the byte size of each JSON key. Larger rectangles represent keys that consume more space. Treemaps make it easy to spot which fields dominate the payload at a glance, even in deeply nested JSON structures."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does gzip compression make JSON optimisation unnecessary?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. While gzip typically compresses JSON by 70-80%, reducing the uncompressed size still helps. Compression takes CPU time on the server and decompression takes CPU time on the client. Smaller JSON also means smaller JavaScript objects in memory after parsing, which reduces garbage collection pressure. Optimising JSON and enabling compression are complementary, not alternatives."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .jsa-input { width: 100%; height: 140px; font-family: var(--font-mono); font-size: 0.85rem; resize: vertical; }
+    .jsa-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .treemap { width: 100%; min-height: 200px; background: var(--surface-2); border-radius: 10px; overflow: hidden; position: relative; margin: 0.75rem 0; display: flex; flex-wrap: wrap; }
+    .treemap-cell { position: relative; overflow: hidden; cursor: default; display: flex; align-items: center; justify-content: center; transition: opacity 0.15s; border: 2px solid transparent; }
+    .treemap-cell:hover { opacity: 0.85; border-color: var(--accent); z-index: 2; }
+    .treemap-cell .tc-label { text-align: center; font-size: 0.72rem; font-weight: 700; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); padding: 2px 4px; word-break: break-all; overflow: hidden; max-height: 100%; }
+    .size-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .size-table th { background: var(--surface-2); padding: 0.4rem 0.5rem; text-align: left; font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; cursor: pointer; }
+    .size-table th:hover { color: var(--accent); }
+    .size-table td { padding: 0.35rem 0.5rem; border-top: 1px solid var(--border); vertical-align: middle; }
+    .size-table td:nth-child(1) { font-family: var(--font-mono); font-size: 0.82rem; word-break: break-all; max-width: 240px; }
+    .size-table td:nth-child(2) { white-space: nowrap; color: var(--text-secondary); font-size: 0.82rem; }
+    .size-table td:nth-child(3) { white-space: nowrap; font-weight: 600; }
+    .size-table td:nth-child(4) { white-space: nowrap; }
+    .bar-cell { min-width: 80px; }
+    .size-bar { height: 8px; background: var(--accent); border-radius: 4px; transition: width 0.3s; }
+    .type-chip { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 0.7rem; font-weight: 700; }
+    .tc-string { background: #3b82f620; color: #3b82f6; }
+    .tc-number { background: #10b98120; color: #059669; }
+    .tc-boolean { background: #f59e0b20; color: #d97706; }
+    .tc-null { background: #ef444420; color: #ef4444; }
+    .tc-object { background: #8b5cf620; color: #7c3aed; }
+    .tc-array { background: #ec489920; color: #db2777; }
+    .opt-list { margin: 0; padding: 0; list-style: none; }
+    .opt-list li { padding: 0.4rem 0.5rem; border-top: 1px solid var(--border); display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.88rem; }
+    .opt-list li:first-child { border-top: none; }
+    .opt-count { font-weight: 700; color: #f59e0b; font-size: 0.82rem; flex-shrink: 0; }
+    .opt-save { font-size: 0.78rem; color: #10b981; flex-shrink: 0; }
+    .diff-pos { color: #ef4444; }
+    .diff-neg { color: #10b981; }
+    .stats-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .stat-chip { background: var(--surface-2); border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 0.82rem; }
+    .stat-chip strong { color: var(--accent); }
+    @media (max-width: 600px) {
+      .jsa-two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>JSON Size Analyzer &amp; Treemap</h1>
+          <p class="tool-subtitle">Visualise JSON payload size by key, compare two objects, and get optimization suggestions.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="analyze">Analyze</button>
+            <button class="option-chip" data-mode="compare">Compare</button>
+            <button class="option-chip" data-mode="optimize">Optimize</button>
+          </div>
+
+          <!-- Analyze Mode -->
+          <div id="mode-analyze">
+            <div class="pane-label" style="margin-bottom:0.35rem;">
+              <span>JSON Input</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="anaExampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="anaClearBtn">Clear</button>
+              </div>
+            </div>
+            <textarea class="jsa-input" id="anaInput" placeholder='Paste your JSON here...'></textarea>
+            <div id="anaStats" class="stats-row"></div>
+            <div id="anaTreemap" class="treemap" style="display:none;"></div>
+            <div id="anaTable"></div>
+          </div>
+
+          <!-- Compare Mode -->
+          <div id="mode-compare" style="display:none;">
+            <div class="jsa-two-col">
+              <div>
+                <div class="pane-label" style="margin-bottom:0.25rem;"><span>JSON A</span></div>
+                <textarea class="jsa-input" id="cmpInputA" placeholder="Paste first JSON..."></textarea>
+              </div>
+              <div>
+                <div class="pane-label" style="margin-bottom:0.25rem;"><span>JSON B</span></div>
+                <textarea class="jsa-input" id="cmpInputB" placeholder="Paste second JSON..."></textarea>
+              </div>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-secondary" id="cmpExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="cmpClearBtn">Clear</button>
+            </div>
+            <div id="cmpResults"></div>
+          </div>
+
+          <!-- Optimize Mode -->
+          <div id="mode-optimize" style="display:none;">
+            <div class="pane-label" style="margin-bottom:0.35rem;">
+              <span>JSON Input</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="optExampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="optClearBtn">Clear</button>
+              </div>
+            </div>
+            <textarea class="jsa-input" id="optInput" placeholder="Paste your JSON to get optimization suggestions..."></textarea>
+            <div id="optResults"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste JSON above to analyze its size breakdown.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the JSON Size Analyzer</h2>
+          <ol>
+            <li><strong>Analyze</strong> — paste any JSON object. The tool shows total size, a colour-coded treemap (block area = bytes), and a sortable table of every key with its path, type, byte count, and percentage share.</li>
+            <li><strong>Compare</strong> — paste two JSON objects side by side. The tool highlights keys that grew, shrank, or are missing in one version — useful for tracking payload changes between API versions.</li>
+            <li><strong>Optimize</strong> — paste your JSON to get actionable suggestions: null fields that could be omitted, empty arrays/strings, long key names, and estimated byte savings.</li>
+          </ol>
+
+          <h2>Why JSON Size Matters</h2>
+          <p>Every byte of JSON that travels over the network costs time and money. Mobile users on 3G connections feel this acutely — a 100 KB API response takes over a second to download on a 1 Mbps connection. Even on fast broadband, large JSON payloads increase JavaScript parsing and memory allocation time. Google's Core Web Vitals metrics (LCP, INP) are directly affected by payload sizes, making JSON optimisation a legitimate SEO concern.</p>
+
+          <h3>Understanding the Treemap</h3>
+          <p>The treemap visualization represents each top-level key in your JSON as a coloured block. The area of each block is proportional to the number of bytes that key's value occupies. Deeply nested objects appear as a single block sized by their total serialised size. At a glance, you can immediately identify which field is the "elephant in the room" — the key responsible for most of your payload. This is particularly useful when your API returns a denormalised response with embedded related objects.</p>
+
+          <h3>How JSON Size is Calculated</h3>
+          <p>This tool measures size in UTF-8 bytes using the browser's <code>Blob</code> API: <code>new Blob([string]).size</code>. This is the accurate byte count you would see if you measured the Content-Length header of an uncompressed HTTP response. ASCII characters (Latin alphabet, digits, standard punctuation) occupy 1 byte each. Accented characters (like é, ü) occupy 2 bytes. Emoji and CJK characters occupy 3-4 bytes. This matters if your JSON contains user-generated content with non-ASCII text.</p>
+
+          <h3>Common Optimisation Strategies</h3>
+          <p>The single highest-impact technique for most APIs is enabling <strong>GZIP or Brotli compression</strong> on the HTTP layer — text-based formats like JSON compress by 70-90%. Beyond compression, consider: <strong>omitting null values</strong> (many serialisers have an option for this), <strong>using sparse fieldsets</strong> (like <code>?fields=id,name,email</code>), <strong>shortening repetitive key names</strong> in large arrays of objects, and <strong>removing empty arrays/strings</strong>. For very high-volume APIs where every millisecond counts, binary formats like <a href="https://msgpack.org" rel="noopener noreferrer" target="_blank">MessagePack</a> or Protocol Buffers offer 20-50% smaller payloads than optimised JSON even after compression.</p>
+
+          <h3>JSON in REST vs GraphQL</h3>
+          <p>REST APIs often suffer from over-fetching — returning more fields than the client needs. GraphQL solves this by letting clients specify exactly which fields they want: <code>{ user { id name } }</code> returns only id and name, not a full user object. This is conceptually the same problem this tool helps you diagnose. Once you identify your largest fields in the Analyze tab, you have the data to justify adding sparse fieldset support to your API or migrating specific endpoints to GraphQL. See also our <a href="/tools/json-formatter.html">JSON Formatter</a> for formatting and validating the payloads you work with.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">Why does JSON size matter?</button>
+            <div class="faq-answer">JSON size directly affects API response times, bandwidth costs, and mobile data usage. Large payloads slow page load times, increase time-to-interactive, and can cause timeouts on slow connections. Optimising JSON size and enabling compression are complementary strategies for performance.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How is JSON size calculated?</button>
+            <div class="faq-answer">JSON size is measured in UTF-8 bytes. ASCII characters take 1 byte; non-ASCII characters (accents, emoji, CJK) take 2-4 bytes. This tool uses the Blob API (new Blob([str]).size) for accurate byte counts. Minified JSON is smaller than formatted JSON because whitespace is removed.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are common ways to reduce JSON payload size?</button>
+            <div class="faq-answer">Remove null and undefined fields, use shorter key names, remove empty arrays and objects, enable GZIP/Brotli compression on the server, use GraphQL or sparse fieldsets to request only needed fields, and consider binary formats like MessagePack for high-volume APIs.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is a treemap visualization?</button>
+            <div class="faq-answer">A treemap uses nested rectangles to show hierarchical data. The area of each rectangle is proportional to its value — here, the byte size of each JSON key. Larger blocks represent keys consuming more space, making it easy to spot which fields dominate the payload.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does gzip compression make JSON optimisation unnecessary?</button>
+            <div class="faq-answer">No. While gzip compresses JSON by 70-80%, reducing uncompressed size still helps — compression takes CPU time on the server and client, and smaller JSON means smaller in-memory JavaScript objects after parsing. Optimising JSON and enabling compression are complementary.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>JSON Tools</h4>
+        <a href="/tools/json-size-analyzer.html">JSON Size Analyzer</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/csv-json.html">CSV &harr; JSON</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/url-parser.html">URL Parser</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'analyze';
+    var sortCol = 2; // bytes
+    var sortDir = -1; // desc
+
+    var COLORS = [
+      '#10b981','#3b82f6','#f59e0b','#ef4444','#8b5cf6',
+      '#ec4899','#06b6d4','#84cc16','#f97316','#6366f1',
+      '#14b8a6','#e879f9','#fb923c','#22d3ee','#a3e635'
+    ];
+
+    function byteSize(str) {
+      return new Blob([str]).size;
+    }
+
+    function fmtBytes(b) { return DT.formatBytes(b); }
+
+    // --- Flatten JSON to key paths ---
+    function flattenJSON(obj, prefix, results, depth) {
+      depth = depth || 0;
+      results = results || [];
+      if (Array.isArray(obj)) {
+        var arrStr = JSON.stringify(obj);
+        results.push({ path: prefix, type: 'array', count: obj.length, rawSize: byteSize(arrStr), pct: 0 });
+        if (depth < 3) {
+          obj.forEach(function (item, i) {
+            if (item !== null && typeof item === 'object') {
+              flattenJSON(item, prefix + '[' + i + ']', results, depth + 1);
+            }
+          });
+        }
+      } else if (obj !== null && typeof obj === 'object') {
+        var keys = Object.keys(obj);
+        keys.forEach(function (k) {
+          var val = obj[k];
+          var valStr = JSON.stringify(val);
+          var size = byteSize(valStr);
+          var type = val === null ? 'null' : Array.isArray(val) ? 'array' : typeof val;
+          results.push({ path: prefix ? prefix + '.' + k : k, type: type, rawSize: size, count: type === 'array' ? val.length : (type === 'object' ? Object.keys(val).length : undefined), pct: 0 });
+          if (depth < 4 && val !== null && typeof val === 'object') {
+            flattenJSON(val, prefix ? prefix + '.' + k : k, results, depth + 1);
+          }
+        });
+      }
+      return results;
+    }
+
+    function getTopLevelSizes(obj) {
+      if (obj === null || typeof obj !== 'object') return [];
+      var keys = Array.isArray(obj) ? obj.map(function (_, i) { return i; }) : Object.keys(obj);
+      var total = byteSize(JSON.stringify(obj));
+      return keys.map(function (k, i) {
+        var val = obj[k];
+        var size = byteSize(JSON.stringify(val));
+        return { key: String(k), size: size, pct: total > 0 ? size / total : 0, color: COLORS[i % COLORS.length] };
+      }).sort(function (a, b) { return b.size - a.size; });
+    }
+
+    function renderTreemap(cells, container) {
+      if (!cells.length) { container.style.display = 'none'; return; }
+      container.style.display = 'flex';
+      container.innerHTML = '';
+      var total = cells.reduce(function (s, c) { return s + c.size; }, 0);
+      if (!total) { container.style.display = 'none'; return; }
+      var containerW = container.offsetWidth || 600;
+      var containerH = Math.max(180, Math.min(280, containerW * 0.4));
+      container.style.height = containerH + 'px';
+      // Simple row-based treemap layout
+      cells.forEach(function (cell) {
+        var pct = cell.size / total;
+        var div = document.createElement('div');
+        div.className = 'treemap-cell';
+        div.style.width = Math.max(1, Math.round(pct * 100)) + '%';
+        div.style.height = containerH + 'px';
+        div.style.background = cell.color;
+        div.style.flexShrink = '0';
+        div.style.minWidth = '2px';
+        var label = document.createElement('div');
+        label.className = 'tc-label';
+        var pctNum = Math.round(pct * 100);
+        label.textContent = pctNum > 5 ? cell.key + ' (' + pctNum + '%)' : (pctNum > 2 ? cell.key : '');
+        div.appendChild(label);
+        div.title = cell.key + ': ' + fmtBytes(cell.size) + ' (' + pctNum + '%)';
+        container.appendChild(div);
+      });
+    }
+
+    function renderTable(rows, total, container) {
+      if (!rows.length) { container.innerHTML = ''; return; }
+      // Top 50 rows for performance
+      var display = rows.slice().sort(function (a, b) {
+        var av = a[sortCol], bv = b[sortCol];
+        return typeof av === 'string' ? av.localeCompare(bv) * sortDir : (av - bv) * sortDir;
+      }).slice(0, 50);
+
+      var html = '<table class="size-table"><thead><tr>' +
+        '<th onclick="window.__jsaSortBy(0)">Path</th>' +
+        '<th onclick="window.__jsaSortBy(1)">Type</th>' +
+        '<th onclick="window.__jsaSortBy(2)">Size</th>' +
+        '<th onclick="window.__jsaSortBy(3)">% of Total</th>' +
+        '<th class="bar-cell"></th>' +
+        '</tr></thead><tbody>';
+      display.forEach(function (row) {
+        var typeClass = 'tc-' + row.type;
+        var pct = total > 0 ? (row.rawSize / total * 100) : 0;
+        html += '<tr>' +
+          '<td>' + escHtml(row.path) + '</td>' +
+          '<td><span class="type-chip ' + typeClass + '">' + row.type + (row.count !== undefined ? '[' + row.count + ']' : '') + '</span></td>' +
+          '<td>' + fmtBytes(row.rawSize) + '</td>' +
+          '<td>' + pct.toFixed(1) + '%</td>' +
+          '<td class="bar-cell"><div class="size-bar" style="width:' + Math.min(100, pct) + '%;"></div></td>' +
+          '</tr>';
+      });
+      html += '</tbody></table>';
+      if (rows.length > 50) html += '<p style="font-size:0.8rem;color:var(--text-secondary);text-align:center;margin-top:0.25rem;">Showing top 50 of ' + rows.length + ' keys</p>';
+      container.innerHTML = html;
+    }
+
+    window.__jsaSortBy = function (col) {
+      if (sortCol === col) { sortDir = -sortDir; }
+      else { sortCol = col; sortDir = col === 0 || col === 1 ? 1 : -1; }
+      processAnalyze();
+    };
+
+    function processAnalyze() {
+      var raw = document.getElementById('anaInput').value.trim();
+      var stats = document.getElementById('anaStats');
+      var treemap = document.getElementById('anaTreemap');
+      var table = document.getElementById('anaTable');
+      var sb = document.getElementById('statusBar');
+      stats.innerHTML = '';
+      treemap.style.display = 'none';
+      table.innerHTML = '';
+      if (!raw) { sb.className = 'status-bar info'; sb.textContent = 'Paste JSON above to analyze its size breakdown.'; return; }
+      var parsed;
+      try { parsed = JSON.parse(raw); } catch (e) {
+        sb.className = 'status-bar invalid'; sb.textContent = 'Invalid JSON: ' + e.message; return;
+      }
+      var totalBytes = byteSize(raw);
+      var minBytes = byteSize(JSON.stringify(parsed));
+      var rows = flattenJSON(parsed, '', [], 0);
+      var topLevel = getTopLevelSizes(parsed);
+      var keyCount = rows.length;
+
+      stats.innerHTML = [
+        '<span class="stat-chip">Total: <strong>' + fmtBytes(totalBytes) + '</strong></span>',
+        '<span class="stat-chip">Minified: <strong>' + fmtBytes(minBytes) + '</strong></span>',
+        '<span class="stat-chip">Keys: <strong>' + keyCount + '</strong></span>',
+        topLevel.length ? '<span class="stat-chip">Largest: <strong>' + topLevel[0].key + ' (' + fmtBytes(topLevel[0].size) + ', ' + Math.round(topLevel[0].pct * 100) + '%)</strong></span>' : ''
+      ].join('');
+
+      renderTreemap(topLevel, treemap);
+      renderTable(rows, totalBytes, table);
+
+      sb.className = 'status-bar valid';
+      sb.textContent = keyCount + ' keys — ' + fmtBytes(totalBytes) +
+        (topLevel.length ? ' — largest: ' + topLevel[0].key + ' (' + fmtBytes(topLevel[0].size) + ', ' + Math.round(topLevel[0].pct * 100) + '%)' : '');
+      DT.trackTool('json-size-analyzer');
+    }
+
+    function processCompare() {
+      var rawA = document.getElementById('cmpInputA').value.trim();
+      var rawB = document.getElementById('cmpInputB').value.trim();
+      var out = document.getElementById('cmpResults');
+      var sb = document.getElementById('statusBar');
+      if (!rawA || !rawB) { out.innerHTML = ''; sb.className = 'status-bar info'; sb.textContent = 'Paste two JSON objects to compare.'; return; }
+      var a, b;
+      try { a = JSON.parse(rawA); } catch (e) { sb.className = 'status-bar invalid'; sb.textContent = 'JSON A invalid: ' + e.message; return; }
+      try { b = JSON.parse(rawB); } catch (e) { sb.className = 'status-bar invalid'; sb.textContent = 'JSON B invalid: ' + e.message; return; }
+
+      var sizeA = byteSize(rawA), sizeB = byteSize(rawB);
+      var diff = sizeB - sizeA;
+      var diffPct = sizeA > 0 ? ((diff / sizeA) * 100) : 0;
+
+      var keysA = flattenJSON(a, '').reduce(function (m, r) { m[r.path] = r.rawSize; return m; }, {});
+      var keysB = flattenJSON(b, '').reduce(function (m, r) { m[r.path] = r.rawSize; return m; }, {});
+      var allKeys = Object.keys(Object.assign({}, keysA, keysB)).sort();
+
+      var diffRows = allKeys.map(function (k) {
+        var sa = keysA[k] || 0, sb2 = keysB[k] || 0;
+        return { path: k, sizeA: sa, sizeB: sb2, delta: sb2 - sa };
+      }).filter(function (r) { return r.delta !== 0 || r.sizeA === 0 || r.sizeB === 0; })
+        .sort(function (a, b) { return Math.abs(b.delta) - Math.abs(a.delta); })
+        .slice(0, 40);
+
+      var html = '<div class="stats-row" style="margin-top:0.5rem;">' +
+        '<span class="stat-chip">A: <strong>' + fmtBytes(sizeA) + '</strong></span>' +
+        '<span class="stat-chip">B: <strong>' + fmtBytes(sizeB) + '</strong></span>' +
+        '<span class="stat-chip">Delta: <strong class="' + (diff > 0 ? 'diff-pos' : 'diff-neg') + '">' + (diff > 0 ? '+' : '') + fmtBytes(diff) + ' (' + (diffPct > 0 ? '+' : '') + diffPct.toFixed(1) + '%)</strong></span>' +
+        '</div>';
+
+      if (diffRows.length) {
+        html += '<table class="size-table" style="margin-top:0.5rem;"><thead><tr><th>Key Path</th><th>Size A</th><th>Size B</th><th>Delta</th></tr></thead><tbody>';
+        diffRows.forEach(function (r) {
+          var deltaCls = r.delta > 0 ? 'diff-pos' : 'diff-neg';
+          html += '<tr><td>' + escHtml(r.path) + '</td>' +
+            '<td>' + (r.sizeA ? fmtBytes(r.sizeA) : '<em style="color:var(--text-secondary)">missing</em>') + '</td>' +
+            '<td>' + (r.sizeB ? fmtBytes(r.sizeB) : '<em style="color:var(--text-secondary)">missing</em>') + '</td>' +
+            '<td class="' + deltaCls + '">' + (r.delta > 0 ? '+' : '') + fmtBytes(r.delta) + '</td></tr>';
+        });
+        html += '</tbody></table>';
+      }
+      out.innerHTML = html;
+      sb.className = 'status-bar ' + (diff > 0 ? 'invalid' : 'valid');
+      sb.textContent = 'B is ' + fmtBytes(Math.abs(diff)) + ' ' + (diff > 0 ? 'larger' : 'smaller') + ' than A (' + (diffPct > 0 ? '+' : '') + diffPct.toFixed(1) + '%)';
+    }
+
+    function processOptimize() {
+      var raw = document.getElementById('optInput').value.trim();
+      var out = document.getElementById('optResults');
+      var sb = document.getElementById('statusBar');
+      if (!raw) { out.innerHTML = ''; sb.className = 'status-bar info'; sb.textContent = 'Paste JSON to get optimization suggestions.'; return; }
+      var parsed;
+      try { parsed = JSON.parse(raw); } catch (e) {
+        sb.className = 'status-bar invalid'; sb.textContent = 'Invalid JSON: ' + e.message; return;
+      }
+
+      var suggestions = [];
+      var totalBytes = byteSize(raw);
+
+      function scan(obj, path) {
+        if (obj === null || typeof obj !== 'object') return;
+        var keys = Object.keys(obj);
+        keys.forEach(function (k) {
+          var val = obj[k];
+          var fullPath = path ? path + '.' + k : k;
+          if (val === null) {
+            suggestions.push({ type: 'null', path: fullPath, save: byteSize(',"' + k + '":null'), desc: 'null value — omit key entirely' });
+          } else if (val === '') {
+            suggestions.push({ type: 'empty-string', path: fullPath, save: byteSize(',"' + k + '":""'), desc: 'empty string — consider omitting' });
+          } else if (Array.isArray(val) && val.length === 0) {
+            suggestions.push({ type: 'empty-array', path: fullPath, save: byteSize(',"' + k + '":[]'), desc: 'empty array — consider omitting' });
+          } else if (typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0) {
+            suggestions.push({ type: 'empty-object', path: fullPath, save: byteSize(',"' + k + '":{}'), desc: 'empty object — consider omitting' });
+          } else if (typeof val === 'string' && /^\d+$/.test(val)) {
+            suggestions.push({ type: 'string-number', path: fullPath, save: 2, desc: 'numeric string "' + val + '" — store as number instead (saves quotes)' });
+          }
+          if (k.length > 15) {
+            suggestions.push({ type: 'long-key', path: fullPath, save: Math.floor((k.length - 3) * 1.1), desc: 'long key name (' + k.length + ' chars) — consider abbreviating' });
+          }
+          if (val !== null && typeof val === 'object') scan(val, fullPath);
+        });
+      }
+      scan(parsed, '');
+
+      // Minification saving
+      var minBytes = byteSize(JSON.stringify(parsed));
+      var wsSave = totalBytes - minBytes;
+      if (wsSave > 0) {
+        suggestions.unshift({ type: 'whitespace', path: '(root)', save: wsSave, desc: 'minify JSON — remove whitespace and indentation (use JSON Formatter tool)' });
+      }
+
+      suggestions.sort(function (a, b) { return b.save - a.save; });
+
+      if (!suggestions.length) {
+        out.innerHTML = '<p style="color:#10b981;font-weight:600;padding:0.5rem 0;">No obvious optimisations found. Your JSON looks lean!</p>';
+        sb.className = 'status-bar valid';
+        sb.textContent = fmtBytes(totalBytes) + ' — no obvious optimisations';
+        return;
+      }
+
+      var totalSaveable = suggestions.reduce(function (s, r) { return s + r.save; }, 0);
+      var html = '<div class="stats-row" style="margin-top:0.5rem;">' +
+        '<span class="stat-chip">Current size: <strong>' + fmtBytes(totalBytes) + '</strong></span>' +
+        '<span class="stat-chip">Potential savings: <strong style="color:#10b981;">' + fmtBytes(totalSaveable) + '</strong></span>' +
+        '</div>';
+      html += '<ul class="opt-list">';
+      suggestions.slice(0, 30).forEach(function (s) {
+        html += '<li><span class="opt-count">' + fmtBytes(s.save) + '</span>' +
+          '<span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-secondary);">' + escHtml(s.path) + '</span>' +
+          ' — ' + escHtml(s.desc) + '</li>';
+      });
+      html += '</ul>';
+      out.innerHTML = html;
+      sb.className = 'status-bar info';
+      sb.textContent = suggestions.length + ' suggestion' + (suggestions.length !== 1 ? 's' : '') + ' — potential saving: ' + fmtBytes(totalSaveable);
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    var processMap = { analyze: processAnalyze, compare: processCompare, optimize: processOptimize };
+    var processDebounced = DT.debounce(function () { processMap[currentMode](); }, 200);
+
+    // Mode chips
+    document.querySelectorAll('.option-chip[data-mode]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        ['analyze', 'compare', 'optimize'].forEach(function (m) {
+          document.getElementById('mode-' + m).style.display = m === currentMode ? '' : 'none';
+        });
+        processMap[currentMode]();
+      });
+    });
+
+    // Inputs
+    ['anaInput', 'cmpInputA', 'cmpInputB', 'optInput'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('input', processDebounced);
+    });
+
+    var EXAMPLE_JSON = JSON.stringify({
+      "id": 12345,
+      "user": { "name": "Alice Johnson", "email": "alice@example.com", "avatar": null, "bio": "" },
+      "posts": [
+        { "id": 1, "title": "Hello World", "body": "This is my first post content with a lot of text that takes up space in the payload.", "tags": ["dev", "javascript"], "metadata": {} },
+        { "id": 2, "title": "Second Post", "body": "Another long post body content here, demonstrating that text values can dominate payload size.", "tags": [], "metadata": {} }
+      ],
+      "settings": { "theme": "dark", "notifications": true, "empty_list": [], "deprecated_field": null },
+      "pagination": { "total_count": 150, "current_page": 1, "per_page": 20, "next_page_url": null }
+    }, null, 2);
+
+    document.getElementById('anaExampleBtn').addEventListener('click', function () {
+      document.getElementById('anaInput').value = EXAMPLE_JSON;
+      processAnalyze();
+    });
+    document.getElementById('anaClearBtn').addEventListener('click', function () {
+      document.getElementById('anaInput').value = '';
+      processAnalyze();
+    });
+    document.getElementById('cmpExampleBtn').addEventListener('click', function () {
+      document.getElementById('cmpInputA').value = JSON.stringify({ "id": 1, "name": "Alice", "email": "alice@example.com", "role": "admin" });
+      document.getElementById('cmpInputB').value = JSON.stringify({ "id": 1, "name": "Alice Johnson", "email": "alice@example.com", "role": "superadmin", "permissions": ["read", "write", "delete"], "last_login": "2026-03-22T10:00:00Z" });
+      processCompare();
+    });
+    document.getElementById('cmpClearBtn').addEventListener('click', function () {
+      document.getElementById('cmpInputA').value = '';
+      document.getElementById('cmpInputB').value = '';
+      processCompare();
+    });
+    document.getElementById('optExampleBtn').addEventListener('click', function () {
+      document.getElementById('optInput').value = EXAMPLE_JSON;
+      processOptimize();
+    });
+    document.getElementById('optClearBtn').addEventListener('click', function () {
+      document.getElementById('optInput').value = '';
+      processOptimize();
+    });
+  })();
+  </script>
+</body>
+</html>

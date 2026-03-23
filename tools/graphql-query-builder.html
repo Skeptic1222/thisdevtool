@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>GraphQL Query Builder — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Build GraphQL queries, mutations, and subscriptions visually. Add fields, arguments, variables, and fragments. Free online GraphQL query builder — no signup needed.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/graphql-query-builder.html">
+  <meta property="og:title" content="GraphQL Query Builder — DevToolbox">
+  <meta property="og:description" content="Visually build GraphQL queries, mutations, and subscriptions with nested fields, arguments, variables, and fragments. Free and 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/graphql-query-builder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <style>
+    .gql-builder { display:flex; flex-direction:column; gap:16px; }
+    .gql-section { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; }
+    .gql-section h3 { margin:0 0 12px; font-size:14px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; }
+    .gql-field-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+    .gql-field-row input, .gql-field-row select { padding:5px 9px; border-radius:5px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:13px; }
+    .gql-field-row input[type=text] { min-width:120px; }
+    .gql-nested { margin-left:24px; border-left:2px solid var(--border); padding-left:12px; }
+    .btn-icon { padding:4px 8px; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:5px; cursor:pointer; font-size:12px; line-height:1.4; }
+    .btn-icon:hover { background:var(--border); }
+    .arg-list, .var-list, .frag-list { display:flex; flex-direction:column; gap:6px; }
+    .arg-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .arg-row input { padding:5px 8px; border-radius:5px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:13px; min-width:90px; }
+    .badge-type { font-size:11px; padding:2px 6px; border-radius:4px; font-weight:600; }
+    .ref-block { background:var(--surface); border:1px solid var(--border); border-radius:8px; margin-bottom:12px; overflow:hidden; }
+    .ref-block-header { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; cursor:pointer; user-select:none; }
+    .ref-block-body { display:none; padding:0 14px 14px; }
+    .ref-block.open .ref-block-body { display:block; }
+    .ref-block pre { background:var(--bg); border-radius:6px; padding:10px; font-size:12px; overflow-x:auto; margin:8px 0 0; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "GraphQL Query Builder",
+    "url": "https://thisdevtool.com/tools/graphql-query-builder.html",
+    "description": "Visually build GraphQL queries, mutations, and subscriptions with fields, arguments, variables, and fragments. Free and 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is GraphQL?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "GraphQL is a query language for APIs developed by Meta (Facebook). Unlike REST APIs where the server defines the response shape, GraphQL lets clients specify exactly which fields they need. This eliminates over-fetching (receiving unused data) and under-fetching (needing multiple requests). It uses a typed schema to describe available data and operations."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between a Query, Mutation, and Subscription?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Query reads data (equivalent to HTTP GET). A Mutation writes or modifies data (equivalent to POST, PUT, PATCH, DELETE). A Subscription establishes a persistent connection (usually WebSocket) to receive real-time data updates when server-side events occur."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are GraphQL variables?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Variables let you parameterize a GraphQL operation so the same query string can be reused with different inputs. Instead of hardcoding argument values (e.g., id: 123), you declare a variable (e.g., $userId: ID!) and pass the value separately in a variables JSON object. This prevents injection vulnerabilities and improves performance through query caching."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are GraphQL fragments?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Fragments are reusable selection sets that can be included in multiple queries or mutations. For example, if you frequently need the same set of fields from a User type, you define a fragment once (fragment UserFields on User { id name email }) and spread it with ...UserFields wherever needed."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can this tool execute GraphQL queries?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool builds and formats GraphQL query strings. It does not execute queries against a live API — use the generated query string in your GraphQL client (Apollo, urql, Relay, Postman, GraphiQL, Insomnia, etc.). Copy the output and paste it wherever you send GraphQL requests."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/api-mock-generator.html">Mock Generator</a>
+        <a href="/tools/openapi-viewer.html">OpenAPI Viewer</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>GraphQL Query Builder</h1>
+          <p class="tool-subtitle">Build GraphQL queries, mutations, and subscriptions visually. Add fields, arguments, variables, nested types, and fragments.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="query">Query</button>
+            <button class="option-chip" data-mode="mutation">Mutation</button>
+            <button class="option-chip" data-mode="subscription">Subscription</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <!-- Builder Panel -->
+          <div id="modeBuilder">
+            <div class="split-pane">
+              <div>
+                <div class="gql-builder">
+                  <!-- Operation -->
+                  <div class="gql-section">
+                    <h3>Operation</h3>
+                    <div class="gql-field-row">
+                      <label style="font-size:13px;color:var(--text-muted);min-width:70px;">Name:</label>
+                      <input type="text" id="opName" placeholder="getUsers" style="flex:1;">
+                    </div>
+                  </div>
+
+                  <!-- Variables -->
+                  <div class="gql-section">
+                    <h3>Variables <button class="btn-icon" id="addVarBtn">+ Add</button></h3>
+                    <div class="var-list" id="varList"></div>
+                  </div>
+
+                  <!-- Fields -->
+                  <div class="gql-section">
+                    <h3>Root Selection <button class="btn-icon" id="addFieldBtn">+ Add Field</button></h3>
+                    <div id="fieldList"></div>
+                  </div>
+
+                  <!-- Fragments -->
+                  <div class="gql-section">
+                    <h3>Fragments <button class="btn-icon" id="addFragBtn">+ Add Fragment</button></h3>
+                    <div class="frag-list" id="fragList"></div>
+                  </div>
+                </div>
+                <div style="margin-top:12px;display:flex;gap:8px;">
+                  <button class="btn btn-sm btn-secondary" id="loadExampleBtn">Load Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearAllBtn">Clear All</button>
+                </div>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Generated GraphQL</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="copyGqlBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="downloadGqlBtn">Download</button>
+                  </div>
+                </div>
+                <div class="code-output" id="gqlOutput" style="min-height:400px;white-space:pre;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reference Panel -->
+          <div id="modeReference" style="display:none;">
+            <div id="refContent"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Add fields and click outside or change any input to update the query.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the GraphQL Query Builder</h2>
+          <ol>
+            <li><strong>Choose an operation type</strong> — Query (read), Mutation (write), or Subscription (real-time).</li>
+            <li><strong>Name your operation</strong> — give it a descriptive name like <code>getUser</code> or <code>createPost</code>. Named operations are required for persisted queries and easier debugging.</li>
+            <li><strong>Define variables</strong> — declare <code>$variableName: Type!</code> pairs to parameterise the operation.</li>
+            <li><strong>Add fields</strong> — type field names; use the nested option to add sub-selection sets for object types.</li>
+            <li><strong>Add arguments</strong> — attach argument name/value pairs to any field, referencing your variables with <code>$varName</code>.</li>
+            <li><strong>Copy the output</strong> — paste into Apollo Client, urql, Postman, GraphiQL, or any GraphQL endpoint.</li>
+          </ol>
+
+          <h2>GraphQL vs REST</h2>
+          <p>REST APIs use multiple endpoints, each returning a fixed data shape. To build a profile page you might need three requests: <code>GET /user/123</code>, <code>GET /user/123/posts</code>, and <code>GET /user/123/followers</code>. With GraphQL you write a single query that requests exactly the fields you need across all related types. The server returns everything in one round trip. This is especially impactful on mobile networks where latency is high. However, REST has advantages too — HTTP caching is easier, the mental model is simpler, and REST APIs are ubiquitous. GraphQL shines in data-dense applications with complex, interconnected data models (social networks, e-commerce, dashboards).</p>
+
+          <h3>Understanding the Type System</h3>
+          <p>GraphQL has a strong type system. Every field has a type: scalars (<code>String</code>, <code>Int</code>, <code>Float</code>, <code>Boolean</code>, <code>ID</code>), object types, enums, interfaces, and unions. Types can be nullable (optional) or non-null (marked with <code>!</code>). Arrays use bracket notation: <code>[User]</code> is a nullable list of nullable users, <code>[User!]!</code> is a required list of required users. Understanding types is critical when defining variables — a type mismatch causes the server to reject the operation before execution.</p>
+
+          <h3>Variables and Security</h3>
+          <p>Always use variables instead of inline literal values for user-supplied inputs. Hardcoding a user ID like <code>user(id: "abc123")</code> is fine for exploration, but in production code the value should come from a variable: <code>user(id: $userId)</code>. Variables are passed as a separate JSON object outside the query string. This prevents injection attacks, enables automatic query caching on the client, and makes operations reusable across calls with different inputs. Declare variables with their types in the operation signature: <code>query GetUser($userId: ID!, $includeEmail: Boolean = false)</code>.</p>
+
+          <h3>Fragments and Code Reuse</h3>
+          <p>Fragments solve the DRY problem in GraphQL. When the same set of fields appears in multiple queries — a user card component, a user list row, and a user profile page all need <code>id</code>, <code>name</code>, <code>avatarUrl</code> — define it once as a fragment and spread it everywhere. Fragments also improve colocation: with Apollo Client and Relay, each UI component defines its own fragment, and parent queries compose those fragments automatically. This means component data requirements are encapsulated with the component itself, not scattered across the codebase. See our <a href="/tools/api-mock-generator.html">API Mock Generator</a> to create fake data for testing your queries.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is GraphQL?</button>
+            <div class="faq-answer">GraphQL is a query language for APIs developed by Meta. Unlike REST, clients specify exactly which fields they need, eliminating over-fetching and under-fetching. It uses a typed schema and a single endpoint.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between a Query, Mutation, and Subscription?</button>
+            <div class="faq-answer">Query reads data (like GET). Mutation writes data (like POST/PUT/DELETE). Subscription opens a persistent connection (WebSocket) for real-time data updates.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are GraphQL variables?</button>
+            <div class="faq-answer">Variables parameterise an operation so the same query string can be reused with different inputs. Declare them as $varName: Type! in the operation signature and pass values in a separate JSON object.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are GraphQL fragments?</button>
+            <div class="faq-answer">Fragments are reusable selection sets defined once (fragment UserFields on User { id name email }) and spread with ...UserFields in multiple queries or mutations.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can this tool execute GraphQL queries?</button>
+            <div class="faq-answer">No — this tool builds and formats query strings. Copy the output and paste it into Apollo, urql, Postman, GraphiQL, Insomnia, or any GraphQL client to execute it.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>API Tools</h4>
+        <a href="/tools/graphql-query-builder.html">GraphQL Builder</a>
+        <a href="/tools/api-mock-generator.html">Mock Generator</a>
+        <a href="/tools/openapi-viewer.html">OpenAPI Viewer</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var currentOp = 'query';
+    var fields = [];    // [{name, alias, args:[{k,v}], nested:[...same]}]
+    var variables = []; // [{name, type, defaultVal}]
+    var fragments = []; // [{name, onType, fields:string}]
+    var fieldIdCounter = 0;
+
+    // ---- Mode Switching ----
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var m = chip.dataset.mode;
+        if (m === 'reference') {
+          document.getElementById('modeBuilder').style.display = 'none';
+          document.getElementById('modeReference').style.display = '';
+          renderRef();
+        } else {
+          currentOp = m;
+          document.getElementById('modeBuilder').style.display = '';
+          document.getElementById('modeReference').style.display = 'none';
+          buildQuery();
+        }
+      });
+    });
+
+    // ---- Field Management ----
+    function makeField(name) {
+      return { id: fieldIdCounter++, name: name || '', alias: '', args: [], nested: [] };
+    }
+
+    function renderFieldList(container, fieldArr, depth) {
+      depth = depth || 0;
+      container.innerHTML = '';
+      fieldArr.forEach(function (f, idx) {
+        var row = document.createElement('div');
+        row.className = 'gql-field-row';
+        row.style.marginBottom = '4px';
+
+        var aliasIn = document.createElement('input');
+        aliasIn.type = 'text';
+        aliasIn.placeholder = 'alias (opt)';
+        aliasIn.value = f.alias;
+        aliasIn.style.width = '80px';
+        aliasIn.addEventListener('input', function () { f.alias = this.value.trim(); buildQuery(); });
+
+        var nameIn = document.createElement('input');
+        nameIn.type = 'text';
+        nameIn.placeholder = 'fieldName';
+        nameIn.value = f.name;
+        nameIn.addEventListener('input', function () { f.name = this.value.trim(); buildQuery(); });
+
+        var addArgBtn = document.createElement('button');
+        addArgBtn.className = 'btn-icon';
+        addArgBtn.textContent = '+ Arg';
+        addArgBtn.addEventListener('click', function () { f.args.push({k:'',v:''}); renderFieldList(container, fieldArr, depth); buildQuery(); });
+
+        var addSubBtn = document.createElement('button');
+        addSubBtn.className = 'btn-icon';
+        addSubBtn.textContent = '{ }';
+        addSubBtn.title = 'Add nested field';
+        addSubBtn.addEventListener('click', function () { f.nested.push(makeField('')); renderFieldList(container, fieldArr, depth); buildQuery(); });
+
+        var removeBtn = document.createElement('button');
+        removeBtn.className = 'btn-icon';
+        removeBtn.textContent = 'x';
+        removeBtn.style.color = 'var(--error,#ef4444)';
+        removeBtn.addEventListener('click', function () { fieldArr.splice(idx, 1); renderFieldList(container, fieldArr, depth); buildQuery(); });
+
+        row.appendChild(aliasIn);
+        row.appendChild(nameIn);
+        row.appendChild(addArgBtn);
+        row.appendChild(addSubBtn);
+        row.appendChild(removeBtn);
+        container.appendChild(row);
+
+        // Args
+        f.args.forEach(function (arg, ai) {
+          var ar = document.createElement('div');
+          ar.className = 'arg-row';
+          ar.style.marginLeft = '24px';
+
+          var kIn = document.createElement('input');
+          kIn.type = 'text';
+          kIn.placeholder = 'argName';
+          kIn.value = arg.k;
+          kIn.style.width = '100px';
+          kIn.addEventListener('input', function () { arg.k = this.value; buildQuery(); });
+
+          var sep = document.createElement('span');
+          sep.textContent = ':';
+          sep.style.color = 'var(--text-muted)';
+
+          var vIn = document.createElement('input');
+          vIn.type = 'text';
+          vIn.placeholder = '"value" or $var';
+          vIn.value = arg.v;
+          vIn.style.width = '120px';
+          vIn.addEventListener('input', function () { arg.v = this.value; buildQuery(); });
+
+          var rmArg = document.createElement('button');
+          rmArg.className = 'btn-icon';
+          rmArg.textContent = 'x';
+          rmArg.style.color = 'var(--error,#ef4444)';
+          rmArg.addEventListener('click', function () { f.args.splice(ai, 1); renderFieldList(container, fieldArr, depth); buildQuery(); });
+
+          ar.appendChild(kIn); ar.appendChild(sep); ar.appendChild(vIn); ar.appendChild(rmArg);
+          container.appendChild(ar);
+        });
+
+        // Nested fields
+        if (f.nested.length > 0) {
+          var nestedDiv = document.createElement('div');
+          nestedDiv.className = 'gql-nested';
+          renderFieldList(nestedDiv, f.nested, depth + 1);
+          var addNestedBtn = document.createElement('button');
+          addNestedBtn.className = 'btn-icon';
+          addNestedBtn.textContent = '+ Sub-field';
+          addNestedBtn.style.marginLeft = '24px';
+          addNestedBtn.addEventListener('click', function () { f.nested.push(makeField('')); renderFieldList(container, fieldArr, depth); buildQuery(); });
+          container.appendChild(nestedDiv);
+          container.appendChild(addNestedBtn);
+        }
+      });
+    }
+
+    document.getElementById('addFieldBtn').addEventListener('click', function () {
+      fields.push(makeField(''));
+      renderFieldList(document.getElementById('fieldList'), fields, 0);
+      buildQuery();
+    });
+
+    // ---- Variable Management ----
+    function renderVars() {
+      var list = document.getElementById('varList');
+      list.innerHTML = '';
+      variables.forEach(function (v, i) {
+        var row = document.createElement('div');
+        row.className = 'arg-row';
+
+        var nameIn = document.createElement('input');
+        nameIn.type = 'text';
+        nameIn.placeholder = '$varName';
+        nameIn.value = v.name;
+        nameIn.style.width = '110px';
+        nameIn.addEventListener('input', function () { v.name = this.value.replace(/^\$*/,''); buildQuery(); });
+
+        var typeIn = document.createElement('input');
+        typeIn.type = 'text';
+        typeIn.placeholder = 'Type! (e.g. ID!)';
+        typeIn.value = v.type;
+        typeIn.style.width = '100px';
+        typeIn.addEventListener('input', function () { v.type = this.value; buildQuery(); });
+
+        var defIn = document.createElement('input');
+        defIn.type = 'text';
+        defIn.placeholder = 'default (opt)';
+        defIn.value = v.defaultVal;
+        defIn.style.width = '100px';
+        defIn.addEventListener('input', function () { v.defaultVal = this.value; buildQuery(); });
+
+        var rm = document.createElement('button');
+        rm.className = 'btn-icon';
+        rm.textContent = 'x';
+        rm.style.color = 'var(--error,#ef4444)';
+        rm.addEventListener('click', function () { variables.splice(i,1); renderVars(); buildQuery(); });
+
+        row.appendChild(nameIn); row.appendChild(typeIn); row.appendChild(defIn); row.appendChild(rm);
+        list.appendChild(row);
+      });
+    }
+
+    document.getElementById('addVarBtn').addEventListener('click', function () {
+      variables.push({name:'',type:'',defaultVal:''});
+      renderVars(); buildQuery();
+    });
+
+    // ---- Fragment Management ----
+    function renderFrags() {
+      var list = document.getElementById('fragList');
+      list.innerHTML = '';
+      fragments.forEach(function (f, i) {
+        var row = document.createElement('div');
+        row.style.display='flex'; row.style.gap='8px'; row.style.alignItems='center'; row.style.flexWrap='wrap'; row.style.marginBottom='6px';
+
+        var nameIn = document.createElement('input');
+        nameIn.type = 'text';
+        nameIn.placeholder = 'fragmentName';
+        nameIn.value = f.name;
+        nameIn.style.cssText = 'width:120px;padding:5px 9px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;';
+        nameIn.addEventListener('input', function () { f.name = this.value; buildQuery(); });
+
+        var onIn = document.createElement('input');
+        onIn.type = 'text';
+        onIn.placeholder = 'on TypeName';
+        onIn.value = f.onType;
+        onIn.style.cssText = 'width:110px;padding:5px 9px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;';
+        onIn.addEventListener('input', function () { f.onType = this.value; buildQuery(); });
+
+        var fieldsIn = document.createElement('input');
+        fieldsIn.type = 'text';
+        fieldsIn.placeholder = 'id name email';
+        fieldsIn.value = f.fields;
+        fieldsIn.style.cssText = 'flex:1;min-width:100px;padding:5px 9px;border-radius:5px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;';
+        fieldsIn.addEventListener('input', function () { f.fields = this.value; buildQuery(); });
+
+        var rm = document.createElement('button');
+        rm.className = 'btn-icon';
+        rm.textContent = 'x';
+        rm.style.color = 'var(--error,#ef4444)';
+        rm.addEventListener('click', function () { fragments.splice(i,1); renderFrags(); buildQuery(); });
+
+        row.appendChild(nameIn); row.appendChild(onIn); row.appendChild(fieldsIn); row.appendChild(rm);
+        list.appendChild(row);
+      });
+    }
+
+    document.getElementById('addFragBtn').addEventListener('click', function () {
+      fragments.push({name:'',onType:'',fields:''});
+      renderFrags(); buildQuery();
+    });
+
+    // ---- Query Generation ----
+    function serializeArgs(args) {
+      var valid = args.filter(function (a) { return a.k && a.v; });
+      if (!valid.length) return '';
+      return '(' + valid.map(function (a) { return a.k + ': ' + a.v; }).join(', ') + ')';
+    }
+
+    function serializeField(f, indent) {
+      var prefix = Array(indent + 1).join('  ');
+      var alias = f.alias ? f.alias + ': ' : '';
+      var name = f.name || '_field';
+      var args = serializeArgs(f.args);
+      if (f.nested.length > 0) {
+        var inner = f.nested.map(function (nf) { return serializeField(nf, indent + 1); }).join('\n');
+        return prefix + alias + name + args + ' {\n' + inner + '\n' + prefix + '}';
+      }
+      return prefix + alias + name + args;
+    }
+
+    function buildQuery() {
+      var opName = document.getElementById('opName').value.trim() || 'MyOperation';
+      var varSig = variables.filter(function (v) { return v.name && v.type; }).map(function (v) {
+        return '$' + v.name + ': ' + v.type + (v.defaultVal ? ' = ' + v.defaultVal : '');
+      });
+      var varStr = varSig.length ? '(' + varSig.join(', ') + ')' : '';
+      var fieldLines = fields.filter(function (f) { return f.name; }).map(function (f) { return serializeField(f, 1); });
+      var body = fieldLines.length ? fieldLines.join('\n') : '  # add fields above';
+
+      var lines = [currentOp + ' ' + opName + varStr + ' {', body, '}'];
+
+      fragments.forEach(function (frag) {
+        if (frag.name && frag.onType && frag.fields) {
+          var fFields = frag.fields.trim().split(/\s+/).map(function (f) { return '  ' + f; }).join('\n');
+          lines.push('');
+          lines.push('fragment ' + frag.name + ' on ' + frag.onType + ' {');
+          lines.push(fFields);
+          lines.push('}');
+        }
+      });
+
+      var out = lines.join('\n');
+      document.getElementById('gqlOutput').textContent = out;
+
+      var totalFields = countFields(fields);
+      var totalArgs = countArgs(fields);
+      var totalNested = countNested(fields);
+      setStatus(currentOp + ': ' + opName + ' — ' + totalFields + ' fields, ' + totalArgs + ' args, ' + totalNested + ' nested', 'valid');
+      return out;
+    }
+
+    function countFields(arr) {
+      return arr.reduce(function (n, f) { return n + 1 + countFields(f.nested); }, 0);
+    }
+    function countArgs(arr) {
+      return arr.reduce(function (n, f) { return n + f.args.filter(function(a){return a.k;}).length + countArgs(f.nested); }, 0);
+    }
+    function countNested(arr) {
+      return arr.reduce(function (n, f) { return n + (f.nested.length > 0 ? 1 : 0) + countNested(f.nested); }, 0);
+    }
+
+    document.getElementById('opName').addEventListener('input', buildQuery);
+
+    function setStatus(msg, type) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + (type || 'info');
+      bar.textContent = msg;
+    }
+
+    // ---- Copy / Download ----
+    document.getElementById('copyGqlBtn').addEventListener('click', function () {
+      var t = document.getElementById('gqlOutput').textContent;
+      if (t) DT.copyToClipboard(t, this);
+    });
+    document.getElementById('downloadGqlBtn').addEventListener('click', function () {
+      var t = document.getElementById('gqlOutput').textContent;
+      if (t) DT.downloadText(t, 'query.graphql', 'text/plain');
+    });
+
+    // ---- Load Example ----
+    document.getElementById('loadExampleBtn').addEventListener('click', function () {
+      fields = [];
+      variables = [];
+      fragments = [];
+      document.getElementById('opName').value = 'GetUserWithPosts';
+      variables.push({name:'userId', type:'ID!', defaultVal:''});
+      variables.push({name:'limit', type:'Int', defaultVal:'10'});
+
+      var userField = makeField('user');
+      userField.args.push({k:'id', v:'$userId'});
+      userField.nested.push(makeField('id'));
+      userField.nested.push(makeField('name'));
+      userField.nested.push(makeField('email'));
+      var postsField = makeField('posts');
+      postsField.args.push({k:'limit', v:'$limit'});
+      postsField.nested.push(makeField('id'));
+      postsField.nested.push(makeField('title'));
+      postsField.nested.push(makeField('createdAt'));
+      userField.nested.push(postsField);
+      fields.push(userField);
+
+      fragments.push({name:'UserCore', onType:'User', fields:'id name email avatarUrl'});
+
+      renderVars();
+      renderFrags();
+      renderFieldList(document.getElementById('fieldList'), fields, 0);
+      buildQuery();
+    });
+
+    // ---- Clear ----
+    document.getElementById('clearAllBtn').addEventListener('click', function () {
+      fields = []; variables = []; fragments = [];
+      document.getElementById('opName').value = '';
+      document.getElementById('fieldList').innerHTML = '';
+      document.getElementById('varList').innerHTML = '';
+      document.getElementById('fragList').innerHTML = '';
+      document.getElementById('gqlOutput').textContent = '';
+      setStatus('Cleared.', 'info');
+    });
+
+    // ---- Reference ----
+    var REF_DATA = [
+      { title: 'Basic Query', body: 'query GetUser {\n  user(id: "1") {\n    id\n    name\n    email\n  }\n}' },
+      { title: 'Query with Variables', body: 'query GetUser($id: ID!) {\n  user(id: $id) {\n    id\n    name\n    email\n  }\n}' },
+      { title: 'Mutation (Create)', body: 'mutation CreatePost($input: PostInput!) {\n  createPost(input: $input) {\n    id\n    title\n    createdAt\n  }\n}' },
+      { title: 'Mutation (Update)', body: 'mutation UpdateUser($id: ID!, $name: String!) {\n  updateUser(id: $id, name: $name) {\n    id\n    name\n    updatedAt\n  }\n}' },
+      { title: 'Mutation (Delete)', body: 'mutation DeletePost($id: ID!) {\n  deletePost(id: $id) {\n    success\n    message\n  }\n}' },
+      { title: 'Subscription', body: 'subscription OnNewMessage($roomId: ID!) {\n  messageAdded(roomId: $roomId) {\n    id\n    content\n    author {\n      name\n    }\n    sentAt\n  }\n}' },
+      { title: 'Fragments', body: 'fragment UserFields on User {\n  id\n  name\n  email\n  avatarUrl\n}\n\nquery GetUsers {\n  users {\n    ...UserFields\n    posts {\n      title\n    }\n  }\n}' },
+      { title: 'Aliases', body: 'query {\n  activeUsers: users(status: ACTIVE) {\n    id\n    name\n  }\n  inactiveUsers: users(status: INACTIVE) {\n    id\n    name\n  }\n}' },
+      { title: 'Inline Fragments (Union)', body: 'query Search($term: String!) {\n  search(term: $term) {\n    ... on User {\n      id\n      name\n    }\n    ... on Post {\n      id\n      title\n    }\n  }\n}' },
+      { title: 'Directives (@include / @skip)', body: 'query GetUser($id: ID!, $withPosts: Boolean!) {\n  user(id: $id) {\n    id\n    name\n    posts @include(if: $withPosts) {\n      title\n    }\n  }\n}' },
+      { title: 'Pagination (Cursor)', body: 'query GetPosts($cursor: String, $limit: Int = 10) {\n  posts(after: $cursor, first: $limit) {\n    edges {\n      cursor\n      node {\n        id\n        title\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}' },
+      { title: 'Variables JSON (companion)', body: '// Send alongside your query:\n{\n  "userId": "abc123",\n  "limit": 5\n}' }
+    ];
+
+    function renderRef() {
+      var container = document.getElementById('refContent');
+      container.innerHTML = '<p style="color:var(--text-muted);margin-bottom:16px;">Click any pattern to expand. Copy and paste into your GraphQL client.</p>';
+      REF_DATA.forEach(function (r) {
+        var block = document.createElement('div');
+        block.className = 'ref-block';
+        var hdr = document.createElement('div');
+        hdr.className = 'ref-block-header';
+        hdr.innerHTML = '<strong style="font-size:14px;">' + r.title + '</strong><span style="color:var(--text-muted);font-size:12px;">click to expand</span>';
+        hdr.addEventListener('click', function () { block.classList.toggle('open'); });
+        var body = document.createElement('div');
+        body.className = 'ref-block-body';
+        var pre = document.createElement('pre');
+        pre.textContent = r.body;
+        var copyBtn = document.createElement('button');
+        copyBtn.className = 'btn btn-sm btn-secondary';
+        copyBtn.style.marginTop = '8px';
+        copyBtn.textContent = 'Copy';
+        copyBtn.addEventListener('click', function () { DT.copyToClipboard(r.body, copyBtn); });
+        body.appendChild(pre);
+        body.appendChild(copyBtn);
+        block.appendChild(hdr);
+        block.appendChild(body);
+        container.appendChild(block);
+      });
+    }
+
+    // Initial render
+    buildQuery();
+    DT.trackTool('graphql-query-builder');
+  })();
+  </script>
+</body>
+</html>

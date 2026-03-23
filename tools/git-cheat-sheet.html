@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Git Cheat Sheet — Free Online Interactive Reference | DevToolbox</title>
+  <meta name="description" content="Interactive Git reference with 65+ commands. Search by keyword, browse by topic, copy any command instantly. Includes workflow diagrams for feature branch, gitflow, and trunk-based development.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/git-cheat-sheet.html">
+  <meta property="og:title" content="Git Cheat Sheet — DevToolbox">
+  <meta property="og:description" content="65+ Git commands organized by topic with descriptions, flags, and examples. Search, filter by topic, copy commands, and view workflow diagrams. Free, no signup.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/git-cheat-sheet.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <style>
+    .cmd-table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+    .cmd-table thead tr { background:var(--surface); }
+    .cmd-table th { text-align:left; padding:8px 12px; font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--text-muted); border-bottom:2px solid var(--border); }
+    .cmd-table td { padding:8px 12px; border-bottom:1px solid var(--border); font-size:13px; vertical-align:top; }
+    .cmd-table tr:hover td { background:var(--surface); cursor:pointer; }
+    .cmd-cell { font-family:monospace; font-weight:600; color:#10b981; white-space:nowrap; }
+    .flags-cell { font-family:monospace; font-size:11px; color:var(--text-muted); }
+    .topic-header { font-size:15px; font-weight:700; padding:12px 0 6px; border-bottom:2px solid #10b981; margin-bottom:12px; color:#10b981; }
+    .copy-flash { color:#10b981 !important; }
+    .workflow-block { background:var(--surface); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:12px; }
+    .workflow-header { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; cursor:pointer; user-select:none; }
+    .workflow-header:hover { background:var(--border); }
+    .workflow-body { display:none; padding:0 16px 16px; }
+    .workflow-block.open .workflow-body { display:block; }
+    .workflow-body pre { background:var(--bg); border-radius:6px; padding:12px 16px; font-size:12px; overflow-x:auto; line-height:1.7; }
+    .topic-chip { display:inline-block; padding:4px 12px; margin:3px; border-radius:16px; border:1px solid var(--border); background:var(--surface); font-size:12px; cursor:pointer; user-select:none; }
+    .topic-chip.active { background:#10b981; color:#fff; border-color:#10b981; }
+    .highlight-row td { background:rgba(16,185,129,.1) !important; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Git Cheat Sheet",
+    "url": "https://thisdevtool.com/tools/git-cheat-sheet.html",
+    "description": "Interactive Git reference with 65+ commands organized by topic. Search, filter, copy any command, and view workflow diagrams for feature branching and gitflow.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Git?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Git is a distributed version control system created by Linus Torvalds in 2005. It tracks changes to files over time, enables multiple developers to collaborate on code simultaneously, and provides a complete history of every change ever made to a project. Unlike centralized version control systems, every developer has a full copy of the repository including its entire history."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between git merge and git rebase?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Both integrate changes from one branch into another. Merge creates a merge commit that preserves the full branch history — you can see exactly when branches diverged and rejoined. Rebase rewrites history by replaying commits from your branch on top of the target branch, creating a linear history. Use merge for public/shared branches to preserve context. Use rebase for local cleanup (before opening a pull request) to create a clean, linear history."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does git reset vs git revert do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "git reset moves the branch pointer backward, effectively removing commits from history (with --hard it also discards working directory changes). It rewrites history and should only be used on local, unpushed commits. git revert creates a new commit that undoes the changes of a previous commit without rewriting history. Revert is safe to use on shared/public branches because it does not alter existing commits."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is git stash used for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "git stash temporarily shelves changes you have not committed yet so you can switch to a different task. The changes are saved to a stack of stashes and can be reapplied later. This is useful when you need to quickly switch branches to fix a bug but are in the middle of unfinished work you are not ready to commit."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between git fetch and git pull?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "git fetch downloads changes from the remote repository but does not integrate them into your local branch. It updates your remote-tracking branches (origin/main, etc.) so you can see what changed. git pull is shorthand for git fetch followed by git merge (or git rebase with --rebase). Use fetch when you want to review changes before merging; use pull when you are ready to integrate them immediately."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/regex-library.html">Regex Library</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Git Cheat Sheet</h1>
+          <p class="tool-subtitle">65+ Git commands with descriptions, flags, and examples. Search, filter by topic, click to copy. Includes workflow diagrams.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="quickref">Quick Ref</button>
+            <button class="option-chip" data-mode="topic">By Topic</button>
+            <button class="option-chip" data-mode="search">Search</button>
+            <button class="option-chip" data-mode="workflow">Workflow</button>
+          </div>
+
+          <!-- Search bar (visible in search mode, also used for quick filter) -->
+          <div id="searchBar" style="display:flex;gap:8px;margin-bottom:12px;">
+            <input type="text" id="searchInput" placeholder="Search git commands... (commit, branch, merge, stash...)" style="flex:1;padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;">
+            <button class="btn btn-sm btn-secondary" id="clearSearchBtn">Clear</button>
+          </div>
+
+          <!-- Topic chips -->
+          <div id="topicChips" style="display:none;flex-wrap:wrap;margin-bottom:12px;gap:4px;"></div>
+
+          <!-- Command table -->
+          <div id="commandOutput"></div>
+
+          <!-- Workflow diagrams -->
+          <div id="workflowOutput" style="display:none;"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            65 commands — Click any row to copy. Use Search to filter.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use This Git Reference</h2>
+          <ol>
+            <li><strong>Quick Ref</strong> — all 65+ commands in topic groups, scrollable. Click any row to copy the command.</li>
+            <li><strong>By Topic</strong> — click a topic chip (Setup, Commits, Branches, etc.) to see only that group.</li>
+            <li><strong>Search</strong> — type any keyword (merge, stash, reset) to find relevant commands instantly.</li>
+            <li><strong>Workflow</strong> — view text-based diagrams for Feature Branch, Gitflow, and Trunk-Based Development workflows.</li>
+          </ol>
+
+          <h2>Essential Git Concepts</h2>
+          <p>Git tracks three areas: the <strong>working directory</strong> (files on disk), the <strong>staging area / index</strong> (files marked for the next commit), and the <strong>repository</strong> (committed history). The workflow is always: edit files → stage changes with <code>git add</code> → commit with <code>git commit</code>. Understanding these three areas explains why most Git confusion happens — people mix up what is staged vs. committed vs. pushed.</p>
+
+          <h3>Branching Strategy</h3>
+          <p>Git branches are lightweight pointers to commits, making them fast to create and cheap to discard. The most important branching strategies are: <strong>Feature Branch</strong> (create a branch per feature, merge back to main when done — simplest and most widely used), <strong>Gitflow</strong> (separate develop and main branches with release, hotfix, and feature branch types — good for versioned releases), and <strong>Trunk-Based Development</strong> (commit directly to main with short-lived branches and feature flags — preferred by CI/CD-heavy teams like Google and Meta). The Workflow tab has diagrams for all three.</p>
+
+          <h3>Remote Repositories</h3>
+          <p>A remote is a version of your repository hosted on a server (GitHub, GitLab, Bitbucket, Azure DevOps). The default remote name is <code>origin</code>. Key remote commands: <code>git remote add origin URL</code> links your local repo to a remote; <code>git push -u origin main</code> pushes your code and sets the tracking branch; <code>git fetch</code> downloads remote changes without merging; <code>git pull</code> fetches and merges in one step. For team workflows, always <code>git pull --rebase</code> before pushing to avoid unnecessary merge commits.</p>
+
+          <h3>Undoing Changes Safely</h3>
+          <p>Git provides multiple ways to undo changes at different stages. For uncommitted working directory changes: <code>git restore &lt;file&gt;</code> (or <code>git checkout -- &lt;file&gt;</code> in older versions). For staged but uncommitted changes: <code>git restore --staged &lt;file&gt;</code>. For committed but unpushed changes: <code>git reset HEAD~1</code> (keeps changes in working directory) or <code>git reset --hard HEAD~1</code> (discards changes entirely). For changes already pushed to a shared branch: always use <code>git revert &lt;hash&gt;</code> — it creates a new undo commit without rewriting history, which is safe for everyone else on the team. Pair this reference with our <a href="/tools/diff-checker.html">Diff Checker</a> when reviewing changes before committing.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is Git?</button>
+            <div class="faq-answer">Git is a distributed version control system created by Linus Torvalds in 2005. It tracks file changes over time, enables team collaboration, and stores a complete history of every change ever made to a project. Every developer has a full local copy of the repository.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between git merge and git rebase?</button>
+            <div class="faq-answer">Merge creates a merge commit that preserves full branch history. Rebase rewrites history by replaying commits on top of the target, creating a linear history. Use merge for public branches; use rebase locally before opening a pull request.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does git reset vs git revert do?</button>
+            <div class="faq-answer">git reset moves the branch pointer backward, removing commits from history. Only use on local unpushed commits. git revert creates a new commit that undoes a previous commit without rewriting history — safe to use on shared branches.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is git stash used for?</button>
+            <div class="faq-answer">git stash temporarily saves uncommitted changes so you can switch branches. Changes go to a stack and can be reapplied later with git stash pop. Useful when you need to quickly fix a bug while in the middle of unfinished work.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between git fetch and git pull?</button>
+            <div class="faq-answer">git fetch downloads remote changes and updates remote-tracking branches but does not integrate them into your working branch. git pull = git fetch + git merge. Use fetch to review first; use pull when ready to integrate immediately.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Reference</h4>
+        <a href="/tools/git-cheat-sheet.html">Git Cheat Sheet</a>
+        <a href="/tools/regex-library.html">Regex Library</a>
+        <a href="/tools/openapi-viewer.html">OpenAPI Viewer</a>
+        <a href="/tools/graphql-query-builder.html">GraphQL Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var CMDS = [
+      // Setup
+      { t:'Setup', cmd:'git config --global user.name "Name"',   desc:'Set your display name for commits', flags:'--global, --local, --system', ex:'git config --global user.name "Ada Lovelace"' },
+      { t:'Setup', cmd:'git config --global user.email "e@x.com"',desc:'Set your email for commits', flags:'--global', ex:'git config --global user.email "ada@example.com"' },
+      { t:'Setup', cmd:'git config --list',                       desc:'List all configuration settings', flags:'--global, --local', ex:'' },
+      { t:'Setup', cmd:'git init',                                desc:'Create a new repository in the current folder', flags:'--bare (server repo)', ex:'mkdir myproject && cd myproject && git init' },
+      { t:'Setup', cmd:'git clone <url>',                         desc:'Download a repository from a remote URL', flags:'--depth 1 (shallow), --branch <name>', ex:'git clone https://github.com/user/repo.git' },
+
+      // Staging
+      { t:'Staging', cmd:'git status',                            desc:'Show working tree status — staged, unstaged, untracked', flags:'-s (short), -b (branch)', ex:'' },
+      { t:'Staging', cmd:'git add <file>',                        desc:'Stage specific file(s) for next commit', flags:'-p (patch/interactive), -A (all)', ex:'git add src/app.js' },
+      { t:'Staging', cmd:'git add .',                             desc:'Stage all changes in current directory', flags:'', ex:'' },
+      { t:'Staging', cmd:'git add -p',                            desc:'Interactively stage chunks (hunks) of changes', flags:'', ex:'' },
+      { t:'Staging', cmd:'git restore --staged <file>',           desc:'Unstage a file (keep changes in working dir)', flags:'', ex:'git restore --staged config.json' },
+      { t:'Staging', cmd:'git restore <file>',                    desc:'Discard working directory changes to file', flags:'', ex:'git restore -- README.md' },
+      { t:'Staging', cmd:'git rm --cached <file>',                desc:'Remove file from index (stop tracking) without deleting', flags:'', ex:'git rm --cached .env' },
+      { t:'Staging', cmd:'git diff',                              desc:'Show unstaged changes', flags:'--staged (staged), --stat', ex:'' },
+      { t:'Staging', cmd:'git diff --staged',                     desc:'Show staged changes (what will be in next commit)', flags:'', ex:'' },
+
+      // Commits
+      { t:'Commits', cmd:'git commit -m "message"',               desc:'Commit staged changes with an inline message', flags:'-a (stage tracked), --amend, --no-edit', ex:'git commit -m "feat: add user auth"' },
+      { t:'Commits', cmd:'git commit --amend',                    desc:'Modify the most recent (unpushed) commit', flags:'--no-edit (keep message)', ex:'' },
+      { t:'Commits', cmd:'git commit --allow-empty -m "msg"',     desc:'Create a commit with no file changes (e.g. trigger CI)', flags:'', ex:'' },
+      { t:'Commits', cmd:'git show <hash>',                       desc:'Show full details and diff for a specific commit', flags:'--stat, --name-only', ex:'git show a1b2c3d' },
+      { t:'Commits', cmd:'git cherry-pick <hash>',                desc:'Apply a specific commit from another branch', flags:'-n (no commit), --continue, --abort', ex:'git cherry-pick a1b2c3d' },
+
+      // Branches
+      { t:'Branches', cmd:'git branch',                           desc:'List all local branches', flags:'-a (all), -r (remote), -v (verbose)', ex:'' },
+      { t:'Branches', cmd:'git branch <name>',                    desc:'Create a new branch at current HEAD', flags:'', ex:'git branch feature/login' },
+      { t:'Branches', cmd:'git checkout <branch>',                desc:'Switch to an existing branch', flags:'-b (create and switch)', ex:'git checkout main' },
+      { t:'Branches', cmd:'git switch <branch>',                  desc:'Switch to a branch (modern syntax)', flags:'-c (create), --detach', ex:'git switch feature/login' },
+      { t:'Branches', cmd:'git switch -c <branch>',               desc:'Create and switch to a new branch', flags:'', ex:'git switch -c feature/payment' },
+      { t:'Branches', cmd:'git branch -d <branch>',               desc:'Delete a local branch (must be merged)', flags:'-D (force delete)', ex:'git branch -d feature/old' },
+      { t:'Branches', cmd:'git branch -m <old> <new>',            desc:'Rename a branch', flags:'', ex:'git branch -m feature/old feature/new' },
+      { t:'Branches', cmd:'git branch --merged',                  desc:'List branches fully merged into current branch', flags:'--no-merged', ex:'' },
+
+      // Merging
+      { t:'Merging', cmd:'git merge <branch>',                    desc:'Merge a branch into the current branch', flags:'--no-ff (always merge commit), --squash, --abort', ex:'git merge feature/login' },
+      { t:'Merging', cmd:'git merge --squash <branch>',           desc:'Squash all branch commits into a single staged change', flags:'', ex:'git merge --squash feature/small-fix' },
+      { t:'Merging', cmd:'git merge --abort',                     desc:'Abort a merge that has conflicts', flags:'', ex:'' },
+      { t:'Merging', cmd:'git rebase <branch>',                   desc:'Rebase current branch onto another (rewrite history)', flags:'-i (interactive), --continue, --abort, --skip', ex:'git rebase main' },
+      { t:'Merging', cmd:'git rebase -i HEAD~<n>',                desc:'Interactive rebase: squash, reorder, edit last n commits', flags:'', ex:'git rebase -i HEAD~3' },
+      { t:'Merging', cmd:'git mergetool',                         desc:'Launch a merge conflict resolution tool', flags:'', ex:'' },
+
+      // Remote
+      { t:'Remote', cmd:'git remote -v',                          desc:'List remote connections with URLs', flags:'', ex:'' },
+      { t:'Remote', cmd:'git remote add <name> <url>',            desc:'Add a new remote connection', flags:'', ex:'git remote add origin https://github.com/user/repo.git' },
+      { t:'Remote', cmd:'git remote remove <name>',               desc:'Remove a remote connection', flags:'', ex:'git remote remove old-origin' },
+      { t:'Remote', cmd:'git fetch',                              desc:'Download remote changes without merging', flags:'--all, --prune (-p)', ex:'git fetch origin' },
+      { t:'Remote', cmd:'git pull',                               desc:'Fetch and merge remote branch', flags:'--rebase, --ff-only', ex:'git pull origin main' },
+      { t:'Remote', cmd:'git pull --rebase',                      desc:'Fetch and rebase (cleaner history than merge)', flags:'', ex:'' },
+      { t:'Remote', cmd:'git push',                               desc:'Push commits to the tracking remote branch', flags:'-u (set upstream), --force-with-lease, --tags', ex:'git push origin feature/login' },
+      { t:'Remote', cmd:'git push -u origin <branch>',            desc:'Push and set upstream tracking branch', flags:'', ex:'git push -u origin main' },
+      { t:'Remote', cmd:'git push --delete origin <branch>',      desc:'Delete a remote branch', flags:'', ex:'git push --delete origin feature/old' },
+
+      // Stash
+      { t:'Stash', cmd:'git stash',                               desc:'Stash uncommitted changes to a temporary stack', flags:'-u (include untracked), -m "message"', ex:'' },
+      { t:'Stash', cmd:'git stash list',                          desc:'List all stashed entries', flags:'', ex:'' },
+      { t:'Stash', cmd:'git stash pop',                           desc:'Apply top stash and remove it from stack', flags:'stash@{n} (specific)', ex:'' },
+      { t:'Stash', cmd:'git stash apply stash@{0}',               desc:'Apply a stash without removing it', flags:'', ex:'' },
+      { t:'Stash', cmd:'git stash drop stash@{0}',                desc:'Delete a specific stash entry', flags:'', ex:'' },
+      { t:'Stash', cmd:'git stash clear',                         desc:'Delete all stash entries', flags:'', ex:'' },
+      { t:'Stash', cmd:'git stash branch <branch>',               desc:'Create a branch from stash and apply it', flags:'', ex:'git stash branch fix/stash-work' },
+
+      // Log
+      { t:'Log', cmd:'git log',                                   desc:'Show commit history', flags:'--oneline, --graph, -n <num>, --author, --since', ex:'' },
+      { t:'Log', cmd:'git log --oneline --graph --all',           desc:'Visual branch graph in the terminal', flags:'', ex:'' },
+      { t:'Log', cmd:'git log -p',                                desc:'Show commits with full diffs', flags:'', ex:'' },
+      { t:'Log', cmd:'git log --stat',                            desc:'Show files changed per commit', flags:'', ex:'' },
+      { t:'Log', cmd:'git log --author="Name"',                   desc:'Filter commits by author', flags:'--since="2 weeks ago", --until', ex:'' },
+      { t:'Log', cmd:'git blame <file>',                          desc:'Show who last changed each line of a file', flags:'-L <start>,<end> (line range)', ex:'git blame src/api.js' },
+      { t:'Log', cmd:'git shortlog -sn',                          desc:'Summary of commits per contributor', flags:'', ex:'' },
+      { t:'Log', cmd:'git reflog',                                desc:'Show history of HEAD movements (recovery tool)', flags:'', ex:'' },
+
+      // Reset
+      { t:'Reset', cmd:'git reset HEAD~1',                        desc:'Undo last commit (keep changes staged)', flags:'--soft (staged), --mixed (unstaged), --hard (discard)', ex:'' },
+      { t:'Reset', cmd:'git reset --hard HEAD',                   desc:'Discard all uncommitted changes (dangerous!)', flags:'', ex:'' },
+      { t:'Reset', cmd:'git revert <hash>',                       desc:'Create a new commit that undoes a specific commit (safe)', flags:'-n (no auto-commit)', ex:'git revert a1b2c3d' },
+      { t:'Reset', cmd:'git clean -fd',                           desc:'Delete untracked files and directories', flags:'-n (dry run), -x (include .gitignore files)', ex:'' },
+
+      // Tags
+      { t:'Tags', cmd:'git tag',                                  desc:'List all tags', flags:'-l "v1.*" (filter)', ex:'' },
+      { t:'Tags', cmd:'git tag <name>',                           desc:'Create a lightweight tag at current commit', flags:'', ex:'git tag v1.0.0' },
+      { t:'Tags', cmd:'git tag -a <name> -m "msg"',               desc:'Create an annotated tag with metadata', flags:'', ex:'git tag -a v1.0.0 -m "Release v1.0.0"' },
+      { t:'Tags', cmd:'git push origin --tags',                   desc:'Push all tags to remote', flags:'', ex:'' },
+      { t:'Tags', cmd:'git tag -d <name>',                        desc:'Delete a local tag', flags:'', ex:'git tag -d v1.0.0-beta' },
+
+      // Submodules
+      { t:'Submodules', cmd:'git submodule add <url>',            desc:'Add a repository as a submodule', flags:'', ex:'git submodule add https://github.com/user/lib.git libs/lib' },
+      { t:'Submodules', cmd:'git submodule update --init',        desc:'Initialize and fetch submodules', flags:'--recursive', ex:'' },
+      { t:'Submodules', cmd:'git submodule foreach git pull',     desc:'Update all submodules to latest', flags:'', ex:'' }
+    ];
+
+    var TOPICS = [];
+    CMDS.forEach(function (c) { if (TOPICS.indexOf(c.t) === -1) TOPICS.push(c.t); });
+
+    var WORKFLOWS = [
+      {
+        title: 'Feature Branch Workflow',
+        desc: 'Most common workflow: main branch is always deployable. Every feature or fix gets its own branch.',
+        diagram:
+'main ──────────────────────────────────────── (always deployable)\n' +
+'        │                         ↑\n' +
+'        └─── feature/login ───────┘  (merge via PR)\n' +
+'\n' +
+'Steps:\n' +
+'  1. git switch -c feature/login       # create feature branch\n' +
+'  2. # ... make commits ...\n' +
+'  3. git push -u origin feature/login  # push branch\n' +
+'  4. # open pull request on GitHub/GitLab\n' +
+'  5. # code review + approve\n' +
+'  6. git switch main && git pull       # update main\n' +
+'  7. git merge feature/login           # or merge via PR UI\n' +
+'  8. git push origin main\n' +
+'  9. git branch -d feature/login       # clean up local\n' +
+' 10. git push --delete origin feature/login  # clean up remote'
+      },
+      {
+        title: 'Gitflow Workflow',
+        desc: 'Structured workflow for versioned releases. Separate develop and main branches with release, hotfix, and feature branches.',
+        diagram:
+'main     ─────●──────────────────────────●─────────  (tagged releases)\n' +
+'              ↑                          ↑\n' +
+'develop  ─────●────────────●─────────────●──────────  (integration)\n' +
+'                ↑     ↑   ↑\n' +
+'feature/*  ─────┘     │   └── release/1.0 ──┐\n' +
+'                       │                     ↓ merge to main + develop\n' +
+'hotfix/*  ──────────────┘ ──── (branches from main, merges to both)\n' +
+'\n' +
+'Branch types:\n' +
+'  main       – production releases only (tagged)\n' +
+'  develop    – integration branch, source of features\n' +
+'  feature/*  – one per feature, branches from develop\n' +
+'  release/*  – release prep, branches from develop\n' +
+'  hotfix/*   – urgent production fixes, branches from main\n' +
+'\n' +
+'Key commands:\n' +
+'  git switch -c feature/login develop\n' +
+'  git switch -c release/1.0 develop\n' +
+'  git switch -c hotfix/1.0.1 main'
+      },
+      {
+        title: 'Trunk-Based Development',
+        desc: 'Everyone commits to main (trunk) frequently. Short-lived branches and feature flags replace long-running branches. Requires strong CI/CD.',
+        diagram:
+'main ──●──●──●──●──●──●──●──●──●──  (commit often, always green CI)\n' +
+'           │       │\n' +
+'           └─ fix ─┘  (short-lived: < 1 day)\n' +
+'\n' +
+'Key practices:\n' +
+'  - Every developer commits to main at least daily\n' +
+'  - Feature flags hide incomplete features in production\n' +
+'  - CI runs on every push; broken builds block the team\n' +
+'  - No long-lived branches — branches last < 24 hours\n' +
+'  - Use git pull --rebase to keep history linear\n' +
+'\n' +
+'Key commands:\n' +
+'  git pull --rebase              # sync before starting work\n' +
+'  git switch -c quick-fix        # short-lived branch\n' +
+'  git push -u origin quick-fix   # open PR immediately\n' +
+'  # merge same day, delete branch'
+      },
+      {
+        title: 'Squash & Merge (Clean History)',
+        desc: 'Squash all commits on a feature branch into a single commit before merging. Keeps main history clean and bisectable.',
+        diagram:
+'feature/login:  A ── B ── C ── D  (4 messy WIP commits)\n' +
+'                                 ↓ squash merge\n' +
+'main:    ────────────────────── E  (one clean commit: "feat: add login")\n' +
+'\n' +
+'Methods:\n' +
+'  # Method 1: GitHub/GitLab "Squash and merge" button in PR UI\n' +
+'\n' +
+'  # Method 2: git merge --squash\n' +
+'  git switch main\n' +
+'  git merge --squash feature/login\n' +
+'  git commit -m "feat: add user login"\n' +
+'\n' +
+'  # Method 3: interactive rebase before merge\n' +
+'  git rebase -i HEAD~4  # squash last 4 commits\n' +
+'  # change "pick" to "squash" or "s" for all but first'
+      }
+    ];
+
+    var currentMode = 'quickref';
+    var currentTopic = null;
+
+    // Build topic chips
+    var chipContainer = document.getElementById('topicChips');
+    chipContainer.innerHTML = '<div class="topic-chip active" data-topic="">All (' + CMDS.length + ')</div>';
+    TOPICS.forEach(function (t) {
+      var count = CMDS.filter(function(c){ return c.t === t; }).length;
+      chipContainer.innerHTML += '<div class="topic-chip" data-topic="' + t + '">' + t + ' (' + count + ')</div>';
+    });
+    chipContainer.querySelectorAll('[data-topic]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        chipContainer.querySelectorAll('[data-topic]').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentTopic = chip.dataset.topic || null;
+        renderCommands();
+      });
+    });
+
+    // Mode switching
+    document.querySelectorAll('.option-chip[data-mode]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+
+        var isWorkflow = currentMode === 'workflow';
+        document.getElementById('commandOutput').style.display = isWorkflow ? 'none' : '';
+        document.getElementById('workflowOutput').style.display = isWorkflow ? '' : 'none';
+        chipContainer.style.display = currentMode === 'topic' ? 'flex' : 'none';
+        document.getElementById('searchBar').style.display = currentMode === 'search' ? 'flex' : 'none';
+
+        if (currentMode !== 'topic') currentTopic = null;
+        if (isWorkflow) renderWorkflow();
+        else renderCommands();
+      });
+    });
+
+    function renderCommands() {
+      var query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      var output = document.getElementById('commandOutput');
+      output.innerHTML = '';
+
+      var filtered = CMDS.filter(function (c) {
+        if (currentTopic && c.t !== currentTopic) return false;
+        if (query && !(c.cmd.toLowerCase().includes(query) || c.desc.toLowerCase().includes(query) || c.t.toLowerCase().includes(query) || c.flags.toLowerCase().includes(query))) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        output.innerHTML = '<p style="color:var(--text-muted);padding:16px;">No commands match. Try a different keyword.</p>';
+        setStatus('No commands found for "' + query + '".', 'info');
+        return;
+      }
+
+      // Group by topic
+      var grouped = {};
+      filtered.forEach(function (c) {
+        if (!grouped[c.t]) grouped[c.t] = [];
+        grouped[c.t].push(c);
+      });
+
+      Object.keys(grouped).forEach(function (topic) {
+        var header = document.createElement('div');
+        header.className = 'topic-header';
+        header.textContent = topic + ' (' + grouped[topic].length + ' commands)';
+        output.appendChild(header);
+
+        var table = document.createElement('table');
+        table.className = 'cmd-table';
+        table.innerHTML = '<thead><tr><th style="min-width:240px;">Command</th><th>Description</th><th style="min-width:160px;">Common Flags</th></tr></thead>';
+        var tbody = document.createElement('tbody');
+
+        grouped[topic].forEach(function (c) {
+          var tr = document.createElement('tr');
+          tr.title = 'Click to copy: ' + c.cmd;
+          tr.innerHTML =
+            '<td class="cmd-cell"><code>' + escH(c.cmd) + '</code></td>' +
+            '<td>' + escH(c.desc) + (c.ex ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">e.g. <code>' + escH(c.ex) + '</code></div>' : '') + '</td>' +
+            '<td class="flags-cell">' + escH(c.flags) + '</td>';
+
+          tr.addEventListener('click', function () {
+            var copyVal = c.cmd;
+            DT.copyToClipboard(copyVal).then(function () {
+              tr.classList.add('highlight-row');
+              var cell = tr.querySelector('.cmd-cell code');
+              var orig = cell.textContent;
+              cell.textContent = 'Copied!';
+              cell.style.color = '#10b981';
+              setTimeout(function () { cell.textContent = orig; cell.style.color = ''; tr.classList.remove('highlight-row'); }, 1400);
+            });
+            DT.trackTool('git-cheat-sheet');
+          });
+
+          tbody.appendChild(tr);
+        });
+
+        table.appendChild(tbody);
+        output.appendChild(table);
+      });
+
+      var topicLabel = currentTopic ? 'Topic: ' + currentTopic : (query ? 'Search: "' + query + '"' : 'All topics');
+      setStatus(CMDS.length + ' commands — ' + topicLabel + ' (' + filtered.length + ' shown)', 'valid');
+    }
+
+    function renderWorkflow() {
+      var output = document.getElementById('workflowOutput');
+      output.innerHTML = '';
+      WORKFLOWS.forEach(function (w) {
+        var block = document.createElement('div');
+        block.className = 'workflow-block';
+        var header = document.createElement('div');
+        header.className = 'workflow-header';
+        header.innerHTML = '<div><strong style="font-size:15px;">' + escH(w.title) + '</strong><p style="margin:4px 0 0;font-size:12px;color:var(--text-muted);">' + escH(w.desc) + '</p></div><span style="color:var(--text-muted);font-size:12px;">click to expand</span>';
+        header.addEventListener('click', function () { block.classList.toggle('open'); });
+        var body = document.createElement('div');
+        body.className = 'workflow-body';
+        var pre = document.createElement('pre');
+        pre.textContent = w.diagram;
+        var copyBtn = document.createElement('button');
+        copyBtn.className = 'btn btn-sm btn-secondary';
+        copyBtn.style.marginTop = '8px';
+        copyBtn.textContent = 'Copy Diagram';
+        copyBtn.addEventListener('click', function () { DT.copyToClipboard(w.diagram, copyBtn); });
+        body.appendChild(pre);
+        body.appendChild(copyBtn);
+        block.appendChild(header);
+        block.appendChild(body);
+        output.appendChild(block);
+      });
+      setStatus('4 workflow diagrams — Click to expand.', 'info');
+    }
+
+    document.getElementById('searchInput').addEventListener('input', DT.debounce(renderCommands, 150));
+    document.getElementById('clearSearchBtn').addEventListener('click', function () {
+      document.getElementById('searchInput').value = '';
+      renderCommands();
+    });
+
+    function setStatus(msg, type) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + (type || 'info');
+      bar.textContent = msg;
+    }
+
+    function escH(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // Initial render
+    renderCommands();
+  })();
+  </script>
+</body>
+</html>

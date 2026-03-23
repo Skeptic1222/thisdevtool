@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>OpenAPI / Swagger Spec Viewer — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="View and analyze OpenAPI 3.x and Swagger 2.0 specs. Paste JSON or YAML, browse endpoints by method, inspect parameters and schemas. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/openapi-viewer.html">
+  <meta property="og:title" content="OpenAPI / Swagger Spec Viewer — DevToolbox">
+  <meta property="og:description" content="Browse OpenAPI 3.x specs visually. Paste JSON or YAML, see all endpoints with method badges, parameters, request bodies, and responses. Free, no signup.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/openapi-viewer.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <style>
+    .method-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; min-width:52px; text-align:center; }
+    .badge-get    { background:#d1fae5; color:#065f46; }
+    .badge-post   { background:#dbeafe; color:#1e40af; }
+    .badge-put    { background:#fef3c7; color:#92400e; }
+    .badge-patch  { background:#ede9fe; color:#4c1d95; }
+    .badge-delete { background:#fee2e2; color:#991b1b; }
+    .badge-head   { background:#e0f2fe; color:#075985; }
+    .badge-options{ background:#f3f4f6; color:#374151; }
+    [data-theme=dark] .badge-get    { background:#064e3b; color:#6ee7b7; }
+    [data-theme=dark] .badge-post   { background:#1e3a5f; color:#93c5fd; }
+    [data-theme=dark] .badge-put    { background:#451a03; color:#fcd34d; }
+    [data-theme=dark] .badge-patch  { background:#2e1065; color:#c4b5fd; }
+    [data-theme=dark] .badge-delete { background:#450a0a; color:#fca5a5; }
+    .endpoint-card { border:1px solid var(--border); border-radius:8px; margin-bottom:8px; overflow:hidden; }
+    .endpoint-header { display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; user-select:none; background:var(--surface); }
+    .endpoint-header:hover { background:var(--border); }
+    .endpoint-body { display:none; padding:14px; background:var(--bg); border-top:1px solid var(--border); }
+    .endpoint-card.open .endpoint-body { display:block; }
+    .param-table { width:100%; border-collapse:collapse; font-size:13px; margin-top:8px; }
+    .param-table th { text-align:left; padding:5px 8px; border-bottom:1px solid var(--border); color:var(--text-muted); font-weight:600; }
+    .param-table td { padding:5px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
+    .tag-pill { display:inline-block; padding:2px 8px; background:var(--surface); border:1px solid var(--border); border-radius:12px; font-size:11px; margin-right:4px; }
+    .analyze-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; margin-bottom:16px; }
+    .analyze-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 16px; text-align:center; }
+    .analyze-card .big-num { font-size:28px; font-weight:700; color:#10b981; }
+    .analyze-card .label { font-size:12px; color:var(--text-muted); margin-top:4px; }
+    .search-bar { display:flex; gap:8px; margin-bottom:12px; }
+    .search-bar input { flex:1; padding:8px 12px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:14px; }
+    .schema-list { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px; margin-top:8px; }
+    .schema-list pre { font-size:12px; overflow-x:auto; background:var(--bg); border-radius:6px; padding:8px; margin:4px 0 0; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "OpenAPI / Swagger Spec Viewer",
+    "url": "https://thisdevtool.com/tools/openapi-viewer.html",
+    "description": "Paste an OpenAPI 3.x or Swagger 2.0 spec (JSON or YAML) and browse all endpoints, parameters, request bodies, response schemas, and get an API analysis summary.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is OpenAPI / Swagger?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "OpenAPI (formerly Swagger) is a standard, language-agnostic interface description format for REST APIs. An OpenAPI specification is a JSON or YAML document that describes all endpoints, parameters, request bodies, responses, authentication methods, and data schemas of an API. It enables automated documentation, SDK generation, mock server creation, and contract testing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between OpenAPI 2.0 and 3.0?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "OpenAPI 2.0 (originally called Swagger 2.0) is the older version. OpenAPI 3.0 introduced a cleaner structure: the 'definitions' object became 'components/schemas', 'host' and 'basePath' became 'servers', and request bodies became a separate 'requestBody' object instead of body parameters. OpenAPI 3.1 aligns fully with JSON Schema draft 2020-12. This viewer supports both 2.0 and 3.x formats."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool support YAML input?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Paste either JSON or YAML OpenAPI specs. The viewer automatically detects the format. A lightweight YAML parser handles common YAML syntax including multi-line strings, anchors, and aliases."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my API spec data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. All parsing and rendering happens 100% in your browser. Your API specification — which may contain internal endpoint names, schemas, and authentication details — never leaves your machine."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the Analyze mode show?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Analyze mode gives you a summary of your API: total endpoint count broken down by HTTP method, list of all defined schemas/components, list of endpoints missing descriptions or summaries, and any paths that lack response definitions. It's a quick quality audit for your API design."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/api-mock-generator.html">Mock Generator</a>
+        <a href="/tools/graphql-query-builder.html">GraphQL Builder</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>OpenAPI / Swagger Spec Viewer</h1>
+          <p class="tool-subtitle">Paste or fetch an OpenAPI 3.x or Swagger 2.0 spec — browse endpoints, schemas, and parameters with method-colour badges.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="paste">Paste</button>
+            <button class="option-chip" data-mode="url">URL</button>
+            <button class="option-chip" data-mode="analyze">Analyze</button>
+          </div>
+
+          <!-- Paste Mode -->
+          <div id="modePaste">
+            <div class="pane-label" style="margin-bottom:8px;">
+              <span>Paste OpenAPI Spec (JSON or YAML)</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="pasteExampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="pasteClearBtn">Clear</button>
+                <button class="btn btn-sm btn-primary" id="parseBtn">Parse &amp; View</button>
+              </div>
+            </div>
+            <textarea id="specInput" rows="12" placeholder='Paste OpenAPI 3.x or Swagger 2.0 JSON/YAML here...' spellcheck="false" style="width:100%;box-sizing:border-box;"></textarea>
+          </div>
+
+          <!-- URL Mode -->
+          <div id="modeUrl" style="display:none;">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+              <input type="url" id="specUrl" placeholder="https://petstore3.swagger.io/api/v3/openapi.json" style="flex:1;padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;">
+              <button class="btn btn-sm btn-primary" id="fetchUrlBtn">Fetch &amp; View</button>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);">Note: The API must support CORS. Use a CORS proxy if needed. Alternatively, download the spec file and paste it in the Paste tab.</p>
+          </div>
+
+          <!-- Analyze Mode -->
+          <div id="modeAnalyze" style="display:none;">
+            <div id="analyzeContent">
+              <p style="color:var(--text-muted);">Parse a spec in the Paste or URL tab first, then switch here to see the analysis.</p>
+            </div>
+          </div>
+
+          <!-- Viewer Output -->
+          <div id="viewerOutput" style="margin-top:16px; display:none;">
+            <div id="apiInfo" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;"></div>
+            <div class="search-bar">
+              <input type="text" id="searchInput" placeholder="Filter endpoints by path, method, or summary...">
+            </div>
+            <div id="methodFilter" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
+            <div id="endpointList"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste an OpenAPI spec and click Parse &amp; View.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the OpenAPI Spec Viewer</h2>
+          <ol>
+            <li><strong>Paste tab</strong> — paste your OpenAPI JSON or YAML spec and click Parse &amp; View. The tool auto-detects format.</li>
+            <li><strong>URL tab</strong> — enter a public URL that returns an OpenAPI spec. The API must support CORS headers.</li>
+            <li><strong>Browse endpoints</strong> — each endpoint shows as a collapsible card with method badge, path, summary, parameters, request body, and responses.</li>
+            <li><strong>Filter</strong> — use the search bar or method filter buttons to focus on specific endpoints.</li>
+            <li><strong>Analyze</strong> — switch to Analyze mode for a quality audit: endpoint counts, schema list, missing descriptions.</li>
+          </ol>
+
+          <h2>What Is OpenAPI?</h2>
+          <p>OpenAPI (formerly known as Swagger) is the industry-standard format for describing REST APIs. An OpenAPI spec is a machine-readable document — in JSON or YAML — that documents every endpoint your API exposes: the HTTP method, path, path and query parameters, request body schema, response codes, response body schemas, and authentication requirements. It is used by API gateway tools, SDK generators, documentation sites (like Swagger UI and Redoc), and testing frameworks. Teams that write an OpenAPI spec first (design-first approach) can generate server stubs, client SDKs, and mock servers before writing a single line of application code.</p>
+
+          <h3>OpenAPI 2.0 vs 3.x</h3>
+          <p>OpenAPI 2.0 (Swagger 2.0) is widely deployed but has structural limitations: it uses <code>host</code> and <code>basePath</code> instead of <code>servers</code>, puts request bodies in the <code>parameters</code> array, and stores schemas under <code>definitions</code>. OpenAPI 3.0 restructured these: <code>servers</code> is a proper array of server objects, request bodies are a separate <code>requestBody</code> field, and reusable objects live under <code>components</code>. OpenAPI 3.1 aligns fully with JSON Schema Draft 2020-12, enabling features like <code>if/then/else</code>, <code>unevaluatedProperties</code>, and <code>$defs</code>. This viewer handles both 2.0 and 3.x specs.</p>
+
+          <h3>Reading Endpoint Details</h3>
+          <p>Each endpoint card shows: the HTTP method badge (GET in green, POST in blue, PUT in orange/amber, PATCH in purple, DELETE in red), the full path, a summary (short description), and the operation ID (used for code generation). Click to expand an endpoint and see all path/query parameters (name, location, required status, type, description), the request body schema and content type, and all defined responses with their status codes and descriptions. Use this viewer alongside the <a href="/tools/api-mock-generator.html">API Mock Generator</a> to generate test data that matches your schemas.</p>
+
+          <h3>API Design Quality with Analyze Mode</h3>
+          <p>The Analyze mode audits your API spec for completeness and quality. Good API design requires that every endpoint has a summary and description, every parameter is documented with a type and description, every response code is explicitly defined (not just 200), and reusable schemas are in <code>components/schemas</code> rather than inlined in every endpoint. Automated tools like Spectral, Vacuum, and Redocly CLI can lint your OpenAPI spec against these rules. Use the Analyze results here as a quick pre-flight check before running a full linter. For building your API's mock data layer, see our <a href="/tools/api-mock-generator.html">Mock Generator</a>, and use the <a href="/tools/graphql-query-builder.html">GraphQL Query Builder</a> if your API is GraphQL-based.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is OpenAPI / Swagger?</button>
+            <div class="faq-answer">OpenAPI is a standard JSON/YAML format for describing REST APIs — all endpoints, parameters, request bodies, responses, schemas, and auth. It enables automated docs, SDK generation, mock servers, and contract testing.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between OpenAPI 2.0 and 3.0?</button>
+            <div class="faq-answer">OpenAPI 3.0 restructured the spec: definitions became components/schemas, host/basePath became servers, and request bodies got a dedicated requestBody field. OpenAPI 3.1 fully aligns with JSON Schema 2020-12.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Does this tool support YAML input?</button>
+            <div class="faq-answer">Yes. Paste JSON or YAML — the tool auto-detects the format. The YAML parser handles standard syntax including multi-line strings and anchors.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my API spec data sent to a server?</button>
+            <div class="faq-answer">No. All parsing and rendering happens 100% in your browser. Your spec — which may contain internal endpoint names and schemas — never leaves your machine.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does the Analyze mode show?</button>
+            <div class="faq-answer">Analyze shows: total endpoints by method, a list of all component schemas, endpoints missing descriptions or summaries, and paths without response definitions — a quick quality audit.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>API Tools</h4>
+        <a href="/tools/openapi-viewer.html">OpenAPI Viewer</a>
+        <a href="/tools/api-mock-generator.html">Mock Generator</a>
+        <a href="/tools/graphql-query-builder.html">GraphQL Builder</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var parsedSpec = null;
+    var allEndpoints = [];
+    var currentMode = 'paste';
+    var activeMethodFilter = null;
+
+    // ---- Mode Switching ----
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        document.getElementById('modePaste').style.display = currentMode === 'paste' ? '' : 'none';
+        document.getElementById('modeUrl').style.display = currentMode === 'url' ? '' : 'none';
+        document.getElementById('modeAnalyze').style.display = currentMode === 'analyze' ? '' : 'none';
+        if (currentMode === 'analyze' && parsedSpec) renderAnalyze();
+      });
+    });
+
+    function setStatus(msg, type) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + (type || 'info');
+      bar.textContent = msg;
+    }
+
+    // ---- Minimal YAML Parser ----
+    function parseYamlSimple(text) {
+      // For OpenAPI specs, try JSON first, then a basic YAML-to-JSON conversion
+      text = text.trim();
+      if (text.startsWith('{') || text.startsWith('[')) return JSON.parse(text);
+      // Basic YAML: convert to JSON via line-by-line parsing
+      // Use a simple approach: leverage the fact that YAML superset of JSON for simple docs
+      // For full YAML, fall back to eval-safe conversion
+      return parseYamlToObj(text);
+    }
+
+    function parseYamlToObj(yaml) {
+      var lines = yaml.split('\n');
+      var stack = [{ indent: -1, obj: {}, isArray: false }];
+      var result = null;
+
+      function getIndent(line) {
+        var m = line.match(/^( *)/);
+        return m ? m[1].length : 0;
+      }
+
+      lines.forEach(function (rawLine) {
+        var line = rawLine.replace(/\r$/, '');
+        if (!line.trim() || line.trim().startsWith('#')) return;
+        var indent = getIndent(line);
+        var trimmed = line.trim();
+
+        // Pop stack to current indent level
+        while (stack.length > 1 && stack[stack.length - 1].indent >= indent) stack.pop();
+        var parent = stack[stack.length - 1];
+
+        if (trimmed.startsWith('- ')) {
+          var val = trimmed.slice(2);
+          if (!Array.isArray(parent.obj)) {
+            // Convert to array context
+          }
+          var parsed = parseScalar(val);
+          if (Array.isArray(parent.obj)) { parent.obj.push(parsed); }
+        } else if (trimmed.includes(': ') || trimmed.endsWith(':')) {
+          var colonIdx = trimmed.indexOf(': ');
+          var key, value;
+          if (colonIdx === -1) {
+            key = trimmed.replace(/:$/, '');
+            value = null;
+          } else {
+            key = trimmed.slice(0, colonIdx);
+            value = trimmed.slice(colonIdx + 2);
+          }
+          key = key.replace(/^['"]|['"]$/g, '');
+          if (value === null || value === '') {
+            var newObj = {};
+            if (typeof parent.obj === 'object' && !Array.isArray(parent.obj)) parent.obj[key] = newObj;
+            stack.push({ indent: indent, obj: newObj, key: key });
+            if (!result) result = parent.obj;
+          } else {
+            if (typeof parent.obj === 'object' && !Array.isArray(parent.obj)) {
+              parent.obj[key] = parseScalar(value);
+            }
+            if (!result) result = parent.obj;
+          }
+        }
+      });
+      return result || stack[0].obj;
+    }
+
+    function parseScalar(v) {
+      if (v === 'true') return true;
+      if (v === 'false') return false;
+      if (v === 'null' || v === '~') return null;
+      if (/^-?\d+$/.test(v)) return parseInt(v, 10);
+      if (/^-?\d+\.\d+$/.test(v)) return parseFloat(v);
+      return v.replace(/^['"]|['"]$/g, '');
+    }
+
+    // ---- Spec Parsing ----
+    function parseSpec(text) {
+      var spec;
+      try {
+        spec = parseYamlSimple(text);
+      } catch (e) {
+        setStatus('Parse error: ' + e.message, 'invalid');
+        return null;
+      }
+      parsedSpec = spec;
+      return spec;
+    }
+
+    function extractEndpoints(spec) {
+      var endpoints = [];
+      var paths = spec.paths || {};
+      var methods = ['get','post','put','patch','delete','head','options'];
+      Object.keys(paths).forEach(function (path) {
+        var pathItem = paths[path] || {};
+        methods.forEach(function (method) {
+          if (pathItem[method]) {
+            var op = pathItem[method];
+            endpoints.push({
+              method: method,
+              path: path,
+              summary: op.summary || '',
+              description: op.description || '',
+              operationId: op.operationId || '',
+              tags: op.tags || [],
+              parameters: (pathItem.parameters || []).concat(op.parameters || []),
+              requestBody: op.requestBody || null,
+              responses: op.responses || {}
+            });
+          }
+        });
+      });
+      return endpoints;
+    }
+
+    function renderSpec(spec) {
+      var info = spec.info || {};
+      var servers = spec.servers || (spec.host ? [{ url: (spec.schemes ? spec.schemes[0] : 'https') + '://' + spec.host + (spec.basePath || '') }] : []);
+      var infoDiv = document.getElementById('apiInfo');
+      infoDiv.innerHTML =
+        '<h2 style="margin:0 0 4px;font-size:18px;">' + escH(info.title || 'Untitled API') + '</h2>' +
+        '<span style="font-size:12px;background:var(--border);padding:2px 8px;border-radius:10px;margin-right:8px;">v' + escH(String(info.version || '?')) + '</span>' +
+        (spec.openapi ? '<span style="font-size:12px;color:var(--text-muted);">OpenAPI ' + escH(spec.openapi) + '</span>' : '') +
+        (spec.swagger ? '<span style="font-size:12px;color:var(--text-muted);">Swagger ' + escH(spec.swagger) + '</span>' : '') +
+        (info.description ? '<p style="margin:8px 0 0;font-size:13px;color:var(--text-muted);">' + escH(info.description.slice(0,200)) + '</p>' : '') +
+        (servers.length ? '<p style="margin:8px 0 0;font-size:12px;"><strong>Server:</strong> ' + escH(servers[0].url || '') + '</p>' : '');
+
+      allEndpoints = extractEndpoints(spec);
+
+      // Method filter buttons
+      var methodCounts = {};
+      allEndpoints.forEach(function (e) { methodCounts[e.method] = (methodCounts[e.method] || 0) + 1; });
+      var filterDiv = document.getElementById('methodFilter');
+      filterDiv.innerHTML = '<button class="btn btn-sm btn-secondary" data-filter="all">All (' + allEndpoints.length + ')</button>';
+      Object.keys(methodCounts).forEach(function (m) {
+        filterDiv.innerHTML += '<button class="btn btn-sm btn-secondary" data-filter="' + m + '"><span class="method-badge badge-' + m + '">' + m.toUpperCase() + '</span> ' + methodCounts[m] + '</button>';
+      });
+      filterDiv.querySelectorAll('[data-filter]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          activeMethodFilter = btn.dataset.filter === 'all' ? null : btn.dataset.filter;
+          renderEndpoints();
+        });
+      });
+
+      document.getElementById('viewerOutput').style.display = '';
+      renderEndpoints();
+
+      var methodSummary = Object.keys(methodCounts).map(function (m) { return methodCounts[m] + ' ' + m.toUpperCase(); }).join(', ');
+      setStatus('OpenAPI ' + (spec.openapi || spec.swagger || '?') + ' — ' + allEndpoints.length + ' endpoints (' + methodSummary + ')', 'valid');
+      DT.trackTool('openapi-viewer');
+    }
+
+    function renderEndpoints() {
+      var query = (document.getElementById('searchInput').value || '').toLowerCase();
+      var list = document.getElementById('endpointList');
+      list.innerHTML = '';
+      var shown = 0;
+      allEndpoints.forEach(function (ep) {
+        if (activeMethodFilter && ep.method !== activeMethodFilter) return;
+        if (query && !(ep.path.toLowerCase().includes(query) || ep.method.includes(query) || ep.summary.toLowerCase().includes(query))) return;
+        shown++;
+        list.appendChild(buildEndpointCard(ep));
+      });
+      if (shown === 0) list.innerHTML = '<p style="color:var(--text-muted);padding:16px;">No endpoints match the current filter.</p>';
+    }
+
+    function buildEndpointCard(ep) {
+      var card = document.createElement('div');
+      card.className = 'endpoint-card';
+
+      var header = document.createElement('div');
+      header.className = 'endpoint-header';
+      header.innerHTML =
+        '<span class="method-badge badge-' + ep.method + '">' + ep.method.toUpperCase() + '</span>' +
+        '<code style="font-size:13px;flex:1;">' + escH(ep.path) + '</code>' +
+        (ep.summary ? '<span style="font-size:12px;color:var(--text-muted);margin-left:8px;">' + escH(ep.summary.slice(0,60)) + '</span>' : '') +
+        (ep.tags.length ? ep.tags.map(function(t){ return '<span class="tag-pill">' + escH(t) + '</span>'; }).join('') : '');
+      header.addEventListener('click', function () { card.classList.toggle('open'); });
+
+      var body = document.createElement('div');
+      body.className = 'endpoint-body';
+
+      var html = '';
+      if (ep.description) html += '<p style="font-size:13px;margin:0 0 10px;">' + escH(ep.description) + '</p>';
+      if (ep.operationId) html += '<p style="font-size:12px;color:var(--text-muted);margin:0 0 10px;">Operation ID: <code>' + escH(ep.operationId) + '</code></p>';
+
+      // Parameters
+      if (ep.parameters.length) {
+        html += '<h4 style="margin:0 0 6px;font-size:13px;">Parameters</h4>';
+        html += '<table class="param-table"><thead><tr><th>Name</th><th>In</th><th>Type</th><th>Required</th><th>Description</th></tr></thead><tbody>';
+        ep.parameters.forEach(function (p) {
+          var schema = p.schema || p;
+          html += '<tr><td><code>' + escH(p.name||'') + '</code></td><td>' + escH(p.in||'') + '</td><td>' + escH(schema.type||'') + '</td><td>' + (p.required ? '<strong style="color:#10b981">yes</strong>' : 'no') + '</td><td>' + escH((p.description||'').slice(0,80)) + '</td></tr>';
+        });
+        html += '</tbody></table>';
+      }
+
+      // Request body
+      if (ep.requestBody) {
+        html += '<h4 style="margin:10px 0 6px;font-size:13px;">Request Body</h4>';
+        var content = ep.requestBody.content || {};
+        Object.keys(content).forEach(function (ct) {
+          html += '<p style="font-size:12px;margin:0 0 4px;color:var(--text-muted);">' + escH(ct) + '</p>';
+          var schema = content[ct].schema;
+          if (schema) html += '<pre style="font-size:11px;background:var(--surface);border-radius:6px;padding:8px;overflow-x:auto;">' + escH(JSON.stringify(schema, null, 2).slice(0,400)) + '</pre>';
+        });
+      }
+
+      // Responses
+      html += '<h4 style="margin:10px 0 6px;font-size:13px;">Responses</h4>';
+      Object.keys(ep.responses).forEach(function (code) {
+        var r = ep.responses[code];
+        var color = code.startsWith('2') ? '#10b981' : code.startsWith('4') ? '#f59e0b' : code.startsWith('5') ? '#ef4444' : 'var(--text-muted)';
+        html += '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:4px;font-size:13px;"><code style="color:' + color + ';min-width:40px;">' + escH(code) + '</code><span>' + escH((r.description||'').slice(0,100)) + '</span></div>';
+      });
+
+      body.innerHTML = html;
+      card.appendChild(header);
+      card.appendChild(body);
+      return card;
+    }
+
+    function renderAnalyze() {
+      if (!parsedSpec) {
+        document.getElementById('analyzeContent').innerHTML = '<p style="color:var(--text-muted);">Parse a spec first in the Paste or URL tab.</p>';
+        return;
+      }
+      var spec = parsedSpec;
+      var endpoints = allEndpoints.length ? allEndpoints : extractEndpoints(spec);
+      var methodCounts = {};
+      var missingDesc = [];
+      var METHODS = ['get','post','put','patch','delete','head','options'];
+      METHODS.forEach(function (m) { methodCounts[m] = 0; });
+
+      endpoints.forEach(function (ep) {
+        methodCounts[ep.method] = (methodCounts[ep.method] || 0) + 1;
+        if (!ep.summary && !ep.description) missingDesc.push(ep.method.toUpperCase() + ' ' + ep.path);
+      });
+
+      var components = (spec.components && spec.components.schemas) || spec.definitions || {};
+      var schemaNames = Object.keys(components);
+
+      var html = '<div class="analyze-grid">';
+      html += '<div class="analyze-card"><div class="big-num">' + endpoints.length + '</div><div class="label">Total Endpoints</div></div>';
+      METHODS.forEach(function (m) {
+        if (methodCounts[m]) html += '<div class="analyze-card"><div class="big-num">' + methodCounts[m] + '</div><div class="label">' + m.toUpperCase() + '</div></div>';
+      });
+      html += '<div class="analyze-card"><div class="big-num">' + schemaNames.length + '</div><div class="label">Schemas</div></div>';
+      html += '<div class="analyze-card" style="' + (missingDesc.length ? 'border-color:#f59e0b;' : '') + '"><div class="big-num" style="' + (missingDesc.length ? 'color:#f59e0b;' : '') + '">' + missingDesc.length + '</div><div class="label">Missing Descriptions</div></div>';
+      html += '</div>';
+
+      if (schemaNames.length) {
+        html += '<h3 style="font-size:14px;margin:16px 0 8px;">Component Schemas (' + schemaNames.length + ')</h3>';
+        html += '<div class="schema-list"><div style="display:flex;flex-wrap:wrap;gap:6px;">';
+        schemaNames.forEach(function (s) { html += '<span class="tag-pill"><code>' + escH(s) + '</code></span>'; });
+        html += '</div></div>';
+      }
+
+      if (missingDesc.length) {
+        html += '<h3 style="font-size:14px;margin:16px 0 8px;color:#f59e0b;">Endpoints Missing Description/Summary (' + missingDesc.length + ')</h3>';
+        html += '<div class="schema-list"><ul style="margin:0;padding-left:20px;">';
+        missingDesc.forEach(function (e) { html += '<li style="font-size:13px;"><code>' + escH(e) + '</code></li>'; });
+        html += '</ul></div>';
+      }
+
+      var info = spec.info || {};
+      html += '<h3 style="font-size:14px;margin:16px 0 8px;">Info</h3>';
+      html += '<div class="schema-list" style="font-size:13px;">';
+      html += '<p style="margin:0 0 4px;"><strong>Title:</strong> ' + escH(info.title || 'N/A') + '</p>';
+      html += '<p style="margin:0 0 4px;"><strong>Version:</strong> ' + escH(String(info.version || 'N/A')) + '</p>';
+      html += '<p style="margin:0;"><strong>OpenAPI:</strong> ' + escH(spec.openapi || spec.swagger || 'N/A') + '</p>';
+      html += '</div>';
+
+      document.getElementById('analyzeContent').innerHTML = html;
+    }
+
+    function escH(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ---- Events ----
+    document.getElementById('parseBtn').addEventListener('click', function () {
+      var text = document.getElementById('specInput').value.trim();
+      if (!text) { setStatus('Paste a spec first.', 'invalid'); return; }
+      var spec = parseSpec(text);
+      if (spec) renderSpec(spec);
+    });
+
+    document.getElementById('fetchUrlBtn').addEventListener('click', function () {
+      var url = document.getElementById('specUrl').value.trim();
+      if (!url) { setStatus('Enter a URL first.', 'invalid'); return; }
+      setStatus('Fetching...', 'info');
+      fetch(url).then(function (r) { return r.text(); }).then(function (text) {
+        var spec = parseSpec(text);
+        if (spec) { renderSpec(spec); if (currentMode === 'analyze') renderAnalyze(); }
+      }).catch(function (e) {
+        setStatus('Fetch failed: ' + e.message + '. Check CORS.', 'invalid');
+      });
+    });
+
+    document.getElementById('searchInput').addEventListener('input', renderEndpoints);
+
+    var EXAMPLE_SPEC = JSON.stringify({
+      "openapi": "3.0.3",
+      "info": { "title": "Pet Store API", "version": "1.0.0", "description": "A sample API for managing pets." },
+      "servers": [{ "url": "https://api.example.com/v1" }],
+      "paths": {
+        "/pets": {
+          "get": {
+            "summary": "List all pets",
+            "operationId": "listPets",
+            "tags": ["pets"],
+            "parameters": [{ "name": "limit", "in": "query", "required": false, "schema": { "type": "integer" }, "description": "Max items to return" }],
+            "responses": { "200": { "description": "A list of pets" }, "400": { "description": "Invalid request" } }
+          },
+          "post": {
+            "summary": "Create a pet",
+            "operationId": "createPet",
+            "tags": ["pets"],
+            "requestBody": {
+              "required": true,
+              "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Pet" } } }
+            },
+            "responses": { "201": { "description": "Pet created" }, "400": { "description": "Validation error" } }
+          }
+        },
+        "/pets/{petId}": {
+          "get": {
+            "summary": "Get a specific pet",
+            "operationId": "getPet",
+            "tags": ["pets"],
+            "parameters": [{ "name": "petId", "in": "path", "required": true, "schema": { "type": "string" }, "description": "The pet ID" }],
+            "responses": { "200": { "description": "A pet object" }, "404": { "description": "Not found" } }
+          },
+          "put": {
+            "summary": "Update a pet",
+            "operationId": "updatePet",
+            "tags": ["pets"],
+            "parameters": [{ "name": "petId", "in": "path", "required": true, "schema": { "type": "string" } }],
+            "responses": { "200": { "description": "Updated" }, "404": { "description": "Not found" } }
+          },
+          "delete": {
+            "summary": "Delete a pet",
+            "operationId": "deletePet",
+            "tags": ["pets"],
+            "parameters": [{ "name": "petId", "in": "path", "required": true, "schema": { "type": "string" } }],
+            "responses": { "204": { "description": "Deleted" }, "404": { "description": "Not found" } }
+          }
+        }
+      },
+      "components": {
+        "schemas": {
+          "Pet": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "name": { "type": "string" },
+              "species": { "type": "string", "enum": ["dog","cat","bird","fish"] },
+              "age": { "type": "integer", "minimum": 0 },
+              "active": { "type": "boolean" }
+            },
+            "required": ["name", "species"]
+          }
+        }
+      }
+    }, null, 2);
+
+    document.getElementById('pasteExampleBtn').addEventListener('click', function () {
+      document.getElementById('specInput').value = EXAMPLE_SPEC;
+    });
+    document.getElementById('pasteClearBtn').addEventListener('click', function () {
+      document.getElementById('specInput').value = '';
+      document.getElementById('viewerOutput').style.display = 'none';
+      parsedSpec = null;
+      allEndpoints = [];
+      setStatus('Cleared.', 'info');
+    });
+  })();
+  </script>
+</body>
+</html>

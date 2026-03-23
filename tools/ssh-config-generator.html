@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>SSH Config Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate ~/.ssh/config files online. Add SSH hosts with aliases, ProxyJump, port forwarding, and key paths. AWS, GCP, Azure, bastion templates. Free, browser-based.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/ssh-config-generator.html">
+  <meta property="og:title" content="SSH Config Generator — DevToolbox">
+  <meta property="og:description" content="Generate SSH client config files with host aliases, ProxyJump, port forwarding, and cloud templates. Free online tool, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/ssh-config-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SSH Config Generator",
+    "url": "https://thisdevtool.com/tools/ssh-config-generator.html",
+    "description": "Generate SSH client config files with host aliases, ProxyJump, port forwarding, and cloud provider templates. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the SSH config file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The ~/.ssh/config file is the SSH client configuration file. It lets you define connection parameters for multiple hosts in one place — aliases, usernames, port numbers, identity files, and proxy settings — so you can connect with just 'ssh myserver' instead of typing the full ssh command each time."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is ProxyJump in SSH?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ProxyJump (or -J flag) routes your SSH connection through an intermediate 'jump host' or bastion server. This is used when your target server is on a private network not directly accessible from the internet. You connect to the bastion first, and SSH automatically tunnels through it to reach the target host."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between LocalForward and RemoteForward?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "LocalForward tunnels a local port to a remote destination through the SSH connection. For example, LocalForward 5432 db.internal:5432 lets you connect to a remote database at localhost:5432 on your machine. RemoteForward is the reverse — it makes a local port accessible on the remote server."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is ServerAliveInterval?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ServerAliveInterval sends a keepalive packet every N seconds when the connection is idle, preventing the server from dropping inactive SSH connections. Combined with ServerAliveCountMax (number of missed responses before disconnecting), this prevents 'Broken pipe' errors on long-running sessions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my SSH config sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This generator runs entirely in your browser. No data is sent to any server, logged, or stored anywhere outside your device. Your host names, usernames, and key paths are only used to generate the config text shown in your browser."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .host-card { border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-bottom: 14px; background: var(--bg-secondary); }
+    .host-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .host-header input { flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-input, var(--bg)); color: var(--text); font-size: 0.95rem; font-weight: 600; }
+    .host-header .btn { flex-shrink: 0; }
+    .host-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+    @media (max-width: 500px) { .host-grid { grid-template-columns: 1fr; } }
+    .h-label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+    .h-input { width: 100%; padding: 6px 9px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg-input, var(--bg)); color: var(--text); font-size: 0.85rem; box-sizing: border-box; }
+    .h-select { width: 100%; padding: 6px 9px; border: 1px solid var(--border); border-radius: 5px; background: var(--bg-input, var(--bg)); color: var(--text); font-size: 0.85rem; }
+    .check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .check-row input[type=checkbox] { width: auto; flex-shrink: 0; }
+    .check-row label { margin: 0; font-size: 0.85rem; color: var(--text); }
+    .section-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin: 10px 0 6px; }
+    .collapse-toggle { cursor: pointer; background: none; border: none; color: var(--accent); font-size: 0.8rem; font-weight: 600; padding: 0; margin-top: 8px; text-decoration: underline; }
+    .advanced-section { display: none; margin-top: 8px; }
+    .advanced-section.open { display: block; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/nginx-config.html">Nginx Config</a>
+        <a href="/tools/docker-compose-generator.html">Docker Compose</a>
+        <a href="/tools/dockerfile-generator.html">Dockerfile</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>SSH Config Generator</h1>
+          <p class="tool-subtitle">Generate your <code>~/.ssh/config</code> file. Add multiple hosts with aliases, jump hosts, port forwarding, and cloud provider templates.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="single">Single Host</button>
+            <button class="option-chip" data-mode="batch">Batch</button>
+            <button class="option-chip" data-mode="templates">Templates</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Hosts</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+              </div>
+
+              <!-- Template picker -->
+              <div id="templatePicker" style="display:none; margin-bottom: 14px;">
+                <div class="section-title">Cloud Templates</div>
+                <div class="btn-group" style="flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+                  <button class="btn btn-sm btn-secondary" data-tpl="aws">AWS EC2</button>
+                  <button class="btn btn-sm btn-secondary" data-tpl="gcp">GCP Compute</button>
+                  <button class="btn btn-sm btn-secondary" data-tpl="azure">Azure VM</button>
+                  <button class="btn btn-sm btn-secondary" data-tpl="bastion">Bastion/Jump Host</button>
+                </div>
+              </div>
+
+              <!-- Batch textarea -->
+              <div id="batchSection" style="display:none;">
+                <div class="section-title">Batch Import (host:user:ip:port per line)</div>
+                <textarea id="batchInput" rows="6" placeholder="web1:ubuntu:10.0.0.1:22&#10;web2:ubuntu:10.0.0.2:22&#10;db1:ec2-user:10.0.0.3:22" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;background:var(--bg-input,var(--bg-secondary));color:var(--text);font-size:0.85rem;box-sizing:border-box;resize:vertical;font-family:monospace;"></textarea>
+                <div class="form-group" style="margin-top:8px;">
+                  <label class="h-label">Identity File (applies to all)</label>
+                  <input type="text" id="batchIdentity" class="h-input" placeholder="~/.ssh/id_ed25519">
+                </div>
+                <div class="form-group" style="margin-top:8px;">
+                  <label class="h-label">ProxyJump (applies to all)</label>
+                  <input type="text" id="batchProxy" class="h-input" placeholder="bastion">
+                </div>
+              </div>
+
+              <div id="hostContainer"></div>
+              <button class="btn btn-sm btn-secondary" id="addHost" style="margin-top:4px;">+ Add Host</button>
+
+              <!-- Global options -->
+              <div style="margin-top:16px;">
+                <div class="section-title">Global Options (applies to all hosts)</div>
+                <div class="host-grid">
+                  <div><label class="h-label">ServerAliveInterval (s)</label><input type="text" id="globalAlive" class="h-input" placeholder="60"></div>
+                  <div><label class="h-label">ServerAliveCountMax</label><input type="text" id="globalAliveMax" class="h-input" placeholder="3"></div>
+                </div>
+                <div class="check-row"><input type="checkbox" id="globalAddKeys"><label>AddKeysToAgent yes</label></div>
+                <div class="check-row"><input type="checkbox" id="globalUseKeychain"><label>UseKeychain yes (macOS only)</label></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="pane-label">
+                <span>~/.ssh/config</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="configOutput" style="min-height:380px;white-space:pre;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Add hosts above to generate your SSH config.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the SSH Config Generator</h2>
+          <ol>
+            <li><strong>Add hosts</strong> — click "+ Add Host" or choose a cloud template to start.</li>
+            <li><strong>Fill in the details</strong> — alias, hostname or IP, user, port, and identity file.</li>
+            <li><strong>Enable advanced options</strong> — expand the advanced section for ProxyJump, port forwarding, and keepalive settings.</li>
+            <li><strong>Copy or download</strong> — save the output as <code>~/.ssh/config</code> (make sure permissions are <code>600</code>: <code>chmod 600 ~/.ssh/config</code>).</li>
+          </ol>
+
+          <h2>Understanding the SSH Config File</h2>
+          <p>The SSH client configuration file (<code>~/.ssh/config</code>) is one of the most useful but underutilized tools in a developer's workflow. Instead of memorizing and typing long SSH commands like <code>ssh -i ~/.ssh/aws-key.pem -p 2222 ubuntu@ec2-54-12-34-56.compute.amazonaws.com</code>, you define it once in the config file and connect with just <code>ssh webserver</code>. The file is read top to bottom; the first matching <code>Host</code> block wins, and the special <code>Host *</code> block at the bottom applies global defaults.</p>
+
+          <h3>Host Aliases and Wildcards</h3>
+          <p>Each <code>Host</code> directive defines a pattern that matches when you type <code>ssh &lt;pattern&gt;</code>. You can use wildcards: <code>Host web-*</code> matches <code>web-prod</code>, <code>web-staging</code>, etc. Multiple patterns on the same line (space-separated) match any of them. The <code>HostName</code> directive specifies the actual IP or DNS name to connect to — this is separate from the alias, letting you use short memorable names for long hostnames.</p>
+
+          <h3>Jump Hosts and ProxyJump</h3>
+          <p>In many corporate and cloud environments, production servers are on private networks with no direct internet access. A bastion host (also called a jump host) sits on the boundary — it has both a public IP and access to the private network. The <code>ProxyJump</code> directive (introduced in OpenSSH 7.3) handles this transparently. When you run <code>ssh private-server</code>, SSH first connects to the bastion host, then tunnels the connection to the private server. All of this happens in one command with no manual steps. Older OpenSSH versions use <code>ProxyCommand</code> instead.</p>
+
+          <h3>Local Port Forwarding</h3>
+          <p>Port forwarding lets you access remote services through an encrypted SSH tunnel as if they were running locally. <code>LocalForward 5432 db.internal:5432</code> means that connecting to <code>localhost:5432</code> on your machine tunnels to <code>db.internal:5432</code> through the SSH server. This is the standard way to access databases, internal dashboards, and admin panels that are not exposed to the internet. It eliminates the need for VPNs for development access to remote infrastructure.</p>
+
+          <h3>Identity Files and SSH Keys</h3>
+          <p>The <code>IdentityFile</code> directive specifies which private key to use for a host. Different cloud providers generate different keys — AWS EC2 uses <code>.pem</code> files, GCP uses ED25519 keys managed by gcloud, and self-managed servers typically use ED25519 or RSA keys. Storing all keys in <code>~/.ssh/</code> and referencing them by name in the config file keeps your SSH workflow organized. Always use <code>ssh-keygen -t ed25519</code> for new keys — ED25519 is faster, more secure, and produces shorter key material than RSA. Combine this with the <a href="/tools/docker-compose-generator.html">Docker Compose Generator</a> for full infrastructure management.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is the SSH config file?</button>
+            <div class="faq-answer">The ~/.ssh/config file defines connection parameters for multiple SSH hosts — aliases, usernames, ports, identity files, and proxy settings. It lets you connect with just 'ssh myserver' instead of typing full ssh commands each time.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is ProxyJump in SSH?</button>
+            <div class="faq-answer">ProxyJump routes your SSH connection through an intermediate bastion server. This is used when your target is on a private network. SSH connects to the bastion first, then automatically tunnels through it to reach the target host.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between LocalForward and RemoteForward?</button>
+            <div class="faq-answer">LocalForward tunnels a local port to a remote destination through SSH (e.g., access a remote database at localhost:5432). RemoteForward is the reverse — it makes a local port accessible on the remote server.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is ServerAliveInterval?</button>
+            <div class="faq-answer">ServerAliveInterval sends a keepalive packet every N seconds when the connection is idle, preventing the server from dropping inactive SSH sessions. Combined with ServerAliveCountMax, this prevents 'Broken pipe' errors.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my SSH config sent to a server?</button>
+            <div class="faq-answer">No. This generator runs entirely in your browser. No data is sent to any server, logged, or stored anywhere outside your device. Your host names, usernames, and key paths are only used to generate the config text shown in your browser.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>DevOps</h4>
+        <a href="/tools/nginx-config.html">Nginx Config</a>
+        <a href="/tools/apache-htaccess.html">.htaccess Generator</a>
+        <a href="/tools/docker-compose-generator.html">Docker Compose</a>
+        <a href="/tools/dockerfile-generator.html">Dockerfile Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'single';
+    var hosts = [];
+    var idCtr = 0;
+
+    var TEMPLATES = {
+      aws: [
+        { alias: 'aws-web', hostname: 'ec2-XX-XX-XX-XX.compute.amazonaws.com', user: 'ubuntu', port: '22', identity: '~/.ssh/aws-key.pem', proxy: '', alive: '60', aliveMax: '3', forwardAgent: true, localFwd: '', remoteFwd: '' }
+      ],
+      gcp: [
+        { alias: 'gcp-vm', hostname: 'XX.XXX.XXX.XX', user: 'username', port: '22', identity: '~/.ssh/google_compute_engine', proxy: '', alive: '60', aliveMax: '3', forwardAgent: false, localFwd: '', remoteFwd: '' }
+      ],
+      azure: [
+        { alias: 'azure-vm', hostname: 'myvm.eastus.cloudapp.azure.com', user: 'azureuser', port: '22', identity: '~/.ssh/azure-key', proxy: '', alive: '60', aliveMax: '3', forwardAgent: false, localFwd: '', remoteFwd: '' }
+      ],
+      bastion: [
+        { alias: 'bastion', hostname: '1.2.3.4', user: 'ubuntu', port: '22', identity: '~/.ssh/bastion-key', proxy: '', alive: '60', aliveMax: '3', forwardAgent: true, localFwd: '', remoteFwd: '' },
+        { alias: 'private-server', hostname: '10.0.0.10', user: 'ubuntu', port: '22', identity: '~/.ssh/internal-key', proxy: 'bastion', alive: '60', aliveMax: '3', forwardAgent: false, localFwd: '5432 10.0.0.11:5432', remoteFwd: '' }
+      ]
+    };
+
+    function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function createHost(data) {
+      data = data || {};
+      var id = ++idCtr;
+      var host = {
+        id: id,
+        alias: data.alias || 'myserver',
+        hostname: data.hostname || '',
+        user: data.user || '',
+        port: data.port || '22',
+        identity: data.identity || '',
+        proxy: data.proxy || '',
+        alive: data.alive || '',
+        aliveMax: data.aliveMax || '',
+        forwardAgent: data.forwardAgent || false,
+        localFwd: data.localFwd || '',
+        remoteFwd: data.remoteFwd || '',
+        strictHost: data.strictHost || ''
+      };
+      hosts.push(host);
+      renderHost(host);
+    }
+
+    function renderHost(host) {
+      var container = document.getElementById('hostContainer');
+      var card = document.createElement('div');
+      card.className = 'host-card';
+      card.id = 'host-card-' + host.id;
+
+      card.innerHTML = [
+        '<div class="host-header">',
+        '  <input type="text" class="h-alias" placeholder="myserver (alias)" value="' + escHtml(host.alias) + '" title="SSH alias">',
+        '  <button class="btn btn-sm btn-secondary h-remove">Remove</button>',
+        '</div>',
+        '<div class="host-grid">',
+        '  <div><label class="h-label">HostName (IP or DNS)</label><input type="text" class="h-input h-hostname" placeholder="1.2.3.4 or example.com" value="' + escHtml(host.hostname) + '"></div>',
+        '  <div><label class="h-label">User</label><input type="text" class="h-input h-user" placeholder="ubuntu" value="' + escHtml(host.user) + '"></div>',
+        '  <div><label class="h-label">Port</label><input type="text" class="h-input h-port" placeholder="22" value="' + escHtml(host.port) + '"></div>',
+        '  <div><label class="h-label">IdentityFile</label><input type="text" class="h-input h-identity" placeholder="~/.ssh/id_ed25519" value="' + escHtml(host.identity) + '"></div>',
+        '</div>',
+        '<button class="collapse-toggle" data-id="' + host.id + '">&#9656; Advanced options</button>',
+        '<div class="advanced-section" id="adv-' + host.id + '">',
+        '  <div class="host-grid" style="margin-top:8px;">',
+        '    <div><label class="h-label">ProxyJump (alias)</label><input type="text" class="h-input h-proxy" placeholder="bastion" value="' + escHtml(host.proxy) + '"></div>',
+        '    <div><label class="h-label">StrictHostKeyChecking</label>',
+        '      <select class="h-select h-stricthost">',
+        '        <option value="">(default)</option>',
+        '        <option value="yes"' + (host.strictHost === 'yes' ? ' selected' : '') + '>yes</option>',
+        '        <option value="no"' + (host.strictHost === 'no' ? ' selected' : '') + '>no</option>',
+        '        <option value="accept-new"' + (host.strictHost === 'accept-new' ? ' selected' : '') + '>accept-new</option>',
+        '      </select>',
+        '    </div>',
+        '    <div><label class="h-label">ServerAliveInterval (s)</label><input type="text" class="h-input h-alive" placeholder="60" value="' + escHtml(host.alive) + '"></div>',
+        '    <div><label class="h-label">ServerAliveCountMax</label><input type="text" class="h-input h-alivemax" placeholder="3" value="' + escHtml(host.aliveMax) + '"></div>',
+        '    <div><label class="h-label">LocalForward</label><input type="text" class="h-input h-localfwd" placeholder="5432 db.internal:5432" value="' + escHtml(host.localFwd) + '"></div>',
+        '    <div><label class="h-label">RemoteForward</label><input type="text" class="h-input h-remotefwd" placeholder="8080 localhost:8080" value="' + escHtml(host.remoteFwd) + '"></div>',
+        '  </div>',
+        '  <div class="check-row"><input type="checkbox" class="h-fwdagent"' + (host.forwardAgent ? ' checked' : '') + '><label>ForwardAgent yes</label></div>',
+        '</div>'
+      ].join('');
+
+      // Wire up events
+      card.querySelector('.h-alias').addEventListener('input', function () { host.alias = this.value; generate(); });
+      card.querySelector('.h-hostname').addEventListener('input', function () { host.hostname = this.value; generate(); });
+      card.querySelector('.h-user').addEventListener('input', function () { host.user = this.value; generate(); });
+      card.querySelector('.h-port').addEventListener('input', function () { host.port = this.value; generate(); });
+      card.querySelector('.h-identity').addEventListener('input', function () { host.identity = this.value; generate(); });
+      card.querySelector('.h-proxy').addEventListener('input', function () { host.proxy = this.value; generate(); });
+      card.querySelector('.h-stricthost').addEventListener('change', function () { host.strictHost = this.value; generate(); });
+      card.querySelector('.h-alive').addEventListener('input', function () { host.alive = this.value; generate(); });
+      card.querySelector('.h-alivemax').addEventListener('input', function () { host.aliveMax = this.value; generate(); });
+      card.querySelector('.h-localfwd').addEventListener('input', function () { host.localFwd = this.value; generate(); });
+      card.querySelector('.h-remotefwd').addEventListener('input', function () { host.remoteFwd = this.value; generate(); });
+      card.querySelector('.h-fwdagent').addEventListener('change', function () { host.forwardAgent = this.checked; generate(); });
+      card.querySelector('.h-remove').addEventListener('click', function () {
+        hosts = hosts.filter(function (h) { return h.id !== host.id; });
+        card.remove();
+        generate();
+      });
+      card.querySelector('.collapse-toggle').addEventListener('click', function () {
+        var adv = document.getElementById('adv-' + host.id);
+        if (adv.classList.contains('open')) {
+          adv.classList.remove('open');
+          this.innerHTML = '&#9656; Advanced options';
+        } else {
+          adv.classList.add('open');
+          this.innerHTML = '&#9662; Advanced options';
+        }
+      });
+
+      container.appendChild(card);
+    }
+
+    function generate() {
+      var lines = [];
+      var hostCount = 0;
+
+      // Global options
+      var alive = document.getElementById('globalAlive').value.trim();
+      var aliveMax = document.getElementById('globalAliveMax').value.trim();
+      var addKeys = document.getElementById('globalAddKeys').checked;
+      var useKeychain = document.getElementById('globalUseKeychain').checked;
+
+      if (alive || aliveMax || addKeys || useKeychain) {
+        lines.push('# Global settings');
+        lines.push('Host *');
+        if (alive) lines.push('    ServerAliveInterval ' + alive);
+        if (aliveMax) lines.push('    ServerAliveCountMax ' + aliveMax);
+        if (addKeys) lines.push('    AddKeysToAgent yes');
+        if (useKeychain) lines.push('    UseKeychain yes');
+        lines.push('');
+      }
+
+      if (currentMode === 'batch') {
+        // Parse batch input
+        var batchLines = document.getElementById('batchInput').value.split('\n');
+        var batchIdent = document.getElementById('batchIdentity').value.trim();
+        var batchProxy = document.getElementById('batchProxy').value.trim();
+        batchLines.forEach(function (line) {
+          var parts = line.trim().split(':');
+          if (parts.length < 3) return;
+          var alias = parts[0].trim();
+          var user = parts[1].trim();
+          var ip = parts[2].trim();
+          var port = parts[3] ? parts[3].trim() : '22';
+          if (!alias) return;
+          lines.push('Host ' + alias);
+          if (ip) lines.push('    HostName ' + ip);
+          if (user) lines.push('    User ' + user);
+          if (port && port !== '22') lines.push('    Port ' + port);
+          if (batchIdent) lines.push('    IdentityFile ' + batchIdent);
+          if (batchProxy) lines.push('    ProxyJump ' + batchProxy);
+          lines.push('');
+          hostCount++;
+        });
+      } else {
+        hosts.forEach(function (h) {
+          var alias = h.alias.trim() || 'host' + h.id;
+          lines.push('Host ' + alias);
+          if (h.hostname.trim()) lines.push('    HostName ' + h.hostname.trim());
+          if (h.user.trim()) lines.push('    User ' + h.user.trim());
+          if (h.port.trim() && h.port.trim() !== '22') lines.push('    Port ' + h.port.trim());
+          if (h.identity.trim()) lines.push('    IdentityFile ' + h.identity.trim());
+          if (h.proxy.trim()) lines.push('    ProxyJump ' + h.proxy.trim());
+          if (h.strictHost) lines.push('    StrictHostKeyChecking ' + h.strictHost);
+          if (h.alive.trim()) lines.push('    ServerAliveInterval ' + h.alive.trim());
+          if (h.aliveMax.trim()) lines.push('    ServerAliveCountMax ' + h.aliveMax.trim());
+          if (h.forwardAgent) lines.push('    ForwardAgent yes');
+          if (h.localFwd.trim()) {
+            h.localFwd.trim().split('\n').forEach(function (f) {
+              if (f.trim()) lines.push('    LocalForward ' + f.trim());
+            });
+          }
+          if (h.remoteFwd.trim()) {
+            h.remoteFwd.trim().split('\n').forEach(function (f) {
+              if (f.trim()) lines.push('    RemoteForward ' + f.trim());
+            });
+          }
+          lines.push('');
+          hostCount++;
+        });
+      }
+
+      var output = lines.join('\n').trim();
+      document.getElementById('configOutput').textContent = output || '# Add hosts above to generate config.';
+
+      var sb = document.getElementById('statusBar');
+      if (hostCount > 0) {
+        sb.className = 'status-bar valid';
+        sb.textContent = hostCount + ' host' + (hostCount === 1 ? '' : 's') + ' configured';
+      } else {
+        sb.className = 'status-bar info';
+        sb.textContent = 'Add hosts above to generate your SSH config.';
+      }
+      DT.trackTool('ssh-config-generator');
+    }
+
+    var debouncedGenerate = DT.debounce(generate, 200);
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('batchSection').style.display = currentMode === 'batch' ? '' : 'none';
+        document.getElementById('hostContainer').style.display = currentMode === 'batch' ? 'none' : '';
+        document.getElementById('addHost').style.display = currentMode === 'batch' ? 'none' : '';
+        document.getElementById('templatePicker').style.display = currentMode === 'templates' ? '' : 'none';
+        generate();
+      });
+    });
+
+    document.querySelectorAll('[data-tpl]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var key = btn.getAttribute('data-tpl');
+        hosts = [];
+        document.getElementById('hostContainer').innerHTML = '';
+        idCtr = 0;
+        (TEMPLATES[key] || []).forEach(function (d) { createHost(d); });
+        generate();
+      });
+    });
+
+    document.getElementById('addHost').addEventListener('click', function () {
+      createHost({});
+      generate();
+    });
+
+    document.getElementById('globalAlive').addEventListener('input', debouncedGenerate);
+    document.getElementById('globalAliveMax').addEventListener('input', debouncedGenerate);
+    document.getElementById('globalAddKeys').addEventListener('change', generate);
+    document.getElementById('globalUseKeychain').addEventListener('change', generate);
+    document.getElementById('batchInput').addEventListener('input', debouncedGenerate);
+    document.getElementById('batchIdentity').addEventListener('input', debouncedGenerate);
+    document.getElementById('batchProxy').addEventListener('input', debouncedGenerate);
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var text = document.getElementById('configOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var text = document.getElementById('configOutput').textContent;
+      if (text) DT.downloadText(text, 'ssh_config', 'text/plain');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      hosts = [];
+      document.getElementById('hostContainer').innerHTML = '';
+      document.getElementById('batchInput').value = '';
+      document.getElementById('batchIdentity').value = '';
+      document.getElementById('batchProxy').value = '';
+      document.getElementById('globalAlive').value = '';
+      document.getElementById('globalAliveMax').value = '';
+      document.getElementById('globalAddKeys').checked = false;
+      document.getElementById('globalUseKeychain').checked = false;
+      idCtr = 0;
+      generate();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      if (currentMode === 'batch') {
+        document.getElementById('batchInput').value = 'web1:ubuntu:10.0.1.1:22\nweb2:ubuntu:10.0.1.2:22\ndb1:ubuntu:10.0.1.10:22\nworker1:ubuntu:10.0.1.20:22';
+        document.getElementById('batchIdentity').value = '~/.ssh/prod-key';
+        document.getElementById('batchProxy').value = 'bastion';
+      } else if (currentMode === 'templates') {
+        hosts = [];
+        document.getElementById('hostContainer').innerHTML = '';
+        idCtr = 0;
+        TEMPLATES.bastion.forEach(function (d) { createHost(d); });
+        var advBtn = document.getElementById('hostContainer').querySelector('.collapse-toggle');
+        if (advBtn) {
+          var adv = document.getElementById('adv-' + hosts[hosts.length - 1].id);
+          if (adv) { adv.classList.add('open'); advBtn.innerHTML = '&#9662; Advanced options'; }
+        }
+      } else {
+        hosts = [];
+        document.getElementById('hostContainer').innerHTML = '';
+        idCtr = 0;
+        createHost({ alias: 'webserver', hostname: '203.0.113.10', user: 'ubuntu', port: '22', identity: '~/.ssh/my-key', alive: '60', aliveMax: '3' });
+        document.getElementById('globalAlive').value = '60';
+        document.getElementById('globalAliveMax').value = '3';
+        document.getElementById('globalAddKeys').checked = true;
+      }
+      generate();
+    });
+
+    // Default: one blank host
+    createHost({ alias: 'myserver', hostname: '', user: 'ubuntu', port: '22' });
+    generate();
+  })();
+  </script>
+</body>
+</html>

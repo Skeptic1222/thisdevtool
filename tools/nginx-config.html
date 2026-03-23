@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Nginx Config Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate Nginx configuration files online. Reverse proxy, static site, SSL, and load balancer configs with best-practice headers. Free, instant, browser-based.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/nginx-config.html">
+  <meta property="og:title" content="Nginx Config Generator — DevToolbox">
+  <meta property="og:description" content="Generate Nginx reverse proxy, static site, SSL, and load balancer configs instantly. Free online tool, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/nginx-config.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Nginx Config Generator",
+    "url": "https://thisdevtool.com/tools/nginx-config.html",
+    "description": "Generate Nginx configuration files for reverse proxy, static sites, SSL, and load balancers. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Nginx used for?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Nginx is a high-performance web server and reverse proxy. It is commonly used to serve static files, proxy requests to backend app servers (Node.js, Django, Rails), terminate SSL/TLS, and load balance traffic across multiple backend instances."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a reverse proxy in Nginx?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A reverse proxy configuration tells Nginx to forward incoming requests to a backend server (e.g., localhost:3000) and relay the response back to the client. This lets you run multiple apps on one server, handle SSL centrally, and add caching or rate limiting in front of your application."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I add SSL to my Nginx config?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Select the SSL chip in this generator. You will need ssl_certificate and ssl_certificate_key paths pointing to your certificate files (e.g., from Let's Encrypt). The generator includes recommended ssl_protocols, ssl_ciphers, and an HSTS header automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is an Nginx upstream block?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An upstream block defines a group of backend servers for load balancing. Nginx distributes requests across them using round-robin by default. You can specify weights, mark servers as backup, or use ip_hash to pin clients to specific backends."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my configuration sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool runs entirely in your browser. No data is sent to any server, logged, or stored anywhere outside your device."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .form-grid.full { grid-template-columns: 1fr; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-input, var(--bg-secondary)); color: var(--text); font-size: 0.9rem; box-sizing: border-box; }
+    .section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin: 16px 0 8px; }
+    .backend-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .backend-row input { flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-input, var(--bg-secondary)); color: var(--text); font-size: 0.9rem; }
+    .backend-row .btn { flex-shrink: 0; }
+    .add-btn { margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/apache-htaccess.html">.htaccess</a>
+        <a href="/tools/docker-compose-generator.html">Docker Compose</a>
+        <a href="/tools/dockerfile-generator.html">Dockerfile</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Nginx Config Generator</h1>
+          <p class="tool-subtitle">Generate production-ready Nginx configuration files for reverse proxy, static sites, SSL, and load balancing.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="proxy">Reverse Proxy</button>
+            <button class="option-chip" data-mode="static">Static Site</button>
+            <button class="option-chip" data-mode="ssl">SSL</button>
+            <button class="option-chip" data-mode="lb">Load Balancer</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Configuration</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+              </div>
+
+              <!-- Common fields -->
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>server_name (domain)</label>
+                  <input type="text" id="serverName" placeholder="example.com www.example.com">
+                </div>
+                <div class="form-group">
+                  <label>Listen Port</label>
+                  <input type="text" id="listenPort" placeholder="80">
+                </div>
+              </div>
+
+              <!-- Proxy fields -->
+              <div id="proxyFields">
+                <div class="section-title">Reverse Proxy</div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>proxy_pass URL</label>
+                    <input type="text" id="proxyPass" placeholder="http://127.0.0.1:3000">
+                  </div>
+                  <div class="form-group">
+                    <label>Location Path</label>
+                    <input type="text" id="proxyLocation" placeholder="/">
+                  </div>
+                </div>
+                <div class="form-grid full">
+                  <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="proxyHeaders" checked style="width:auto;">
+                    <label style="margin:0;text-transform:none;font-size:0.9rem;color:var(--text);">Include proxy headers (X-Real-IP, X-Forwarded-For, Host)</label>
+                  </div>
+                  <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="proxyWebsocket" style="width:auto;">
+                    <label style="margin:0;text-transform:none;font-size:0.9rem;color:var(--text);">WebSocket support (Upgrade header)</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Static site fields -->
+              <div id="staticFields" style="display:none;">
+                <div class="section-title">Static Site</div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Document Root</label>
+                    <input type="text" id="staticRoot" placeholder="/var/www/html">
+                  </div>
+                  <div class="form-group">
+                    <label>Index File</label>
+                    <input type="text" id="staticIndex" placeholder="index.html">
+                  </div>
+                </div>
+                <div class="form-grid full">
+                  <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="staticGzip" checked style="width:auto;">
+                    <label style="margin:0;text-transform:none;font-size:0.9rem;color:var(--text);">Enable gzip compression</label>
+                  </div>
+                  <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="staticCache" checked style="width:auto;">
+                    <label style="margin:0;text-transform:none;font-size:0.9rem;color:var(--text);">Cache static assets (expires 1 year)</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SSL fields -->
+              <div id="sslFields" style="display:none;">
+                <div class="section-title">SSL / TLS</div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>ssl_certificate path</label>
+                    <input type="text" id="sslCert" placeholder="/etc/letsencrypt/live/example.com/fullchain.pem">
+                  </div>
+                  <div class="form-group">
+                    <label>ssl_certificate_key path</label>
+                    <input type="text" id="sslKey" placeholder="/etc/letsencrypt/live/example.com/privkey.pem">
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>proxy_pass URL</label>
+                    <input type="text" id="sslProxyPass" placeholder="http://127.0.0.1:3000">
+                  </div>
+                  <div class="form-group">
+                    <label>HSTS max-age (seconds)</label>
+                    <input type="text" id="hstsAge" placeholder="31536000">
+                  </div>
+                </div>
+                <div class="form-grid full">
+                  <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+                    <input type="checkbox" id="sslRedirect" checked style="width:auto;">
+                    <label style="margin:0;text-transform:none;font-size:0.9rem;color:var(--text);">Redirect HTTP to HTTPS</label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Load balancer fields -->
+              <div id="lbFields" style="display:none;">
+                <div class="section-title">Load Balancer Backends</div>
+                <div id="backendList"></div>
+                <button class="btn btn-sm btn-secondary add-btn" id="addBackend">+ Add Backend</button>
+                <div class="form-grid" style="margin-top:12px;">
+                  <div class="form-group">
+                    <label>Upstream Name</label>
+                    <input type="text" id="upstreamName" placeholder="backend">
+                  </div>
+                  <div class="form-group">
+                    <label>Algorithm</label>
+                    <select id="lbAlgo">
+                      <option value="roundrobin">Round Robin (default)</option>
+                      <option value="least_conn">Least Connections</option>
+                      <option value="ip_hash">IP Hash</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="pane-label">
+                <span>nginx.conf</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="configOutput" style="min-height:340px;white-space:pre;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Fill in the fields above to generate your Nginx configuration.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Nginx Config Generator</h2>
+          <ol>
+            <li><strong>Choose a mode</strong> — select Reverse Proxy, Static Site, SSL, or Load Balancer using the chips above.</li>
+            <li><strong>Fill in the fields</strong> — enter your domain, ports, paths, and backend addresses.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output to copy or save as nginx.conf.</li>
+            <li><strong>Test and deploy</strong> — run <code>nginx -t</code> to validate before reloading: <code>nginx -s reload</code>.</li>
+          </ol>
+
+          <h2>Understanding Nginx Configuration Modes</h2>
+          <p>Nginx is one of the most versatile pieces of infrastructure software available. A single Nginx instance can simultaneously serve static files at blazing speed, proxy API requests to a Node.js or Python backend, terminate SSL certificates from Let's Encrypt, and distribute load across a cluster of application servers. Understanding which mode to use for each scenario is the key to getting the most out of Nginx.</p>
+
+          <h3>Reverse Proxy Configuration</h3>
+          <p>A reverse proxy sits in front of your application server and forwards incoming HTTP requests to it. This is the most common Nginx use case for modern web applications. When you deploy a Node.js app on port 3000, a Django app on port 8000, or any other backend service, Nginx acts as the public-facing entry point on port 80 or 443. The generated config includes the essential proxy headers: <code>X-Real-IP</code> passes the client's real IP address, <code>X-Forwarded-For</code> maintains the full proxy chain, and the <code>Host</code> header ensures your application sees the correct domain. Without these headers, your application will log all requests as coming from 127.0.0.1 and may misbehave when generating redirects or links.</p>
+
+          <h3>Static Site Configuration</h3>
+          <p>For sites that serve pre-built HTML, CSS, JavaScript, and image files, the static site configuration is optimal. Nginx is extraordinarily efficient at serving static files — it uses kernel-level sendfile() to transfer files directly from disk to network without copying data through user space. The generated config includes <code>try_files</code> for single-page application routing (so that refreshing <code>/about</code> returns index.html instead of a 404), gzip compression to reduce transfer sizes by 60-80% for text content, and cache-control headers that tell browsers to cache static assets for up to one year.</p>
+
+          <h3>SSL / TLS Configuration</h3>
+          <p>The SSL mode generates a configuration using <strong>TLS 1.2 and 1.3 only</strong> — TLS 1.0 and 1.1 are disabled because they are vulnerable to attacks like POODLE and BEAST. The cipher suite is set to the Mozilla Intermediate compatibility profile, which balances security with broad client support. HSTS (HTTP Strict Transport Security) instructs browsers to always use HTTPS for your domain, preventing downgrade attacks. If you use <a href="https://certbot.eff.org/">Let's Encrypt</a>, the certificate paths follow the standard Certbot layout under <code>/etc/letsencrypt/live/yourdomain.com/</code>.</p>
+
+          <h3>Load Balancer Configuration</h3>
+          <p>The load balancer mode generates an <code>upstream</code> block with multiple backend servers. Round-robin is the default and distributes requests evenly across all healthy backends. <code>least_conn</code> sends each new request to the backend with the fewest active connections — better for backends with uneven processing times. <code>ip_hash</code> pins each client IP to a specific backend, useful for applications with server-side sessions. For production use, add <code>health_check</code> directives (Nginx Plus) or use the open-source <code>nginx_upstream_check_module</code> to detect and remove failed backends automatically.</p>
+
+          <h3>Testing and Deploying Nginx Configs</h3>
+          <p>Always test your configuration before reloading: <code>sudo nginx -t</code>. This validates syntax and checks that referenced files exist. To apply changes without dropping connections, use <code>sudo nginx -s reload</code> — this sends a SIGHUP signal that gracefully restarts worker processes. For large deployments, consider <a href="/tools/docker-compose-generator.html">Docker Compose</a> with Nginx as the reverse proxy container, which makes configuration changes reproducible and version-controlled.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is Nginx used for?</button>
+            <div class="faq-answer">Nginx is a high-performance web server and reverse proxy. It serves static files, proxies requests to backend app servers (Node.js, Django, Rails), terminates SSL/TLS, and load balances traffic across multiple backend instances.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is a reverse proxy in Nginx?</button>
+            <div class="faq-answer">A reverse proxy forwards incoming requests to a backend server and relays the response back to the client. This lets you run multiple apps on one server, handle SSL centrally, and add caching or rate limiting in front of your application.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I add SSL to my Nginx config?</button>
+            <div class="faq-answer">Select the SSL chip. You will need ssl_certificate and ssl_certificate_key paths pointing to your certificate files (e.g., from Let's Encrypt). The generator includes recommended ssl_protocols, ssl_ciphers, and an HSTS header automatically.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is an Nginx upstream block?</button>
+            <div class="faq-answer">An upstream block defines a group of backend servers for load balancing. Nginx distributes requests across them using round-robin by default. You can specify weights, mark servers as backup, or use ip_hash to pin clients to specific backends.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my configuration sent to a server?</button>
+            <div class="faq-answer">No. This tool runs entirely in your browser. No data is sent to any server, logged, or stored anywhere outside your device.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>DevOps</h4>
+        <a href="/tools/nginx-config.html">Nginx Config</a>
+        <a href="/tools/apache-htaccess.html">.htaccess Generator</a>
+        <a href="/tools/docker-compose-generator.html">Docker Compose</a>
+        <a href="/tools/dockerfile-generator.html">Dockerfile Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/ssh-config-generator.html">SSH Config</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'proxy';
+    var backends = ['127.0.0.1:3001', '127.0.0.1:3002'];
+
+    function v(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+    function checked(id) { var el = document.getElementById(id); return el ? el.checked : false; }
+
+    function showFields(mode) {
+      ['proxyFields', 'staticFields', 'sslFields', 'lbFields'].forEach(function (id) {
+        document.getElementById(id).style.display = 'none';
+      });
+      var map = { proxy: 'proxyFields', static: 'staticFields', ssl: 'sslFields', lb: 'lbFields' };
+      if (map[mode]) document.getElementById(map[mode]).style.display = '';
+    }
+
+    function renderBackends() {
+      var list = document.getElementById('backendList');
+      list.innerHTML = '';
+      backends.forEach(function (b, i) {
+        var row = document.createElement('div');
+        row.className = 'backend-row';
+        var inp = document.createElement('input');
+        inp.type = 'text';
+        inp.value = b;
+        inp.placeholder = '127.0.0.1:300' + (i + 1);
+        inp.addEventListener('input', function () { backends[i] = inp.value; generate(); });
+        var rm = document.createElement('button');
+        rm.className = 'btn btn-sm btn-secondary';
+        rm.textContent = 'Remove';
+        rm.addEventListener('click', function () { backends.splice(i, 1); renderBackends(); generate(); });
+        row.appendChild(inp);
+        row.appendChild(rm);
+        list.appendChild(row);
+      });
+    }
+
+    function generate() {
+      var serverName = v('serverName') || 'example.com';
+      var port = v('listenPort') || (currentMode === 'ssl' ? '443' : '80');
+      var lines = [];
+
+      if (currentMode === 'lb') {
+        var upName = v('upstreamName') || 'backend';
+        var algo = v('lbAlgo');
+        lines.push('upstream ' + upName + ' {');
+        if (algo === 'least_conn') lines.push('    least_conn;');
+        if (algo === 'ip_hash') lines.push('    ip_hash;');
+        backends.forEach(function (b) {
+          if (b.trim()) lines.push('    server ' + b.trim() + ';');
+        });
+        lines.push('}');
+        lines.push('');
+      }
+
+      if (currentMode === 'ssl' && checked('sslRedirect')) {
+        lines.push('server {');
+        lines.push('    listen 80;');
+        lines.push('    server_name ' + serverName + ';');
+        lines.push('    return 301 https://$host$request_uri;');
+        lines.push('}');
+        lines.push('');
+      }
+
+      lines.push('server {');
+      lines.push('    listen ' + port + (currentMode === 'ssl' ? ' ssl' : '') + ';');
+      lines.push('    server_name ' + serverName + ';');
+      lines.push('');
+
+      if (currentMode === 'ssl') {
+        var cert = v('sslCert') || '/etc/letsencrypt/live/' + serverName.split(' ')[0] + '/fullchain.pem';
+        var key = v('sslKey') || '/etc/letsencrypt/live/' + serverName.split(' ')[0] + '/privkey.pem';
+        var hsts = v('hstsAge') || '31536000';
+        lines.push('    ssl_certificate ' + cert + ';');
+        lines.push('    ssl_certificate_key ' + key + ';');
+        lines.push('    ssl_protocols TLSv1.2 TLSv1.3;');
+        lines.push('    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;');
+        lines.push('    ssl_prefer_server_ciphers off;');
+        lines.push('    ssl_session_cache shared:SSL:10m;');
+        lines.push('    ssl_session_timeout 1d;');
+        lines.push('    add_header Strict-Transport-Security "max-age=' + hsts + '; includeSubDomains" always;');
+        lines.push('');
+        var sslProxy = v('sslProxyPass') || 'http://127.0.0.1:3000';
+        lines.push('    location / {');
+        lines.push('        proxy_pass ' + sslProxy + ';');
+        lines.push('        proxy_http_version 1.1;');
+        lines.push('        proxy_set_header Host $host;');
+        lines.push('        proxy_set_header X-Real-IP $remote_addr;');
+        lines.push('        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;');
+        lines.push('        proxy_set_header X-Forwarded-Proto $scheme;');
+        lines.push('    }');
+      } else if (currentMode === 'proxy') {
+        var loc = v('proxyLocation') || '/';
+        var pp = v('proxyPass') || 'http://127.0.0.1:3000';
+        lines.push('    location ' + loc + ' {');
+        lines.push('        proxy_pass ' + pp + ';');
+        lines.push('        proxy_http_version 1.1;');
+        if (checked('proxyWebsocket')) {
+          lines.push('        proxy_set_header Upgrade $http_upgrade;');
+          lines.push('        proxy_set_header Connection "upgrade";');
+        }
+        if (checked('proxyHeaders')) {
+          lines.push('        proxy_set_header Host $host;');
+          lines.push('        proxy_set_header X-Real-IP $remote_addr;');
+          lines.push('        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;');
+          lines.push('        proxy_set_header X-Forwarded-Proto $scheme;');
+        }
+        lines.push('        proxy_buffering off;');
+        lines.push('        proxy_read_timeout 60s;');
+        lines.push('    }');
+      } else if (currentMode === 'static') {
+        var root = v('staticRoot') || '/var/www/html';
+        var index = v('staticIndex') || 'index.html';
+        if (checked('staticGzip')) {
+          lines.push('    gzip on;');
+          lines.push('    gzip_types text/plain text/css application/javascript application/json image/svg+xml;');
+          lines.push('    gzip_min_length 256;');
+          lines.push('');
+        }
+        lines.push('    root ' + root + ';');
+        lines.push('    index ' + index + ';');
+        lines.push('');
+        lines.push('    location / {');
+        lines.push('        try_files $uri $uri/ /' + index + ';');
+        lines.push('    }');
+        if (checked('staticCache')) {
+          lines.push('');
+          lines.push('    location ~* \\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2|woff|ttf)$ {');
+          lines.push('        expires 1y;');
+          lines.push('        add_header Cache-Control "public, immutable";');
+          lines.push('        access_log off;');
+          lines.push('    }');
+        }
+      } else if (currentMode === 'lb') {
+        var upRef = v('upstreamName') || 'backend';
+        lines.push('    location / {');
+        lines.push('        proxy_pass http://' + upRef + ';');
+        lines.push('        proxy_http_version 1.1;');
+        lines.push('        proxy_set_header Host $host;');
+        lines.push('        proxy_set_header X-Real-IP $remote_addr;');
+        lines.push('        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;');
+        lines.push('        proxy_set_header X-Forwarded-Proto $scheme;');
+        lines.push('    }');
+      }
+
+      lines.push('}');
+      var config = lines.join('\n');
+      document.getElementById('configOutput').textContent = config;
+
+      var modeLabel = { proxy: 'reverse proxy', static: 'static site', ssl: 'SSL', lb: 'load balancer' }[currentMode];
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar valid';
+      sb.textContent = 'Nginx config — ' + modeLabel + ' — ' + serverName;
+      DT.trackTool('nginx-config');
+    }
+
+    var debouncedGenerate = DT.debounce(generate, 200);
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        var portEl = document.getElementById('listenPort');
+        if (currentMode === 'ssl') { if (!portEl.value) portEl.placeholder = '443'; }
+        else { portEl.placeholder = '80'; }
+        showFields(currentMode);
+        generate();
+      });
+    });
+
+    document.querySelectorAll('input[type=text], select').forEach(function (el) {
+      el.addEventListener('input', debouncedGenerate);
+      el.addEventListener('change', debouncedGenerate);
+    });
+    document.querySelectorAll('input[type=checkbox]').forEach(function (el) {
+      el.addEventListener('change', generate);
+    });
+
+    document.getElementById('addBackend').addEventListener('click', function () {
+      backends.push('');
+      renderBackends();
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var text = document.getElementById('configOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var text = document.getElementById('configOutput').textContent;
+      if (text) DT.downloadText(text, 'nginx.conf', 'text/plain');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.querySelectorAll('input[type=text]').forEach(function (el) { el.value = ''; });
+      backends = [];
+      renderBackends();
+      generate();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      if (currentMode === 'proxy') {
+        document.getElementById('serverName').value = 'myapp.example.com';
+        document.getElementById('listenPort').value = '80';
+        document.getElementById('proxyPass').value = 'http://127.0.0.1:3000';
+        document.getElementById('proxyLocation').value = '/';
+        document.getElementById('proxyHeaders').checked = true;
+      } else if (currentMode === 'static') {
+        document.getElementById('serverName').value = 'example.com www.example.com';
+        document.getElementById('staticRoot').value = '/var/www/html';
+        document.getElementById('staticIndex').value = 'index.html';
+      } else if (currentMode === 'ssl') {
+        document.getElementById('serverName').value = 'secure.example.com';
+        document.getElementById('listenPort').value = '443';
+        document.getElementById('sslCert').value = '/etc/letsencrypt/live/secure.example.com/fullchain.pem';
+        document.getElementById('sslKey').value = '/etc/letsencrypt/live/secure.example.com/privkey.pem';
+        document.getElementById('sslProxyPass').value = 'http://127.0.0.1:8080';
+      } else if (currentMode === 'lb') {
+        document.getElementById('serverName').value = 'lb.example.com';
+        document.getElementById('upstreamName').value = 'app_cluster';
+        backends = ['10.0.0.1:3000', '10.0.0.2:3000', '10.0.0.3:3000'];
+        renderBackends();
+      }
+      generate();
+    });
+
+    // Init
+    renderBackends();
+    showFields(currentMode);
+    generate();
+  })();
+  </script>
+</body>
+</html>

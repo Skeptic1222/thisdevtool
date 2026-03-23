@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Regex Pattern Library — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="50+ searchable regex patterns for email, URL, phone, dates, HTML, code, and more. Test patterns against your own input. Copy with one click. Free, no signup.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/regex-library.html">
+  <meta property="og:title" content="Regex Pattern Library — DevToolbox">
+  <meta property="og:description" content="Searchable library of 50+ common regex patterns organized by category. Test against custom input, copy patterns instantly. Free and 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/regex-library.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <style>
+    .pattern-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:12px; }
+    .pattern-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px; cursor:pointer; transition:border-color .15s; }
+    .pattern-card:hover { border-color:#10b981; }
+    .pattern-card.selected { border-color:#10b981; background:rgba(16,185,129,.07); }
+    .pattern-name { font-weight:600; font-size:14px; margin-bottom:4px; }
+    .pattern-desc { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+    .pattern-regex { font-family:monospace; font-size:12px; background:var(--bg); border-radius:4px; padding:4px 8px; word-break:break-all; margin-bottom:8px; }
+    .pattern-examples { font-size:11px; display:flex; gap:12px; flex-wrap:wrap; }
+    .match-good { color:#10b981; } .match-bad { color:#ef4444; }
+    .pattern-card-footer { display:flex; justify-content:space-between; align-items:center; margin-top:8px; }
+    .cat-badge { font-size:10px; padding:2px 7px; background:var(--border); border-radius:10px; text-transform:uppercase; letter-spacing:.03em; }
+    .test-panel { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:16px; display:none; }
+    .test-panel.active { display:block; }
+    .test-result-line { font-size:13px; padding:4px 8px; border-radius:4px; margin-bottom:4px; }
+    .test-result-line.match { background:rgba(16,185,129,.15); color:#065f46; }
+    .test-result-line.no-match { background:rgba(239,68,68,.1); color:#991b1b; }
+    [data-theme=dark] .test-result-line.match { color:#6ee7b7; }
+    [data-theme=dark] .test-result-line.no-match { color:#fca5a5; }
+    .category-header { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin:20px 0 8px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Regex Pattern Library",
+    "url": "https://thisdevtool.com/tools/regex-library.html",
+    "description": "Searchable library of 52+ common regex patterns for validation, strings, numbers, dates, web, and code. Test against custom input and copy instantly.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a regex (regular expression)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A regular expression (regex) is a sequence of characters that defines a search pattern. Regex engines search through text to find substrings that match the pattern. They are used for input validation (email addresses, phone numbers), text extraction (parsing log files, HTML), string replacement (find-and-replace with complex rules), and splitting strings. Most programming languages support regex natively."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What regex flavour do these patterns use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "All patterns use JavaScript-compatible regex syntax, which is compatible with most modern languages including Python, Java, Go, and PHP with minor variations. The main differences are: JavaScript uses /pattern/flags syntax in code but the patterns here are shown without the slashes. Lookbehind assertions require recent browser versions or Node.js 9+."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why shouldn't I use regex to validate email addresses?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Email addresses have complex rules defined by RFC 5322 that make a fully correct regex extremely long and hard to maintain. Most practical regex patterns match 99% of real email addresses but reject some valid edge cases (like addresses with comments or quoted strings). For production use, combine a simple regex check with sending an actual verification email. The pattern in this library covers all common email formats."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are regex flags?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Flags modify how a regex pattern behaves. The most common are: i (case-insensitive matching), g (global — find all matches, not just the first), m (multiline — ^ and $ match line boundaries instead of string boundaries), and s (dotAll — the . metacharacter matches newlines too). In JavaScript you add flags after the closing slash: /pattern/gi."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I use these patterns in my code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "In JavaScript: const regex = /your-pattern/g; const matches = text.match(regex); In Python: import re; matches = re.findall(r'pattern', text). In Java: Pattern p = Pattern.compile(\"pattern\"); Matcher m = p.matcher(text). Copy the pattern from this library, replace the placeholder with your variable, and use the appropriate method for your language."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/git-cheat-sheet.html">Git Cheat Sheet</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Regex Pattern Library</h1>
+          <p class="tool-subtitle">52+ searchable common regex patterns. Browse by category, search by name, or click any pattern to test it against your own input.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="search">Search</button>
+            <button class="option-chip" data-mode="category">By Category</button>
+            <button class="option-chip" data-mode="test">Test Mode</button>
+          </div>
+
+          <!-- Search bar -->
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input type="text" id="searchInput" placeholder="Search patterns... (email, phone, URL, date...)" style="flex:1;padding:8px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;">
+            <button class="btn btn-sm btn-secondary" id="clearSearchBtn">Clear</button>
+          </div>
+
+          <!-- Category filter chips (shown in category mode) -->
+          <div id="categoryChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;display:none;"></div>
+
+          <!-- Test Panel -->
+          <div class="test-panel" id="testPanel">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <strong id="testPatternName" style="font-size:14px;">No pattern selected</strong>
+              <button class="btn-icon" id="closeTestBtn">Close</button>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <code id="testPatternRegex" style="flex:1;font-size:12px;background:var(--bg);border-radius:4px;padding:6px 10px;word-break:break-all;"></code>
+              <button class="btn btn-sm btn-primary" id="copyTestPatternBtn">Copy</button>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+              <select id="testFlag" style="padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;">
+                <option value="">No flags</option>
+                <option value="i">i (case insensitive)</option>
+                <option value="g">g (global)</option>
+                <option value="gi">gi (global + case insensitive)</option>
+                <option value="m">m (multiline)</option>
+              </select>
+              <label style="font-size:13px;color:var(--text-muted);">Test input (one per line):</label>
+            </div>
+            <textarea id="testInput" rows="5" placeholder="Enter test strings, one per line..." spellcheck="false" style="width:100%;box-sizing:border-box;"></textarea>
+            <div id="testResults" style="margin-top:8px;"></div>
+          </div>
+
+          <!-- Pattern List -->
+          <div id="patternOutput"></div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            52 patterns — Click any card to test it.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Regex Pattern Library</h2>
+          <ol>
+            <li><strong>Search mode</strong> — type keywords like "email", "phone", or "date" to filter the pattern list in real time.</li>
+            <li><strong>By Category</strong> — click a category chip to browse all patterns in that group (Validation, Strings, Numbers, Dates, Web, Code).</li>
+            <li><strong>Test Mode</strong> — click any pattern card to open the test panel. Enter test strings (one per line) to see which match.</li>
+            <li><strong>Copy</strong> — click the copy button on any card or in the test panel to copy the raw regex to your clipboard.</li>
+          </ol>
+
+          <h2>Understanding Regular Expressions</h2>
+          <p>A regular expression is a sequence of characters forming a search pattern. The pattern is applied to a string to find matches. Regex is supported natively in JavaScript, Python, Java, Go, Ruby, PHP, Perl, Rust, and virtually every other programming language. The syntax is largely standardised across languages, though there are minor differences in advanced features like lookbehind assertions and named groups.</p>
+
+          <h3>Core Regex Syntax</h3>
+          <ul>
+            <li><code>.</code> — matches any single character except newline</li>
+            <li><code>*</code> — zero or more of the preceding element</li>
+            <li><code>+</code> — one or more of the preceding element</li>
+            <li><code>?</code> — zero or one of the preceding element (also makes quantifiers lazy)</li>
+            <li><code>{n,m}</code> — between n and m repetitions</li>
+            <li><code>^</code> — start of string (or line in multiline mode)</li>
+            <li><code>$</code> — end of string (or line in multiline mode)</li>
+            <li><code>[abc]</code> — character class: a, b, or c</li>
+            <li><code>[^abc]</code> — negated class: anything except a, b, or c</li>
+            <li><code>\d</code> — digit (0-9); <code>\w</code> — word character; <code>\s</code> — whitespace</li>
+            <li><code>(abc)</code> — capturing group; <code>(?:abc)</code> — non-capturing group</li>
+            <li><code>a|b</code> — alternation: a or b</li>
+            <li><code>(?=...)</code> — lookahead; <code>(?&lt;=...)</code> — lookbehind</li>
+          </ul>
+
+          <h3>Practical Uses of Regex</h3>
+          <p>Form validation is the most common frontend use: ensuring an email address looks plausible, a phone number has the right format, or a password meets complexity requirements. Backend use is even broader: parsing log files to extract timestamps and error codes, validating API inputs before hitting a database, extracting structured data from unstructured text (receipts, documents, web scrapes), and finding and replacing strings in code editors. Many code editors (VS Code, Vim, Emacs) support regex-based find-and-replace, which is powerful for large-scale refactors. For live regex testing with highlighting and match groups, use our dedicated <a href="/tools/regex-tester.html">Regex Tester</a> tool.</p>
+
+          <h3>When Not to Use Regex</h3>
+          <p>Regex is powerful but not always the right tool. Never use regex to parse HTML — use a proper DOM parser or library like Cheerio. Email validation with regex should be a pre-filter only — always confirm ownership via a verification email. Parsing nested structures (JSON, XML, code) with regex is fragile; use a proper parser. Complex URL parsing should use the browser's built-in <code>URL</code> constructor. For date parsing, use a dedicated date library rather than constructing a regex that handles all possible date formats and timezone offsets. Catastrophic backtracking is a real denial-of-service vulnerability: always test regex patterns with adversarial inputs, and prefer <code>{n,m}</code> quantifiers over <code>.*</code> when possible.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a regex (regular expression)?</button>
+            <div class="faq-answer">A regular expression is a sequence of characters that defines a search pattern. It is used for input validation, text extraction, string replacement, and splitting. Most programming languages support regex natively.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What regex flavour do these patterns use?</button>
+            <div class="faq-answer">All patterns use JavaScript-compatible regex syntax, which is compatible with Python, Java, Go, PHP, and most modern languages with minor variations. Patterns are shown without surrounding slashes or flags.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why shouldn't I use regex to validate email addresses?</button>
+            <div class="faq-answer">RFC 5322 email rules are so complex that a fully correct regex is impractical. Use a simple regex to catch obvious errors, then send a verification email to confirm ownership in production.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are regex flags?</button>
+            <div class="faq-answer">Flags modify matching behavior: i (case-insensitive), g (global — find all matches), m (multiline — ^ and $ match line boundaries), s (dotAll — dot matches newlines). Add after the closing slash: /pattern/gi.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I use these patterns in my code?</button>
+            <div class="faq-answer">JavaScript: const regex = /pattern/g; const matches = text.match(regex); Python: import re; matches = re.findall(r'pattern', text). Copy the pattern from this library and use your language's regex API.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/regex-library.html">Regex Library</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Reference</h4>
+        <a href="/tools/git-cheat-sheet.html">Git Cheat Sheet</a>
+        <a href="/tools/openapi-viewer.html">OpenAPI Viewer</a>
+        <a href="/tools/graphql-query-builder.html">GraphQL Builder</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    var PATTERNS = [
+      // Validation
+      { cat:'Validation', name:'Email Address', rx:/^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/, flags:'i', desc:'Standard email format. Covers 99% of real addresses.', yes:['user@example.com','name.last+tag@domain.co.uk'], no:['not-an-email','@missing.com','spaces here@x.com'] },
+      { cat:'Validation', name:'URL (HTTP/HTTPS)', rx:/^https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z]{2,}\b([-a-zA-Z0-9@:%_+.~#?&/=]*)$/, flags:'i', desc:'Matches http:// and https:// URLs with optional path, query, and fragment.', yes:['https://example.com','http://sub.domain.co/path?q=1#frag'], no:['not-a-url','ftp://wrong','example.com'] },
+      { cat:'Validation', name:'IP Address (IPv4)', rx:/^(\d{1,3}\.){3}\d{1,3}$/, flags:'', desc:'IPv4 address format. Note: does not validate range 0-255.', yes:['192.168.1.1','10.0.0.255','127.0.0.1'], no:['999.x.1.1','192.168.1','1.2.3.4.5'] },
+      { cat:'Validation', name:'IPv4 (strict 0-255)', rx:/^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/, flags:'', desc:'IPv4 with strict 0-255 range per octet.', yes:['192.168.1.1','255.255.255.0','0.0.0.0'], no:['256.0.0.1','192.168.1'] },
+      { cat:'Validation', name:'US Phone Number', rx:/^(\+1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/, flags:'', desc:'US phone: (555) 867-5309, 555.867.5309, +1-555-867-5309', yes:['(555) 867-5309','+1-555-867-5309','5558675309'], no:['123','555-CALL-NOW'] },
+      { cat:'Validation', name:'Credit Card Number', rx:/^(?:4[0-9]{12}(?:[0-9]{3})?|(?:5[1-5][0-9]{2}|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12})$/, flags:'', desc:'Visa, Mastercard, Amex, Discover. No spaces or dashes.', yes:['4111111111111111','5500005555555559'], no:['1234','4111 1111 1111 1111'] },
+      { cat:'Validation', name:'US ZIP Code', rx:/^\d{5}(-\d{4})?$/, flags:'', desc:'5-digit ZIP or ZIP+4 format.', yes:['90210','90210-1234','10001'], no:['ABCDE','9021','90210-12'] },
+      { cat:'Validation', name:'Password (strong)', rx:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, flags:'', desc:'Min 8 chars, one uppercase, one lowercase, one digit, one special char.', yes:['MyPass1!','SecureP@ss99'], no:['password','12345678','ALLCAPS1!'] },
+      { cat:'Validation', name:'Hex Color', rx:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, flags:'i', desc:'CSS hex color: #RGB or #RRGGBB.', yes:['#fff','#FFFFFF','#10b981','#abc'], no:['fff','#GGGGGG','#12345'] },
+      { cat:'Validation', name:'UUID v4', rx:/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/, flags:'i', desc:'RFC 4122 UUID version 4 format.', yes:['550e8400-e29b-41d4-a716-446655440000'], no:['not-a-uuid','550e8400-e29b-31d4-a716-446655440000'] },
+      { cat:'Validation', name:'Social Security Number', rx:/^(?!000|666|9\d{2})\d{3}-(?!00)\d{2}-(?!0{4})\d{4}$/, flags:'', desc:'US SSN format 000-00-0000 with invalid-range exclusions.', yes:['123-45-6789','987-65-4321'], no:['000-45-6789','123456789','666-45-1234'] },
+      { cat:'Validation', name:'MAC Address', rx:/^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$/, flags:'i', desc:'MAC address with colon or hyphen separators.', yes:['00:1A:2B:3C:4D:5E','00-1A-2B-3C-4D-5E'], no:['001A2B3C4D5E','GG:00:00:00:00:00'] },
+
+      // Strings
+      { cat:'Strings', name:'Trim Whitespace (leading/trailing)', rx:/^\s+|\s+$/g, flags:'g', desc:'Match leading or trailing whitespace for removal.', yes:['  hello  ','  spaces'], no:['noSpaces','middle spaces'] },
+      { cat:'Strings', name:'HTML Tags', rx:/<[^>]*>/g, flags:'g', desc:'Match any HTML tag (opening, closing, self-closing).', yes:['<p>','<div class="x">','</b>','<br/>'], no:['plain text','<unclosed'] },
+      { cat:'Strings', name:'Text Between Brackets [ ]', rx:/\[([^\]]*)\]/g, flags:'g', desc:'Match content inside square brackets.', yes:['[content]','[a] and [b]'], no:['no brackets','(parens)'] },
+      { cat:'Strings', name:'Text Between Parentheses ( )', rx:/\(([^)]*)\)/g, flags:'g', desc:'Match content inside parentheses.', yes:['(content)','func(args)'], no:['no parens','[brackets]'] },
+      { cat:'Strings', name:'Double-Quoted Strings', rx:/"(?:[^"\\]|\\.)*"/g, flags:'g', desc:'Match double-quoted strings including escaped quotes.', yes:['"hello"','"say \\"hi\\""'], no:["'single'", 'unquoted'] },
+      { cat:'Strings', name:'Single-Quoted Strings', rx:/'(?:[^'\\]|\\.)*'/g, flags:'g', desc:'Match single-quoted strings including escaped quotes.', yes:["'hello'","'it\\'s ok'"], no:['"double"','unquoted'] },
+      { cat:'Strings', name:'Multiple Whitespace', rx:/\s{2,}/g, flags:'g', desc:'Match two or more consecutive whitespace characters.', yes:['two  spaces','tab\t\ttab'], no:['single space','nospace'] },
+      { cat:'Strings', name:'Blank Lines', rx:/^\s*$/gm, flags:'gm', desc:'Match empty or whitespace-only lines.', yes:['','   '], no:['text','  a  '] },
+      { cat:'Strings', name:'Non-ASCII Characters', rx:/[^\x00-\x7F]/g, flags:'g', desc:'Match characters outside the ASCII range.', yes:['café','naïve','résumé'], no:['ascii only','hello world'] },
+
+      // Numbers
+      { cat:'Numbers', name:'Integer (positive)', rx:/^\d+$/, flags:'', desc:'Positive integer, no leading zeros allowed implicitly.', yes:['0','42','1000000'], no:['-5','3.14','12a'] },
+      { cat:'Numbers', name:'Integer (positive or negative)', rx:/^-?\d+$/, flags:'', desc:'Any integer, positive or negative.', yes:['0','-42','1000'], no:['3.14','--5','12a'] },
+      { cat:'Numbers', name:'Float (decimal number)', rx:/^-?\d+(\.\d+)?$/, flags:'', desc:'Integer or decimal number, optional sign.', yes:['3.14','-0.5','100','0'], no:['abc','3.','3.1.4'] },
+      { cat:'Numbers', name:'Hexadecimal Number', rx:/^(0x)?[0-9A-Fa-f]+$/, flags:'i', desc:'Hex number, optionally prefixed with 0x.', yes:['0xFF','DEADBEEF','0x10b981'], no:['0xGG','WXYZ'] },
+      { cat:'Numbers', name:'Currency (USD)', rx:/^\$?\d{1,3}(,\d{3})*(\.\d{2})?$/, flags:'', desc:'Dollar amounts with optional $ sign, commas, and cents.', yes:['$1,234.56','100','$0.99'], no:['1.2','$1,23.4','abc'] },
+      { cat:'Numbers', name:'Percentage', rx:/^-?\d+(\.\d+)?%$/, flags:'', desc:'Number followed by percent sign, optional decimal and sign.', yes:['100%','3.14%','-5%'], no:['50','100 %','abc%'] },
+      { cat:'Numbers', name:'Scientific Notation', rx:/^-?\d+(\.\d+)?[eE][+-]?\d+$/, flags:'', desc:'Numbers in scientific notation like 1.5e-10.', yes:['1e10','1.5E-3','-3.2e+5'], no:['1.5','1e','e10'] },
+
+      // Dates
+      { cat:'Dates', name:'YYYY-MM-DD (ISO date)', rx:/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, flags:'', desc:'ISO 8601 date format with month/day range validation.', yes:['2024-01-15','1999-12-31'], no:['2024-13-01','24-01-15','2024/01/15'] },
+      { cat:'Dates', name:'MM/DD/YYYY', rx:/^(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])\/\d{4}$/, flags:'', desc:'US date format with range validation.', yes:['01/15/2024','12/31/1999'], no:['13/01/2024','1/5/2024'] },
+      { cat:'Dates', name:'DD/MM/YYYY', rx:/^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/, flags:'', desc:'European date format DD/MM/YYYY.', yes:['15/01/2024','31/12/1999'], no:['32/01/2024','15-01-2024'] },
+      { cat:'Dates', name:'ISO 8601 DateTime', rx:/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/, flags:'', desc:'Full ISO 8601 datetime with optional milliseconds and timezone.', yes:['2024-01-15T12:30:00Z','2024-01-15T12:30:00.500+05:30'], no:['2024-01-15','12:30:00'] },
+      { cat:'Dates', name:'12-hour Time', rx:/^(0?[1-9]|1[0-2]):[0-5]\d\s?(AM|PM)$/i, flags:'i', desc:'12-hour time with AM/PM.', yes:['12:30 PM','9:15AM','11:59 pm'], no:['13:00','9:60 AM','noon'] },
+      { cat:'Dates', name:'24-hour Time', rx:/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/, flags:'', desc:'24-hour time HH:MM or HH:MM:SS.', yes:['23:59','08:30:00','00:00'], no:['24:00','9:5','13:60'] },
+
+      // Web
+      { cat:'Web', name:'URL Slug', rx:/^[a-z0-9]+(?:-[a-z0-9]+)*$/, flags:'', desc:'URL-friendly slug: lowercase letters, numbers, and hyphens.', yes:['my-page','article-123','devtoolbox'], no:['My Page','article_123','has spaces'] },
+      { cat:'Web', name:'Domain Name', rx:/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/, flags:'i', desc:'Domain name without protocol or path.', yes:['example.com','sub.domain.co.uk','devtoolbox.io'], no:['https://example.com','example','no-tld'] },
+      { cat:'Web', name:'Protocol (http/https/ftp)', rx:/^(https?|ftp):\/\//i, flags:'i', desc:'Match URL protocol prefix.', yes:['https://example.com','http://test.io','ftp://files.net'], no:['//example.com','example.com','ssh://x'] },
+      { cat:'Web', name:'Query String Parameter', rx:/[?&]([^=&#]+)=([^&#]*)/g, flags:'g', desc:'Extract key=value pairs from a query string.', yes:['?foo=bar&baz=qux','https://x.com?a=1'], no:['noquery','?=empty'] },
+      { cat:'Web', name:'Anchor Link (#fragment)', rx:/#([a-zA-Z0-9_-]+)$/, flags:'', desc:'URL fragment identifier.', yes:['page.html#section1','#top'], no:['noanchor','#'] },
+      { cat:'Web', name:'Image File Extension', rx:/\.(jpg|jpeg|png|gif|webp|svg|bmp|ico)(\?.*)?$/i, flags:'i', desc:'Common image file extensions.', yes:['photo.jpg','image.PNG','img.webp?v=2'], no:['document.pdf','photo.tiff','filename'] },
+
+      // Code
+      { cat:'Code', name:'JavaScript Variable Name', rx:/^[a-zA-Z_$][a-zA-Z0-9_$]*$/, flags:'', desc:'Valid JS variable name: letter/$/_ then letters/digits/$/_', yes:['myVar','_private','$jquery','camelCase123'], no:['1startsDigit','has-hyphen','has space'] },
+      { cat:'Code', name:'CSS Class/ID Selector', rx:/^[a-zA-Z_-][a-zA-Z0-9_-]*$/, flags:'', desc:'Valid CSS identifier (without the # or . prefix).', yes:['my-class','header_nav','item2'], no:['1invalid','-starts-hyphen-digit','has space'] },
+      { cat:'Code', name:'ES6 Import Statement', rx:/^import\s+(?:\{[^}]*\}|[\w*]+)\s+from\s+['"]([^'"]+)['"]/gm, flags:'gm', desc:'ES6 named or default imports.', yes:["import { foo } from 'bar'","import React from 'react'"], no:["const x = require('y')","import"] },
+      { cat:'Code', name:'CommonJS Require', rx:/require\(['"]([^'"]+)['"]\)/g, flags:'g', desc:'Node.js require() call.', yes:["require('path')","const x = require('./module')"], no:["import x from 'y'","require()"] },
+      { cat:'Code', name:'Single-Line Comment (//)' , rx:/\/\/.*/g, flags:'g', desc:'JavaScript/C-style single-line comment.', yes:['// This is a comment','code(); // inline'], no:['/* block */','# python comment'] },
+      { cat:'Code', name:'Multi-Line Comment (/* */)', rx:/\/\*[\s\S]*?\*\//g, flags:'g', desc:'C-style block comment, non-greedy.', yes:['/* comment */','/* multi\nline */'], no:['// single line','# hash comment'] },
+      { cat:'Code', name:'Console.log Statement', rx:/console\.(log|warn|error|info|debug)\([^)]*\)/g, flags:'g', desc:'Any console method call.', yes:['console.log("hello")','console.error(err)'], no:['log("nope")','window.console.log'] },
+      { cat:'Code', name:'Function Declaration (JS)', rx:/function\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g, flags:'g', desc:'Named JavaScript function declarations.', yes:['function myFunc(','function _private(x'] , no:['const fn = () =>','function('] },
+      { cat:'Code', name:'Arrow Function (JS)', rx:/(?:const|let|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(?:\([^)]*\)|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*=>/g, flags:'g', desc:'Arrow function assigned to a variable.', yes:['const fn = () =>','let handler = e =>'], no:['function named()','=> standalone'] },
+      { cat:'Code', name:'TODO / FIXME Comment', rx:/\/\/\s*(TODO|FIXME|HACK|XXX|BUG|NOTE)\b[^\n]*/gi, flags:'gi', desc:'Developer annotation comments in code.', yes:['// TODO: fix this','// FIXME: broken on mobile','// HACK workaround'], no:['// regular comment','TODO without slashes'] },
+      { cat:'Code', name:'Environment Variable', rx:/\b[A-Z][A-Z0-9_]{2,}\b/g, flags:'g', desc:'UPPER_SNAKE_CASE identifiers (typical env var pattern).', yes:['NODE_ENV','DATABASE_URL','API_KEY_V2'], no:['camelCase','lowercase','Short'] }
+    ];
+
+    var currentMode = 'search';
+    var selectedPattern = null;
+    var currentCategoryFilter = null;
+
+    // Build category list
+    var categories = [];
+    PATTERNS.forEach(function (p) { if (categories.indexOf(p.cat) === -1) categories.push(p.cat); });
+
+    // Build category chip buttons
+    var catChips = document.getElementById('categoryChips');
+    catChips.innerHTML = '<button class="option-chip active" data-cat="">All</button>';
+    categories.forEach(function (c) {
+      catChips.innerHTML += '<button class="option-chip" data-cat="' + c + '">' + c + '</button>';
+    });
+    catChips.querySelectorAll('[data-cat]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        catChips.querySelectorAll('[data-cat]').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentCategoryFilter = btn.dataset.cat || null;
+        render();
+      });
+    });
+
+    // Mode switching
+    document.querySelectorAll('.option-chip[data-mode]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.dataset.mode;
+        catChips.style.display = currentMode === 'category' ? 'flex' : 'none';
+        if (currentMode === 'test') {
+          document.getElementById('testPanel').classList.add('active');
+        } else {
+          document.getElementById('testPanel').classList.remove('active');
+        }
+        if (currentMode !== 'category') currentCategoryFilter = null;
+        render();
+      });
+    });
+
+    document.getElementById('closeTestBtn').addEventListener('click', function () {
+      document.getElementById('testPanel').classList.remove('active');
+      selectedPattern = null;
+      document.querySelectorAll('.pattern-card.selected').forEach(function (c) { c.classList.remove('selected'); });
+    });
+
+    function render() {
+      var query = document.getElementById('searchInput').value.toLowerCase().trim();
+      var output = document.getElementById('patternOutput');
+      output.innerHTML = '';
+
+      var filtered = PATTERNS.filter(function (p) {
+        if (currentMode === 'category' && currentCategoryFilter && p.cat !== currentCategoryFilter) return false;
+        if (query && !(p.name.toLowerCase().includes(query) || p.cat.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query))) return false;
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        output.innerHTML = '<p style="color:var(--text-muted);padding:16px;">No patterns match. Try a different keyword.</p>';
+        setStatus('No patterns found.', 'info');
+        return;
+      }
+
+      // Group by category
+      var grouped = {};
+      filtered.forEach(function (p) {
+        if (!grouped[p.cat]) grouped[p.cat] = [];
+        grouped[p.cat].push(p);
+      });
+
+      Object.keys(grouped).forEach(function (cat) {
+        var header = document.createElement('div');
+        header.className = 'category-header';
+        header.textContent = cat + ' (' + grouped[cat].length + ')';
+        output.appendChild(header);
+
+        var grid = document.createElement('div');
+        grid.className = 'pattern-grid';
+        grouped[cat].forEach(function (p) {
+          grid.appendChild(buildCard(p));
+        });
+        output.appendChild(grid);
+      });
+
+      var total = PATTERNS.length;
+      var shown = filtered.length;
+      var catLabel = currentCategoryFilter ? 'Category: ' + currentCategoryFilter : (query ? 'Search: "' + query + '"' : 'All categories');
+      setStatus(total + ' patterns — Showing: ' + catLabel + ' (' + shown + ')', 'info');
+    }
+
+    function buildCard(p) {
+      var card = document.createElement('div');
+      card.className = 'pattern-card';
+      if (selectedPattern === p) card.classList.add('selected');
+
+      var rxStr = p.rx.source;
+      card.innerHTML =
+        '<div class="pattern-name">' + escH(p.name) + '</div>' +
+        '<div class="pattern-desc">' + escH(p.desc) + '</div>' +
+        '<div class="pattern-regex">' + escH(rxStr) + '</div>' +
+        '<div class="pattern-examples">' +
+          '<span class="match-good">Matches: ' + p.yes.slice(0,2).map(function(s){ return escH(s); }).join(', ') + '</span>' +
+          '<span class="match-bad">Rejects: ' + p.no.slice(0,1).map(function(s){ return escH(s); }).join(', ') + '</span>' +
+        '</div>' +
+        '<div class="pattern-card-footer">' +
+          '<span class="cat-badge">' + escH(p.cat) + '</span>' +
+          '<div style="display:flex;gap:6px;">' +
+            '<button class="btn btn-sm btn-secondary copy-btn" data-rx="' + escH(rxStr) + '">Copy</button>' +
+            '<button class="btn btn-sm btn-primary test-btn">Test</button>' +
+          '</div>' +
+        '</div>';
+
+      card.querySelector('.copy-btn').addEventListener('click', function (e) {
+        e.stopPropagation();
+        DT.copyToClipboard(rxStr, this);
+        DT.trackTool('regex-library');
+      });
+      card.querySelector('.test-btn').addEventListener('click', function (e) {
+        e.stopPropagation();
+        openTest(p, card);
+      });
+      card.addEventListener('click', function () { openTest(p, card); });
+      return card;
+    }
+
+    function openTest(p, card) {
+      selectedPattern = p;
+      document.querySelectorAll('.pattern-card.selected').forEach(function (c) { c.classList.remove('selected'); });
+      if (card) card.classList.add('selected');
+
+      document.getElementById('testPanel').classList.add('active');
+      document.getElementById('testPatternName').textContent = p.name;
+      document.getElementById('testPatternRegex').textContent = p.rx.source;
+
+      // Pre-fill test input with examples
+      var examples = p.yes.concat(p.no).join('\n');
+      var ta = document.getElementById('testInput');
+      if (!ta.value) ta.value = examples;
+
+      document.getElementById('testFlag').value = p.flags || '';
+      runTest();
+
+      document.getElementById('testPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function runTest() {
+      if (!selectedPattern) return;
+      var lines = document.getElementById('testInput').value.split('\n');
+      var flags = document.getElementById('testFlag').value;
+      var results = document.getElementById('testResults');
+      results.innerHTML = '';
+
+      lines.forEach(function (line) {
+        if (line === '' && lines.length > 1) return;
+        var rx;
+        try { rx = new RegExp(selectedPattern.rx.source, flags || ''); } catch(e) { return; }
+        var matched = rx.test(line);
+        var div = document.createElement('div');
+        div.className = 'test-result-line ' + (matched ? 'match' : 'no-match');
+        div.textContent = (matched ? '✓ ' : '✗ ') + (line || '(empty string)');
+        results.appendChild(div);
+      });
+
+      DT.trackTool('regex-library');
+    }
+
+    document.getElementById('testInput').addEventListener('input', DT.debounce(runTest, 200));
+    document.getElementById('testFlag').addEventListener('change', runTest);
+
+    document.getElementById('copyTestPatternBtn').addEventListener('click', function () {
+      if (selectedPattern) DT.copyToClipboard(selectedPattern.rx.source, this);
+    });
+
+    document.getElementById('searchInput').addEventListener('input', DT.debounce(render, 150));
+    document.getElementById('clearSearchBtn').addEventListener('click', function () {
+      document.getElementById('searchInput').value = '';
+      render();
+    });
+
+    function setStatus(msg, type) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + (type || 'info');
+      bar.textContent = msg;
+    }
+
+    function escH(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    render();
+  })();
+  </script>
+</body>
+</html>

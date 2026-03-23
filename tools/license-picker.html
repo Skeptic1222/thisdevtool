@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Open Source License Picker — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Compare open source licenses, browse full license text, and generate a LICENSE file. Compare MIT, Apache 2.0, GPL 3.0, BSD, ISC, MPL 2.0, and more. Free, instant.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/license-picker.html">
+  <meta property="og:title" content="Open Source License Picker — DevToolbox">
+  <meta property="og:description" content="Browse, compare, and generate open source licenses. Full text, permissions, conditions, limitations. Generate a ready-to-use LICENSE file.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/license-picker.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Open Source License Picker",
+    "url": "https://thisdevtool.com/tools/license-picker.html",
+    "description": "Browse, compare, and generate open source LICENSE files. Covers MIT, Apache 2.0, GPL 3.0, BSD, ISC, MPL 2.0, and more. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between MIT and Apache 2.0?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Both are permissive licenses allowing commercial use, modification, and distribution. The key difference is that Apache 2.0 includes an explicit patent grant — it grants users a license to any patents that the contributor holds that are necessary to use the software. Apache 2.0 also requires preservation of NOTICE files if present. MIT is simpler and shorter. For most projects, either works; choose Apache 2.0 if patent protection is important to your users."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does copyleft mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Copyleft is a licensing requirement that any derivative works must be distributed under the same license. GPL 3.0 is a strong copyleft license: if you distribute software that includes GPL code, your entire project must also be GPL. LGPL is weak copyleft: it applies to modifications of the library itself but not to code that merely uses the library. MPL 2.0 is file-level copyleft: modified files must stay MPL, but you can combine MPL files with proprietary code."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use MIT-licensed code in a commercial product?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The MIT License explicitly permits commercial use. You can include MIT-licensed libraries in commercial products and services. The only requirements are to keep the copyright notice and license text in your distribution. The same applies to Apache 2.0, BSD 2-Clause, BSD 3-Clause, and ISC licenses."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between GPL and AGPL?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The GNU GPL (General Public License) requires you to share source code when you distribute software. However, if you run GPL software as a web service without distributing it, you are not required to share the source — this is the 'Application Service Provider loophole'. The AGPL (Affero GPL) closes this loophole: if users interact with AGPL software over a network, you must provide the source code to those users. AGPL is common in server-side software like databases and web apps."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What license should I use for my open source project?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "If you want maximum adoption with no restrictions: use MIT or ISC. If you want patent protection for users: use Apache 2.0. If you want all derivatives to remain open source: use GPL 3.0. If you want a library to be used freely but kept open: use LGPL. If you want server-side software to remain open: use AGPL. If you want to release to the public domain: use Unlicense or CC0. The MIT License is the most popular choice for libraries and tools."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .license-grid { display: grid; grid-template-columns: 220px 1fr; gap: 0.75rem; }
+    @media (max-width: 650px) { .license-grid { grid-template-columns: 1fr; } }
+    .license-list-panel { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .license-search { width: 100%; padding: 0.55rem 0.75rem; border: none; border-bottom: 1px solid var(--border); background: var(--bg-secondary); color: var(--text); font-size: 0.87rem; font-family: inherit; }
+    .license-search:focus { outline: none; background: var(--bg); }
+    .license-list-item { padding: 0.5rem 0.75rem; cursor: pointer; border-bottom: 1px solid var(--border); font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.1rem; transition: background 0.1s; }
+    .license-list-item:last-child { border-bottom: none; }
+    .license-list-item:hover, .license-list-item.active { background: var(--accent-bg, #ecfdf5); color: var(--accent); }
+    [data-theme=dark] .license-list-item:hover, [data-theme=dark] .license-list-item.active { background: #052e16; }
+    .license-list-item .lname { font-weight: 600; }
+    .license-list-item .ltag { font-size: 0.72rem; color: var(--text-secondary); }
+    .license-detail { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; min-height: 300px; }
+    .license-detail h2 { margin: 0 0 0.3rem; font-size: 1.2rem; }
+    .license-detail .tagline { color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 0.75rem; }
+    .pcl-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem; }
+    @media (max-width: 500px) { .pcl-grid { grid-template-columns: 1fr; } }
+    .pcl-col h4 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin: 0 0 0.35rem; }
+    .pcl-col.perms h4 { color: #15803d; }
+    .pcl-col.conds h4 { color: #b45309; }
+    .pcl-col.lims h4 { color: #dc2626; }
+    [data-theme=dark] .pcl-col.perms h4 { color: #86efac; }
+    [data-theme=dark] .pcl-col.conds h4 { color: #fcd34d; }
+    [data-theme=dark] .pcl-col.lims h4 { color: #fca5a5; }
+    .pcl-tag { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; padding: 0.18rem 0.5rem; border-radius: 3px; margin: 0.15rem 0.1rem; }
+    .tag-perm { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .tag-cond { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .tag-lim { background: #fff1f2; color: #dc2626; border: 1px solid #fecdd3; }
+    [data-theme=dark] .tag-perm { background: #052e16; color: #86efac; border-color: #166534; }
+    [data-theme=dark] .tag-cond { background: #292108; color: #fcd34d; border-color: #78350f; }
+    [data-theme=dark] .tag-lim { background: #2d0a0a; color: #fca5a5; border-color: #7f1d1d; }
+    .license-text-box { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; font-family: monospace; font-size: 0.78rem; line-height: 1.6; white-space: pre-wrap; max-height: 260px; overflow-y: auto; }
+    .generate-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.5rem; }
+    .generate-row input { padding: 0.4rem 0.65rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); font-size: 0.87rem; }
+    .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .compare-col { border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
+    .compare-col select { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); font-size: 0.87rem; margin-bottom: 0.5rem; }
+    .quiz-step { display: flex; flex-direction: column; gap: 0.6rem; }
+    .quiz-q { font-weight: 600; font-size: 0.95rem; }
+    .quiz-btn { padding: 0.5rem 0.85rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); font-size: 0.87rem; cursor: pointer; text-align: left; transition: border-color 0.1s, color 0.1s; }
+    .quiz-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .quiz-result { background: var(--accent-bg, #ecfdf5); border: 1px solid #bbf7d0; border-radius: 8px; padding: 0.75rem; font-size: 0.9rem; }
+    [data-theme=dark] .quiz-result { background: #052e16; border-color: #166534; }
+    .tab-bar { display: flex; gap: 0.25rem; margin-bottom: 0.75rem; }
+    .tab-btn { padding: 0.35rem 0.75rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--bg-secondary); color: var(--text-secondary); font-size: 0.82rem; cursor: pointer; border-bottom: none; }
+    .tab-btn.active { background: var(--bg); color: var(--accent); font-weight: 600; border-bottom: 1px solid var(--bg); margin-bottom: -1px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/readme-generator.html">README</a>
+        <a href="/tools/github-actions-generator.html">GitHub Actions</a>
+        <a href="/tools/env-template-generator.html">.env Builder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Open Source License Picker</h1>
+          <p class="tool-subtitle">Browse licenses, compare permissions side-by-side, take the quiz, and generate a ready-to-commit LICENSE file.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="browse">Browse</button>
+            <button class="option-chip" data-mode="compare">Compare</button>
+            <button class="option-chip" data-mode="quiz">Quiz</button>
+          </div>
+
+          <!-- BROWSE MODE -->
+          <div id="browsePane">
+            <div class="license-grid" style="margin-top:0.75rem;">
+              <div class="license-list-panel">
+                <input type="text" class="license-search" id="licenseSearch" placeholder="Search licenses...">
+                <div id="licenseListItems"></div>
+              </div>
+              <div>
+                <div id="licenseDetail" class="license-detail">
+                  <div style="color:var(--text-secondary);font-size:0.9rem;">Select a license from the list to view details.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COMPARE MODE -->
+          <div id="comparePane" style="display:none;margin-top:0.75rem;">
+            <div class="compare-row">
+              <div class="compare-col">
+                <select id="cmpA"></select>
+                <div id="cmpDetailA"></div>
+              </div>
+              <div class="compare-col">
+                <select id="cmpB"></select>
+                <div id="cmpDetailB"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- QUIZ MODE -->
+          <div id="quizPane" style="display:none;margin-top:0.75rem;">
+            <div id="quizContent"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Browse 10 popular open source licenses.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Choose an Open Source License</h2>
+          <p>Choosing the right license is one of the most important decisions for an open source project. The license determines how others can use, modify, and distribute your code. The wrong choice can limit adoption, create legal confusion, or fail to protect the principles you care about. Use the Browse tab to explore full license text, the Compare tab to see differences between two licenses side-by-side, or the Quiz to get a recommendation based on your goals.</p>
+
+          <h2>The Most Popular Open Source Licenses</h2>
+          <h3>MIT License</h3>
+          <p>The MIT License is the most widely used open source license. It is extremely permissive: anyone can use, copy, modify, merge, publish, distribute, sublicense, and sell copies of your software. The only requirement is to include the original copyright notice and license text. MIT is used by React, Vue.js, Rails, jQuery, and thousands of other major projects. Choose MIT when you want maximum adoption and minimal friction for users and contributors.</p>
+
+          <h3>Apache License 2.0</h3>
+          <p>Apache 2.0 is also permissive and adds explicit patent protection. When a contributor submits code to an Apache 2.0 project, they grant all users a perpetual, worldwide license to any patents they hold that are necessary to use the software. This prevents contributors from later suing users for patent infringement. Apache 2.0 is used by Android, Kubernetes, Swift, and many Apache Software Foundation projects. It is compatible with GPL 3.0 but not GPL 2.0.</p>
+
+          <h3>GNU GPL 3.0</h3>
+          <p>The GPL (General Public License) is a copyleft license. Any software that includes GPL code or links to GPL libraries must also be released under the GPL when distributed. This ensures the software remains open source in all its derivative forms. GPL 3.0 adds patent protection and anti-tivoization clauses (preventing hardware manufacturers from locking you out of running modified software). GPL is used by Linux, GCC, Bash, and WordPress.</p>
+
+          <h3>BSD, ISC, and Other Permissive Licenses</h3>
+          <p>BSD 2-Clause and BSD 3-Clause are similar to MIT but with slightly different wording. BSD 3-Clause adds a non-endorsement clause preventing use of the project name for promotion. ISC is functionally identical to MIT with simpler language — it is the default license for npm packages. The Unlicense and CC0 release software into the public domain with no conditions at all, not even the requirement to include copyright notices.</p>
+
+          <h3>Generating Your LICENSE File</h3>
+          <p>After selecting a license, enter your name and the current year, then download the LICENSE file. Place it in the root directory of your repository. GitHub automatically detects the license and displays it on the repository page. Without a LICENSE file, your code is technically "all rights reserved" by default — no one can legally use, copy, or distribute it, even if it is publicly visible on GitHub. Always include a license in open source projects. See our <a href="/tools/readme-generator.html">README Generator</a> to add a license badge to your README.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between MIT and Apache 2.0?</button>
+            <div class="faq-answer">Both are permissive licenses allowing commercial use, modification, and distribution. Apache 2.0 adds an explicit patent grant protecting users from patent lawsuits from contributors. Apache 2.0 also requires preservation of NOTICE files. MIT is simpler; choose Apache 2.0 when patent protection matters.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does copyleft mean?</button>
+            <div class="faq-answer">Copyleft requires that derivative works be distributed under the same license. GPL is strong copyleft — any project including GPL code must be GPL. LGPL is weak copyleft — applies to modifications of the library but not code that merely uses it. MPL 2.0 is file-level copyleft — modified files stay MPL but can be combined with proprietary code.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I use MIT-licensed code in a commercial product?</button>
+            <div class="faq-answer">Yes. MIT explicitly permits commercial use. The only requirements are to keep the copyright notice and license text. The same applies to Apache 2.0, BSD 2-Clause, BSD 3-Clause, and ISC. These are all permissive licenses with no copyleft requirements.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between GPL and AGPL?</button>
+            <div class="faq-answer">GPL requires sharing source code when you distribute software. If you run GPL software as a web service, you are not required to share source (the ASP loophole). AGPL closes this: if users interact with AGPL software over a network, you must provide the source. AGPL is used for server-side software like databases and web apps.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What license should I use for my project?</button>
+            <div class="faq-answer">Maximum adoption with no restrictions: MIT or ISC. Patent protection: Apache 2.0. All derivatives must stay open source: GPL 3.0. Library usable in proprietary code: LGPL. Server-side software must stay open: AGPL. Public domain: Unlicense or CC0. MIT is the most popular choice for libraries and tools.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Project Tools</h4>
+        <a href="/tools/license-picker.html">License Picker</a>
+        <a href="/tools/readme-generator.html">README Generator</a>
+        <a href="/tools/github-actions-generator.html">GitHub Actions</a>
+        <a href="/tools/env-template-generator.html">.env Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'browse';
+    var selectedLicenseId = null;
+
+    // ── License database ──────────────────────────────────────────────
+    var LICENSES = [
+      {
+        id: 'MIT', name: 'MIT License', tag: 'Permissive',
+        tagline: 'Simple and permissive. The most popular license.',
+        permissions: ['Commercial use', 'Modification', 'Distribution', 'Private use'],
+        conditions: ['License & copyright notice'],
+        limitations: ['Liability', 'Warranty'],
+        text: 'MIT License\n\nCopyright (c) [YEAR] [AUTHOR]\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'
+      },
+      {
+        id: 'Apache-2.0', name: 'Apache License 2.0', tag: 'Permissive + Patent',
+        tagline: 'Permissive with explicit patent grant. Used by Kubernetes, Android, Swift.',
+        permissions: ['Commercial use', 'Modification', 'Distribution', 'Patent use', 'Private use'],
+        conditions: ['License & copyright notice', 'State changes', 'NOTICE file'],
+        limitations: ['Liability', 'Trademark', 'Warranty'],
+        text: 'Apache License\nVersion 2.0, January 2004\nhttp://www.apache.org/licenses/\n\nCopyright [YEAR] [AUTHOR]\n\nLicensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at\n\n    http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.'
+      },
+      {
+        id: 'GPL-3.0', name: 'GNU General Public License v3.0', tag: 'Strong Copyleft',
+        tagline: 'Derivatives must stay open source. Used by Linux, GCC, WordPress.',
+        permissions: ['Commercial use', 'Modification', 'Distribution', 'Patent use', 'Private use'],
+        conditions: ['Disclose source', 'License & copyright notice', 'Same license', 'State changes'],
+        limitations: ['Liability', 'Warranty'],
+        text: 'GNU GENERAL PUBLIC LICENSE\nVersion 3, 29 June 2007\n\nCopyright (C) [YEAR] [AUTHOR]\n\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.'
+      },
+      {
+        id: 'LGPL-2.1', name: 'GNU Lesser GPL v2.1', tag: 'Weak Copyleft',
+        tagline: 'Library can be used in proprietary code. Library modifications stay open.',
+        permissions: ['Commercial use', 'Modification', 'Distribution', 'Private use'],
+        conditions: ['Disclose source (library)', 'License & copyright notice', 'Same license (library mods)'],
+        limitations: ['Liability', 'Warranty'],
+        text: 'GNU LESSER GENERAL PUBLIC LICENSE\nVersion 2.1, February 1999\n\nCopyright (C) [YEAR] [AUTHOR]\n\nThis library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.\n\nThis library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.'
+      },
+      {
+        id: 'AGPL-3.0', name: 'GNU Affero GPL v3.0', tag: 'Network Copyleft',
+        tagline: 'Like GPL but also covers network use (SaaS). Closes the ASP loophole.',
+        permissions: ['Commercial use', 'Modification', 'Distribution', 'Patent use', 'Private use'],
+        conditions: ['Disclose source', 'License & copyright notice', 'Network use = distribution', 'Same license', 'State changes'],
+        limitations: ['Liability', 'Warranty'],
+        text: 'GNU AFFERO GENERAL PUBLIC LICENSE\nVersion 3, 19 November 2007\n\nCopyright (C) [YEAR] [AUTHOR]\n\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.\n\nYou should have received a copy of the GNU Affero General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.'
+      },
+      {
+        id: 'MPL-2.0', name: 'Mozilla Public License 2.0', tag: 'File Copyleft',
+        tagline: 'File-level copyleft. Modified files stay MPL; can combine with proprietary code.',
+        permissions: ['Commercial use', 'Modification', 'Distribution', 'Patent use', 'Private use'],
+        conditions: ['Disclose source (modified files)', 'License & copyright notice', 'Same license (files)'],
+        limitations: ['Liability', 'Trademark', 'Warranty'],
+        text: 'Mozilla Public License Version 2.0\n\nCopyright (c) [YEAR] [AUTHOR]\n\n1. Definitions\n\n1.1. "Contributor" means each individual or legal entity that creates, contributes to the creation of, or owns Covered Software.\n\n1.2. "Contributor Version" means the combination of the Contributions of others (if any) used by a Contributor and that particular Contributor\'s Contribution.\n\nThis Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.'
+      },
+      {
+        id: 'BSD-2-Clause', name: 'BSD 2-Clause License', tag: 'Permissive',
+        tagline: '"Simplified BSD." Similar to MIT. Requires copyright notice in distributions.',
+        permissions: ['Commercial use', 'Modification', 'Distribution', 'Private use'],
+        conditions: ['License & copyright notice'],
+        limitations: ['Liability', 'Warranty'],
+        text: 'BSD 2-Clause License\n\nCopyright (c) [YEAR], [AUTHOR]\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\n\n1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.\n\n2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
+      },
+      {
+        id: 'BSD-3-Clause', name: 'BSD 3-Clause License', tag: 'Permissive',
+        tagline: '"New BSD." Like BSD 2-Clause plus a non-endorsement clause.',
+        permissions: ['Commercial use', 'Modification', 'Distribution', 'Private use'],
+        conditions: ['License & copyright notice', 'No endorsement'],
+        limitations: ['Liability', 'Warranty'],
+        text: 'BSD 3-Clause License\n\nCopyright (c) [YEAR], [AUTHOR]\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:\n\n1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.\n\n2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.\n\n3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.\n\nTHIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES ARE DISCLAIMED.'
+      },
+      {
+        id: 'ISC', name: 'ISC License', tag: 'Permissive',
+        tagline: 'Functionally equivalent to MIT/BSD 2-Clause. Default for npm packages.',
+        permissions: ['Commercial use', 'Modification', 'Distribution', 'Private use'],
+        conditions: ['License & copyright notice'],
+        limitations: ['Liability', 'Warranty'],
+        text: 'ISC License\n\nCopyright (c) [YEAR], [AUTHOR]\n\nPermission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.\n\nTHE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.'
+      },
+      {
+        id: 'Unlicense', name: 'The Unlicense', tag: 'Public Domain',
+        tagline: 'Releases to the public domain. No conditions whatsoever.',
+        permissions: ['Commercial use', 'Modification', 'Distribution', 'Private use'],
+        conditions: [],
+        limitations: ['Liability', 'Warranty'],
+        text: 'This is free and unencumbered software released into the public domain.\n\nAnyone is free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.\n\nIn jurisdictions that recognize copyright laws, the author or authors of this software dedicate any and all copyright interest in the software to the public domain. We make this dedication for the benefit of the public at large and to the detriment of our heirs and successors.\n\nTHE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\nFor more information, please refer to <https://unlicense.org>'
+      }
+    ];
+
+    // ── Build license detail HTML ─────────────────────────────────────
+    function buildDetailHTML(lic, showGenerate) {
+      var html = '<h2>' + lic.name + ' <span style="font-size:0.7rem;background:var(--bg-secondary);border:1px solid var(--border);padding:0.15rem 0.5rem;border-radius:4px;color:var(--text-secondary);font-weight:400;">' + lic.tag + '</span></h2>';
+      html += '<div class="tagline">' + lic.tagline + '</div>';
+      html += '<div class="pcl-grid">';
+      html += '<div class="pcl-col perms"><h4>Permissions</h4>' + lic.permissions.map(function(p){ return '<span class="pcl-tag tag-perm">&#10003; ' + p + '</span>'; }).join('') + '</div>';
+      html += '<div class="pcl-col conds"><h4>Conditions</h4>' + (lic.conditions.length ? lic.conditions.map(function(c){ return '<span class="pcl-tag tag-cond">&#9675; ' + c + '</span>'; }).join('') : '<span style="font-size:0.8rem;color:var(--text-secondary);">None</span>') + '</div>';
+      html += '<div class="pcl-col lims"><h4>Limitations</h4>' + lic.limitations.map(function(l){ return '<span class="pcl-tag tag-lim">&#10005; ' + l + '</span>'; }).join('') + '</div>';
+      html += '</div>';
+      if (showGenerate) {
+        html += '<div class="section-title" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;color:var(--accent);margin:0.6rem 0 0.35rem;">Generate LICENSE File</div>';
+        html += '<div class="generate-row">';
+        html += '<input type="text" id="genAuthor" placeholder="Your Name" style="flex:1;min-width:0;">';
+        html += '<input type="text" id="genYear" placeholder="2026" value="' + new Date().getFullYear() + '" style="width:70px;">';
+        html += '<button class="btn btn-primary btn-sm" id="genApplyBtn">Apply</button>';
+        html += '<button class="btn btn-secondary btn-sm" id="genCopyBtn">Copy</button>';
+        html += '<button class="btn btn-secondary btn-sm" id="genDlBtn">Download</button>';
+        html += '</div>';
+      }
+      html += '<div style="font-size:0.78rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.3rem;">License Text</div>';
+      html += '<div class="license-text-box" id="licTextBox">' + lic.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+      return html;
+    }
+
+    function getGeneratedText() {
+      var el = document.getElementById('licTextBox');
+      return el ? el.textContent : '';
+    }
+
+    function renderDetail(licId) {
+      var lic = LICENSES.find(function(l){ return l.id === licId; });
+      if (!lic) return;
+      selectedLicenseId = licId;
+      var detail = document.getElementById('licenseDetail');
+      detail.innerHTML = buildDetailHTML(lic, true);
+
+      document.getElementById('genApplyBtn').addEventListener('click', function() {
+        var author = document.getElementById('genAuthor').value || '[AUTHOR]';
+        var year = document.getElementById('genYear').value || new Date().getFullYear();
+        var text = lic.text.replace(/\[YEAR\]/g, year).replace(/\[AUTHOR\]/g, author);
+        document.getElementById('licTextBox').textContent = text;
+      });
+      document.getElementById('genCopyBtn').addEventListener('click', function() {
+        DT.copyToClipboard(getGeneratedText(), this);
+      });
+      document.getElementById('genDlBtn').addEventListener('click', function() {
+        DT.downloadText(getGeneratedText(), 'LICENSE', 'text/plain');
+      });
+
+      var statusEl = document.getElementById('statusBar');
+      statusEl.className = 'status-bar valid';
+      statusEl.textContent = lic.name + ' \u2014 Permissions: ' + lic.permissions.join(', ');
+      DT.trackTool('license-picker');
+    }
+
+    // ── Render license list ───────────────────────────────────────────
+    function renderLicenseList(filter) {
+      var list = document.getElementById('licenseListItems');
+      list.innerHTML = '';
+      LICENSES.filter(function(l) {
+        if (!filter) return true;
+        return l.name.toLowerCase().includes(filter.toLowerCase()) || l.tag.toLowerCase().includes(filter.toLowerCase()) || l.id.toLowerCase().includes(filter.toLowerCase());
+      }).forEach(function(l) {
+        var item = document.createElement('div');
+        item.className = 'license-list-item' + (l.id === selectedLicenseId ? ' active' : '');
+        item.innerHTML = '<span class="lname">' + l.id + '</span><span class="ltag">' + l.tag + '</span>';
+        item.addEventListener('click', function() {
+          document.querySelectorAll('.license-list-item').forEach(function(i){ i.classList.remove('active'); });
+          item.classList.add('active');
+          renderDetail(l.id);
+        });
+        list.appendChild(item);
+      });
+    }
+
+    document.getElementById('licenseSearch').addEventListener('input', function() {
+      renderLicenseList(this.value);
+    });
+
+    // ── Compare mode ──────────────────────────────────────────────────
+    function buildCompareSelect(selId) {
+      var sel = document.getElementById(selId);
+      LICENSES.forEach(function(l) {
+        var opt = document.createElement('option');
+        opt.value = l.id;
+        opt.textContent = l.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    function renderCompareDetail(licId, containerId) {
+      var lic = LICENSES.find(function(l){ return l.id === licId; });
+      if (!lic) return;
+      document.getElementById(containerId).innerHTML = buildDetailHTML(lic, false);
+    }
+
+    function initCompare() {
+      buildCompareSelect('cmpA');
+      buildCompareSelect('cmpB');
+      document.getElementById('cmpA').value = 'MIT';
+      document.getElementById('cmpB').value = 'Apache-2.0';
+      renderCompareDetail('MIT', 'cmpDetailA');
+      renderCompareDetail('Apache-2.0', 'cmpDetailB');
+      document.getElementById('cmpA').addEventListener('change', function() { renderCompareDetail(this.value, 'cmpDetailA'); });
+      document.getElementById('cmpB').addEventListener('change', function() { renderCompareDetail(this.value, 'cmpDetailB'); });
+    }
+
+    // ── Quiz mode ─────────────────────────────────────────────────────
+    var QUIZ_TREE = [
+      {
+        id: 'q1', q: 'Do you want all derivatives of your software to remain open source?',
+        yes: 'q2', no: 'q3'
+      },
+      {
+        id: 'q2', q: 'Will your software be accessible over a network (web service / SaaS)?',
+        yes: { result: 'AGPL-3.0', reason: 'AGPL ensures network use is treated as distribution, requiring source sharing for SaaS applications.' },
+        no: { result: 'GPL-3.0', reason: 'GPL requires derivatives to stay open source when distributed, but does not cover network use.' }
+      },
+      {
+        id: 'q3', q: 'Is your project a library intended to be linked into other software?',
+        yes: 'q4', no: 'q5'
+      },
+      {
+        id: 'q4', q: 'Do you want modifications to your library itself to stay open source?',
+        yes: { result: 'LGPL-2.1', reason: 'LGPL allows your library to be used in proprietary software, but modifications to the library itself must be shared.' },
+        no: { result: 'MIT', reason: 'MIT allows full use in proprietary code with no copyleft requirements.' }
+      },
+      {
+        id: 'q5', q: 'Is explicit patent protection for users important to you?',
+        yes: { result: 'Apache-2.0', reason: 'Apache 2.0 includes an explicit patent grant that prevents contributors from suing users for patent infringement.' },
+        no: 'q6'
+      },
+      {
+        id: 'q6', q: 'Do you want to release your work to the public domain with no conditions at all?',
+        yes: { result: 'Unlicense', reason: 'The Unlicense releases software to the public domain with no requirements — not even attribution.' },
+        no: { result: 'MIT', reason: 'MIT is the simplest and most popular permissive license. Just keep the copyright notice and you\'re done.' }
+      }
+    ];
+
+    function renderQuiz() {
+      var content = document.getElementById('quizContent');
+      content.innerHTML = '';
+      var currentNodeId = 'q1';
+
+      function showNode(nodeId) {
+        var node = QUIZ_TREE.find(function(n){ return n.id === nodeId; });
+        if (!node) return;
+        content.innerHTML = '';
+        var div = document.createElement('div');
+        div.className = 'quiz-step';
+        div.innerHTML = '<div class="quiz-q">Question: ' + node.q + '</div>';
+        ['yes', 'no'].forEach(function(ans) {
+          var btn = document.createElement('button');
+          btn.className = 'quiz-btn';
+          btn.textContent = ans === 'yes' ? 'Yes' : 'No';
+          btn.addEventListener('click', function() {
+            var next = node[ans];
+            if (typeof next === 'string') {
+              showNode(next);
+            } else {
+              // result
+              var lic = LICENSES.find(function(l){ return l.id === next.result; });
+              content.innerHTML = '';
+              var res = document.createElement('div');
+              res.className = 'quiz-result';
+              res.innerHTML = '<strong>Recommendation: ' + next.result + '</strong><p style="margin:0.4rem 0 0;">' + next.reason + '</p>';
+              content.appendChild(res);
+              if (lic) {
+                var detailDiv = document.createElement('div');
+                detailDiv.style.marginTop = '0.75rem';
+                detailDiv.innerHTML = buildDetailHTML(lic, true);
+                content.appendChild(detailDiv);
+                detailDiv.querySelector('#genApplyBtn').addEventListener('click', function() {
+                  var author = detailDiv.querySelector('#genAuthor').value || '[AUTHOR]';
+                  var year = detailDiv.querySelector('#genYear').value || new Date().getFullYear();
+                  var text = lic.text.replace(/\[YEAR\]/g, year).replace(/\[AUTHOR\]/g, author);
+                  detailDiv.querySelector('#licTextBox').textContent = text;
+                });
+                detailDiv.querySelector('#genCopyBtn').addEventListener('click', function() {
+                  DT.copyToClipboard(detailDiv.querySelector('#licTextBox').textContent, this);
+                });
+                detailDiv.querySelector('#genDlBtn').addEventListener('click', function() {
+                  DT.downloadText(detailDiv.querySelector('#licTextBox').textContent, 'LICENSE', 'text/plain');
+                });
+              }
+              var restart = document.createElement('button');
+              restart.className = 'btn btn-secondary btn-sm';
+              restart.textContent = 'Restart Quiz';
+              restart.style.marginTop = '0.5rem';
+              restart.addEventListener('click', function() { showNode('q1'); });
+              content.appendChild(restart);
+              var statusEl = document.getElementById('statusBar');
+              statusEl.className = 'status-bar valid';
+              statusEl.textContent = 'Recommended: ' + next.result + ' \u2014 ' + (lic ? lic.tag : '');
+              DT.trackTool('license-picker');
+            }
+          });
+          div.appendChild(btn);
+        });
+        content.appendChild(div);
+      }
+
+      showNode(currentNodeId);
+    }
+
+    // ── Mode switching ────────────────────────────────────────────────
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('browsePane').style.display = currentMode === 'browse' ? '' : 'none';
+        document.getElementById('comparePane').style.display = currentMode === 'compare' ? '' : 'none';
+        document.getElementById('quizPane').style.display = currentMode === 'quiz' ? '' : 'none';
+        if (currentMode === 'quiz') renderQuiz();
+        var statusEl = document.getElementById('statusBar');
+        statusEl.className = 'status-bar info';
+        statusEl.textContent = currentMode === 'browse' ? 'Browse 10 popular open source licenses.' :
+                               currentMode === 'compare' ? 'Compare two licenses side-by-side.' :
+                               'Answer questions to get a license recommendation.';
+      });
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────
+    renderLicenseList('');
+    renderDetail('MIT');
+    initCompare();
+  })();
+  </script>
+</body>
+</html>

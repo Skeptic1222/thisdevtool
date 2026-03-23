@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Dockerfile Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate Dockerfiles online. Node.js, Python, Go presets with best practices. Multi-stage builds, custom instructions, and downloadable output. Free, browser-based.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/dockerfile-generator.html">
+  <meta property="og:title" content="Dockerfile Generator — DevToolbox">
+  <meta property="og:description" content="Generate production-ready Dockerfiles for Node.js, Python, Go, and custom stacks. Supports multi-stage builds. Free online tool, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/dockerfile-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Dockerfile Generator",
+    "url": "https://thisdevtool.com/tools/dockerfile-generator.html",
+    "description": "Generate production-ready Dockerfiles for Node.js, Python, Go, and custom stacks with multi-stage build support. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a Dockerfile?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Dockerfile is a text file containing a sequence of instructions for building a Docker image. Each instruction creates a layer in the image. Common instructions include FROM (base image), RUN (execute commands), COPY (copy files), EXPOSE (declare ports), and CMD or ENTRYPOINT (default command)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a multi-stage build in Docker?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A multi-stage build uses multiple FROM statements in a single Dockerfile. Earlier stages compile or build the application; the final stage copies only the resulting artifacts into a minimal runtime image. This produces much smaller images by excluding build tools, compilers, and dependencies not needed at runtime."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why use Alpine Linux as a base image?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Alpine Linux images are extremely small (about 5 MB) compared to Debian/Ubuntu-based images (100-900 MB). They reduce image pull times, attack surface, and storage costs. The trade-off is that Alpine uses musl libc instead of glibc, which can cause issues with some native modules. node:20-alpine is the standard recommendation for Node.js production images."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between CMD and ENTRYPOINT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ENTRYPOINT sets the main executable that always runs when the container starts. CMD provides default arguments to ENTRYPOINT, or a default command if ENTRYPOINT is not set. When both are used together, ENTRYPOINT is the executable and CMD is the default arguments — CMD can be overridden at runtime while ENTRYPOINT cannot (without --entrypoint flag)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my Dockerfile content sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This generator runs entirely in your browser. No data is sent to any server, logged, or stored anywhere outside your device."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-input, var(--bg-secondary)); color: var(--text); font-size: 0.87rem; box-sizing: border-box; }
+    .form-group textarea { resize: vertical; font-family: monospace; }
+    .section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); margin: 14px 0 7px; }
+    .instr-row { display: flex; gap: 6px; align-items: flex-start; margin-bottom: 6px; }
+    .instr-row select { flex-shrink: 0; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-input, var(--bg-secondary)); color: var(--text); font-size: 0.85rem; }
+    .instr-row input { flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-input, var(--bg-secondary)); color: var(--text); font-size: 0.85rem; }
+    .check-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .check-row input[type=checkbox] { width: auto; flex-shrink: 0; }
+    .check-row label { margin: 0; font-size: 0.9rem; color: var(--text); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/docker-compose-generator.html">Docker Compose</a>
+        <a href="/tools/nginx-config.html">Nginx Config</a>
+        <a href="/tools/ssh-config-generator.html">SSH Config</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Dockerfile Generator</h1>
+          <p class="tool-subtitle">Generate production-ready Dockerfiles for Node.js, Python, Go, and custom stacks. Supports multi-stage builds and best-practice patterns.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="node">Node.js</button>
+            <button class="option-chip" data-mode="python">Python</button>
+            <button class="option-chip" data-mode="go">Go</button>
+            <button class="option-chip" data-mode="custom">Custom</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Configuration</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+              </div>
+
+              <!-- Common base -->
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Base Image</label>
+                  <input type="text" id="baseImage" placeholder="node:20-alpine">
+                </div>
+                <div class="form-group">
+                  <label>Working Directory</label>
+                  <input type="text" id="workdir" placeholder="/app">
+                </div>
+              </div>
+
+              <div class="check-row">
+                <input type="checkbox" id="multistage">
+                <label>Multi-stage build (separate build and runtime stages)</label>
+              </div>
+
+              <div id="multistageSection" style="display:none;">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Build Stage Image</label>
+                    <input type="text" id="buildImage" placeholder="node:20-alpine">
+                  </div>
+                  <div class="form-group">
+                    <label>Build Stage Name</label>
+                    <input type="text" id="buildStageName" placeholder="builder">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Node.js specific -->
+              <div id="nodeFields">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Package Manager</label>
+                    <select id="nodePkgMgr">
+                      <option value="npm">npm</option>
+                      <option value="yarn">yarn</option>
+                      <option value="pnpm">pnpm</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Expose Port</label>
+                    <input type="text" id="nodePort" placeholder="3000">
+                  </div>
+                </div>
+                <div class="check-row"><input type="checkbox" id="nodeNonRoot" checked><label>Run as non-root user (node)</label></div>
+                <div class="check-row"><input type="checkbox" id="nodeProdInstall" checked><label>Install production dependencies only</label></div>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Build Command (optional)</label>
+                    <input type="text" id="nodeBuildCmd" placeholder="npm run build">
+                  </div>
+                  <div class="form-group">
+                    <label>Start Command</label>
+                    <input type="text" id="nodeStartCmd" placeholder="node server.js">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Python specific -->
+              <div id="pythonFields" style="display:none;">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Requirements File</label>
+                    <input type="text" id="pyReqs" placeholder="requirements.txt">
+                  </div>
+                  <div class="form-group">
+                    <label>Expose Port</label>
+                    <input type="text" id="pyPort" placeholder="8000">
+                  </div>
+                </div>
+                <div class="check-row"><input type="checkbox" id="pyVenv"><label>Create virtualenv inside container</label></div>
+                <div class="form-group">
+                  <label>Start Command (CMD)</label>
+                  <input type="text" id="pyCmd" placeholder="python -m uvicorn main:app --host 0.0.0.0 --port 8000">
+                </div>
+              </div>
+
+              <!-- Go specific -->
+              <div id="goFields" style="display:none;">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Module Name</label>
+                    <input type="text" id="goModule" placeholder="github.com/user/myapp">
+                  </div>
+                  <div class="form-group">
+                    <label>Expose Port</label>
+                    <input type="text" id="goPort" placeholder="8080">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Binary Name</label>
+                  <input type="text" id="goBinary" placeholder="main">
+                </div>
+              </div>
+
+              <!-- Custom additional instructions -->
+              <div class="section-title">Additional Instructions</div>
+              <div id="instrList"></div>
+              <button class="btn btn-sm btn-secondary" id="addInstr" style="margin-top:4px;">+ Add Instruction</button>
+
+              <div class="form-grid" style="margin-top:12px;">
+                <div class="form-group">
+                  <label>LABEL maintainer</label>
+                  <input type="text" id="maintainer" placeholder="Your Name &lt;you@example.com&gt;">
+                </div>
+                <div class="form-group">
+                  <label>User (USER directive)</label>
+                  <input type="text" id="userDirective" placeholder="node">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="pane-label">
+                <span>Dockerfile</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="configOutput" style="min-height:380px;white-space:pre;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Configure the options above to generate your Dockerfile.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Dockerfile Generator</h2>
+          <ol>
+            <li><strong>Choose a language preset</strong> — Node.js, Python, Go, or Custom.</li>
+            <li><strong>Fill in the configuration</strong> — base image, working directory, ports, and commands.</li>
+            <li><strong>Enable multi-stage build</strong> if you want separate build and runtime stages for smaller images.</li>
+            <li><strong>Add extra instructions</strong> using the + button for RUN, COPY, ENV, and ARG directives.</li>
+            <li><strong>Copy or download</strong> the resulting Dockerfile and build with <code>docker build -t myapp .</code></li>
+          </ol>
+
+          <h2>Dockerfile Best Practices</h2>
+          <p>A well-structured Dockerfile is the foundation of a secure, efficient, and maintainable containerized application. The order of instructions significantly affects build time because Docker caches each layer. Instructions that change frequently (like <code>COPY . .</code>) should come after instructions that rarely change (like installing dependencies). This way, a code change only invalidates the final layers, and Docker reuses the cached dependency installation layers from previous builds.</p>
+
+          <h3>Choosing the Right Base Image</h3>
+          <p>Alpine-based images (<code>node:20-alpine</code>, <code>python:3.12-slim</code>) are significantly smaller than full Debian images. A Node.js app on <code>node:20</code> produces an image over 900 MB; the same app on <code>node:20-alpine</code> can be under 100 MB. Smaller images mean faster pull times in CI/CD pipelines, reduced registry storage costs, and a smaller attack surface. Always pin to a specific version tag — using <code>latest</code> makes builds non-reproducible and can introduce breaking changes silently.</p>
+
+          <h3>Multi-Stage Builds</h3>
+          <p>Multi-stage builds are the standard approach for compiled languages and frontend applications. For Go applications, the first stage compiles a statically-linked binary using the full Go toolchain; the second stage copies just the binary into a minimal <code>scratch</code> or <code>alpine</code> image, producing an image of only 10-20 MB. For Node.js, the build stage installs all dependencies and runs the build tool (TypeScript compiler, webpack, etc.); the runtime stage installs only production dependencies and copies the compiled output. Multi-stage images that previously were 1 GB can shrink to under 50 MB with this approach.</p>
+
+          <h3>Running as a Non-Root User</h3>
+          <p>By default, Docker containers run as root. This means a vulnerability in your application could give an attacker root access to the container and potentially the host. The Node.js official image includes a <code>node</code> user; Python images use <code>python</code>. The generated Dockerfile uses <code>USER node</code> after all installation steps that require root privileges. This is a critical security best practice for production deployments and is often required by Kubernetes PodSecurityPolicy and OpenShift Security Context Constraints. Combine with the <a href="/tools/docker-compose-generator.html">Docker Compose Generator</a> to deploy your containerized app.</p>
+
+          <h3>Layer Caching Optimization</h3>
+          <p>The most impactful optimization is separating dependency installation from code copying. Copy only the dependency manifest first (<code>COPY package.json package-lock.json ./</code>), run the install, then copy the rest of the source code (<code>COPY . .</code>). This way, the expensive <code>npm install</code> step is only re-run when <code>package.json</code> changes. The <code>.dockerignore</code> file (similar to <code>.gitignore</code>) prevents <code>node_modules</code>, <code>.git</code>, and other unnecessary files from being sent to the Docker build context, further speeding up builds.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a Dockerfile?</button>
+            <div class="faq-answer">A Dockerfile is a text file containing instructions for building a Docker image. Each instruction creates a layer. Common instructions include FROM (base image), RUN (execute commands), COPY (copy files), EXPOSE (declare ports), and CMD/ENTRYPOINT (default command).</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is a multi-stage build?</button>
+            <div class="faq-answer">Multi-stage builds use multiple FROM statements. Earlier stages compile or build the app; the final stage copies only the resulting artifacts into a minimal runtime image, excluding build tools and development dependencies.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why use Alpine Linux as a base image?</button>
+            <div class="faq-answer">Alpine images are extremely small (~5 MB) compared to Debian (~100-900 MB). They reduce pull times, attack surface, and storage costs. The trade-off is Alpine uses musl libc, which can cause issues with some native modules.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between CMD and ENTRYPOINT?</button>
+            <div class="faq-answer">ENTRYPOINT sets the main executable that always runs. CMD provides default arguments, or a default command if ENTRYPOINT is not set. When both are used, ENTRYPOINT is the executable and CMD provides its default arguments — CMD can be overridden at runtime.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my Dockerfile sent to a server?</button>
+            <div class="faq-answer">No. This generator runs entirely in your browser. No data is sent to any server, logged, or stored anywhere outside your device.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>DevOps</h4>
+        <a href="/tools/nginx-config.html">Nginx Config</a>
+        <a href="/tools/apache-htaccess.html">.htaccess Generator</a>
+        <a href="/tools/docker-compose-generator.html">Docker Compose</a>
+        <a href="/tools/dockerfile-generator.html">Dockerfile Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/ssh-config-generator.html">SSH Config</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'node';
+    var extraInstrs = [];
+    var idCtr = 0;
+
+    function v(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+    function checked(id) { var el = document.getElementById(id); return el ? el.checked : false; }
+
+    function showFields(mode) {
+      ['nodeFields', 'pythonFields', 'goFields'].forEach(function (id) {
+        document.getElementById(id).style.display = 'none';
+      });
+      var map = { node: 'nodeFields', python: 'pythonFields', go: 'goFields' };
+      if (map[mode]) document.getElementById(map[mode]).style.display = '';
+    }
+
+    function addInstrRow(data) {
+      data = data || {};
+      var id = ++idCtr;
+      var instr = { id: id, type: data.type || 'RUN', value: data.value || '' };
+      extraInstrs.push(instr);
+      var list = document.getElementById('instrList');
+      var row = document.createElement('div');
+      row.className = 'instr-row';
+      row.id = 'instr-' + id;
+      var sel = document.createElement('select');
+      ['RUN', 'COPY', 'ENV', 'ARG', 'LABEL', 'EXPOSE', 'VOLUME', 'ADD'].forEach(function (t) {
+        var o = document.createElement('option');
+        o.value = t; o.textContent = t;
+        if (t === instr.type) o.selected = true;
+        sel.appendChild(o);
+      });
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.placeholder = 'instruction value';
+      inp.value = instr.value;
+      var rm = document.createElement('button');
+      rm.className = 'btn btn-sm btn-secondary';
+      rm.textContent = 'Remove';
+      sel.addEventListener('change', function () { instr.type = sel.value; generate(); });
+      inp.addEventListener('input', function () { instr.value = inp.value; generate(); });
+      rm.addEventListener('click', function () {
+        extraInstrs = extraInstrs.filter(function (x) { return x.id !== id; });
+        row.remove();
+        generate();
+      });
+      row.appendChild(sel); row.appendChild(inp); row.appendChild(rm);
+      list.appendChild(row);
+    }
+
+    function generate() {
+      var lines = [];
+      var isMulti = checked('multistage');
+      var base = v('baseImage');
+      var workdir = v('workdir') || '/app';
+      var maintainer = v('maintainer');
+      var userDir = v('userDirective');
+
+      if (currentMode === 'node') {
+        var pkgMgr = v('nodePkgMgr') || 'npm';
+        var port = v('nodePort') || '3000';
+        var buildCmd = v('nodeBuildCmd');
+        var startCmd = v('nodeStartCmd') || 'node server.js';
+        var nonRoot = checked('nodeNonRoot');
+        var prodOnly = checked('nodeProdInstall');
+
+        if (isMulti) {
+          var buildImg = v('buildImage') || ('node:20-alpine');
+          var stageName = v('buildStageName') || 'builder';
+          lines.push('# Build stage');
+          lines.push('FROM ' + (buildImg || base || 'node:20-alpine') + ' AS ' + stageName);
+          lines.push('WORKDIR ' + workdir);
+          lines.push('COPY package*.json ./');
+          lines.push('RUN ' + pkgMgr + ' install');
+          lines.push('COPY . .');
+          if (buildCmd) lines.push('RUN ' + buildCmd);
+          lines.push('');
+          lines.push('# Runtime stage');
+          lines.push('FROM ' + (base || 'node:20-alpine'));
+          if (maintainer) lines.push('LABEL maintainer="' + maintainer + '"');
+          lines.push('WORKDIR ' + workdir);
+          if (nonRoot) lines.push('RUN chown -R node:node ' + workdir);
+          lines.push('COPY package*.json ./');
+          lines.push('RUN ' + pkgMgr + ' install' + (prodOnly ? ' --omit=dev' : ''));
+          lines.push('COPY --from=' + stageName + ' ' + workdir + '/dist ./dist');
+          if (nonRoot) lines.push('USER node');
+          lines.push('EXPOSE ' + port);
+          lines.push('CMD ["' + startCmd.split(' ').join('", "') + '"]');
+        } else {
+          lines.push('FROM ' + (base || 'node:20-alpine'));
+          if (maintainer) lines.push('LABEL maintainer="' + maintainer + '"');
+          lines.push('WORKDIR ' + workdir);
+          lines.push('COPY package*.json ./');
+          lines.push('RUN ' + pkgMgr + ' install' + (prodOnly ? ' --omit=dev' : ''));
+          lines.push('COPY . .');
+          if (buildCmd) lines.push('RUN ' + buildCmd);
+          if (nonRoot) lines.push('USER node');
+          lines.push('EXPOSE ' + port);
+          lines.push('CMD ["' + startCmd.split(' ').join('", "') + '"]');
+        }
+      } else if (currentMode === 'python') {
+        var pyBase = base || 'python:3.12-slim';
+        var reqs = v('pyReqs') || 'requirements.txt';
+        var pyPort = v('pyPort') || '8000';
+        var pyCmd = v('pyCmd') || 'python -m uvicorn main:app --host 0.0.0.0 --port 8000';
+        var useVenv = checked('pyVenv');
+
+        if (isMulti) {
+          var pyBuildImg = v('buildImage') || pyBase;
+          var pyStageName = v('buildStageName') || 'builder';
+          lines.push('# Build stage');
+          lines.push('FROM ' + pyBuildImg + ' AS ' + pyStageName);
+          lines.push('WORKDIR ' + workdir);
+          lines.push('COPY ' + reqs + ' ./');
+          if (useVenv) {
+            lines.push('RUN python -m venv /opt/venv');
+            lines.push('ENV PATH="/opt/venv/bin:$PATH"');
+          }
+          lines.push('RUN pip install --no-cache-dir -r ' + reqs);
+          lines.push('');
+          lines.push('# Runtime stage');
+          lines.push('FROM ' + pyBase);
+          if (maintainer) lines.push('LABEL maintainer="' + maintainer + '"');
+          lines.push('WORKDIR ' + workdir);
+          if (useVenv) {
+            lines.push('COPY --from=' + pyStageName + ' /opt/venv /opt/venv');
+            lines.push('ENV PATH="/opt/venv/bin:$PATH"');
+          }
+          lines.push('COPY . .');
+          if (userDir) lines.push('USER ' + userDir);
+          lines.push('EXPOSE ' + pyPort);
+          lines.push('CMD ["' + pyCmd.split(' ').join('", "') + '"]');
+        } else {
+          lines.push('FROM ' + pyBase);
+          if (maintainer) lines.push('LABEL maintainer="' + maintainer + '"');
+          lines.push('ENV PYTHONDONTWRITEBYTECODE=1 \\');
+          lines.push('    PYTHONUNBUFFERED=1');
+          lines.push('WORKDIR ' + workdir);
+          lines.push('COPY ' + reqs + ' ./');
+          lines.push('RUN pip install --no-cache-dir -r ' + reqs);
+          lines.push('COPY . .');
+          if (userDir) lines.push('USER ' + userDir);
+          lines.push('EXPOSE ' + pyPort);
+          lines.push('CMD ["' + pyCmd.split(' ').join('", "') + '"]');
+        }
+      } else if (currentMode === 'go') {
+        var goMod = v('goModule') || 'github.com/user/myapp';
+        var goPort = v('goPort') || '8080';
+        var goBin = v('goBinary') || 'main';
+        var goBase = base || 'scratch';
+        var goBuildImg = v('buildImage') || 'golang:1.22-alpine';
+        var goStageName = v('buildStageName') || 'builder';
+
+        lines.push('# Build stage');
+        lines.push('FROM ' + goBuildImg + ' AS ' + goStageName);
+        lines.push('WORKDIR /build');
+        lines.push('COPY go.mod go.sum ./');
+        lines.push('RUN go mod download');
+        lines.push('COPY . .');
+        lines.push('RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o ' + goBin + ' .');
+        lines.push('');
+        lines.push('# Runtime stage');
+        lines.push('FROM ' + goBase);
+        if (maintainer) lines.push('LABEL maintainer="' + maintainer + '"');
+        lines.push('COPY --from=' + goStageName + ' /build/' + goBin + ' /' + goBin);
+        if (userDir) lines.push('USER ' + userDir);
+        lines.push('EXPOSE ' + goPort);
+        lines.push('ENTRYPOINT ["/' + goBin + '"]');
+      } else {
+        // Custom
+        lines.push('FROM ' + (base || 'ubuntu:22.04'));
+        if (maintainer) lines.push('LABEL maintainer="' + maintainer + '"');
+        lines.push('WORKDIR ' + workdir);
+        if (userDir) lines.push('USER ' + userDir);
+      }
+
+      // Extra instructions
+      if (extraInstrs.length > 0) {
+        lines.push('');
+        lines.push('# Additional instructions');
+        extraInstrs.forEach(function (instr) {
+          if (instr.value.trim()) lines.push(instr.type + ' ' + instr.value.trim());
+        });
+      }
+
+      var dockerfile = lines.join('\n');
+      document.getElementById('configOutput').textContent = dockerfile;
+
+      var instrCount = lines.filter(function (l) {
+        return /^(FROM|RUN|COPY|ENV|ARG|LABEL|EXPOSE|VOLUME|ADD|USER|WORKDIR|CMD|ENTRYPOINT)/.test(l);
+      }).length;
+
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar valid';
+      sb.textContent = 'Dockerfile — ' + currentMode + ' — ' + instrCount + ' instructions' + (isMulti ? ' — multi-stage' : '');
+      DT.trackTool('dockerfile-generator');
+    }
+
+    var debouncedGenerate = DT.debounce(generate, 200);
+
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        showFields(currentMode);
+        // Set sensible defaults for base image on mode switch
+        var baseEl = document.getElementById('baseImage');
+        var defaults = { node: 'node:20-alpine', python: 'python:3.12-slim', go: 'scratch', custom: 'ubuntu:22.04' };
+        baseEl.placeholder = defaults[currentMode] || '';
+        if (!baseEl.value) baseEl.value = '';
+        generate();
+      });
+    });
+
+    document.querySelectorAll('input[type=text], select').forEach(function (el) {
+      el.addEventListener('input', debouncedGenerate);
+      el.addEventListener('change', debouncedGenerate);
+    });
+    document.querySelectorAll('input[type=checkbox]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        if (el.id === 'multistage') {
+          document.getElementById('multistageSection').style.display = el.checked ? '' : 'none';
+        }
+        generate();
+      });
+    });
+
+    document.getElementById('addInstr').addEventListener('click', function () {
+      addInstrRow({});
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var text = document.getElementById('configOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function () {
+      var text = document.getElementById('configOutput').textContent;
+      if (text) DT.downloadText(text, 'Dockerfile', 'text/plain');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.querySelectorAll('input[type=text]').forEach(function (el) { el.value = ''; });
+      document.querySelectorAll('input[type=checkbox]').forEach(function (el) { el.checked = false; });
+      document.getElementById('multistageSection').style.display = 'none';
+      extraInstrs = [];
+      document.getElementById('instrList').innerHTML = '';
+      generate();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      if (currentMode === 'node') {
+        document.getElementById('baseImage').value = 'node:20-alpine';
+        document.getElementById('workdir').value = '/app';
+        document.getElementById('nodePkgMgr').value = 'npm';
+        document.getElementById('nodePort').value = '3000';
+        document.getElementById('nodeStartCmd').value = 'node server.js';
+        document.getElementById('nodeNonRoot').checked = true;
+        document.getElementById('nodeProdInstall').checked = true;
+        document.getElementById('maintainer').value = 'DevToolbox <hello@thisdevtool.com>';
+      } else if (currentMode === 'python') {
+        document.getElementById('baseImage').value = 'python:3.12-slim';
+        document.getElementById('workdir').value = '/app';
+        document.getElementById('pyReqs').value = 'requirements.txt';
+        document.getElementById('pyPort').value = '8000';
+        document.getElementById('pyCmd').value = 'python -m uvicorn main:app --host 0.0.0.0 --port 8000';
+        document.getElementById('multistage').checked = true;
+        document.getElementById('buildImage').value = 'python:3.12-slim';
+        document.getElementById('multistageSection').style.display = '';
+      } else if (currentMode === 'go') {
+        document.getElementById('goModule').value = 'github.com/myorg/myapp';
+        document.getElementById('goPort').value = '8080';
+        document.getElementById('goBinary').value = 'server';
+        document.getElementById('multistage').checked = true;
+        document.getElementById('multistageSection').style.display = '';
+      }
+      generate();
+    });
+
+    showFields(currentMode);
+    document.getElementById('baseImage').placeholder = 'node:20-alpine';
+    generate();
+  })();
+  </script>
+</body>
+</html>

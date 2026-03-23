@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Systemd Service Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate systemd .service and .timer unit files online. Configure ExecStart, restart policies, environment variables, and more. Free, instant, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/systemd-service-generator.html">
+  <meta property="og:title" content="Systemd Service Generator — DevToolbox">
+  <meta property="og:description" content="Build systemd unit files for services, timers, and mounts. Generate .service and .timer files with restart policies, env vars, and install commands.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/systemd-service-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Systemd Service Generator",
+    "url": "https://thisdevtool.com/tools/systemd-service-generator.html",
+    "description": "Generate systemd unit files (.service, .timer) online. Configure restart policies, environment variables, dependencies, and more. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a systemd service file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A systemd service file is a unit configuration file that tells systemd how to manage a process. It defines the executable to run (ExecStart), the user to run it as, restart behavior, dependencies on other services like networking, and how the service fits into system boot targets. Service files are stored in /etc/systemd/system/ or /lib/systemd/system/."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does Restart=always mean in systemd?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Restart=always tells systemd to restart the service whenever it exits, regardless of whether it exited successfully or crashed. This is the most resilient option for production daemons. Restart=on-failure only restarts on non-zero exit codes. Restart=no (default) never restarts automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I create a systemd timer (cron replacement)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Switch to the Timer tab in this generator. A systemd timer consists of two unit files: a .timer file that defines the schedule and a .service file that defines what to run. The OnCalendar directive accepts expressions like 'daily', 'weekly', or cron-like syntax such as '*-*-* 02:00:00' for daily at 2am. Enable Persistent=true to run missed jobs after a system restart."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I reload systemd after changing a service file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "After editing a service file, run 'sudo systemctl daemon-reload' to reload the systemd configuration. Then use 'sudo systemctl restart myservice.service' to apply the changes. If you added a new service, also run 'sudo systemctl enable myservice.service' to enable it at boot."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is After=network.target in systemd?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "After=network.target tells systemd to start this service only after the network is available. This is important for services that need to bind to a network port or connect to a remote database. For services that need full DNS resolution, use After=network-online.target with Wants=network-online.target instead."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .form-group { display: flex; flex-direction: column; gap: 0.25rem; margin-bottom: 0.6rem; }
+    .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.45rem 0.7rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); font-size: 0.88rem; font-family: inherit; }
+    .form-group textarea { resize: vertical; min-height: 52px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .section-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin: 0.8rem 0 0.35rem; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+    .section-title:first-child { border-top: none; margin-top: 0; padding-top: 0; }
+    .env-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.4rem; align-items: center; margin-bottom: 0.35rem; }
+    .env-row input { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-secondary); color: var(--text); font-size: 0.82rem; }
+    .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 0.2rem 0.4rem; color: var(--text-secondary); }
+    .btn-icon:hover { color: #ef4444; }
+    .preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-bottom: 0.6rem; }
+    .preset-btn { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); font-size: 0.8rem; cursor: pointer; text-align: left; }
+    .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/github-actions-generator.html">GitHub Actions</a>
+        <a href="/tools/env-template-generator.html">.env Builder</a>
+        <a href="/tools/readme-generator.html">README</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Systemd Service Generator</h1>
+          <p class="tool-subtitle">Build systemd unit files for services, timers, and mounts. Get install commands included.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="service">Service</button>
+            <button class="option-chip" data-mode="timer">Timer</button>
+            <button class="option-chip" data-mode="mount">Mount</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span>Configuration</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+
+              <!-- SERVICE form -->
+              <div id="serviceForm" style="max-height:580px;overflow-y:auto;padding-right:4px;">
+                <div class="section-title">Presets</div>
+                <div class="preset-grid">
+                  <button class="preset-btn" data-preset="nodejs">Node.js app</button>
+                  <button class="preset-btn" data-preset="python">Python app</button>
+                  <button class="preset-btn" data-preset="gobinary">Go binary</button>
+                  <button class="preset-btn" data-preset="docker">Docker container</button>
+                </div>
+
+                <div class="section-title">[Unit]</div>
+                <div class="form-group">
+                  <label for="svcDesc">Description</label>
+                  <input type="text" id="svcDesc" placeholder="My Application Service" value="My Application">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="svcAfter">After</label>
+                    <input type="text" id="svcAfter" placeholder="network.target" value="network.target">
+                  </div>
+                  <div class="form-group">
+                    <label for="svcWants">Wants</label>
+                    <input type="text" id="svcWants" placeholder="network-online.target">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="svcRequires">Requires (optional)</label>
+                  <input type="text" id="svcRequires" placeholder="postgresql.service redis.service">
+                </div>
+
+                <div class="section-title">[Service]</div>
+                <div class="form-group">
+                  <label for="svcType">Type</label>
+                  <select id="svcType">
+                    <option value="simple" selected>simple (default — process in foreground)</option>
+                    <option value="forking">forking (daemonizes itself)</option>
+                    <option value="oneshot">oneshot (runs once, like a script)</option>
+                    <option value="notify">notify (sends ready notification)</option>
+                    <option value="exec">exec (tracks exec PID)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="svcExecStart">ExecStart *</label>
+                  <input type="text" id="svcExecStart" placeholder="/usr/bin/node /opt/myapp/server.js" value="/usr/bin/node /opt/myapp/server.js">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="svcWorkDir">WorkingDirectory</label>
+                    <input type="text" id="svcWorkDir" placeholder="/opt/myapp" value="/opt/myapp">
+                  </div>
+                  <div class="form-group">
+                    <label for="svcUser">User</label>
+                    <input type="text" id="svcUser" placeholder="www-data" value="www-data">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="svcGroup">Group</label>
+                    <input type="text" id="svcGroup" placeholder="www-data" value="www-data">
+                  </div>
+                  <div class="form-group">
+                    <label for="svcRestart">Restart</label>
+                    <select id="svcRestart">
+                      <option value="always" selected>always</option>
+                      <option value="on-failure">on-failure</option>
+                      <option value="on-abnormal">on-abnormal</option>
+                      <option value="on-success">on-success</option>
+                      <option value="no">no</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="svcRestartSec">RestartSec (seconds)</label>
+                    <input type="number" id="svcRestartSec" placeholder="5" value="5" min="0">
+                  </div>
+                  <div class="form-group">
+                    <label for="svcStandardOutput">StandardOutput</label>
+                    <select id="svcStandardOutput">
+                      <option value="journal" selected>journal</option>
+                      <option value="syslog">syslog</option>
+                      <option value="null">null</option>
+                      <option value="inherit">inherit</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="svcEnvFile">EnvironmentFile (optional)</label>
+                  <input type="text" id="svcEnvFile" placeholder="/opt/myapp/.env">
+                </div>
+
+                <div class="section-title">Environment Variables</div>
+                <div id="envVarsList"></div>
+                <button class="btn btn-sm btn-secondary" id="addEnvBtn" style="margin-bottom:0.6rem;">+ Add env var</button>
+
+                <div class="section-title">[Install]</div>
+                <div class="form-group">
+                  <label for="svcWantedBy">WantedBy</label>
+                  <select id="svcWantedBy">
+                    <option value="multi-user.target" selected>multi-user.target (most services)</option>
+                    <option value="graphical.target">graphical.target (GUI apps)</option>
+                    <option value="default.target">default.target</option>
+                    <option value="network-online.target">network-online.target</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="svcServiceName">Service filename</label>
+                  <input type="text" id="svcServiceName" placeholder="myapp.service" value="myapp.service">
+                </div>
+              </div>
+
+              <!-- TIMER form -->
+              <div id="timerForm" style="display:none;max-height:580px;overflow-y:auto;padding-right:4px;">
+                <div class="section-title">[Unit] — Timer</div>
+                <div class="form-group">
+                  <label for="tmrDesc">Description</label>
+                  <input type="text" id="tmrDesc" placeholder="Run backup daily" value="Run backup daily">
+                </div>
+                <div class="form-group">
+                  <label for="tmrUnit">Associated .service name</label>
+                  <input type="text" id="tmrUnit" placeholder="backup.service" value="backup.service">
+                </div>
+                <div class="section-title">[Timer]</div>
+                <div class="form-group">
+                  <label for="tmrOnCalendar">OnCalendar (schedule)</label>
+                  <input type="text" id="tmrOnCalendar" placeholder="daily" value="daily">
+                  <span style="font-size:0.75rem;color:var(--text-secondary);">daily, weekly, hourly, *-*-* 02:00:00, Mon..Fri 09:00</span>
+                </div>
+                <div class="form-group">
+                  <label for="tmrOnBootSec">OnBootSec (delay after boot, optional)</label>
+                  <input type="text" id="tmrOnBootSec" placeholder="5min">
+                </div>
+                <div class="form-group">
+                  <label for="tmrAccuracySec">AccuracySec</label>
+                  <input type="text" id="tmrAccuracySec" placeholder="1min" value="1min">
+                </div>
+                <div class="form-group" style="flex-direction:row;align-items:center;gap:0.5rem;">
+                  <input type="checkbox" id="tmrPersistent" style="accent-color:#10b981;width:auto;">
+                  <label for="tmrPersistent" style="margin:0;">Persistent (run missed jobs after reboot)</label>
+                </div>
+                <div class="section-title">[Install]</div>
+                <div class="form-group">
+                  <label for="tmrWantedBy">WantedBy</label>
+                  <select id="tmrWantedBy">
+                    <option value="timers.target" selected>timers.target</option>
+                    <option value="multi-user.target">multi-user.target</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="tmrFilename">Timer filename</label>
+                  <input type="text" id="tmrFilename" placeholder="backup.timer" value="backup.timer">
+                </div>
+              </div>
+
+              <!-- MOUNT form -->
+              <div id="mountForm" style="display:none;max-height:580px;overflow-y:auto;padding-right:4px;">
+                <div class="section-title">[Unit] — Mount</div>
+                <div class="form-group">
+                  <label for="mntDesc">Description</label>
+                  <input type="text" id="mntDesc" placeholder="NFS share mount" value="NFS Share">
+                </div>
+                <div class="section-title">[Mount]</div>
+                <div class="form-group">
+                  <label for="mntWhat">What (source device/path)</label>
+                  <input type="text" id="mntWhat" placeholder="192.168.1.1:/export/share" value="//server/share">
+                </div>
+                <div class="form-group">
+                  <label for="mntWhere">Where (mount point)</label>
+                  <input type="text" id="mntWhere" placeholder="/mnt/data" value="/mnt/data">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="mntType">Type</label>
+                    <input type="text" id="mntType" placeholder="nfs4" value="nfs4">
+                  </div>
+                  <div class="form-group">
+                    <label for="mntOptions">Options</label>
+                    <input type="text" id="mntOptions" placeholder="defaults,_netdev" value="defaults,_netdev">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="mntFilename">Mount unit filename</label>
+                  <input type="text" id="mntFilename" placeholder="mnt-data.mount" value="mnt-data.mount">
+                </div>
+              </div>
+
+              <!-- REFERENCE panel -->
+              <div id="referencePanel" style="display:none;font-size:0.82rem;line-height:1.7;color:var(--text-secondary);">
+                <p><strong style="color:var(--text);">systemd quick reference</strong></p>
+                <p><code>systemctl start NAME</code> — start service<br>
+                <code>systemctl stop NAME</code> — stop service<br>
+                <code>systemctl restart NAME</code> — restart<br>
+                <code>systemctl reload NAME</code> — reload config<br>
+                <code>systemctl enable NAME</code> — enable at boot<br>
+                <code>systemctl disable NAME</code> — disable at boot<br>
+                <code>systemctl status NAME</code> — check status<br>
+                <code>systemctl daemon-reload</code> — reload unit files<br>
+                <code>journalctl -u NAME</code> — view logs<br>
+                <code>journalctl -u NAME -f</code> — follow logs<br>
+                <code>journalctl -u NAME --since today</code> — today's logs</p>
+                <p><strong style="color:var(--text);">Unit file locations:</strong><br>
+                <code>/etc/systemd/system/</code> — admin-defined (higher priority)<br>
+                <code>/lib/systemd/system/</code> — package-installed<br>
+                <code>~/.config/systemd/user/</code> — user-level units</p>
+              </div>
+            </div>
+
+            <div>
+              <div class="pane-label">
+                <span>Generated Unit File</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="unitOutput" style="min-height:380px;white-space:pre;font-size:0.8rem;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Configure your unit file above to generate output.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Systemd Service Generator</h2>
+          <ol>
+            <li><strong>Choose a unit type</strong> — Service (daemon process), Timer (scheduled job), or Mount (filesystem mount).</li>
+            <li><strong>Select a preset</strong> for common runtimes: Node.js app, Python app, Go binary, or Docker container.</li>
+            <li><strong>Fill in the fields</strong> — ExecStart, WorkingDirectory, User, restart policy, and environment variables.</li>
+            <li><strong>Copy or download</strong> the unit file, then save it to <code>/etc/systemd/system/</code> on your Linux server.</li>
+            <li><strong>Activate the service</strong> using the install commands included in the output.</li>
+          </ol>
+
+          <h2>What is Systemd?</h2>
+          <p>Systemd is the init system and service manager used by the majority of modern Linux distributions, including Ubuntu (15.04+), Debian, Fedora, RHEL/CentOS 7+, Arch Linux, and openSUSE. It starts as PID 1 when the system boots and manages all subsequent processes, dependencies, and logging. Systemd replaced older init systems like SysV init and Upstart, offering parallel startup, dependency management, socket activation, and centralized logging via the journal.</p>
+
+          <h3>Service Unit Files</h3>
+          <p>A service unit file has three main sections. The <strong>[Unit]</strong> section defines metadata and ordering dependencies — which targets or services must be running before this one starts. The <strong>[Service]</strong> section defines what to run, how to run it, and what to do when it exits. The <strong>[Install]</strong> section defines which targets "want" this service, determining when it starts during boot. After creating or modifying a unit file, always run <code>systemctl daemon-reload</code> to notify systemd of the change.</p>
+
+          <h3>Restart Policies</h3>
+          <p>The Restart directive controls automatic restart behavior. <code>Restart=always</code> is appropriate for production web servers and APIs — the process restarts regardless of exit code. <code>Restart=on-failure</code> restarts only when the process exits with a non-zero code, making it suitable for workers where a clean exit (code 0) should stop the service. Combine Restart with <code>RestartSec=5</code> to add a delay between restarts and prevent rapid restart loops that could overwhelm the system or external services.</p>
+
+          <h3>Systemd Timers vs. Cron</h3>
+          <p>Systemd timers are the modern alternative to cron jobs on systemd-based Linux systems. They offer several advantages over cron: logs are automatically captured in the journal (viewable with <code>journalctl -u mytimer.service</code>), missed runs can be caught up automatically with <code>Persistent=true</code>, and the timer and service are integrated into the normal systemd dependency system. However, cron is simpler for basic schedules and works across all Unix systems. For new Linux server deployments, timers are generally preferred. See our <a href="/tools/github-actions-generator.html">GitHub Actions Generator</a> for automating CI/CD pipelines.</p>
+
+          <h3>User and Group Settings</h3>
+          <p>Running services as root is a security risk. Always specify a non-privileged User and Group for your service. Create a dedicated system user with <code>useradd --system --no-create-home myapp</code>. Set file ownership with <code>chown -R myapp:myapp /opt/myapp</code>. For services that need to bind to ports below 1024, use <code>AmbientCapabilities=CAP_NET_BIND_SERVICE</code> instead of running as root.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a systemd service file?</button>
+            <div class="faq-answer">A systemd service file is a unit configuration file that tells systemd how to manage a process. It defines the executable to run (ExecStart), the user to run it as, restart behavior, dependencies, and boot targets. Service files live in /etc/systemd/system/ or /lib/systemd/system/.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does Restart=always mean in systemd?</button>
+            <div class="faq-answer">Restart=always tells systemd to restart the service whenever it exits, regardless of whether it exited cleanly or crashed. This is the most resilient option for production daemons. Restart=on-failure only restarts on non-zero exit codes. Restart=no never restarts automatically.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I create a systemd timer (cron replacement)?</button>
+            <div class="faq-answer">Switch to the Timer tab. A systemd timer uses two files: a .timer file for the schedule and a .service file for the command. OnCalendar accepts 'daily', 'weekly', or expressions like '*-*-* 02:00:00'. Set Persistent=true to catch up on missed runs after a reboot.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I reload systemd after changing a service file?</button>
+            <div class="faq-answer">After editing a service file, run 'sudo systemctl daemon-reload' to reload the configuration. Then 'sudo systemctl restart myservice.service' to apply the changes. For new services also run 'sudo systemctl enable myservice.service' to enable it at boot.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is After=network.target in systemd?</button>
+            <div class="faq-answer">After=network.target tells systemd to start this service only after the network is available. For services needing full DNS resolution, use After=network-online.target with Wants=network-online.target instead, as network.target only guarantees the network is configured, not fully online.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CI/CD Tools</h4>
+        <a href="/tools/github-actions-generator.html">GitHub Actions</a>
+        <a href="/tools/systemd-service-generator.html">Systemd Service</a>
+        <a href="/tools/env-template-generator.html">.env Builder</a>
+        <a href="/tools/readme-generator.html">README Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/yaml-json.html">YAML &harr; JSON</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/cron-parser.html">Cron Parser</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'service';
+    var envVars = [];
+
+    function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+    function checked(id) { var el = document.getElementById(id); return el ? el.checked : false; }
+
+    // ── Presets ───────────────────────────────────────────────────────
+    var PRESETS = {
+      nodejs: { desc:'Node.js Application', execStart:'/usr/bin/node /opt/myapp/server.js', workDir:'/opt/myapp', user:'nodejs', group:'nodejs', svcName:'myapp.service', envVars:[{name:'NODE_ENV',value:'production'},{name:'PORT',value:'3000'}] },
+      python: { desc:'Python Application', execStart:'/opt/myapp/venv/bin/python /opt/myapp/app.py', workDir:'/opt/myapp', user:'www-data', group:'www-data', svcName:'myapp.service', envVars:[{name:'PYTHONUNBUFFERED',value:'1'},{name:'PORT',value:'8000'}] },
+      gobinary: { desc:'Go Application', execStart:'/opt/myapp/myapp', workDir:'/opt/myapp', user:'www-data', group:'www-data', svcName:'myapp.service', envVars:[] },
+      docker: { desc:'Docker Container', execStart:'/usr/bin/docker run --rm --name myapp -p 3000:3000 myimage:latest', workDir:'/', user:'root', group:'root', svcName:'myapp.service', envVars:[] }
+    };
+
+    function applyPreset(key) {
+      var p = PRESETS[key];
+      if (!p) return;
+      document.getElementById('svcDesc').value = p.desc;
+      document.getElementById('svcExecStart').value = p.execStart;
+      document.getElementById('svcWorkDir').value = p.workDir;
+      document.getElementById('svcUser').value = p.user;
+      document.getElementById('svcGroup').value = p.group;
+      document.getElementById('svcServiceName').value = p.svcName;
+      envVars = p.envVars.map(function(e){ return {name:e.name, value:e.value}; });
+      renderEnvVars();
+      render();
+    }
+
+    document.querySelectorAll('.preset-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() { applyPreset(btn.getAttribute('data-preset')); });
+    });
+
+    // ── Env vars ──────────────────────────────────────────────────────
+    function renderEnvVars() {
+      var container = document.getElementById('envVarsList');
+      container.innerHTML = '';
+      envVars.forEach(function(e, i) {
+        var row = document.createElement('div');
+        row.className = 'env-row';
+        row.innerHTML = '<input type="text" placeholder="KEY" value="' + e.name + '">' +
+          '<input type="text" placeholder="value" value="' + e.value + '">' +
+          '<button class="btn-icon" title="Remove">\u00d7</button>';
+        row.querySelectorAll('input')[0].addEventListener('input', function() { envVars[i].name = this.value; render(); });
+        row.querySelectorAll('input')[1].addEventListener('input', function() { envVars[i].value = this.value; render(); });
+        row.querySelector('.btn-icon').addEventListener('click', function() { envVars.splice(i,1); renderEnvVars(); render(); });
+        container.appendChild(row);
+      });
+    }
+    document.getElementById('addEnvBtn').addEventListener('click', function() {
+      envVars.push({name:'MY_VAR', value:'value'});
+      renderEnvVars(); render();
+    });
+
+    // ── Build unit file content ───────────────────────────────────────
+    function buildService() {
+      var lines = ['[Unit]', 'Description=' + (val('svcDesc') || 'My Application')];
+      if (val('svcAfter')) lines.push('After=' + val('svcAfter'));
+      if (val('svcWants')) lines.push('Wants=' + val('svcWants'));
+      if (val('svcRequires')) lines.push('Requires=' + val('svcRequires'));
+      lines.push('');
+      lines.push('[Service]');
+      lines.push('Type=' + (val('svcType').split(' ')[0] || 'simple'));
+      if (val('svcExecStart')) lines.push('ExecStart=' + val('svcExecStart'));
+      if (val('svcWorkDir')) lines.push('WorkingDirectory=' + val('svcWorkDir'));
+      if (val('svcUser')) lines.push('User=' + val('svcUser'));
+      if (val('svcGroup')) lines.push('Group=' + val('svcGroup'));
+      lines.push('Restart=' + (val('svcRestart') || 'always'));
+      if (val('svcRestartSec')) lines.push('RestartSec=' + val('svcRestartSec'));
+      lines.push('StandardOutput=' + (val('svcStandardOutput') || 'journal'));
+      lines.push('StandardError=journal');
+      if (val('svcEnvFile')) lines.push('EnvironmentFile=' + val('svcEnvFile'));
+      envVars.forEach(function(e) { if (e.name) lines.push('Environment="' + e.name + '=' + e.value + '"'); });
+      lines.push('');
+      lines.push('[Install]');
+      lines.push('WantedBy=' + (val('svcWantedBy').split(' ')[0] || 'multi-user.target'));
+      lines.push('');
+      var svcName = val('svcServiceName') || 'myapp.service';
+      lines.push('# Install and enable commands:');
+      lines.push('# sudo cp ' + svcName + ' /etc/systemd/system/');
+      lines.push('# sudo systemctl daemon-reload');
+      lines.push('# sudo systemctl enable ' + svcName);
+      lines.push('# sudo systemctl start ' + svcName);
+      lines.push('# sudo systemctl status ' + svcName);
+      return lines.join('\n');
+    }
+
+    function buildTimer() {
+      var timerName = val('tmrFilename') || 'backup.timer';
+      var unitName = val('tmrUnit') || 'backup.service';
+      var lines = ['[Unit]', 'Description=' + (val('tmrDesc') || 'Scheduled Timer'), ''];
+      lines.push('[Timer]');
+      if (val('tmrOnCalendar')) lines.push('OnCalendar=' + val('tmrOnCalendar'));
+      if (val('tmrOnBootSec')) lines.push('OnBootSec=' + val('tmrOnBootSec'));
+      if (val('tmrAccuracySec')) lines.push('AccuracySec=' + val('tmrAccuracySec'));
+      if (checked('tmrPersistent')) lines.push('Persistent=true');
+      lines.push('Unit=' + unitName);
+      lines.push('');
+      lines.push('[Install]');
+      lines.push('WantedBy=' + (val('tmrWantedBy') || 'timers.target'));
+      lines.push('');
+      lines.push('# Install commands:');
+      lines.push('# sudo cp ' + timerName + ' /etc/systemd/system/');
+      lines.push('# sudo cp ' + unitName + ' /etc/systemd/system/');
+      lines.push('# sudo systemctl daemon-reload');
+      lines.push('# sudo systemctl enable --now ' + timerName);
+      lines.push('# sudo systemctl list-timers');
+      return lines.join('\n');
+    }
+
+    function buildMount() {
+      var mntName = val('mntFilename') || 'mnt-data.mount';
+      var lines = ['[Unit]', 'Description=' + (val('mntDesc') || 'Mount'), 'After=network.target', ''];
+      lines.push('[Mount]');
+      if (val('mntWhat')) lines.push('What=' + val('mntWhat'));
+      if (val('mntWhere')) lines.push('Where=' + val('mntWhere'));
+      if (val('mntType')) lines.push('Type=' + val('mntType'));
+      if (val('mntOptions')) lines.push('Options=' + val('mntOptions'));
+      lines.push('');
+      lines.push('[Install]');
+      lines.push('WantedBy=multi-user.target');
+      lines.push('');
+      lines.push('# Note: filename must match the mount path');
+      lines.push('# e.g. /mnt/data -> mnt-data.mount');
+      lines.push('# sudo cp ' + mntName + ' /etc/systemd/system/');
+      lines.push('# sudo systemctl daemon-reload');
+      lines.push('# sudo systemctl enable --now ' + mntName);
+      return lines.join('\n');
+    }
+
+    function render() {
+      var output = document.getElementById('unitOutput');
+      var statusEl = document.getElementById('statusBar');
+      if (currentMode === 'reference') {
+        output.textContent = '';
+        statusEl.className = 'status-bar info';
+        statusEl.textContent = 'Systemd quick reference — see panel on the left.';
+        return;
+      }
+      var content = '';
+      var statusMsg = '';
+      if (currentMode === 'service') {
+        content = buildService();
+        statusMsg = 'systemd service \u2014 Restart=' + (val('svcRestart') || 'always') + ' \u2014 After=' + (val('svcAfter') || 'network.target');
+      } else if (currentMode === 'timer') {
+        content = buildTimer();
+        statusMsg = 'systemd timer \u2014 OnCalendar=' + (val('tmrOnCalendar') || 'daily');
+      } else if (currentMode === 'mount') {
+        content = buildMount();
+        statusMsg = 'systemd mount \u2014 ' + (val('mntWhat') || 'source') + ' \u2192 ' + (val('mntWhere') || 'target');
+      }
+      output.textContent = content;
+      statusEl.className = 'status-bar valid';
+      statusEl.textContent = statusMsg;
+      DT.trackTool('systemd-service-generator');
+    }
+
+    var debouncedRender = DT.debounce(render, 200);
+
+    // ── Option chips ──────────────────────────────────────────────────
+    var forms = { service: 'serviceForm', timer: 'timerForm', mount: 'mountForm', reference: 'referencePanel' };
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        Object.keys(forms).forEach(function(k) {
+          var el = document.getElementById(forms[k]);
+          if (el) el.style.display = (k === currentMode) ? '' : 'none';
+        });
+        render();
+      });
+    });
+
+    // ── Listen on all inputs ──────────────────────────────────────────
+    document.querySelectorAll('input, select').forEach(function(el) {
+      el.addEventListener('input', debouncedRender);
+      el.addEventListener('change', debouncedRender);
+    });
+
+    // ── Copy / Download ───────────────────────────────────────────────
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var text = document.getElementById('unitOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      var text = document.getElementById('unitOutput').textContent;
+      if (!text) return;
+      var fname = currentMode === 'timer' ? (val('tmrFilename') || 'backup.timer') :
+                  currentMode === 'mount' ? (val('mntFilename') || 'mnt-data.mount') :
+                  (val('svcServiceName') || 'myapp.service');
+      DT.downloadText(text, fname, 'text/plain');
+    });
+
+    // ── Clear / Example ───────────────────────────────────────────────
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      document.querySelectorAll('#serviceForm input, #serviceForm select').forEach(function(el){ el.value = ''; });
+      envVars = []; renderEnvVars(); render();
+    });
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      applyPreset('nodejs');
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────
+    applyPreset('nodejs');
+  })();
+  </script>
+</body>
+</html>

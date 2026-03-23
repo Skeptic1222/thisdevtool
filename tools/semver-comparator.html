@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Semantic Version Comparator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Compare, sort, increment, and range-test semantic version numbers. Parse SemVer major/minor/patch/prerelease fields, visualise diffs, and check npm-style ranges. Free, browser-only.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/semver-comparator.html">
+  <meta property="og:title" content="Semantic Version Comparator — DevToolbox">
+  <meta property="og:description" content="Compare, sort, increment and range-check SemVer versions. Visual diff highlighting, npm range support. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/semver-comparator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Semantic Version Comparator",
+    "url": "https://thisdevtool.com/tools/semver-comparator.html",
+    "description": "Compare, sort, increment and range-check SemVer version numbers. Free, browser-only.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Semantic Versioning?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Semantic Versioning (SemVer) is a versioning scheme using three numbers: MAJOR.MINOR.PATCH. Increment MAJOR for breaking changes, MINOR for new backward-compatible features, and PATCH for backward-compatible bug fixes. Optional pre-release (1.0.0-alpha.1) and build metadata (1.0.0+build.1) identifiers can be appended."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the caret (^) range mean in npm?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The caret (^) allows changes that do not modify the left-most non-zero digit. So ^1.2.3 matches >=1.2.3 <2.0.0, ^0.2.3 matches >=0.2.3 <0.3.0, and ^0.0.3 matches only 0.0.3. It is the default range used by npm install."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between ^ and ~ ranges?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The tilde (~) is more restrictive than the caret (^). ~1.2.3 matches >=1.2.3 <1.3.0 (patch-level changes only). ^1.2.3 matches >=1.2.3 <2.0.0 (minor and patch changes). Use ~ when you need tighter control over which patch versions are accepted."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does pre-release version ordering work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Pre-release versions have lower precedence than the associated normal version. So 1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-beta < 1.0.0-rc.1 < 1.0.0. Within pre-release identifiers, numeric fields are compared numerically, alphanumeric fields lexically, and numeric fields always have lower precedence than alphanumeric."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When should I bump the major version?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Bump MAJOR when you make changes that break backward compatibility — removing or renaming public APIs, changing function signatures, altering data formats in incompatible ways, or dropping support for runtimes. If users must update their code to migrate, it is a major bump. New features that are fully backward-compatible go in MINOR; bug fixes go in PATCH."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .sv-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.75rem; }
+    .sv-row label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 0.25rem; }
+    .sv-row input { width: 100%; }
+    .sv-single label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 0.25rem; }
+    .sv-single input, .sv-single textarea { width: 100%; }
+    .sv-single { margin-bottom: 0.75rem; }
+    .parse-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+    .parse-cell { background: var(--surface-2); border-radius: 8px; padding: 0.5rem 0.75rem; text-align: center; }
+    .parse-cell .label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .parse-cell .value { font-size: 1.05rem; font-weight: 700; font-family: var(--font-mono); margin-top: 0.15rem; color: var(--text-primary); }
+    .parse-cell .value.diff { color: var(--accent); }
+    .incr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 0.5rem; }
+    .incr-item { background: var(--surface-2); border-radius: 8px; padding: 0.5rem 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+    .incr-item .type { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); }
+    .incr-item .next { font-family: var(--font-mono); font-weight: 700; font-size: 1rem; color: var(--text-primary); }
+    .incr-item.breaking .type { color: #ef4444; }
+    .incr-item.breaking .next { color: #ef4444; }
+    .range-result { margin-top: 0.5rem; font-size: 1.1rem; font-weight: 700; text-align: center; padding: 0.75rem; border-radius: 8px; }
+    .range-result.satisfies { background: #d1fae5; color: #065f46; }
+    .range-result.fails { background: #fee2e2; color: #991b1b; }
+    [data-theme="dark"] .range-result.satisfies { background: #064e3b; color: #6ee7b7; }
+    [data-theme="dark"] .range-result.fails { background: #450a0a; color: #fca5a5; }
+    .sort-output { font-family: var(--font-mono); font-size: 0.9rem; background: var(--surface-2); border-radius: 8px; padding: 0.75rem 1rem; min-height: 80px; white-space: pre; overflow-x: auto; }
+    .compare-arrow { font-size: 1.8rem; text-align: center; line-height: 1; margin: 0.25rem 0; }
+    @media (max-width: 600px) {
+      .sv-row { grid-template-columns: 1fr; }
+      .incr-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/changelog-generator.html">Changelog</a>
+        <a href="/tools/json-formatter.html">JSON</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Semantic Version Comparator</h1>
+          <p class="tool-subtitle">Compare, sort, increment, and range-test SemVer version numbers with visual diff highlighting.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="compare">Compare</button>
+            <button class="option-chip" data-mode="sort">Sort</button>
+            <button class="option-chip" data-mode="increment">Increment</button>
+            <button class="option-chip" data-mode="range">Range</button>
+          </div>
+
+          <!-- Compare Mode -->
+          <div id="mode-compare">
+            <div class="sv-row">
+              <div>
+                <label for="cmpA">Version A</label>
+                <input type="text" id="cmpA" placeholder="1.9.5">
+              </div>
+              <div>
+                <label for="cmpB">Version B</label>
+                <input type="text" id="cmpB" placeholder="2.1.0">
+              </div>
+            </div>
+            <div id="cmpParse"></div>
+            <div class="btn-group" style="margin-top:0.5rem;">
+              <button class="btn btn-sm btn-secondary" id="cmpExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="cmpClearBtn">Clear</button>
+            </div>
+          </div>
+
+          <!-- Sort Mode -->
+          <div id="mode-sort" style="display:none;">
+            <div class="sv-single">
+              <label for="sortInput">Versions (one per line)</label>
+              <textarea id="sortInput" rows="7" style="font-family:var(--font-mono);font-size:0.9rem;resize:vertical;" placeholder="2.0.0&#10;1.9.5&#10;1.10.0&#10;3.0.0-alpha.1&#10;1.0.0-beta.2"></textarea>
+            </div>
+            <div class="option-chips" style="margin-top:0.25rem;">
+              <button class="option-chip active" id="sortAsc" data-dir="asc">Ascending</button>
+              <button class="option-chip" id="sortDesc" data-dir="desc">Descending</button>
+            </div>
+            <div id="sortOutput" class="sort-output" style="margin-top:0.5rem;"></div>
+            <div class="btn-group" style="margin-top:0.5rem;">
+              <button class="btn btn-sm btn-secondary" id="sortExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-primary" id="sortCopyBtn">Copy</button>
+            </div>
+          </div>
+
+          <!-- Increment Mode -->
+          <div id="mode-increment" style="display:none;">
+            <div class="sv-single">
+              <label for="incrInput">Current Version</label>
+              <input type="text" id="incrInput" placeholder="1.4.2">
+            </div>
+            <div class="sv-single">
+              <label for="incrPre">Pre-release Tag (optional)</label>
+              <input type="text" id="incrPre" placeholder="alpha">
+            </div>
+            <div id="incrGrid" class="incr-grid"></div>
+            <div class="btn-group" style="margin-top:0.5rem;">
+              <button class="btn btn-sm btn-secondary" id="incrExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="incrClearBtn">Clear</button>
+            </div>
+          </div>
+
+          <!-- Range Mode -->
+          <div id="mode-range" style="display:none;">
+            <div class="sv-row">
+              <div>
+                <label for="rangeVer">Version to test</label>
+                <input type="text" id="rangeVer" placeholder="1.5.0">
+              </div>
+              <div>
+                <label for="rangeExpr">Range expression</label>
+                <input type="text" id="rangeExpr" placeholder="^1.2.3">
+              </div>
+            </div>
+            <div id="rangeResult"></div>
+            <div class="sv-single" style="margin-top:0.75rem;">
+              <label>Common range examples</label>
+              <div class="option-chips" style="flex-wrap:wrap;margin-top:0.25rem;">
+                <button class="option-chip range-preset" data-range="^1.2.3">^1.2.3</button>
+                <button class="option-chip range-preset" data-range="~1.2.3">~1.2.3</button>
+                <button class="option-chip range-preset" data-range=">=1.0.0 <2.0.0">&gt;=1.0.0 &lt;2.0.0</button>
+                <button class="option-chip range-preset" data-range="1.x.x">1.x.x</button>
+                <button class="option-chip range-preset" data-range="*">* (any)</button>
+              </div>
+            </div>
+            <div class="btn-group" style="margin-top:0.5rem;">
+              <button class="btn btn-sm btn-secondary" id="rangeExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="rangeClearBtn">Clear</button>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter version numbers above.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the SemVer Comparator</h2>
+          <ol>
+            <li><strong>Compare</strong> — enter two version strings. The tool highlights which part (major, minor, patch, or pre-release) differs and shows the comparison result with an arrow.</li>
+            <li><strong>Sort</strong> — paste a list of versions, one per line. Toggle ascending or descending. Invalid entries are flagged.</li>
+            <li><strong>Increment</strong> — enter a current version and optionally a pre-release tag. The tool generates all valid next versions.</li>
+            <li><strong>Range</strong> — enter a version and a range expression (^1.2.3, ~1.2.3, >=1.0.0 &lt;2.0.0). The tool tells you if the version satisfies the range.</li>
+          </ol>
+
+          <h2>Semantic Versioning Explained</h2>
+          <p>Semantic Versioning (SemVer 2.0.0) is defined at <a href="https://semver.org" rel="noopener noreferrer" target="_blank">semver.org</a>. A version number has the form <code>MAJOR.MINOR.PATCH</code>, optionally followed by a pre-release identifier (<code>-alpha.1</code>) and build metadata (<code>+build.20260322</code>). The specification defines strict rules for when each component is incremented, ensuring that downstream consumers of a library can predict compatibility from the version number alone.</p>
+
+          <h3>Version Comparison Rules</h3>
+          <p>SemVer precedence is determined by comparing each component from left to right as integers. Build metadata is ignored when determining precedence. Pre-release versions have lower precedence than the associated normal version (1.0.0-rc.1 &lt; 1.0.0). When comparing pre-release identifiers, numeric identifiers are compared numerically; alphanumeric identifiers are compared lexically in ASCII sort order; numeric identifiers always have lower precedence than alphanumeric identifiers (a numeric identifier is "smaller" than an alphanumeric one).</p>
+
+          <h3>npm Range Syntax</h3>
+          <p>npm uses a range syntax based on SemVer. The most common operators are:</p>
+          <ul>
+            <li><code>^1.2.3</code> — compatible with 1.2.3, matches &gt;=1.2.3 &lt;2.0.0</li>
+            <li><code>~1.2.3</code> — approximately equivalent, matches &gt;=1.2.3 &lt;1.3.0</li>
+            <li><code>&gt;=1.0.0 &lt;2.0.0</code> — explicit range (space = AND, || = OR)</li>
+            <li><code>1.x</code> or <code>1.*</code> — wildcard minor and patch, same as &gt;=1.0.0 &lt;2.0.0</li>
+            <li><code>*</code> — matches any version</li>
+          </ul>
+          <p>Ranges are used in package.json dependencies to allow automatic patch and minor updates while preventing unexpected major-version breaking changes. When running <code>npm install</code>, npm resolves the highest version in your range that is published on the registry.</p>
+
+          <h3>When to Bump Each Component</h3>
+          <p>MAJOR: Remove or rename a public API, change a function's behaviour incompatibly, or drop support for a platform/runtime that users depend on. MINOR: Add a new function, class, or endpoint that is fully backward-compatible — existing code still works unchanged. PATCH: Fix a bug without changing the public API. Security fixes, performance improvements, and documentation corrections are typically patch-level. If you are unsure, err on the side of a higher increment — it is always safe to over-increment but never safe to under-increment.</p>
+
+          <h3>Pre-release Versions</h3>
+          <p>Pre-release identifiers are added with a hyphen: <code>1.0.0-alpha</code>, <code>1.0.0-alpha.1</code>, <code>1.0.0-0.3.7</code>, <code>1.0.0-rc.1</code>. Identifiers composed entirely of digits are compared numerically; all other identifiers are compared as ASCII strings. A longer set of pre-release identifiers has higher precedence than a shorter set when all preceding identifiers are equal. See the <a href="/tools/changelog-generator.html">CHANGELOG Builder</a> for documenting pre-release notes.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is Semantic Versioning?</button>
+            <div class="faq-answer">Semantic Versioning (SemVer) is a versioning scheme using three numbers: MAJOR.MINOR.PATCH. Increment MAJOR for breaking changes, MINOR for new backward-compatible features, and PATCH for backward-compatible bug fixes. Optional pre-release and build metadata can be appended.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does the caret (^) range mean in npm?</button>
+            <div class="faq-answer">The caret (^) allows changes that do not modify the left-most non-zero digit. So ^1.2.3 matches >=1.2.3 &lt;2.0.0, ^0.2.3 matches >=0.2.3 &lt;0.3.0, and ^0.0.3 matches only 0.0.3. It is the default range used by npm install.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between ^ and ~ ranges?</button>
+            <div class="faq-answer">The tilde (~) is more restrictive than the caret (^). ~1.2.3 matches >=1.2.3 &lt;1.3.0 (patch-level changes only). ^1.2.3 matches >=1.2.3 &lt;2.0.0 (minor and patch changes). Use ~ when you need tighter control over which patch versions are accepted.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How does pre-release version ordering work?</button>
+            <div class="faq-answer">Pre-release versions have lower precedence than the associated normal version. So 1.0.0-alpha &lt; 1.0.0-alpha.1 &lt; 1.0.0-beta &lt; 1.0.0-rc.1 &lt; 1.0.0. Within pre-release identifiers, numeric fields are compared numerically, alphanumeric fields lexically.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">When should I bump the major version?</button>
+            <div class="faq-answer">Bump MAJOR when you make changes that break backward compatibility — removing or renaming public APIs, changing function signatures, altering data formats in incompatible ways, or dropping support for runtimes. If users must update their code to migrate, it is a major bump.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Version Tools</h4>
+        <a href="/tools/semver-comparator.html">SemVer Comparator</a>
+        <a href="/tools/changelog-generator.html">CHANGELOG Builder</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'compare';
+    var sortDir = 'asc';
+
+    // --- SemVer parser ---
+    function parseSemVer(v) {
+      v = (v || '').trim();
+      // Strip leading 'v'
+      if (v[0] === 'v' || v[0] === 'V') v = v.slice(1);
+      var m = v.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+([0-9A-Za-z.-]+))?$/);
+      if (!m) return null;
+      return {
+        raw: v,
+        major: parseInt(m[1], 10),
+        minor: parseInt(m[2], 10),
+        patch: parseInt(m[3], 10),
+        prerelease: m[4] || '',
+        build: m[5] || ''
+      };
+    }
+
+    function comparePrerelease(a, b) {
+      if (!a && !b) return 0;
+      if (!a) return 1;  // no pre-release > has pre-release
+      if (!b) return -1;
+      var partsA = a.split('.');
+      var partsB = b.split('.');
+      var len = Math.max(partsA.length, partsB.length);
+      for (var i = 0; i < len; i++) {
+        if (partsA[i] === undefined) return -1;
+        if (partsB[i] === undefined) return 1;
+        var numA = parseInt(partsA[i], 10);
+        var numB = parseInt(partsB[i], 10);
+        var aIsNum = !isNaN(numA) && String(numA) === partsA[i];
+        var bIsNum = !isNaN(numB) && String(numB) === partsB[i];
+        if (aIsNum && bIsNum) {
+          if (numA !== numB) return numA < numB ? -1 : 1;
+        } else if (aIsNum) {
+          return -1; // numeric < alphanumeric
+        } else if (bIsNum) {
+          return 1;
+        } else {
+          if (partsA[i] < partsB[i]) return -1;
+          if (partsA[i] > partsB[i]) return 1;
+        }
+      }
+      return 0;
+    }
+
+    function compareSemVer(a, b) {
+      if (a.major !== b.major) return a.major < b.major ? -1 : 1;
+      if (a.minor !== b.minor) return a.minor < b.minor ? -1 : 1;
+      if (a.patch !== b.patch) return a.patch < b.patch ? -1 : 1;
+      return comparePrerelease(a.prerelease, b.prerelease);
+    }
+
+    // --- Range checker ---
+    function satisfiesRange(ver, rangeStr) {
+      rangeStr = rangeStr.trim();
+      if (!rangeStr || rangeStr === '*') return true;
+      // Handle || (OR)
+      if (rangeStr.indexOf('||') !== -1) {
+        return rangeStr.split('||').some(function (r) { return satisfiesRange(ver, r.trim()); });
+      }
+      // Handle space-separated (AND)
+      var parts = rangeStr.split(/\s+/).filter(Boolean);
+      if (parts.length > 1) {
+        return parts.every(function (p) { return satisfiesRange(ver, p); });
+      }
+      var r = rangeStr;
+      // Caret
+      if (r[0] === '^') {
+        var base = parseSemVer(r.slice(1));
+        if (!base) return false;
+        var low = compareSemVer(ver, base);
+        if (low < 0) return false;
+        // Upper bound: left-most non-zero
+        if (base.major > 0) return ver.major === base.major;
+        if (base.minor > 0) return ver.major === 0 && ver.minor === base.minor;
+        return ver.major === 0 && ver.minor === 0 && ver.patch === base.patch;
+      }
+      // Tilde
+      if (r[0] === '~') {
+        var base2 = parseSemVer(r.slice(1));
+        if (!base2) return false;
+        if (compareSemVer(ver, base2) < 0) return false;
+        return ver.major === base2.major && ver.minor === base2.minor;
+      }
+      // Wildcard x
+      var xMatch = r.match(/^(\d+)(?:\.(\d+|[xX*]))?(?:\.[xX*])?$/);
+      if (xMatch) {
+        if (ver.major !== parseInt(xMatch[1], 10)) return false;
+        if (xMatch[2] && xMatch[2] !== 'x' && xMatch[2] !== 'X' && xMatch[2] !== '*') {
+          if (ver.minor !== parseInt(xMatch[2], 10)) return false;
+        }
+        return true;
+      }
+      // Operators: >=, <=, >, <, =
+      var opMatch = r.match(/^(>=|<=|>|<|=)(.+)$/);
+      if (opMatch) {
+        var op = opMatch[1], rVer = parseSemVer(opMatch[2]);
+        if (!rVer) return false;
+        var cmp = compareSemVer(ver, rVer);
+        if (op === '>=') return cmp >= 0;
+        if (op === '<=') return cmp <= 0;
+        if (op === '>') return cmp > 0;
+        if (op === '<') return cmp < 0;
+        if (op === '=') return cmp === 0;
+      }
+      // Exact
+      var exact = parseSemVer(r);
+      if (exact) return compareSemVer(ver, exact) === 0;
+      return false;
+    }
+
+    // --- Compare mode ---
+    function renderCompare() {
+      var vA = parseSemVer(document.getElementById('cmpA').value);
+      var vB = parseSemVer(document.getElementById('cmpB').value);
+      var container = document.getElementById('cmpParse');
+      var sb = document.getElementById('statusBar');
+
+      if (!vA && !vB) {
+        container.innerHTML = '';
+        sb.className = 'status-bar info';
+        sb.textContent = 'Enter two version numbers to compare.';
+        return;
+      }
+      if (!vA || !vB) {
+        var which = !vA ? 'Version A' : 'Version B';
+        container.innerHTML = '<div class="parse-grid">' + renderParseCell('Error', which + ' is invalid', false) + '</div>';
+        sb.className = 'status-bar invalid';
+        sb.textContent = which + ' is not a valid SemVer string.';
+        return;
+      }
+
+      var cmp = compareSemVer(vA, vB);
+      var fields = ['major', 'minor', 'patch', 'prerelease', 'build'];
+      var html = '<div class="parse-grid">';
+      var firstDiff = null;
+      fields.forEach(function (f) {
+        var valA = String(vA[f]);
+        var valB = String(vB[f]);
+        var diff = valA !== valB;
+        if (diff && !firstDiff) firstDiff = f;
+        html += '<div class="parse-cell" style="grid-column:span 1;">';
+        html += '<div class="label">' + f + '</div>';
+        html += '<div class="value' + (diff ? ' diff' : '') + '">' + (valA || '—') + '</div>';
+        html += '<div style="font-size:0.65rem;color:var(--text-secondary);margin:2px 0;">vs</div>';
+        html += '<div class="value' + (diff ? ' diff' : '') + '">' + (valB || '—') + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '<div class="compare-arrow">' +
+        (cmp < 0 ? '<span style="color:#10b981">' + vA.raw + '</span> &lt; <span style="color:#ef4444">' + vB.raw + '</span>' :
+         cmp > 0 ? '<span style="color:#10b981">' + vA.raw + '</span> &gt; <span style="color:#ef4444">' + vB.raw + '</span>' :
+         '<span style="color:#10b981">' + vA.raw + ' = ' + vB.raw + '</span>') + '</div>';
+      container.innerHTML = html;
+
+      var rel = cmp < 0 ? 'older than' : cmp > 0 ? 'newer than' : 'equal to';
+      var detail = firstDiff ? ' — ' + firstDiff + ' version differs' : '';
+      sb.className = 'status-bar ' + (cmp !== 0 ? 'valid' : 'info');
+      sb.textContent = vA.raw + ' is ' + rel + ' ' + vB.raw + detail;
+    }
+
+    function renderParseCell(label, val, diff) {
+      return '<div class="parse-cell"><div class="label">' + label + '</div><div class="value' + (diff ? ' diff' : '') + '">' + val + '</div></div>';
+    }
+
+    // --- Sort mode ---
+    function renderSort() {
+      var raw = document.getElementById('sortInput').value;
+      var lines = raw.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+      var valid = [], invalid = [];
+      lines.forEach(function (l) {
+        if (parseSemVer(l)) valid.push(l);
+        else invalid.push(l);
+      });
+      valid.sort(function (a, b) {
+        var cmp = compareSemVer(parseSemVer(a), parseSemVer(b));
+        return sortDir === 'asc' ? cmp : -cmp;
+      });
+      var out = document.getElementById('sortOutput');
+      out.textContent = valid.join('\n') + (invalid.length ? '\n\n# Invalid (skipped):\n' + invalid.join('\n') : '');
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar ' + (invalid.length ? 'invalid' : 'valid');
+      sb.textContent = valid.length + ' versions sorted ' + sortDir +
+        (invalid.length ? ' — ' + invalid.length + ' invalid skipped' : '');
+    }
+
+    // --- Increment mode ---
+    function renderIncrement() {
+      var raw = document.getElementById('incrInput').value.trim();
+      var pre = document.getElementById('incrPre').value.trim();
+      var v = parseSemVer(raw);
+      var grid = document.getElementById('incrGrid');
+      var sb = document.getElementById('statusBar');
+      if (!raw) { grid.innerHTML = ''; sb.className = 'status-bar info'; sb.textContent = 'Enter a version to increment.'; return; }
+      if (!v) { grid.innerHTML = ''; sb.className = 'status-bar invalid'; sb.textContent = 'Not a valid SemVer string.'; return; }
+
+      var increments = [
+        { label: 'Major', next: (v.major + 1) + '.0.0', cls: 'breaking' },
+        { label: 'Minor', next: v.major + '.' + (v.minor + 1) + '.0', cls: '' },
+        { label: 'Patch', next: v.major + '.' + v.minor + '.' + (v.patch + 1), cls: '' },
+        { label: 'Pre-major', next: (v.major + 1) + '.0.0-' + (pre || 'alpha') + '.0', cls: 'breaking' },
+        { label: 'Pre-minor', next: v.major + '.' + (v.minor + 1) + '.0-' + (pre || 'alpha') + '.0', cls: '' },
+        { label: 'Pre-patch', next: v.major + '.' + v.minor + '.' + (v.patch + 1) + '-' + (pre || 'alpha') + '.0', cls: '' }
+      ];
+      var html = '';
+      increments.forEach(function (inc) {
+        html += '<div class="incr-item ' + inc.cls + '">' +
+          '<span class="type">' + inc.label + '</span>' +
+          '<span class="next">' + inc.next + '</span></div>';
+      });
+      grid.innerHTML = html;
+      sb.className = 'status-bar valid';
+      sb.textContent = 'v' + v.raw + ' — next major: ' + increments[0].next + ', next minor: ' + increments[1].next + ', next patch: ' + increments[2].next;
+    }
+
+    // --- Range mode ---
+    function renderRange() {
+      var rawVer = document.getElementById('rangeVer').value.trim();
+      var rangeStr = document.getElementById('rangeExpr').value.trim();
+      var result = document.getElementById('rangeResult');
+      var sb = document.getElementById('statusBar');
+      if (!rawVer || !rangeStr) {
+        result.innerHTML = '';
+        sb.className = 'status-bar info';
+        sb.textContent = 'Enter a version and a range expression.';
+        return;
+      }
+      var v = parseSemVer(rawVer);
+      if (!v) {
+        result.innerHTML = '<div class="range-result fails">Invalid version: ' + rawVer + '</div>';
+        sb.className = 'status-bar invalid';
+        sb.textContent = 'Not a valid SemVer string.';
+        return;
+      }
+      var ok = satisfiesRange(v, rangeStr);
+      result.innerHTML = '<div class="range-result ' + (ok ? 'satisfies' : 'fails') + '">' +
+        (ok ? '✓ ' + rawVer + ' satisfies ' + rangeStr :
+              '✗ ' + rawVer + ' does NOT satisfy ' + rangeStr) + '</div>';
+      sb.className = 'status-bar ' + (ok ? 'valid' : 'invalid');
+      sb.textContent = ok ? rawVer + ' is within range ' + rangeStr : rawVer + ' is outside range ' + rangeStr;
+    }
+
+    var processDebounced = DT.debounce(function () {
+      if (currentMode === 'compare') renderCompare();
+      else if (currentMode === 'sort') renderSort();
+      else if (currentMode === 'increment') renderIncrement();
+      else if (currentMode === 'range') renderRange();
+      DT.trackTool('semver-comparator');
+    }, 150);
+
+    // Mode chips
+    document.querySelectorAll('.option-chip[data-mode]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        ['compare', 'sort', 'increment', 'range'].forEach(function (m) {
+          document.getElementById('mode-' + m).style.display = m === currentMode ? '' : 'none';
+        });
+        processDebounced();
+      });
+    });
+
+    // Sort dir chips
+    document.querySelectorAll('.option-chip[data-dir]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip[data-dir]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        sortDir = chip.getAttribute('data-dir');
+        renderSort();
+      });
+    });
+
+    // Inputs
+    ['cmpA', 'cmpB'].forEach(function (id) { document.getElementById(id).addEventListener('input', processDebounced); });
+    document.getElementById('sortInput').addEventListener('input', processDebounced);
+    ['incrInput', 'incrPre'].forEach(function (id) { document.getElementById(id).addEventListener('input', processDebounced); });
+    ['rangeVer', 'rangeExpr'].forEach(function (id) { document.getElementById(id).addEventListener('input', processDebounced); });
+
+    // Range presets
+    document.querySelectorAll('.range-preset').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.getElementById('rangeExpr').value = btn.getAttribute('data-range');
+        renderRange();
+      });
+    });
+
+    // Examples
+    document.getElementById('cmpExampleBtn').addEventListener('click', function () {
+      document.getElementById('cmpA').value = '1.9.5';
+      document.getElementById('cmpB').value = '2.1.0';
+      renderCompare();
+    });
+    document.getElementById('cmpClearBtn').addEventListener('click', function () {
+      document.getElementById('cmpA').value = '';
+      document.getElementById('cmpB').value = '';
+      renderCompare();
+    });
+    document.getElementById('sortExampleBtn').addEventListener('click', function () {
+      document.getElementById('sortInput').value = '2.0.0\n1.9.5\n1.10.0\n3.0.0-alpha.1\n1.0.0-beta.2\n10.0.0\n2.1.0-rc.1';
+      renderSort();
+    });
+    document.getElementById('sortCopyBtn').addEventListener('click', function () {
+      var text = document.getElementById('sortOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+    document.getElementById('incrExampleBtn').addEventListener('click', function () {
+      document.getElementById('incrInput').value = '1.4.2';
+      document.getElementById('incrPre').value = 'beta';
+      renderIncrement();
+    });
+    document.getElementById('incrClearBtn').addEventListener('click', function () {
+      document.getElementById('incrInput').value = '';
+      document.getElementById('incrPre').value = '';
+      renderIncrement();
+    });
+    document.getElementById('rangeExampleBtn').addEventListener('click', function () {
+      document.getElementById('rangeVer').value = '1.5.3';
+      document.getElementById('rangeExpr').value = '^1.2.3';
+      renderRange();
+    });
+    document.getElementById('rangeClearBtn').addEventListener('click', function () {
+      document.getElementById('rangeVer').value = '';
+      document.getElementById('rangeExpr').value = '';
+      renderRange();
+    });
+
+    renderCompare();
+  })();
+  </script>
+</body>
+</html>

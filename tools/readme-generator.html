@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>README.md Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate professional README.md files for GitHub projects. Choose sections, add badges, preview rendered markdown, and download instantly. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/readme-generator.html">
+  <meta property="og:title" content="README.md Generator — DevToolbox">
+  <meta property="og:description" content="Build README.md files for web apps, CLI tools, libraries, and APIs. Live markdown preview, badge builder, and section chooser. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/readme-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "README.md Generator",
+    "url": "https://thisdevtool.com/tools/readme-generator.html",
+    "description": "Generate professional README.md files for GitHub projects with sections, badges, and live markdown preview. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What should a good README include?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A good README should include: project title and description, badges showing build status and version, a features list, installation instructions, usage examples with code blocks, API documentation if applicable, contributing guidelines, and a license section. For libraries, include a quick-start example prominently. The goal is to answer 'what does it do?' and 'how do I use it?' within the first screen."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are README badges and how do I add them?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Badges are small SVG images that show real-time project metadata like build status, test coverage, npm version, and license. Services like Shields.io generate badges from a URL pattern. For example, a npm badge is: [![npm version](https://img.shields.io/npm/v/your-package)](https://npmjs.com/package/your-package). This generator creates badge markdown automatically."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I make a table of contents in a README?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On GitHub, you can create a table of contents manually using anchor links. Each heading automatically gets an anchor based on its text: a heading '## Installation' gets the anchor #installation. Create a TOC with links like [Installation](#installation). GitHub also automatically generates a floating TOC button for READMEs, making manual TOC sections less necessary for most projects."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Should I use .md or .markdown for my README?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use README.md. Both .md and .markdown extensions work for Markdown files, but .md is the universal convention for GitHub, GitLab, npm, and virtually all version control platforms. GitHub specifically looks for README.md (case-insensitive) to display as the repository landing page. The .markdown extension is less recognized by some tools."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my project data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This README generator runs entirely in your browser. No project names, descriptions, or code is sent to any server. All markdown generation and preview rendering happens locally using JavaScript. Your data never leaves your machine."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .readme-layout { display: grid; grid-template-columns: 260px 1fr; gap: 0.75rem; }
+    @media (max-width: 700px) { .readme-layout { grid-template-columns: 1fr; } }
+    .section-panel { border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; background: var(--bg-secondary); }
+    .section-panel h4 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); margin: 0 0 0.5rem; }
+    .section-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+    .section-item:last-child { border-bottom: none; }
+    .section-item input[type=checkbox] { accent-color: #10b981; }
+    .section-item label { font-size: 0.85rem; cursor: pointer; flex: 1; }
+    .section-item .drag-handle { color: var(--text-secondary); font-size: 0.9rem; cursor: grab; }
+    .form-group { display: flex; flex-direction: column; gap: 0.2rem; margin-bottom: 0.55rem; }
+    .form-group label { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.4rem 0.65rem; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-secondary); color: var(--text); font-size: 0.87rem; font-family: inherit; }
+    .form-group textarea { resize: vertical; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+    .badge-item { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.35rem; font-size: 0.82rem; }
+    .badge-item input[type=checkbox] { accent-color: #10b981; }
+    .badge-item input[type=text] { flex: 1; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-secondary); color: var(--text); font-size: 0.8rem; }
+    .preview-panel { border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.7; overflow: auto; min-height: 300px; }
+    .preview-panel h1, .preview-panel h2, .preview-panel h3 { border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; margin: 1.2rem 0 0.6rem; }
+    .preview-panel code { background: var(--bg-secondary); padding: 0.1rem 0.4rem; border-radius: 3px; font-family: monospace; font-size: 0.88em; }
+    .preview-panel pre { background: var(--bg-secondary); padding: 0.8rem; border-radius: 6px; overflow: auto; }
+    .preview-panel pre code { background: none; padding: 0; }
+    .preview-panel img { max-height: 20px; display: inline-block; }
+    .tab-bar { display: flex; gap: 0.25rem; margin-bottom: 0.5rem; }
+    .tab-btn { padding: 0.35rem 0.75rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--bg-secondary); color: var(--text-secondary); font-size: 0.82rem; cursor: pointer; border-bottom: none; }
+    .tab-btn.active { background: var(--bg); color: var(--accent); font-weight: 600; border-bottom: 1px solid var(--bg); margin-bottom: -1px; }
+    .section-sub-title { font-size: 0.75rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.04em; margin: 0.7rem 0 0.3rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/github-actions-generator.html">GitHub Actions</a>
+        <a href="/tools/license-picker.html">Licenses</a>
+        <a href="/tools/env-template-generator.html">.env Builder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="main-content" style="max-width:1200px;margin:0 auto;padding:0 1rem;">
+      <div class="tool-card-page">
+        <h1>README.md Generator</h1>
+        <p class="tool-subtitle">Choose your template, fill in the details, and get a professional README with live preview.</p>
+
+        <div class="option-chips">
+          <button class="option-chip active" data-template="webapp">Web App</button>
+          <button class="option-chip" data-template="cli">CLI Tool</button>
+          <button class="option-chip" data-template="library">Library/Package</button>
+          <button class="option-chip" data-template="api">API</button>
+          <button class="option-chip" data-template="minimal">Minimal</button>
+        </div>
+
+        <div class="readme-layout" style="margin-top:0.75rem;">
+          <!-- Left: Sections + Form -->
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div class="section-panel">
+              <h4>Sections</h4>
+              <div id="sectionList"></div>
+            </div>
+            <div class="section-panel">
+              <h4>Project Details</h4>
+              <div class="form-group">
+                <label>Project Name</label>
+                <input type="text" id="projName" placeholder="my-awesome-project" value="my-awesome-project">
+              </div>
+              <div class="form-group">
+                <label>GitHub username/org</label>
+                <input type="text" id="ghUser" placeholder="username" value="username">
+              </div>
+              <div class="form-group">
+                <label>Short description</label>
+                <input type="text" id="projDesc" placeholder="A tool that does X, Y, and Z." value="A tool that does X, Y, and Z.">
+              </div>
+              <div class="form-group">
+                <label>License</label>
+                <select id="projLicense">
+                  <option value="MIT">MIT</option>
+                  <option value="Apache-2.0">Apache 2.0</option>
+                  <option value="GPL-3.0">GPL 3.0</option>
+                  <option value="BSD-3-Clause">BSD 3-Clause</option>
+                  <option value="ISC">ISC</option>
+                  <option value="Unlicense">Unlicense</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>npm package name (optional)</label>
+                <input type="text" id="npmPkg" placeholder="my-package">
+              </div>
+            </div>
+
+            <div class="section-panel">
+              <h4>Badges</h4>
+              <div class="badge-item"><input type="checkbox" id="bdgNpm" checked><label for="bdgNpm">npm version</label></div>
+              <div class="badge-item"><input type="checkbox" id="bdgBuild" checked><label for="bdgBuild">Build status (CI)</label></div>
+              <div class="badge-item"><input type="checkbox" id="bdgLicense" checked><label for="bdgLicense">License</label></div>
+              <div class="badge-item"><input type="checkbox" id="bdgCoverage"><label for="bdgCoverage">Test coverage</label></div>
+              <div class="badge-item"><input type="checkbox" id="bdgIssues"><label for="bdgIssues">Open issues</label></div>
+              <div class="badge-item"><input type="checkbox" id="bdgStars"><label for="bdgStars">GitHub stars</label></div>
+            </div>
+
+            <div class="section-panel">
+              <h4>Content</h4>
+              <div class="form-group">
+                <label>Features (one per line)</label>
+                <textarea id="features" rows="4" placeholder="Fast and lightweight&#10;Zero dependencies&#10;TypeScript support&#10;Fully tested"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Installation command</label>
+                <input type="text" id="installCmd" placeholder="npm install my-package">
+              </div>
+              <div class="form-group">
+                <label>Usage example (code)</label>
+                <textarea id="usageCode" rows="4" placeholder="import { myFunc } from 'my-package';&#10;&#10;const result = myFunc('hello');&#10;console.log(result);"></textarea>
+              </div>
+              <div class="form-group">
+                <label>Contributing notes</label>
+                <textarea id="contributing" rows="3" placeholder="PRs are welcome! Please open an issue first to discuss what you'd like to change."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Output tabs -->
+          <div>
+            <div class="tab-bar">
+              <button class="tab-btn active" data-tab="preview">Preview</button>
+              <button class="tab-btn" data-tab="markdown">Markdown</button>
+            </div>
+            <div id="previewTab" class="preview-panel"></div>
+            <div id="markdownTab" style="display:none;">
+              <div class="code-output" id="markdownOutput" style="white-space:pre;font-size:0.78rem;min-height:400px;"></div>
+            </div>
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+              <button class="btn btn-primary" id="copyBtn">Copy Markdown</button>
+              <button class="btn btn-secondary" id="downloadBtn">Download README.md</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+          Fill in the project details to generate your README.
+        </div>
+      </div>
+
+      <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+      <div class="content-section">
+        <h2>How to Use the README Generator</h2>
+        <ol>
+          <li><strong>Choose a template</strong> — Web App, CLI Tool, Library/Package, API, or Minimal to pre-select the right sections.</li>
+          <li><strong>Toggle sections</strong> — check or uncheck sections in the left panel to include or exclude them.</li>
+          <li><strong>Fill in project details</strong> — name, GitHub username, description, license, and npm package name for badge generation.</li>
+          <li><strong>Add content</strong> — features list, installation command, usage example, and contributing notes.</li>
+          <li><strong>Preview</strong> — see the rendered markdown in the Preview tab, or switch to the Markdown tab to see the raw text.</li>
+          <li><strong>Copy or download</strong> the finished README.md and commit it to your repository root.</li>
+        </ol>
+
+        <h2>What Makes a Great README?</h2>
+        <p>A README is the front door of your project. It is often the first thing a potential user, contributor, or employer sees. A great README answers three questions immediately: what does this project do, why should I care, and how do I get started? According to GitHub's own research, projects with detailed READMEs receive significantly more stars, forks, and contributions than projects without them.</p>
+
+        <h3>The Essential Sections</h3>
+        <p>Every project README needs at minimum: a clear title and one-sentence description, installation instructions, and a working usage example. For open source projects, add a contributing guide and license. For APIs and libraries, a brief API reference or link to full documentation is essential. For CLI tools, show the output of <code>--help</code> and some example commands.</p>
+
+        <h3>Markdown Tips for READMEs</h3>
+        <p>GitHub renders Markdown with GitHub Flavored Markdown (GFM), which adds several features beyond standard Markdown. Code blocks with language identifiers get syntax highlighting: <code>```javascript</code> renders colored JavaScript. Tables are supported. Task lists using <code>- [ ]</code> render as interactive checkboxes in issues and pull requests. Emoji shortcodes like <code>:rocket:</code> render as emoji. HTML is also supported for cases where Markdown syntax is not sufficient, like centering images or adding custom spacing.</p>
+
+        <h3>Shields.io Badges</h3>
+        <p>Badges from Shields.io provide at-a-glance project health indicators. The npm version badge shows the latest published version and links directly to the package page. The CI badge from GitHub Actions shows whether the latest build passed or failed. A license badge shows the license type and links to the license file. Coverage badges from Codecov or Coveralls show the percentage of code covered by tests. While badges add visual appeal, prioritize substance over badge count — a README with five badges and no usage example is worse than one with no badges and a clear example.</p>
+
+        <h3>README Templates for Different Project Types</h3>
+        <p>A web application README should lead with a screenshot or demo GIF, since visual projects benefit most from showing rather than telling. A CLI tool README should show the help output and several concrete command examples. A library README should open with a minimal working code snippet — users want to know immediately what the API looks like. An API documentation README should list endpoints, authentication methods, and include a curl example. For all types, keep the installation section as short as possible. Use the <a href="/tools/license-picker.html">License Picker</a> to choose the right license for your project.</p>
+      </div>
+
+      <div class="content-section faq-section">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-item">
+          <button class="faq-question">What should a good README include?</button>
+          <div class="faq-answer">A good README should include: project title and description, badges showing build status and version, a features list, installation instructions, usage examples with code blocks, API documentation if applicable, contributing guidelines, and a license section. The goal is to answer 'what does it do?' and 'how do I use it?' within the first screen.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">What are README badges and how do I add them?</button>
+          <div class="faq-answer">Badges are small SVG images showing real-time metadata like build status, npm version, and license. Shields.io generates badges from URL patterns. This generator creates the badge markdown automatically based on your project name and GitHub username.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">How do I make a table of contents in a README?</button>
+          <div class="faq-answer">Create anchor links manually: each heading gets an anchor based on its text. '## Installation' gets #installation. Create a TOC with [Installation](#installation). GitHub also auto-generates a floating TOC button for READMEs, so manual TOC sections are often unnecessary.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Should I use .md or .markdown for my README?</button>
+          <div class="faq-answer">Use README.md. Both extensions work, but .md is the universal convention for GitHub, GitLab, npm, and all version control platforms. GitHub specifically looks for README.md to display as the repository landing page.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">Is my project data sent to a server?</button>
+          <div class="faq-answer">No. This README generator runs entirely in your browser. No project names, descriptions, or code is sent to any server. All markdown generation and preview rendering happens locally using JavaScript.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-grid" style="max-width:1200px;margin:0 auto;">
+      <div></div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>CI/CD Tools</h4>
+        <a href="/tools/github-actions-generator.html">GitHub Actions</a>
+        <a href="/tools/systemd-service-generator.html">Systemd Service</a>
+        <a href="/tools/env-template-generator.html">.env Builder</a>
+        <a href="/tools/license-picker.html">License Picker</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer Tools</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/diff-checker.html">Diff Checker</a>
+        <a href="/tools/slug-generator.html">Slug Generator</a>
+        <a href="/tools/markdown-preview.html">Markdown Preview</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    // ── Section definitions ───────────────────────────────────────────
+    var ALL_SECTIONS = [
+      { id: 'title',         label: 'Title & Badges',      defaultOn: true },
+      { id: 'description',   label: 'Description',         defaultOn: true },
+      { id: 'features',      label: 'Features',            defaultOn: true },
+      { id: 'demo',          label: 'Demo / Screenshot',   defaultOn: false },
+      { id: 'installation',  label: 'Installation',        defaultOn: true },
+      { id: 'usage',         label: 'Usage',               defaultOn: true },
+      { id: 'api',           label: 'API Reference',       defaultOn: false },
+      { id: 'configuration', label: 'Configuration',       defaultOn: false },
+      { id: 'contributing',  label: 'Contributing',        defaultOn: true },
+      { id: 'license',       label: 'License',             defaultOn: true }
+    ];
+
+    var TEMPLATES = {
+      webapp:  { on: ['title','description','features','demo','installation','usage','contributing','license'] },
+      cli:     { on: ['title','description','features','installation','usage','contributing','license'] },
+      library: { on: ['title','description','features','installation','usage','api','contributing','license'] },
+      api:     { on: ['title','description','installation','usage','api','configuration','contributing','license'] },
+      minimal: { on: ['title','description','installation','usage','license'] }
+    };
+
+    var sectionState = {};
+    ALL_SECTIONS.forEach(function(s){ sectionState[s.id] = s.defaultOn; });
+
+    // ── Render section checkboxes ─────────────────────────────────────
+    function renderSections() {
+      var list = document.getElementById('sectionList');
+      list.innerHTML = '';
+      ALL_SECTIONS.forEach(function(s) {
+        var item = document.createElement('div');
+        item.className = 'section-item';
+        var chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.id = 'sec_' + s.id;
+        chk.checked = !!sectionState[s.id];
+        chk.style.accentColor = '#10b981';
+        var lbl = document.createElement('label');
+        lbl.htmlFor = 'sec_' + s.id;
+        lbl.textContent = s.label;
+        chk.addEventListener('change', function() { sectionState[s.id] = this.checked; render(); });
+        item.appendChild(chk);
+        item.appendChild(lbl);
+        list.appendChild(item);
+      });
+    }
+
+    // ── Markdown builder ──────────────────────────────────────────────
+    function val(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+    function checked(id) { var el = document.getElementById(id); return el ? el.checked : false; }
+
+    function buildBadges() {
+      var badges = [];
+      var user = val('ghUser') || 'username';
+      var repo = val('projName') || 'project';
+      var npm = val('npmPkg') || repo;
+      var license = val('projLicense') || 'MIT';
+      if (checked('bdgNpm') && val('npmPkg')) badges.push('[![npm version](https://img.shields.io/npm/v/' + npm + ')](https://www.npmjs.com/package/' + npm + ')');
+      if (checked('bdgBuild')) badges.push('[![CI](https://github.com/' + user + '/' + repo + '/actions/workflows/ci.yml/badge.svg)](https://github.com/' + user + '/' + repo + '/actions)');
+      if (checked('bdgLicense')) badges.push('[![License: ' + license + '](https://img.shields.io/badge/License-' + encodeURIComponent(license) + '-blue.svg)](https://opensource.org/licenses/' + license + ')');
+      if (checked('bdgCoverage')) badges.push('[![Coverage](https://img.shields.io/codecov/c/github/' + user + '/' + repo + ')](https://codecov.io/gh/' + user + '/' + repo + ')');
+      if (checked('bdgIssues')) badges.push('[![Issues](https://img.shields.io/github/issues/' + user + '/' + repo + ')](https://github.com/' + user + '/' + repo + '/issues)');
+      if (checked('bdgStars')) badges.push('[![Stars](https://img.shields.io/github/stars/' + user + '/' + repo + '?style=social)](https://github.com/' + user + '/' + repo + ')');
+      return badges.join(' ');
+    }
+
+    function buildMarkdown() {
+      var name = val('projName') || 'Project Name';
+      var user = val('ghUser') || 'username';
+      var desc = val('projDesc') || 'A short description of what this project does.';
+      var license = val('projLicense') || 'MIT';
+      var lines = [];
+
+      if (sectionState['title']) {
+        lines.push('# ' + name);
+        var badges = buildBadges();
+        if (badges) { lines.push(''); lines.push(badges); }
+        lines.push('');
+      }
+
+      if (sectionState['description']) {
+        lines.push(desc);
+        lines.push('');
+      }
+
+      if (sectionState['features']) {
+        lines.push('## Features');
+        lines.push('');
+        var feats = val('features');
+        if (feats) {
+          feats.split('\n').forEach(function(f){ if (f.trim()) lines.push('- ' + f.trim()); });
+        } else {
+          lines.push('- Fast and lightweight');
+          lines.push('- Easy to configure');
+          lines.push('- Well documented');
+        }
+        lines.push('');
+      }
+
+      if (sectionState['demo']) {
+        lines.push('## Demo');
+        lines.push('');
+        lines.push('![Demo](https://your-demo-url.com/demo.gif)');
+        lines.push('');
+        lines.push('[Live Demo](https://your-site.com)');
+        lines.push('');
+      }
+
+      if (sectionState['installation']) {
+        lines.push('## Installation');
+        lines.push('');
+        var cmd = val('installCmd');
+        if (!cmd) {
+          var npm = val('npmPkg') || name.toLowerCase().replace(/\s+/g, '-');
+          cmd = 'npm install ' + npm;
+        }
+        lines.push('```bash');
+        lines.push(cmd);
+        lines.push('```');
+        lines.push('');
+      }
+
+      if (sectionState['usage']) {
+        lines.push('## Usage');
+        lines.push('');
+        var code = val('usageCode');
+        if (code) {
+          lines.push('```javascript');
+          lines.push(code);
+          lines.push('```');
+        } else {
+          lines.push('```javascript');
+          lines.push("import { " + toCamel(name) + " } from '" + (val('npmPkg') || name.toLowerCase()) + "';");
+          lines.push('');
+          lines.push("const result = " + toCamel(name) + "('Hello, World!');");
+          lines.push('console.log(result);');
+          lines.push('```');
+        }
+        lines.push('');
+      }
+
+      if (sectionState['api']) {
+        lines.push('## API Reference');
+        lines.push('');
+        lines.push('### `functionName(param1, param2)`');
+        lines.push('');
+        lines.push('| Parameter | Type     | Description         |');
+        lines.push('|-----------|----------|---------------------|');
+        lines.push('| `param1`  | `string` | Description of param1 |');
+        lines.push('| `param2`  | `number` | Description of param2 |');
+        lines.push('');
+        lines.push('**Returns:** `string` — description of the return value.');
+        lines.push('');
+      }
+
+      if (sectionState['configuration']) {
+        lines.push('## Configuration');
+        lines.push('');
+        lines.push('Copy `.env.example` to `.env` and update the values:');
+        lines.push('');
+        lines.push('```bash');
+        lines.push('cp .env.example .env');
+        lines.push('```');
+        lines.push('');
+        lines.push('| Variable     | Default | Description          |');
+        lines.push('|--------------|---------|----------------------|');
+        lines.push('| `PORT`       | `3000`  | Server port          |');
+        lines.push('| `NODE_ENV`   | `development` | Environment  |');
+        lines.push('');
+      }
+
+      if (sectionState['contributing']) {
+        lines.push('## Contributing');
+        lines.push('');
+        var contrib = val('contributing');
+        if (contrib) {
+          lines.push(contrib);
+        } else {
+          lines.push('Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) first.');
+          lines.push('');
+          lines.push('1. Fork the project');
+          lines.push('2. Create your feature branch (`git checkout -b feature/amazing-feature`)');
+          lines.push('3. Commit your changes (`git commit -m \'Add amazing feature\'`)');
+          lines.push('4. Push to the branch (`git push origin feature/amazing-feature`)');
+          lines.push('5. Open a Pull Request');
+        }
+        lines.push('');
+      }
+
+      if (sectionState['license']) {
+        lines.push('## License');
+        lines.push('');
+        lines.push('Distributed under the **' + license + '** License. See [LICENSE](LICENSE) for more information.');
+        lines.push('');
+        lines.push('---');
+        lines.push('');
+        lines.push('Made with \u2764\uFE0F by [' + user + '](https://github.com/' + user + ')');
+        lines.push('');
+      }
+
+      return lines.join('\n');
+    }
+
+    function toCamel(str) {
+      return str.toLowerCase().replace(/[-_\s]+(.)/g, function(_, c){ return c.toUpperCase(); });
+    }
+
+    // ── Minimal markdown-to-HTML renderer ────────────────────────────
+    function mdToHtml(md) {
+      var html = md
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Code blocks
+      html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function(_, lang, code) {
+        return '<pre><code class="lang-' + lang + '">' + code + '</code></pre>';
+      });
+      // Inline code
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      // Images (badges)
+      html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+      // Links
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      // Bold
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      // Italic
+      html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      // H1-H3
+      html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+      html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+      html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+      // HR
+      html = html.replace(/^---$/gm, '<hr>');
+      // Table rows
+      html = html.replace(/^\|(.+)\|$/gm, function(line) {
+        if (/^[-| :]+$/.test(line.replace(/\|/g, '').trim())) return '<tr class="table-sep"></tr>';
+        var cells = line.split('|').filter(function(c){ return c !== ''; }).map(function(c){ return '<td>' + c.trim() + '</td>'; });
+        return '<tr>' + cells.join('') + '</tr>';
+      });
+      // Wrap adjacent table rows
+      html = html.replace(/(<tr>[\s\S]*?<\/tr>(\s*<tr>[\s\S]*?<\/tr>)*)/g, function(m) {
+        return '<table>' + m.replace(/<tr class="table-sep"><\/tr>/g, '') + '</table>';
+      });
+      // Unordered list items
+      html = html.replace(/((?:^- .+\n?)+)/gm, function(block) {
+        var items = block.trim().split('\n').map(function(l){ return '<li>' + l.slice(2) + '</li>'; }).join('');
+        return '<ul>' + items + '</ul>';
+      });
+      // Ordered list items
+      html = html.replace(/((?:^\d+\. .+\n?)+)/gm, function(block) {
+        var items = block.trim().split('\n').map(function(l){ return '<li>' + l.replace(/^\d+\. /, '') + '</li>'; }).join('');
+        return '<ol>' + items + '</ol>';
+      });
+      // Paragraphs (double newline)
+      html = html.replace(/\n\n+/g, '</p><p>');
+      html = '<p>' + html + '</p>';
+      // Fix wrapped block elements
+      ['h1','h2','h3','pre','ul','ol','table','hr'].forEach(function(tag) {
+        html = html.replace(new RegExp('<p>(<' + tag + '[\\s\\S]*?<\\/' + tag + '>)<\\/p>', 'g'), '$1');
+        html = html.replace(new RegExp('<p>(<' + tag + '[^>]*>)<\\/p>', 'g'), '$1');
+        html = html.replace(new RegExp('<p>(<\\/' + tag + '>)<\\/p>', 'g'), '$1');
+      });
+      html = html.replace(/<p><\/p>/g, '');
+      html = html.replace(/<p>(<hr>)<\/p>/g, '$1');
+      return html;
+    }
+
+    function render() {
+      var md = buildMarkdown();
+      document.getElementById('markdownOutput').textContent = md;
+      document.getElementById('previewTab').innerHTML = mdToHtml(md);
+
+      var words = md.split(/\s+/).filter(Boolean).length;
+      var sections = ALL_SECTIONS.filter(function(s){ return sectionState[s.id]; }).length;
+      var statusEl = document.getElementById('statusBar');
+      statusEl.className = 'status-bar valid';
+      statusEl.textContent = 'README \u2014 ' + sections + ' sections \u2014 ~' + words + ' words';
+      DT.trackTool('readme-generator');
+    }
+
+    var debouncedRender = DT.debounce(render, 200);
+
+    // ── Template chips ────────────────────────────────────────────────
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        var tmpl = TEMPLATES[chip.getAttribute('data-template')];
+        if (tmpl) {
+          ALL_SECTIONS.forEach(function(s){ sectionState[s.id] = tmpl.on.indexOf(s.id) !== -1; });
+          renderSections();
+        }
+        render();
+      });
+    });
+
+    // ── Tab switching ─────────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        var tab = btn.getAttribute('data-tab');
+        document.getElementById('previewTab').style.display = tab === 'preview' ? '' : 'none';
+        document.getElementById('markdownTab').style.display = tab === 'markdown' ? '' : 'none';
+      });
+    });
+
+    // ── Copy / Download ───────────────────────────────────────────────
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var t = document.getElementById('markdownOutput').textContent;
+      if (t) DT.copyToClipboard(t, this);
+    });
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      var t = document.getElementById('markdownOutput').textContent;
+      if (t) DT.downloadText(t, 'README.md', 'text/markdown');
+    });
+
+    // ── Input listeners ───────────────────────────────────────────────
+    document.querySelectorAll('#projName,#ghUser,#projDesc,#projLicense,#npmPkg,#features,#installCmd,#usageCode,#contributing').forEach(function(el) {
+      el.addEventListener('input', debouncedRender);
+    });
+    document.querySelectorAll('#bdgNpm,#bdgBuild,#bdgLicense,#bdgCoverage,#bdgIssues,#bdgStars').forEach(function(el) {
+      el.addEventListener('change', debouncedRender);
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────
+    renderSections();
+    render();
+  })();
+  </script>
+</body>
+</html>

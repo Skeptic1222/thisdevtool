@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>URL Parser & Builder — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Parse any URL into its components — protocol, host, port, path, query params, hash. Build URLs from parts, encode/decode components, batch-parse multiple URLs. Free, browser-only.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/url-parser.html">
+  <meta property="og:title" content="URL Parser & Builder — DevToolbox">
+  <meta property="og:description" content="Break any URL into protocol, host, path, query params, and hash. Build URLs from fields, encode/decode, batch parse. Free, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/url-parser.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "URL Parser & Builder",
+    "url": "https://thisdevtool.com/tools/url-parser.html",
+    "description": "Parse URLs into components, build from parts, encode/decode, batch parse. Free, browser-only.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What are the components of a URL?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A URL (Uniform Resource Locator) has up to seven components: scheme (protocol), authority (username:password@host:port), path, query string (?key=value&key2=value2), and fragment (#section). Not all components are required — a minimal URL like https://example.com has only scheme and host."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is URL encoding (percent encoding)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "URL encoding (also called percent encoding) converts characters that are not allowed in URLs into a percent sign followed by two hexadecimal digits. For example, a space becomes %20, a forward slash becomes %2F, and a hash becomes %23. Query string values are typically encoded with encodeURIComponent() which encodes all special characters except letters, digits, -, _, ., and ~."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between encodeURI and encodeURIComponent?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "encodeURI() encodes a complete URL, leaving characters like /, :, @, and ? intact since they have structural meaning in URLs. encodeURIComponent() encodes an individual component (like a query parameter value), encoding those same structural characters too. Use encodeURIComponent() for individual values and encodeURI() for full URLs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a query string and how is it parsed?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A query string is the part of a URL after the ? character, containing key-value pairs separated by & (e.g. ?name=Alice&age=30). Keys and values are percent-encoded. In JavaScript, URLSearchParams parses query strings automatically: new URLSearchParams(location.search).get('name') returns 'Alice'. Duplicate keys are allowed — URLSearchParams.getAll() returns all values for a key."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between a URL, URI, and URN?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A URI (Uniform Resource Identifier) is the broadest term — it identifies a resource. A URL (Uniform Resource Locator) is a URI that specifies how to locate the resource (includes scheme and authority). A URN (Uniform Resource Name) is a URI that names a resource without specifying its location (e.g. urn:isbn:0451450523). In practice, 'URL' and 'URI' are often used interchangeably."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .url-anatomy { font-family: var(--font-mono); font-size: 0.85rem; background: var(--surface-2); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 0.75rem; overflow-x: auto; white-space: nowrap; line-height: 2; }
+    .url-anatomy .part-scheme { color: #3b82f6; }
+    .url-anatomy .part-host { color: #10b981; }
+    .url-anatomy .part-port { color: #f59e0b; }
+    .url-anatomy .part-path { color: #8b5cf6; }
+    .url-anatomy .part-query { color: #ef4444; }
+    .url-anatomy .part-hash { color: #ec4899; }
+    .url-anatomy .part-neutral { color: var(--text-secondary); }
+    .url-component-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; font-size: 0.88rem; }
+    .url-component-table th { text-align: left; padding: 0.4rem 0.5rem; background: var(--surface-2); font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+    .url-component-table td { padding: 0.4rem 0.5rem; border-top: 1px solid var(--border); vertical-align: middle; }
+    .url-component-table td:first-child { font-weight: 600; color: var(--text-secondary); width: 130px; white-space: nowrap; }
+    .url-component-table td:nth-child(2) { font-family: var(--font-mono); word-break: break-all; }
+    .url-component-table td:last-child { text-align: right; white-space: nowrap; width: 60px; }
+    .param-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .param-table th { background: var(--surface-2); padding: 0.4rem 0.5rem; text-align: left; font-size: 0.78rem; color: var(--text-secondary); text-transform: uppercase; }
+    .param-table td { padding: 0.35rem 0.5rem; border-top: 1px solid var(--border); font-family: var(--font-mono); word-break: break-all; }
+    .param-table td:first-child { color: #3b82f6; width: 40%; }
+    .param-table td:last-child { color: var(--text-primary); }
+    .build-grid { display: grid; grid-template-columns: 120px 1fr; gap: 0.4rem 0.75rem; align-items: center; margin-bottom: 0.75rem; }
+    .build-grid label { font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); }
+    .build-grid input { width: 100%; }
+    .build-params { margin-bottom: 0.5rem; }
+    .build-param-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.4rem; margin-bottom: 0.35rem; align-items: center; }
+    .build-param-row input { width: 100%; font-size: 0.88rem; }
+    .encode-split { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .encode-split textarea { width: 100%; height: 90px; font-family: var(--font-mono); font-size: 0.88rem; resize: vertical; }
+    .batch-input { width: 100%; height: 100px; font-family: var(--font-mono); font-size: 0.85rem; resize: vertical; }
+    .batch-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.5rem; }
+    .batch-table th { background: var(--surface-2); padding: 0.3rem 0.5rem; text-align: left; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; }
+    .batch-table td { padding: 0.3rem 0.5rem; border-top: 1px solid var(--border); font-family: var(--font-mono); word-break: break-all; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .batch-table td:first-child { color: var(--text-secondary); width: 24px; text-align: center; }
+    @media (max-width: 600px) {
+      .encode-split { grid-template-columns: 1fr; }
+      .build-grid { grid-template-columns: 1fr; }
+      .build-param-row { grid-template-columns: 1fr auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/ip-converter.html">IP Converter</a>
+        <a href="/tools/base64.html">Base64</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>URL Parser &amp; Builder</h1>
+          <p class="tool-subtitle">Break any URL into its components, build URLs from parts, encode/decode, or batch-parse multiple URLs.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="parse">Parse</button>
+            <button class="option-chip" data-mode="build">Build</button>
+            <button class="option-chip" data-mode="encode">Encode</button>
+            <button class="option-chip" data-mode="batch">Batch</button>
+          </div>
+
+          <!-- Parse Mode -->
+          <div id="mode-parse">
+            <div class="pane-label" style="margin-bottom:0.35rem;">
+              <span>URL</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="parseExampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="parseClearBtn">Clear</button>
+              </div>
+            </div>
+            <input type="text" id="parseInput" placeholder="https://example.com:8080/path/to/page?name=Alice&age=30#section" style="width:100%;margin-bottom:0.5rem;" spellcheck="false" autocomplete="off">
+            <div id="parseAnatomy" class="url-anatomy" style="display:none;"></div>
+            <div id="parseResults"></div>
+          </div>
+
+          <!-- Build Mode -->
+          <div id="mode-build" style="display:none;">
+            <div class="build-grid">
+              <label>Scheme</label>
+              <select id="buildScheme">
+                <option>https</option>
+                <option>http</option>
+                <option>ftp</option>
+                <option value="">custom</option>
+              </select>
+              <label>Host</label>
+              <input type="text" id="buildHost" placeholder="example.com">
+              <label>Port</label>
+              <input type="text" id="buildPort" placeholder="(optional)">
+              <label>Path</label>
+              <input type="text" id="buildPath" placeholder="/path/to/resource">
+              <label>Hash (#)</label>
+              <input type="text" id="buildHash" placeholder="section">
+            </div>
+            <div class="pane-label" style="margin-bottom:0.35rem;">
+              <span>Query Parameters</span>
+              <button class="btn btn-sm btn-secondary" id="buildAddParam">+ Add Param</button>
+            </div>
+            <div id="buildParams" class="build-params"></div>
+            <div class="pane-label" style="margin:0.5rem 0 0.35rem;">
+              <span>Result URL</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="buildExampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-primary" id="buildCopyBtn">Copy</button>
+              </div>
+            </div>
+            <div class="code-output" id="buildOutput" style="min-height:50px;"></div>
+          </div>
+
+          <!-- Encode Mode -->
+          <div id="mode-encode" style="display:none;">
+            <div class="option-chips" style="margin-bottom:0.5rem;">
+              <button class="option-chip active" id="encFull">Full URL</button>
+              <button class="option-chip" id="encComponent">Component</button>
+              <button class="option-chip" id="encDecode">Decode</button>
+            </div>
+            <div class="encode-split">
+              <div>
+                <div class="pane-label" style="margin-bottom:0.25rem;"><span>Input</span></div>
+                <textarea id="encInput" placeholder="Enter text to encode or decode..."></textarea>
+              </div>
+              <div>
+                <div class="pane-label" style="margin-bottom:0.25rem;">
+                  <span>Output</span>
+                  <button class="btn btn-sm btn-primary" id="encCopyBtn">Copy</button>
+                </div>
+                <textarea id="encOutput" readonly></textarea>
+              </div>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-secondary" id="encExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="encClearBtn">Clear</button>
+            </div>
+          </div>
+
+          <!-- Batch Mode -->
+          <div id="mode-batch" style="display:none;">
+            <div class="pane-label" style="margin-bottom:0.35rem;">
+              <span>URLs (one per line)</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="batchExampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="batchClearBtn">Clear</button>
+              </div>
+            </div>
+            <textarea class="batch-input" id="batchInput" placeholder="https://example.com/page?a=1&b=2&#10;https://api.example.com/v2/users?page=1&#10;https://cdn.site.io/assets/logo.png"></textarea>
+            <div id="batchResults"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a URL above to parse it.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the URL Parser</h2>
+          <ol>
+            <li><strong>Parse</strong> — paste any URL to instantly see each component broken out: scheme, host, port, path segments, query parameters as a table, and hash. Each value has a copy button.</li>
+            <li><strong>Build</strong> — fill in individual fields and query parameter rows. The assembled URL updates in real time.</li>
+            <li><strong>Encode</strong> — choose Full URL (encodeURI), Component (encodeURIComponent), or Decode. Useful for handling special characters in query strings.</li>
+            <li><strong>Batch</strong> — paste multiple URLs, one per line. The tool extracts the host, path, and parameter count from each in a compact table.</li>
+          </ol>
+
+          <h2>Anatomy of a URL</h2>
+          <p>A URL (Uniform Resource Locator) is defined in <a href="https://www.rfc-editor.org/rfc/rfc3986" rel="noopener noreferrer" target="_blank">RFC 3986</a> and has the following structure:</p>
+          <pre style="background:var(--surface-2);border-radius:8px;padding:0.75rem;overflow-x:auto;font-size:0.85rem;">scheme://userinfo@host:port/path?query#fragment</pre>
+          <ul>
+            <li><strong>Scheme</strong> — the protocol: <code>https</code>, <code>http</code>, <code>ftp</code>, <code>mailto</code>, <code>file</code></li>
+            <li><strong>Authority</strong> — optional userinfo (<code>user:pass@</code>), host, and port</li>
+            <li><strong>Host</strong> — domain name or IP address</li>
+            <li><strong>Port</strong> — optional; defaults are 80 for HTTP, 443 for HTTPS</li>
+            <li><strong>Path</strong> — hierarchical path to the resource, separated by <code>/</code></li>
+            <li><strong>Query</strong> — key-value pairs after <code>?</code>, separated by <code>&amp;</code></li>
+            <li><strong>Fragment</strong> — in-page anchor after <code>#</code>, processed client-side only (never sent to server)</li>
+          </ul>
+
+          <h3>URL Encoding</h3>
+          <p>URLs may only contain a limited set of characters. Special characters must be percent-encoded: each byte is represented as <code>%HH</code> where HH is the hexadecimal value. JavaScript provides two encoding functions: <code>encodeURI()</code> encodes a complete URL, leaving structural characters like <code>/</code>, <code>?</code>, <code>&amp;</code>, and <code>#</code> intact. <code>encodeURIComponent()</code> encodes an individual value, encoding those structural characters too — use it for query parameter keys and values.</p>
+
+          <h3>Query Strings</h3>
+          <p>The query string carries data from the browser to the server. Keys and values are joined by <code>=</code> and pairs are separated by <code>&amp;</code>. The browser API <code>URLSearchParams</code> parses query strings automatically and handles duplicates, empty values, and encoded characters. UTM parameters (<code>utm_source</code>, <code>utm_medium</code>, <code>utm_campaign</code>) are query string parameters used for marketing analytics — see our <a href="/tools/utm-builder.html">UTM Builder</a> to create them.</p>
+
+          <h3>Fragment Identifiers</h3>
+          <p>The fragment (hash) part of a URL is never sent to the server — it is purely a client-side instruction. In traditional HTML it scrolls to an element with a matching <code>id</code>. In single-page applications (SPAs), the hash is used for client-side routing — changing the hash updates the URL without triggering a page reload. In contrast, the HTML5 History API (<code>pushState</code>) allows SPAs to use full path-based URLs while still handling navigation client-side.</p>
+
+          <h3>Relative vs Absolute URLs</h3>
+          <p>An absolute URL contains the full scheme and authority (e.g., <code>https://example.com/page</code>). A relative URL is resolved against a base URL: <code>/page</code> is relative to the origin, <code>page</code> is relative to the current path, and <code>../page</code> navigates one level up. The browser's <code>URL</code> constructor resolves relative URLs: <code>new URL('/page', 'https://example.com')</code> returns the absolute form. This matters for canonical URLs, Open Graph tags, and sitemap entries which should always use absolute URLs.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What are the components of a URL?</button>
+            <div class="faq-answer">A URL has up to seven components: scheme (protocol), authority (username:password@host:port), path, query string (?key=value&key2=value2), and fragment (#section). Not all components are required — a minimal URL like https://example.com has only scheme and host.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is URL encoding (percent encoding)?</button>
+            <div class="faq-answer">URL encoding converts characters not allowed in URLs into a percent sign followed by two hexadecimal digits. For example, a space becomes %20 and a hash becomes %23. Query string values are encoded with encodeURIComponent() which encodes all special characters except letters, digits, -, _, ., and ~.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between encodeURI and encodeURIComponent?</button>
+            <div class="faq-answer">encodeURI() encodes a complete URL, leaving structural characters like /, :, @, and ? intact. encodeURIComponent() encodes an individual component value, encoding those characters too. Use encodeURIComponent() for individual values and encodeURI() for full URLs.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is a query string and how is it parsed?</button>
+            <div class="faq-answer">A query string is the part of a URL after the ? character, containing key-value pairs separated by & (e.g. ?name=Alice&age=30). In JavaScript, URLSearchParams parses them automatically. Duplicate keys are allowed — URLSearchParams.getAll() returns all values for a key.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between a URL, URI, and URN?</button>
+            <div class="faq-answer">A URI (Uniform Resource Identifier) is the broadest term. A URL is a URI that specifies how to locate the resource (includes scheme and authority). A URN names a resource without specifying its location (e.g. urn:isbn:0451450523). In practice, 'URL' and 'URI' are often used interchangeably.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Network Tools</h4>
+        <a href="/tools/url-parser.html">URL Parser</a>
+        <a href="/tools/ip-converter.html">IP Converter</a>
+        <a href="/tools/utm-builder.html">UTM Builder</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+    var currentMode = 'parse';
+    var encMode = 'full';
+    var buildParams = [];
+
+    // --- URL Parse ---
+    function safeParse(url) {
+      try { return new URL(url); } catch (e) { return null; }
+    }
+
+    function processParse() {
+      var raw = document.getElementById('parseInput').value.trim();
+      var anatomy = document.getElementById('parseAnatomy');
+      var results = document.getElementById('parseResults');
+      var sb = document.getElementById('statusBar');
+
+      if (!raw) {
+        anatomy.style.display = 'none';
+        results.innerHTML = '';
+        sb.className = 'status-bar info';
+        sb.textContent = 'Paste a URL above to parse it.';
+        return;
+      }
+
+      var u = safeParse(raw) || safeParse('https://' + raw);
+      if (!u) {
+        anatomy.style.display = 'none';
+        results.innerHTML = '<p style="color:var(--error);font-family:var(--font-mono);font-size:0.88rem;">Could not parse URL — check the format.</p>';
+        sb.className = 'status-bar invalid';
+        sb.textContent = 'Invalid URL.';
+        return;
+      }
+
+      // Anatomy highlight
+      anatomy.style.display = '';
+      var pathSegs = u.pathname.split('/').filter(Boolean);
+      var params = [];
+      u.searchParams.forEach(function (v, k) { params.push({ k: k, v: v }); });
+
+      anatomy.innerHTML =
+        '<span class="part-scheme">' + u.protocol + '</span>' +
+        '<span class="part-neutral">//</span>' +
+        '<span class="part-host">' + u.hostname + '</span>' +
+        (u.port ? '<span class="part-neutral">:</span><span class="part-port">' + u.port + '</span>' : '') +
+        (u.pathname !== '/' ? '<span class="part-path">' + escHtml(u.pathname) + '</span>' : '<span class="part-path">/</span>') +
+        (u.search ? '<span class="part-query">' + escHtml(u.search) + '</span>' : '') +
+        (u.hash ? '<span class="part-hash">' + escHtml(u.hash) + '</span>' : '');
+
+      // Component table
+      var rows = [
+        ['Protocol', u.protocol.replace(':', ''), 'r-proto'],
+        ['Host', u.hostname, 'r-host'],
+        ['Port', u.port || '(default)', 'r-port'],
+        ['Path', u.pathname, 'r-path'],
+        ['Query String', u.search.slice(1) || '(none)', 'r-qs'],
+        ['Hash', u.hash.slice(1) || '(none)', 'r-hash'],
+        ['Origin', u.origin, 'r-origin'],
+        ['Full URL', u.href, 'r-href']
+      ];
+      var tableHtml = '<table class="url-component-table"><thead><tr><th>Component</th><th>Value</th><th></th></tr></thead><tbody>';
+      rows.forEach(function (row) {
+        tableHtml += '<tr><td>' + row[0] + '</td><td id="' + row[2] + '">' + escHtml(row[1]) + '</td>' +
+          '<td><button class="btn btn-sm btn-secondary" onclick="(function(b){var v=document.getElementById(\'' + row[2] + '\').textContent;if(v&&v!==\'(none)\'&&v!==\'(default)\')DevToolbox.copyToClipboard(v,b);})(this)">Copy</button></td></tr>';
+      });
+      tableHtml += '</tbody></table>';
+
+      // Path segments
+      var pathHtml = '';
+      if (pathSegs.length) {
+        pathHtml = '<h4 style="margin:0.75rem 0 0.35rem;font-size:0.85rem;color:var(--text-secondary);">Path Segments (' + pathSegs.length + ')</h4>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:0.35rem;">' +
+          pathSegs.map(function (s, i) {
+            return '<span style="background:var(--surface-2);border-radius:6px;padding:3px 10px;font-family:var(--font-mono);font-size:0.82rem;"><span style="color:var(--text-secondary);font-size:0.7rem;margin-right:4px;">' + (i + 1) + '</span>' + escHtml(s) + '</span>';
+          }).join('') + '</div>';
+      }
+
+      // Query params table
+      var paramsHtml = '';
+      if (params.length) {
+        paramsHtml = '<h4 style="margin:0.75rem 0 0.35rem;font-size:0.85rem;color:var(--text-secondary);">Query Parameters (' + params.length + ')</h4>' +
+          '<table class="param-table"><thead><tr><th>Key</th><th>Value</th></tr></thead><tbody>' +
+          params.map(function (p) {
+            return '<tr><td>' + escHtml(p.k) + '</td><td>' + escHtml(p.v) + '</td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+
+      results.innerHTML = tableHtml + pathHtml + paramsHtml;
+      sb.className = 'status-bar valid';
+      sb.textContent = u.protocol.replace(':', '').toUpperCase() + ' — ' + pathSegs.length + ' path segment' + (pathSegs.length !== 1 ? 's' : '') + ' — ' + params.length + ' query param' + (params.length !== 1 ? 's' : '');
+      DT.trackTool('url-parser');
+    }
+
+    // --- URL Build ---
+    function renderBuildParams() {
+      var container = document.getElementById('buildParams');
+      container.innerHTML = '';
+      buildParams.forEach(function (p, i) {
+        var row = document.createElement('div');
+        row.className = 'build-param-row';
+        var kInp = document.createElement('input');
+        kInp.type = 'text';
+        kInp.placeholder = 'key';
+        kInp.value = p.k;
+        kInp.addEventListener('input', function () { buildParams[i].k = kInp.value; processBuild(); });
+        var vInp = document.createElement('input');
+        vInp.type = 'text';
+        vInp.placeholder = 'value';
+        vInp.value = p.v;
+        vInp.addEventListener('input', function () { buildParams[i].v = vInp.value; processBuild(); });
+        var del = document.createElement('button');
+        del.className = 'btn btn-sm btn-secondary';
+        del.textContent = '✕';
+        del.addEventListener('click', function () { buildParams.splice(i, 1); renderBuildParams(); processBuild(); });
+        row.appendChild(kInp);
+        row.appendChild(vInp);
+        row.appendChild(del);
+        container.appendChild(row);
+      });
+    }
+
+    function processBuild() {
+      var scheme = document.getElementById('buildScheme').value || 'https';
+      var host = document.getElementById('buildHost').value.trim();
+      var port = document.getElementById('buildPort').value.trim();
+      var path = document.getElementById('buildPath').value.trim();
+      var hash = document.getElementById('buildHash').value.trim();
+      var out = document.getElementById('buildOutput');
+      var sb = document.getElementById('statusBar');
+
+      if (!host) {
+        out.textContent = '';
+        sb.className = 'status-bar info';
+        sb.textContent = 'Fill in the host to build a URL.';
+        return;
+      }
+
+      var url = scheme + '://' + host;
+      if (port) url += ':' + port;
+      if (path) url += (path[0] === '/' ? '' : '/') + path;
+      var validParams = buildParams.filter(function (p) { return p.k.trim(); });
+      if (validParams.length) {
+        var qs = validParams.map(function (p) {
+          return encodeURIComponent(p.k) + '=' + encodeURIComponent(p.v);
+        }).join('&');
+        url += '?' + qs;
+      }
+      if (hash) url += '#' + hash;
+      out.textContent = url;
+      sb.className = 'status-bar valid';
+      sb.textContent = 'Built URL — ' + validParams.length + ' query param' + (validParams.length !== 1 ? 's' : '');
+    }
+
+    // --- Encode/Decode ---
+    function processEncode() {
+      var raw = document.getElementById('encInput').value;
+      var out = document.getElementById('encOutput');
+      var sb = document.getElementById('statusBar');
+      if (!raw) { out.value = ''; sb.className = 'status-bar info'; sb.textContent = 'Enter text to encode or decode.'; return; }
+      try {
+        var result;
+        if (encMode === 'full') result = encodeURI(raw);
+        else if (encMode === 'component') result = encodeURIComponent(raw);
+        else result = decodeURIComponent(raw.replace(/\+/g, ' '));
+        out.value = result;
+        sb.className = 'status-bar valid';
+        sb.textContent = (encMode === 'decode' ? 'Decoded' : 'Encoded') + ' — ' + raw.length + ' → ' + result.length + ' chars';
+      } catch (e) {
+        out.value = '';
+        sb.className = 'status-bar invalid';
+        sb.textContent = 'Error: ' + e.message;
+      }
+    }
+
+    // --- Batch ---
+    function processBatch() {
+      var raw = document.getElementById('batchInput').value;
+      var lines = raw.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+      var out = document.getElementById('batchResults');
+      var sb = document.getElementById('statusBar');
+      if (!lines.length) { out.innerHTML = ''; sb.className = 'status-bar info'; sb.textContent = 'Paste URLs above (one per line).'; return; }
+
+      var html = '<table class="batch-table"><thead><tr><th>#</th><th>Scheme</th><th>Host</th><th>Path</th><th>Params</th><th>Status</th></tr></thead><tbody>';
+      lines.forEach(function (line, i) {
+        var u = safeParse(line);
+        if (u) {
+          var pCount = 0;
+          u.searchParams.forEach(function () { pCount++; });
+          html += '<tr><td>' + (i + 1) + '</td><td>' + escHtml(u.protocol.replace(':', '')) + '</td><td>' + escHtml(u.hostname) +
+            '</td><td>' + escHtml(u.pathname) + '</td><td>' + pCount + '</td><td style="color:#10b981;">OK</td></tr>';
+        } else {
+          html += '<tr><td>' + (i + 1) + '</td><td colspan="4" style="color:var(--text-secondary);">' + escHtml(line.substring(0, 60)) + '</td><td style="color:#ef4444;">Invalid</td></tr>';
+        }
+      });
+      html += '</tbody></table>';
+      out.innerHTML = html;
+      sb.className = 'status-bar valid';
+      sb.textContent = lines.length + ' URL' + (lines.length !== 1 ? 's' : '') + ' parsed';
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    var processDebounced = DT.debounce(function () {
+      if (currentMode === 'parse') processParse();
+      else if (currentMode === 'build') processBuild();
+      else if (currentMode === 'encode') processEncode();
+      else if (currentMode === 'batch') processBatch();
+    }, 150);
+
+    // Mode chips
+    document.querySelectorAll('.option-chip[data-mode]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        ['parse', 'build', 'encode', 'batch'].forEach(function (m) {
+          document.getElementById('mode-' + m).style.display = m === currentMode ? '' : 'none';
+        });
+        processDebounced();
+      });
+    });
+
+    // Encode sub-mode chips
+    document.getElementById('encFull').addEventListener('click', function () {
+      ['encFull', 'encComponent', 'encDecode'].forEach(function (id) { document.getElementById(id).classList.remove('active'); });
+      this.classList.add('active'); encMode = 'full'; processEncode();
+    });
+    document.getElementById('encComponent').addEventListener('click', function () {
+      ['encFull', 'encComponent', 'encDecode'].forEach(function (id) { document.getElementById(id).classList.remove('active'); });
+      this.classList.add('active'); encMode = 'component'; processEncode();
+    });
+    document.getElementById('encDecode').addEventListener('click', function () {
+      ['encFull', 'encComponent', 'encDecode'].forEach(function (id) { document.getElementById(id).classList.remove('active'); });
+      this.classList.add('active'); encMode = 'decode'; processEncode();
+    });
+
+    // Inputs
+    document.getElementById('parseInput').addEventListener('input', processDebounced);
+    document.getElementById('encInput').addEventListener('input', processDebounced);
+    document.getElementById('batchInput').addEventListener('input', processDebounced);
+    ['buildScheme', 'buildHost', 'buildPort', 'buildPath', 'buildHash'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', processDebounced);
+    });
+
+    // Build: add param
+    document.getElementById('buildAddParam').addEventListener('click', function () {
+      buildParams.push({ k: '', v: '' });
+      renderBuildParams();
+    });
+
+    // Examples
+    document.getElementById('parseExampleBtn').addEventListener('click', function () {
+      document.getElementById('parseInput').value = 'https://api.example.com:8080/v2/users/search?name=Alice+Smith&role=admin&page=2&limit=20#results';
+      processParse();
+    });
+    document.getElementById('parseClearBtn').addEventListener('click', function () {
+      document.getElementById('parseInput').value = '';
+      document.getElementById('parseAnatomy').style.display = 'none';
+      document.getElementById('parseResults').innerHTML = '';
+      document.getElementById('statusBar').className = 'status-bar info';
+      document.getElementById('statusBar').textContent = 'Paste a URL above to parse it.';
+    });
+    document.getElementById('buildExampleBtn').addEventListener('click', function () {
+      document.getElementById('buildScheme').value = 'https';
+      document.getElementById('buildHost').value = 'api.example.com';
+      document.getElementById('buildPort').value = '443';
+      document.getElementById('buildPath').value = '/v2/users';
+      document.getElementById('buildHash').value = '';
+      buildParams = [{ k: 'page', v: '1' }, { k: 'limit', v: '20' }, { k: 'sort', v: 'name' }];
+      renderBuildParams();
+      processBuild();
+    });
+    document.getElementById('buildCopyBtn').addEventListener('click', function () {
+      var text = document.getElementById('buildOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+    document.getElementById('encExampleBtn').addEventListener('click', function () {
+      document.getElementById('encInput').value = 'hello world / path?key=value&other=café#section';
+      processEncode();
+    });
+    document.getElementById('encClearBtn').addEventListener('click', function () {
+      document.getElementById('encInput').value = '';
+      document.getElementById('encOutput').value = '';
+      processEncode();
+    });
+    document.getElementById('encCopyBtn').addEventListener('click', function () {
+      var text = document.getElementById('encOutput').value;
+      if (text) DT.copyToClipboard(text, this);
+    });
+    document.getElementById('batchExampleBtn').addEventListener('click', function () {
+      document.getElementById('batchInput').value =
+        'https://example.com/page?utm_source=google&utm_medium=cpc\nhttps://api.example.com/v2/users?page=1&limit=20\nhttps://cdn.site.io/assets/logo.png\nnot-a-valid-url';
+      processBatch();
+    });
+    document.getElementById('batchClearBtn').addEventListener('click', function () {
+      document.getElementById('batchInput').value = '';
+      document.getElementById('batchResults').innerHTML = '';
+      processBatch();
+    });
+
+    processParse();
+  })();
+  </script>
+</body>
+</html>
