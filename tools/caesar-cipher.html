@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Caesar Cipher with Brute Force — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Encrypt and decrypt text with the Caesar cipher. Free online Caesar cipher tool with brute force decoder, frequency analysis, and all 25 shifts. Runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/caesar-cipher.html">
+  <meta property="og:title" content="Caesar Cipher with Brute Force — DevToolbox">
+  <meta property="og:description" content="Free online Caesar cipher with encrypt, decrypt, and brute force modes. Frequency analysis highlights the most likely plaintext automatically. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/caesar-cipher.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Caesar Cipher with Brute Force",
+    "url": "https://thisdevtool.com/tools/caesar-cipher.html",
+    "description": "Encrypt and decrypt text with the Caesar cipher. Brute force mode shows all 25 possible decryptions with automatic frequency analysis. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the Caesar cipher?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Caesar cipher is one of the oldest and simplest encryption techniques. It works by shifting each letter in the plaintext by a fixed number of positions in the alphabet. For example, with a shift of 3, A becomes D, B becomes E, and Z wraps around to C. It is named after Julius Caesar, who reportedly used a shift of 3 to protect his military communications."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I decrypt a Caesar cipher?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "If you know the shift value, select 'Decrypt' mode and enter the same shift used to encrypt. If you don't know the shift, use 'Brute Force' mode to see all 25 possible decryptions at once. The most likely plaintext is highlighted based on letter frequency analysis — text that matches English letter frequency patterns (E, T, A, O being most common) scores highest."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is frequency analysis?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Frequency analysis is a technique for breaking substitution ciphers by analyzing how often each letter appears in the ciphertext. In English, the most common letters are E (12.7%), T (9.1%), A (8.2%), O (7.5%), and I (7.0%). By comparing the frequency distribution of letters in the ciphertext to the expected English distribution, it's often possible to identify the correct shift and decode the message without trying all possibilities."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is the Caesar cipher secure?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The Caesar cipher is not secure by any modern standard. It has only 25 possible key values (shifts), making it trivially breakable by brute force. Even without a computer, an attacker can decode Caesar cipher text in minutes using frequency analysis. Caesar cipher is a historical curiosity and an educational example — never use it to protect real information."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between Caesar cipher and ROT13?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ROT13 is simply a Caesar cipher with a shift value of 13. Because the English alphabet has 26 letters, a shift of 13 is special: applying it twice returns the original text, making ROT13 its own inverse. Other Caesar cipher shifts require knowing the shift to reverse them. ROT13 is commonly used for light obfuscation (spoilers, puzzles) while other Caesar shifts are used as cryptography examples."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .shift-control {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+      padding: 10px 14px;
+      background: var(--surface-2);
+      border-radius: 8px;
+    }
+    .shift-control label { font-size: 0.875rem; font-weight: 600; }
+    .shift-control input[type="number"] {
+      width: 70px;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-1);
+      color: var(--text-primary);
+      font-size: 1rem;
+      text-align: center;
+    }
+    .shift-control input[type="range"] { flex: 1; min-width: 100px; }
+    .brute-list { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+    .brute-item {
+      padding: 8px 12px;
+      background: var(--surface-2);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .brute-item.best {
+      border-left-color: var(--accent);
+      background: var(--surface-3, var(--surface-2));
+    }
+    .brute-item:hover { border-left-color: var(--accent); }
+    .brute-shift {
+      font-weight: 700;
+      color: var(--accent);
+      margin-right: 10px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    .brute-text { word-break: break-all; }
+    .freq-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 60px;
+      margin-top: 10px;
+      padding: 8px;
+      background: var(--surface-2);
+      border-radius: 8px;
+    }
+    .freq-bar-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; }
+    .freq-bar { width: 100%; background: var(--accent); border-radius: 2px 2px 0 0; min-height: 2px; }
+    .freq-label { font-size: 0.5rem; color: var(--text-secondary); margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/rot13-cipher.html">ROT13</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Caesar Cipher</h1>
+          <p class="tool-subtitle">Encrypt, decrypt, or brute-force decode text with the classical Caesar shift cipher. Frequency analysis included.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encrypt">Encrypt</button>
+            <button class="option-chip" data-mode="decrypt">Decrypt</button>
+            <button class="option-chip" data-mode="brute">Brute Force</button>
+          </div>
+
+          <div class="shift-control" id="shiftControl">
+            <label>Shift: <span id="shiftDisplay">3</span></label>
+            <input type="range" id="shiftSlider" min="1" max="25" value="3">
+            <input type="number" id="shiftNumber" min="1" max="25" value="3">
+          </div>
+
+          <!-- Standard encode/decode pane -->
+          <div id="standardPane">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span id="inputLabel">Plaintext Input</span>
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+                <textarea id="textInput" rows="10" placeholder="Type text to encrypt with Caesar cipher..." spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span id="outputLabel">Ciphertext Output</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                  </div>
+                </div>
+                <div class="code-output" id="cipherOutput" style="min-height:220px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Brute force pane -->
+          <div id="brutePane" style="display:none;">
+            <div class="pane-label" style="margin-bottom:8px;">
+              <span>Ciphertext to Crack</span>
+              <button class="btn btn-sm btn-secondary" id="exampleBtnBrute">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtnBrute">Clear</button>
+            </div>
+            <textarea id="bruteInput" rows="5" placeholder="Paste Caesar cipher text here to try all 25 decryptions..." spellcheck="false"></textarea>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin:8px 0 4px;">Letter frequency chart for input:</p>
+            <div class="freq-bars" id="freqBars"></div>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin:10px 0 4px;">All 25 possible decryptions (&#9733; = most likely):</p>
+            <div class="brute-list" id="bruteList"></div>
+            <div style="margin-top:10px; display:flex; gap:8px;">
+              <button class="btn btn-sm btn-primary" id="copyBestBtn">Copy Best Match</button>
+              <button class="btn btn-sm btn-secondary" id="downloadBruteBtn">Download All</button>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type text above to encrypt with Caesar cipher (shift 3).
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Caesar Cipher Tool</h2>
+          <ol>
+            <li><strong>Encrypt mode</strong> — enter plaintext, choose a shift (1-25), and get the ciphertext.</li>
+            <li><strong>Decrypt mode</strong> — paste ciphertext, enter the same shift used to encrypt, and recover the plaintext.</li>
+            <li><strong>Brute Force mode</strong> — paste unknown ciphertext. All 25 possible decryptions are shown simultaneously. The most likely plaintext is highlighted automatically based on English letter frequency analysis.</li>
+          </ol>
+
+          <h2>About the Caesar Cipher</h2>
+          <p>The Caesar cipher is one of the oldest documented encryption techniques in human history. Named after Julius Caesar, who reportedly used a shift of 3 to protect communications with his generals, it works by replacing each letter in the message with the letter that is a fixed number of positions ahead in the alphabet. The shift wraps around at the end: with a shift of 3, the letter X becomes A, Y becomes B, and Z becomes C.</p>
+          <p>The cipher was described by Roman historian Suetonius in his biography of Caesar written around 121 AD. Caesar's nephew Augustus later used a shift of 1 (a simple letter-by-letter advance), and historians have documented other ROT-style ciphers being used in medieval Hebrew and Arabic cryptography. Today, the Caesar cipher is taught in every introductory computer science and cryptography course as the simplest example of a substitution cipher.</p>
+
+          <h3>How Encryption and Decryption Work</h3>
+          <p>Encryption: for each letter in the plaintext, add the shift value. If the result exceeds Z (or z for lowercase), wrap around to the beginning of the alphabet. Non-letter characters — spaces, digits, punctuation — are passed through unchanged. Decryption: subtract the shift value from each letter, wrapping as needed. Mathematically: E(x) = (x + shift) mod 26, and D(x) = (x - shift + 26) mod 26.</p>
+
+          <h3>Brute Force Decryption</h3>
+          <p>Because there are only 25 meaningful shift values (shift 0 produces the same text), a Caesar cipher can be broken by exhaustively trying all possibilities — this takes less than a second by hand or computer. The brute force mode in this tool displays all 25 decryptions simultaneously. To automatically identify the most likely plaintext, the tool uses Index of Coincidence (IoC) scoring combined with letter frequency matching against standard English letter frequencies (E = 12.7%, T = 9.1%, A = 8.2%, etc.). The decryption with the highest score is marked as the best match.</p>
+
+          <h3>Frequency Analysis</h3>
+          <p>Frequency analysis is the study of how often different letters appear in a piece of text. In English, the six most common letters are E, T, A, O, I, and N. If you encrypt English text with any substitution cipher (including Caesar), these letters remain the most common in the ciphertext — they just have different labels. By comparing the frequency histogram of the ciphertext to the expected English distribution, a cryptanalyst can often identify the correct shift in seconds. The letter frequency chart in this tool visualizes the distribution of letters in your ciphertext.</p>
+
+          <h3>Historical Context and Limitations</h3>
+          <p>The Caesar cipher was sufficient for military use in ancient Rome because the average soldier or messenger could not read at all, and even educated enemies were unlikely to know that messages were encoded. Today, the cipher is cryptographically worthless — even simple tools can break it instantly. Modern encryption algorithms like AES-256 require computational effort measured in the lifetime of the universe to break by brute force. The Caesar cipher's only modern uses are as a teaching example and for recreational puzzles.</p>
+
+          <h3>Related Cipher and Encoding Tools</h3>
+          <p>Continue exploring ciphers and encoding: <a href="/tools/rot13-cipher.html">ROT13 Cipher</a> — a special case of Caesar with shift 13 that is its own inverse, <a href="/tools/morse-code.html">Morse Code Translator</a> — dots and dashes encoding, <a href="/tools/base64.html">Base64 Encoder</a> — binary-to-text encoding used in web and email, and <a href="/tools/hash-generator.html">Hash Generator</a> — one-way cryptographic hashing with SHA-256 and MD5.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is the Caesar cipher?</button>
+            <div class="faq-answer">The Caesar cipher is one of the oldest encryption techniques. It works by shifting each letter by a fixed number of positions in the alphabet. For example, with a shift of 3, A becomes D, B becomes E, and Z wraps around to C. It is named after Julius Caesar, who reportedly used a shift of 3 to protect his military communications.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I decrypt a Caesar cipher?</button>
+            <div class="faq-answer">If you know the shift value, select "Decrypt" mode and enter the same shift used to encrypt. If you don't know the shift, use "Brute Force" mode to see all 25 possible decryptions at once. The most likely plaintext is highlighted based on letter frequency analysis — text matching English letter frequency patterns scores highest.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is frequency analysis?</button>
+            <div class="faq-answer">Frequency analysis is a technique for breaking substitution ciphers by analyzing how often each letter appears in the ciphertext. In English, the most common letters are E (12.7%), T (9.1%), A (8.2%), O (7.5%), and I (7.0%). By comparing these frequencies to the ciphertext, it is often possible to identify the correct shift without trying all 25 possibilities.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is the Caesar cipher secure?</button>
+            <div class="faq-answer">No. The Caesar cipher is not secure. It has only 25 possible key values, making it trivially breakable by brute force in seconds. Even without a computer, an attacker can decode Caesar cipher text in minutes using frequency analysis. Never use it to protect real information.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between Caesar cipher and ROT13?</button>
+            <div class="faq-answer">ROT13 is simply a Caesar cipher with a shift value of 13. Because the English alphabet has 26 letters, a shift of 13 is special: applying it twice returns the original text, making ROT13 its own inverse. Other Caesar shifts require knowing the shift value to reverse them.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Encoding Tools</h4>
+        <a href="/tools/morse-code.html">Morse Code</a>
+        <a href="/tools/braille-translator.html">Braille Translator</a>
+        <a href="/tools/nato-phonetic.html">NATO Phonetic</a>
+        <a href="/tools/rot13-cipher.html">ROT13 Cipher</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    // English letter frequencies (A-Z), index 0=A
+    var EN_FREQ = [0.0817,0.0149,0.0278,0.0425,0.1270,0.0223,0.0202,0.0609,0.0697,0.0015,0.0077,0.0403,0.0241,0.0675,0.0751,0.0193,0.0010,0.0599,0.0633,0.0906,0.0276,0.0098,0.0236,0.0015,0.0197,0.0007];
+
+    var currentMode = 'encrypt';
+    var shift = 3;
+
+    var textInput = document.getElementById('textInput');
+    var cipherOutput = document.getElementById('cipherOutput');
+    var statusBar = document.getElementById('statusBar');
+    var shiftSlider = document.getElementById('shiftSlider');
+    var shiftNumber = document.getElementById('shiftNumber');
+    var shiftDisplay = document.getElementById('shiftDisplay');
+    var shiftControl = document.getElementById('shiftControl');
+    var standardPane = document.getElementById('standardPane');
+    var brutePane = document.getElementById('brutePane');
+    var bruteInput = document.getElementById('bruteInput');
+    var bruteList = document.getElementById('bruteList');
+    var freqBars = document.getElementById('freqBars');
+    var inputLabel = document.getElementById('inputLabel');
+    var outputLabel = document.getElementById('outputLabel');
+
+    function caesarShift(text, n) {
+      return text.split('').map(function(ch) {
+        if (ch >= 'A' && ch <= 'Z') return String.fromCharCode(((ch.charCodeAt(0) - 65 + n + 26) % 26) + 65);
+        if (ch >= 'a' && ch <= 'z') return String.fromCharCode(((ch.charCodeAt(0) - 97 + n + 26) % 26) + 97);
+        return ch;
+      }).join('');
+    }
+
+    function letterFrequencies(text) {
+      var counts = new Array(26).fill(0);
+      var total = 0;
+      text.toUpperCase().split('').forEach(function(ch) {
+        if (ch >= 'A' && ch <= 'Z') { counts[ch.charCodeAt(0) - 65]++; total++; }
+      });
+      if (total === 0) return counts;
+      return counts.map(function(c){ return c / total; });
+    }
+
+    function scoreFrequency(freq) {
+      // Chi-squared distance from English — lower is better (more English-like)
+      var score = 0;
+      for (var i = 0; i < 26; i++) {
+        var diff = freq[i] - EN_FREQ[i];
+        score += diff * diff / (EN_FREQ[i] || 0.001);
+      }
+      return score;
+    }
+
+    function renderFreqBars(text) {
+      var freq = letterFrequencies(text);
+      var maxFreq = Math.max.apply(null, freq) || 0.01;
+      var html = '';
+      for (var i = 0; i < 26; i++) {
+        var h = Math.round((freq[i] / maxFreq) * 50);
+        html += '<div class="freq-bar-wrap"><div class="freq-bar" style="height:' + h + 'px;"></div><div class="freq-label">' + String.fromCharCode(65+i) + '</div></div>';
+      }
+      freqBars.innerHTML = html;
+    }
+
+    function runBrute() {
+      var raw = bruteInput.value;
+      if (!raw.trim()) {
+        bruteList.innerHTML = '';
+        freqBars.innerHTML = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Paste ciphertext above to try all 25 decryptions.';
+        return;
+      }
+
+      renderFreqBars(raw);
+
+      var results = [];
+      for (var s = 1; s <= 25; s++) {
+        var decoded = caesarShift(raw, -s);
+        var freq = letterFrequencies(decoded);
+        var score = scoreFrequency(freq);
+        results.push({ shift: s, text: decoded, score: score });
+      }
+
+      // Sort by score ascending (lowest chi-sq = most English-like)
+      results.sort(function(a, b){ return a.score - b.score; });
+
+      var html = '';
+      results.forEach(function(r, idx) {
+        var isBest = idx === 0;
+        var preview = r.text.length > 120 ? r.text.substring(0, 120) + '...' : r.text;
+        html += '<div class="brute-item' + (isBest ? ' best' : '') + '" data-shift="' + r.shift + '" data-text="' + r.text.replace(/"/g,'&quot;') + '">';
+        html += '<span class="brute-shift">' + (isBest ? '\u2605 ' : '') + 'Shift ' + r.shift + '</span>';
+        html += '<span class="brute-text">' + preview.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>';
+        html += '</div>';
+      });
+      bruteList.innerHTML = html;
+
+      // Click brute item to copy
+      bruteList.querySelectorAll('.brute-item').forEach(function(el) {
+        el.addEventListener('click', function() {
+          DT.copyToClipboard(this.getAttribute('data-text'), null);
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Copied shift-' + this.getAttribute('data-shift') + ' decryption to clipboard.';
+        });
+      });
+
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Brute force: 25 possible decryptions shown. Best match: shift ' + results[0].shift + '.';
+      DT.trackTool('caesar-cipher');
+    }
+
+    function processStandard() {
+      var raw = textInput.value;
+      if (!raw) {
+        cipherOutput.textContent = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = (currentMode === 'encrypt' ? 'Type text to encrypt' : 'Paste ciphertext to decrypt') + ' with shift ' + shift + '.';
+        return;
+      }
+      var n = currentMode === 'encrypt' ? shift : -shift;
+      var result = caesarShift(raw, n);
+      cipherOutput.textContent = result;
+      var letters = raw.split('').filter(function(c){ return (c>='A'&&c<='Z')||(c>='a'&&c<='z'); }).length;
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = 'Shift: ' + shift + ' — ' + (currentMode === 'encrypt' ? 'Encrypted' : 'Decrypted') + ' ' + letters + ' characters';
+      DT.trackTool('caesar-cipher');
+    }
+
+    function setShift(val) {
+      shift = Math.max(1, Math.min(25, parseInt(val) || 1));
+      shiftSlider.value = shift;
+      shiftNumber.value = shift;
+      shiftDisplay.textContent = shift;
+    }
+
+    shiftSlider.addEventListener('input', function() { setShift(this.value); processStandard(); });
+    shiftNumber.addEventListener('input', function() { setShift(this.value); processStandard(); });
+
+    var debouncedStandard = DT.debounce(processStandard, 150);
+    textInput.addEventListener('input', debouncedStandard);
+
+    var debouncedBrute = DT.debounce(runBrute, 200);
+    bruteInput.addEventListener('input', debouncedBrute);
+
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+
+        if (currentMode === 'brute') {
+          standardPane.style.display = 'none';
+          brutePane.style.display = 'block';
+          shiftControl.style.display = 'none';
+          runBrute();
+        } else {
+          standardPane.style.display = 'block';
+          brutePane.style.display = 'none';
+          shiftControl.style.display = 'flex';
+          inputLabel.textContent = currentMode === 'encrypt' ? 'Plaintext Input' : 'Ciphertext Input';
+          outputLabel.textContent = currentMode === 'encrypt' ? 'Ciphertext Output' : 'Plaintext Output';
+          textInput.placeholder = currentMode === 'encrypt'
+            ? 'Type text to encrypt with Caesar cipher...'
+            : 'Paste ciphertext to decrypt with Caesar cipher...';
+          processStandard();
+        }
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var text = cipherOutput.textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      var text = cipherOutput.textContent;
+      if (text) DT.downloadText(text, 'caesar.txt', 'text/plain');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      textInput.value = '';
+      processStandard();
+      textInput.focus();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      textInput.value = currentMode === 'decrypt'
+        ? 'Wkh txlfn eurzq ira mxpsv ryhu wkh odcb grj.'
+        : 'The quick brown fox jumps over the lazy dog.';
+      processStandard();
+    });
+
+    document.getElementById('exampleBtnBrute').addEventListener('click', function() {
+      bruteInput.value = 'Wkh txlfn eurzq ira mxpsv ryhu wkh odcb grj.';
+      runBrute();
+    });
+
+    document.getElementById('clearBtnBrute').addEventListener('click', function() {
+      bruteInput.value = '';
+      runBrute();
+      bruteInput.focus();
+    });
+
+    document.getElementById('copyBestBtn').addEventListener('click', function() {
+      var best = bruteList.querySelector('.brute-item.best');
+      if (best) {
+        DT.copyToClipboard(best.getAttribute('data-text'), this);
+      }
+    });
+
+    document.getElementById('downloadBruteBtn').addEventListener('click', function() {
+      var items = bruteList.querySelectorAll('.brute-item');
+      if (!items.length) return;
+      var lines = [];
+      items.forEach(function(el) {
+        lines.push('Shift ' + el.getAttribute('data-shift') + ': ' + el.getAttribute('data-text'));
+      });
+      DT.downloadText(lines.join('\n'), 'caesar-brute-force.txt', 'text/plain');
+    });
+
+    // Initial render
+    processStandard();
+  })();
+  </script>
+</body>
+</html>

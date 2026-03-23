@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Password Hasher (PBKDF2) — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Hash passwords securely using PBKDF2-SHA256 with configurable iterations. Hash mode, verify mode, and benchmark. Auto-generated salt. 100% client-side — passwords never leave your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/bcrypt-hash.html">
+  <meta property="og:title" content="Password Hasher (PBKDF2) — DevToolbox">
+  <meta property="og:description" content="Securely hash passwords using PBKDF2-SHA256. Hash, verify, and benchmark. Auto-generated salt. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/bcrypt-hash.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Password Hasher (PBKDF2)",
+    "url": "https://thisdevtool.com/tools/bcrypt-hash.html",
+    "description": "Hash passwords securely using PBKDF2-SHA256 with configurable iterations. Hash, verify, and benchmark. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Why PBKDF2 instead of bcrypt?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "True bcrypt requires native code and is not available in the browser's Web Crypto API. PBKDF2 (Password-Based Key Derivation Function 2) is a NIST-approved, widely-used password hashing algorithm built into the Web Crypto API. It is the standard used by WPA2 Wi-Fi, macOS Keychain, iOS data protection, and many web frameworks. For most use cases PBKDF2 with a high iteration count provides excellent security."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many iterations should I use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "NIST SP 800-132 recommends a minimum of 600,000 iterations for PBKDF2-SHA256 (as of 2023). For interactive logins, 100,000–600,000 iterations is a practical range — high enough to slow attackers but fast enough for users. The Benchmark tab shows how long each iteration count takes on your device. Choose a count that takes about 200–500 ms on your target server hardware."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a salt and why is it important?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A salt is a random value added to the password before hashing. Without a salt, two users with the same password would produce the same hash, enabling rainbow table attacks. With a unique salt per user, each hash is unique even for identical passwords. This tool automatically generates a cryptographically random 16-byte salt for every new hash. The salt is stored in the output hash string and used for verification."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my password safe when using this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. This tool runs 100% in your browser using the Web Crypto API. Your password never leaves your device. There is no server, no logging, and no analytics on the password field. You can safely test password hashing with real passwords here, though best practice is to use a dedicated server-side library (bcrypt, Argon2, scrypt) in production."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the output format?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The output is a self-contained hash string in the format: pbkdf2$sha256$ITERATIONS$SALT_HEX$HASH_HEX. This format is inspired by Passlib and Django's password hashers. It encodes all information needed to verify the password (algorithm, iterations, salt, and hash) so you can store this single string in a database and verify it later without any additional configuration."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .strength-meter { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; margin-top: 0.4rem; }
+    .strength-fill { height: 100%; border-radius: 3px; transition: width 0.3s, background-color 0.3s; }
+    .strength-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+    .bench-row { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+    .bench-bar { height: 10px; border-radius: 5px; background: var(--accent); opacity: 0.7; transition: width 0.4s; }
+    .hash-output-box { font-family: var(--font-mono); font-size: 0.8rem; word-break: break-all; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem; min-height: 4rem; }
+    .pw-field-wrap { position: relative; }
+    .pw-field-wrap input { padding-right: 3rem; }
+    .pw-toggle { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.8rem; padding: 0.25rem 0.5rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hmac-generator.html">HMAC Generator</a>
+        <a href="/tools/totp-generator.html">TOTP</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Password Hasher — PBKDF2-SHA256</h1>
+          <p class="tool-subtitle">Securely hash and verify passwords using PBKDF2-SHA256 with auto-generated salt. Includes benchmark to tune iteration count. 100% client-side.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="hash">Hash</button>
+            <button class="option-chip" data-mode="verify">Verify</button>
+            <button class="option-chip" data-mode="benchmark">Benchmark</button>
+          </div>
+
+          <!-- Hash mode -->
+          <div id="hashSection" style="margin-top:1rem;">
+            <div class="pane-label">
+              <span>Password</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+            </div>
+            <div class="pw-field-wrap">
+              <input type="password" id="passwordInput" placeholder="Enter password to hash..." style="width:100%;padding:0.6rem 3rem 0.6rem 0.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-size:1rem;box-sizing:border-box;">
+              <button class="pw-toggle" id="pwToggle" type="button" title="Show/hide password">Show</button>
+            </div>
+            <div class="strength-meter"><div class="strength-fill" id="strengthFill" style="width:0%;"></div></div>
+            <div class="strength-label" id="strengthLabel">Password strength: —</div>
+
+            <div class="pane-label" style="margin-top:0.75rem;"><span>Iterations</span></div>
+            <div class="option-chips" style="margin:0;">
+              <button class="option-chip" data-iter="100000">100K</button>
+              <button class="option-chip active" data-iter="310000">310K</button>
+              <button class="option-chip" data-iter="600000">600K (NIST)</button>
+            </div>
+
+            <button class="btn btn-primary" id="hashBtn" style="margin-top:1rem;">Generate Hash</button>
+
+            <div style="margin-top:1rem;">
+              <div class="pane-label">
+                <span>Output Hash (PBKDF2-SHA256)</span>
+                <button class="btn btn-sm btn-primary" id="copyHashBtn">Copy</button>
+              </div>
+              <div class="hash-output-box" id="hashOutput">Click "Generate Hash" to create a PBKDF2 hash.</div>
+            </div>
+          </div>
+
+          <!-- Verify mode -->
+          <div id="verifySection" style="display:none;margin-top:1rem;">
+            <div class="pane-label"><span>Password</span></div>
+            <div class="pw-field-wrap">
+              <input type="password" id="verifyPasswordInput" placeholder="Enter the password to verify..." style="width:100%;padding:0.6rem 3rem 0.6rem 0.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-size:1rem;box-sizing:border-box;">
+              <button class="pw-toggle" id="verifyPwToggle" type="button" title="Show/hide password">Show</button>
+            </div>
+
+            <div class="pane-label" style="margin-top:0.75rem;"><span>Hash to Verify</span></div>
+            <input type="text" id="verifyHashInput" placeholder="pbkdf2$sha256$310000$salt$hash..." style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-family:var(--font-mono);font-size:0.8rem;box-sizing:border-box;">
+            <button class="btn btn-primary" id="verifyBtn" style="margin-top:0.75rem;">Verify Password</button>
+            <div id="verifyResult" style="margin-top:0.75rem;font-size:1rem;font-weight:600;min-height:1.5rem;"></div>
+          </div>
+
+          <!-- Benchmark mode -->
+          <div id="benchmarkSection" style="display:none;margin-top:1rem;">
+            <p style="font-size:0.9rem;color:var(--text-muted);">Measures how long PBKDF2-SHA256 takes on your device for different iteration counts. Use this to choose the right count for your target server hardware.</p>
+            <button class="btn btn-primary" id="benchBtn">Run Benchmark</button>
+            <div id="benchResults" style="margin-top:1rem;"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a password and click "Generate Hash" to create a PBKDF2-SHA256 hash.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Password Hasher</h2>
+          <ol>
+            <li><strong>Hash mode</strong> — enter a password, choose iteration count, click "Generate Hash". Copy the output string to store in your database.</li>
+            <li><strong>Verify mode</strong> — paste the stored hash string and enter the password. The tool re-derives the key with the same salt and iterations and checks if they match.</li>
+            <li><strong>Benchmark mode</strong> — run a benchmark to see how long each iteration count takes on your current device. This helps you choose a safe iteration count for your server hardware.</li>
+          </ol>
+
+          <h2>Why PBKDF2 Instead of Bcrypt?</h2>
+          <p>Bcrypt is an excellent password hashing algorithm but it requires native code and is not available in the browser's Web Crypto API. PBKDF2 (Password-Based Key Derivation Function 2), defined in <a href="https://www.rfc-editor.org/rfc/rfc8018" rel="noopener noreferrer" target="_blank">RFC 8018</a>, is a NIST-approved alternative that is built into the Web Crypto API and is natively supported by virtually every programming language and framework.</p>
+
+          <p>PBKDF2 is not considered inferior to bcrypt for most use cases. It is used by WPA2 Wi-Fi authentication, macOS Keychain, iOS data protection, and Django's default password hasher. With a high iteration count (600,000+), it provides strong resistance to brute-force attacks. The main practical difference is that bcrypt and Argon2 are specifically designed to be memory-hard, making them somewhat more resistant to GPU-based attacks. For typical web applications, PBKDF2 with 310K–600K iterations is considered strong and is NIST-approved.</p>
+
+          <h3>Output Format</h3>
+          <p>This tool uses a self-contained hash string format: <code>pbkdf2$sha256$ITERATIONS$SALT_HEX$HASH_HEX</code>. This format encodes everything needed to verify the password: the algorithm (PBKDF2-SHA256), the iteration count, the random salt, and the derived key. You store this entire string in your database. No separate salt column is needed. This is the same approach used by Django, Passlib, and many other frameworks.</p>
+
+          <h3>Choosing Iteration Count</h3>
+          <p>The NIST recommended minimum as of 2023 is 600,000 iterations for PBKDF2-SHA256 (from NIST SP 800-132). Higher is better, but the practical limit is the impact on user experience. A hash that takes 500ms on your server is acceptable for login. One that takes 3 seconds is not. Use the Benchmark tab to measure performance on your current machine, then test on your server hardware to calibrate the right value. As hardware gets faster, consider increasing the iteration count in new hashes (old hashes stored with lower iterations continue to work since the count is stored in the hash string).</p>
+
+          <h3>Password Strength Meter</h3>
+          <p>The strength meter uses entropy estimation based on password length and character variety (lowercase, uppercase, digits, symbols). It is a guide only — a truly strong password is long, random, and unique to each service. Consider using a password manager to generate and store strong passwords. For authentication-related tools, also see the <a href="/tools/totp-generator.html">TOTP Generator</a> (add 2FA to your app) and the <a href="/tools/hmac-generator.html">HMAC Generator</a> (authenticate API requests).</p>
+
+          <h3>Never Hash Passwords Without a Salt</h3>
+          <p>A bare hash (MD5, SHA-256) of a password is not a secure password hash. If two users have the same password, their hashes are identical, enabling attackers to use precomputed rainbow tables. This tool automatically generates a cryptographically random 16-byte (128-bit) salt for every hash. The salt is unique per hash, ensuring that even identical passwords produce completely different output. This is why you should never use <code>SHA256(password)</code> for password storage — always use a purpose-built password hashing function like PBKDF2, bcrypt, or Argon2 that applies a salt and adds computational cost.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">Why PBKDF2 instead of bcrypt?</button>
+            <div class="faq-answer">True bcrypt requires native code and is not available in the browser's Web Crypto API. PBKDF2 is a NIST-approved password hashing algorithm built into the Web Crypto API. It is used by WPA2, macOS Keychain, iOS, and Django. With a high iteration count (600K+) it provides excellent security for most use cases.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How many iterations should I use?</button>
+            <div class="faq-answer">NIST SP 800-132 recommends a minimum of 600,000 iterations for PBKDF2-SHA256 as of 2023. The Benchmark tab shows how long each count takes on your device. Choose a count that takes about 200–500 ms on your target server hardware — high enough to slow attackers but fast enough for users.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is a salt and why is it important?</button>
+            <div class="faq-answer">A salt is a random value added to the password before hashing. Without a salt, identical passwords produce identical hashes, enabling rainbow table attacks. With a unique random salt per user, each hash is unique even for identical passwords. This tool automatically generates a cryptographically random 16-byte salt for every new hash.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my password safe when using this tool?</button>
+            <div class="faq-answer">Yes. This tool runs 100% in your browser using the Web Crypto API. Your password never leaves your device. There is no server, no logging, and no analytics on the password field. For production systems, use a server-side library like bcrypt, Argon2, or scrypt rather than hashing in the browser.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the output format?</button>
+            <div class="faq-answer">The output format is: pbkdf2$sha256$ITERATIONS$SALT_HEX$HASH_HEX. This self-contained string encodes all information needed to verify the password — algorithm, iterations, salt, and hash — so you can store this single string in a database column without needing a separate salt field.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Crypto / Auth</h4>
+        <a href="/tools/hmac-generator.html">HMAC Generator</a>
+        <a href="/tools/checksum-verifier.html">Checksum Verifier</a>
+        <a href="/tools/totp-generator.html">TOTP Generator</a>
+        <a href="/tools/bcrypt-hash.html">Bcrypt / PBKDF2</a>
+        <a href="/tools/data-url-creator.html">Data URL Creator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/hmac-generator.html">HMAC Generator</a>
+        <a href="/tools/totp-generator.html">TOTP Generator</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var passwordInput = document.getElementById('passwordInput');
+      var verifyPasswordInput = document.getElementById('verifyPasswordInput');
+      var verifyHashInput = document.getElementById('verifyHashInput');
+      var hashOutput = document.getElementById('hashOutput');
+      var verifyResult = document.getElementById('verifyResult');
+      var statusBar = document.getElementById('statusBar');
+      var strengthFill = document.getElementById('strengthFill');
+      var strengthLabel = document.getElementById('strengthLabel');
+      var currentMode = 'hash';
+      var iterations = 310000;
+
+      function bufToHex(buf) {
+        return Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+      }
+      function hexToBytes(hex) {
+        var bytes = new Uint8Array(hex.length / 2);
+        for (var i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+        return bytes;
+      }
+
+      function calcStrength(pw) {
+        if (!pw) return { score: 0, label: '—', color: '#ccc' };
+        var score = 0;
+        if (pw.length >= 8) score++;
+        if (pw.length >= 12) score++;
+        if (pw.length >= 16) score++;
+        if (/[A-Z]/.test(pw)) score++;
+        if (/[a-z]/.test(pw)) score++;
+        if (/[0-9]/.test(pw)) score++;
+        if (/[^A-Za-z0-9]/.test(pw)) score++;
+        var labels = ['', 'Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Strong', 'Very Strong'];
+        var colors = ['#ccc', '#ef4444', '#f97316', '#eab308', '#10b981', '#10b981', '#10b981', '#059669'];
+        return { score: Math.min(score, 7), label: labels[Math.min(score, 7)] || '—', color: colors[Math.min(score, 7)] };
+      }
+
+      passwordInput.addEventListener('input', function () {
+        var s = calcStrength(passwordInput.value);
+        strengthFill.style.width = (s.score / 7 * 100) + '%';
+        strengthFill.style.backgroundColor = s.color;
+        strengthLabel.textContent = 'Password strength: ' + s.label;
+      });
+
+      function pbkdf2Hash(password, saltBytes, iters) {
+        var enc = new TextEncoder();
+        return crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits'])
+          .then(function (key) {
+            return crypto.subtle.deriveBits({
+              name: 'PBKDF2', salt: saltBytes, iterations: iters, hash: 'SHA-256'
+            }, key, 256);
+          });
+      }
+
+      document.getElementById('hashBtn').addEventListener('click', function () {
+        var pw = passwordInput.value;
+        if (!pw) { statusBar.className = 'status-bar invalid'; statusBar.textContent = 'Enter a password first.'; return; }
+        var salt = crypto.getRandomValues(new Uint8Array(16));
+        var saltHex = bufToHex(salt);
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Hashing with ' + iterations.toLocaleString() + ' iterations...';
+        hashOutput.textContent = 'Computing...';
+        var t0 = performance.now();
+        pbkdf2Hash(pw, salt, iterations).then(function (derived) {
+          var ms = Math.round(performance.now() - t0);
+          var hashHex = bufToHex(derived);
+          var output = 'pbkdf2$sha256$' + iterations + '$' + saltHex + '$' + hashHex;
+          hashOutput.textContent = output;
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'PBKDF2-SHA256 — ' + iterations.toLocaleString() + ' iterations — ' + ms + 'ms';
+          DT.trackTool('bcrypt-hash');
+        }).catch(function (e) {
+          hashOutput.textContent = 'Error: ' + e.message;
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+        });
+      });
+
+      document.getElementById('verifyBtn').addEventListener('click', function () {
+        var pw = verifyPasswordInput.value;
+        var stored = verifyHashInput.value.trim();
+        if (!pw || !stored) { verifyResult.textContent = 'Enter both a password and a hash.'; return; }
+        var parts = stored.split('$');
+        if (parts.length !== 5 || parts[0] !== 'pbkdf2' || parts[1] !== 'sha256') {
+          verifyResult.textContent = 'Invalid hash format. Expected: pbkdf2$sha256$iterations$salt$hash';
+          verifyResult.style.color = '#ef4444'; return;
+        }
+        var iters = parseInt(parts[2]);
+        var saltBytes = hexToBytes(parts[3]);
+        var expectedHex = parts[4];
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Verifying...';
+        pbkdf2Hash(pw, saltBytes, iters).then(function (derived) {
+          var computedHex = bufToHex(derived);
+          if (computedHex === expectedHex) {
+            verifyResult.textContent = 'Password matches! The hash is valid.';
+            verifyResult.style.color = 'var(--accent)';
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'PBKDF2-SHA256 — Password verified successfully.';
+          } else {
+            verifyResult.textContent = 'Password does not match. Wrong password or corrupted hash.';
+            verifyResult.style.color = '#ef4444';
+            statusBar.className = 'status-bar invalid';
+            statusBar.textContent = 'PBKDF2-SHA256 — Password mismatch.';
+          }
+          DT.trackTool('bcrypt-hash');
+        }).catch(function (e) {
+          verifyResult.textContent = 'Error: ' + e.message;
+          verifyResult.style.color = '#ef4444';
+        });
+      });
+
+      document.getElementById('benchBtn').addEventListener('click', function () {
+        var benchResults = document.getElementById('benchResults');
+        benchResults.innerHTML = '<p style="color:var(--text-muted);font-size:0.875rem;">Running benchmark... this takes a few seconds.</p>';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Benchmarking PBKDF2-SHA256...';
+        var testPw = 'benchmark_test_password_123!';
+        var salt = crypto.getRandomValues(new Uint8Array(16));
+        var counts = [10000, 100000, 310000, 600000];
+        var results = [];
+        function runNext(idx) {
+          if (idx >= counts.length) {
+            var maxMs = Math.max.apply(null, results.map(function (r) { return r.ms; }));
+            benchResults.innerHTML = results.map(function (r) {
+              var pct = Math.round(r.ms / maxMs * 100);
+              var color = r.ms < 200 ? '#10b981' : r.ms < 600 ? '#eab308' : '#ef4444';
+              return '<div class="bench-row">' +
+                '<span style="min-width:6rem;">' + r.count.toLocaleString() + '</span>' +
+                '<div style="flex:1;padding:0 1rem;"><div class="bench-bar" style="width:' + pct + '%;background:' + color + ';"></div></div>' +
+                '<span style="min-width:4rem;text-align:right;color:' + color + ';">' + r.ms + 'ms</span>' +
+                '<span style="margin-left:0.75rem;font-size:0.75rem;color:var(--text-muted);">' + (r.ms < 200 ? 'Fast (weak)' : r.ms < 600 ? 'Good' : 'Strong') + '</span>' +
+                '</div>';
+            }).join('');
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Benchmark complete. Choose 200–500ms on your server hardware.';
+            return;
+          }
+          var t0 = performance.now();
+          pbkdf2Hash(testPw, salt, counts[idx]).then(function () {
+            var ms = Math.round(performance.now() - t0);
+            results.push({ count: counts[idx], ms: ms });
+            runNext(idx + 1);
+          });
+        }
+        runNext(0);
+      });
+
+      document.querySelectorAll('[data-mode]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          document.getElementById('hashSection').style.display = currentMode === 'hash' ? 'block' : 'none';
+          document.getElementById('verifySection').style.display = currentMode === 'verify' ? 'block' : 'none';
+          document.getElementById('benchmarkSection').style.display = currentMode === 'benchmark' ? 'block' : 'none';
+        });
+      });
+
+      document.querySelectorAll('[data-iter]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('[data-iter]').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          iterations = parseInt(chip.getAttribute('data-iter'));
+        });
+      });
+
+      function makeToggle(inputEl, toggleBtn) {
+        toggleBtn.addEventListener('click', function () {
+          var show = inputEl.type === 'password';
+          inputEl.type = show ? 'text' : 'password';
+          toggleBtn.textContent = show ? 'Hide' : 'Show';
+        });
+      }
+      makeToggle(passwordInput, document.getElementById('pwToggle'));
+      makeToggle(verifyPasswordInput, document.getElementById('verifyPwToggle'));
+
+      document.getElementById('copyHashBtn').addEventListener('click', function () {
+        var text = hashOutput.textContent;
+        if (text && text !== 'Click "Generate Hash" to create a PBKDF2 hash.') DT.copyToClipboard(text, this);
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        passwordInput.value = 'MySecurePass123!';
+        passwordInput.dispatchEvent(new Event('input'));
+      });
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        passwordInput.value = '';
+        passwordInput.dispatchEvent(new Event('input'));
+        hashOutput.textContent = 'Click "Generate Hash" to create a PBKDF2 hash.';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter a password and click "Generate Hash" to create a PBKDF2-SHA256 hash.';
+      });
+    })();
+  </script>
+</body>
+</html>

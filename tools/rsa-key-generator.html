@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>RSA Key Pair Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate RSA key pairs (2048 or 4096 bit) in your browser. Export as PEM (PKCS8 private key, SPKI public key). Inspect existing PEM keys. Uses Web Crypto API. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/rsa-key-generator.html">
+  <meta property="og:title" content="RSA Key Pair Generator — DevToolbox">
+  <meta property="og:description" content="Generate RSA-OAEP key pairs (2048/4096 bit) and export as PEM. Inspect existing PEM keys. Web Crypto API, 100% client-side, no data sent to server.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/rsa-key-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "RSA Key Pair Generator",
+    "url": "https://thisdevtool.com/tools/rsa-key-generator.html",
+    "description": "Generate RSA-OAEP key pairs (2048/4096 bit) and export as PEM. Inspect existing PEM keys. 100% client-side via Web Crypto API.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is an RSA key pair?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An RSA key pair consists of a mathematically related public key and private key. The public key can be shared freely and is used to encrypt data or verify signatures. The private key must be kept secret and is used to decrypt data or create signatures. Data encrypted with the public key can only be decrypted with the corresponding private key, and vice versa."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between 2048-bit and 4096-bit RSA?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "2048-bit RSA is currently considered secure and is the minimum recommended key size. 4096-bit RSA provides a higher security margin and is recommended for long-lived keys or high-value systems, but it is approximately 4-8x slower for cryptographic operations. Most TLS certificates and SSH keys use 2048 or 3072 bits. For keys that need to remain secure for 20+ years, 4096 bits is a safer choice."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is PKCS8 format for private keys?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PKCS8 (Public Key Cryptography Standards #8) is the standard format for storing private keys. A PKCS8 private key file begins with '-----BEGIN PRIVATE KEY-----'. It can store keys for various algorithms (RSA, EC, Ed25519) in a unified format. PKCS8 is the preferred format used by modern tools including OpenSSL, Java, and Node.js crypto modules."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is SPKI format for public keys?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SubjectPublicKeyInfo (SPKI) is the standard format for public keys used in X.509 certificates and the Web Crypto API. An SPKI public key file begins with '-----BEGIN PUBLIC KEY-----'. It includes both the key data and metadata about the algorithm, making it self-describing and interoperable across tools."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it safe to generate RSA keys in a browser?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, when using the Web Crypto API (window.crypto.subtle), RSA key generation uses the browser's secure random number generator (CSPRNG) and happens entirely within your browser process. Keys are never transmitted. However, for production security-critical applications, consider generating keys in a trusted, audited environment (dedicated HSM, air-gapped machine, or server with hardened OS) and using additional protections like password-encrypting the private key."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .key-panel { display: flex; flex-direction: column; gap: 10px; }
+    .key-panel textarea { font-family: monospace; font-size: 0.75rem; resize: vertical; }
+    .key-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; font-size: 0.82rem; margin-top: 8px; }
+    .key-info-item { display: flex; flex-direction: column; }
+    .key-info-item strong { font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted, #64748b); margin-bottom: 2px; }
+    .reference-section { font-size: 0.85rem; line-height: 1.7; }
+    .reference-section table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    .reference-section th, .reference-section td { padding: 6px 10px; border: 1px solid var(--border, #e2e8f0); text-align: left; font-size: 0.8rem; }
+    .reference-section th { background: var(--surface-2, #f1f5f9); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/aes-encryption.html">AES Encrypt</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>RSA Key Pair Generator</h1>
+          <p class="tool-subtitle">Generate RSA key pairs and export as PEM. Inspect existing keys. Uses Web Crypto API — your keys never leave the browser.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="generate">Generate</button>
+            <button class="option-chip" data-mode="inspect">Inspect Key</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <!-- Generate panel -->
+          <div id="generatePanel">
+            <div style="margin-bottom:14px;">
+              <label style="font-size:0.85rem;font-weight:600;display:block;margin-bottom:6px;">Key Size</label>
+              <div class="option-chips" style="margin:0;" id="sizeChips">
+                <button class="option-chip active" data-size="2048">2048 bits</button>
+                <button class="option-chip" data-size="4096">4096 bits</button>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="generateBtn">Generate Key Pair</button>
+            <div class="status-bar info" id="genStatus" role="status" aria-live="polite" style="margin-top:10px;">
+              Click "Generate Key Pair" to create a new RSA key pair.
+            </div>
+
+            <div id="keyOutput" style="display:none;margin-top:16px;">
+              <div class="key-panel">
+                <div>
+                  <div class="pane-label">
+                    <span>Private Key (PKCS8 — keep secret!)</span>
+                    <div class="btn-group" style="margin:0;">
+                      <button class="btn btn-sm btn-primary" id="copyPrivBtn">Copy</button>
+                      <button class="btn btn-sm btn-secondary" id="dlPrivBtn">Download .pem</button>
+                    </div>
+                  </div>
+                  <textarea id="privateKeyOut" rows="12" readonly spellcheck="false"></textarea>
+                </div>
+                <div>
+                  <div class="pane-label">
+                    <span>Public Key (SPKI — share freely)</span>
+                    <div class="btn-group" style="margin:0;">
+                      <button class="btn btn-sm btn-primary" id="copyPubBtn">Copy</button>
+                      <button class="btn btn-sm btn-secondary" id="dlPubBtn">Download .pem</button>
+                    </div>
+                  </div>
+                  <textarea id="publicKeyOut" rows="8" readonly spellcheck="false"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inspect panel -->
+          <div id="inspectPanel" style="display:none;">
+            <div class="pane-label" style="margin-bottom:6px;"><span>Paste PEM Key</span></div>
+            <textarea id="inspectInput" rows="12" placeholder="-----BEGIN PUBLIC KEY-----&#10;...&#10;-----END PUBLIC KEY-----" spellcheck="false" style="font-family:monospace;font-size:0.75rem;"></textarea>
+            <button class="btn btn-primary" id="inspectBtn" style="margin-top:10px;">Inspect Key</button>
+            <div class="status-bar info" id="inspectStatus" style="margin-top:10px;">Paste a PEM public or private key to inspect its properties.</div>
+            <div id="inspectResult" style="display:none;margin-top:12px;padding:14px;background:var(--surface-2,#f1f5f9);border-radius:8px;">
+              <div class="key-info-grid" id="keyInfoGrid"></div>
+            </div>
+          </div>
+
+          <!-- Reference panel -->
+          <div id="referencePanel" style="display:none;" class="reference-section">
+            <h3 style="margin-top:0;">RSA Key Format Reference</h3>
+            <table>
+              <thead><tr><th>Format</th><th>PEM Header</th><th>Usage</th></tr></thead>
+              <tbody>
+                <tr><td>PKCS#8 Private</td><td><code>-----BEGIN PRIVATE KEY-----</code></td><td>Modern private key format, used by OpenSSL, Java, Node.js</td></tr>
+                <tr><td>PKCS#1 Private</td><td><code>-----BEGIN RSA PRIVATE KEY-----</code></td><td>Legacy RSA-only format, used by older OpenSSL versions</td></tr>
+                <tr><td>SPKI Public</td><td><code>-----BEGIN PUBLIC KEY-----</code></td><td>Standard public key, used in X.509 certs and Web Crypto API</td></tr>
+                <tr><td>PKCS#1 Public</td><td><code>-----BEGIN RSA PUBLIC KEY-----</code></td><td>RSA-specific legacy format (rare)</td></tr>
+                <tr><td>Certificate</td><td><code>-----BEGIN CERTIFICATE-----</code></td><td>X.509 cert containing public key + identity info</td></tr>
+              </tbody>
+            </table>
+            <h3>Common OpenSSL Commands</h3>
+            <pre style="background:var(--surface-2,#f1f5f9);padding:12px;border-radius:6px;font-size:0.78rem;overflow-x:auto;"># Generate 2048-bit RSA key
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out private.pem
+
+# Extract public key from private key
+openssl rsa -in private.pem -pubout -out public.pem
+
+# Inspect a key
+openssl rsa -in private.pem -noout -text
+
+# Generate self-signed certificate
+openssl req -new -x509 -key private.pem -out cert.pem -days 365</pre>
+            <h3>RSA Key Sizes Comparison</h3>
+            <table>
+              <thead><tr><th>Key Size</th><th>Security Level</th><th>Use Case</th><th>Performance</th></tr></thead>
+              <tbody>
+                <tr><td>1024 bit</td><td>Broken (do not use)</td><td>Legacy only</td><td>Fastest</td></tr>
+                <tr><td>2048 bit</td><td>~112 bits (secure to ~2030)</td><td>TLS, SSH, code signing</td><td>Fast</td></tr>
+                <tr><td>3072 bit</td><td>~128 bits (NIST recommended)</td><td>Long-lived keys</td><td>Moderate</td></tr>
+                <tr><td>4096 bit</td><td>~140 bits (high security)</td><td>Critical infrastructure</td><td>Slow (4-8x vs 2048)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Generate an RSA Key Pair</h2>
+          <ol>
+            <li><strong>Choose key size:</strong> 2048 bits is standard; 4096 bits for higher security (note: takes longer to generate).</li>
+            <li><strong>Click "Generate Key Pair."</strong> The browser uses its secure random number generator and Web Crypto API.</li>
+            <li><strong>Download or copy</strong> the private key (keep this secret!) and the public key (share freely).</li>
+            <li><strong>Inspect mode:</strong> paste any PEM public or private key to view its algorithm, key size, and other properties.</li>
+          </ol>
+
+          <h2>About RSA Encryption</h2>
+          <p>RSA (Rivest–Shamir–Adleman) is the most widely used asymmetric encryption algorithm, invented in 1977. It is based on the computational difficulty of factoring the product of two large prime numbers. The public key contains the modulus <em>n</em> (the product of two primes) and a public exponent <em>e</em> (usually 65537). The private key contains the modulus and the private exponent <em>d</em>, which can only be computed if you know the prime factors.</p>
+
+          <h3>RSA-OAEP vs. RSA-PKCS1v15</h3>
+          <p>This tool generates keys with the RSA-OAEP (Optimal Asymmetric Encryption Padding) scheme, which is the modern, secure standard. The older PKCS1v15 padding scheme is vulnerable to padding oracle attacks (the Bleichenbacher attack) and should not be used in new systems. RSA-OAEP uses random padding with SHA-256 as the hash function, preventing these attacks. The Web Crypto API only supports RSA-OAEP for encryption, which is the right choice.</p>
+
+          <h3>PEM Format Explained</h3>
+          <p>PEM (Privacy Enhanced Mail) is the most common format for storing cryptographic keys and certificates. A PEM file is a Base64-encoded representation of DER (Distinguished Encoding Rules) binary data, wrapped with header and footer lines like <code>-----BEGIN PRIVATE KEY-----</code>. The format was originally developed for email but became the universal standard for TLS certificates, SSH keys, and code signing certificates. PEM files are plain text and can be opened with any text editor — though you should never share private key PEM files.</p>
+
+          <h3>Private Key Security</h3>
+          <p>An RSA private key is the most sensitive file in a cryptographic system. Anyone with your private key can decrypt any data encrypted with your public key and forge signatures in your name. Store private keys securely: use OS keychain storage, encrypted key files (PKCS#12 / .p12 format), or hardware security modules (HSMs) for production use. For development keys, at minimum use filesystem permissions to restrict access. For comparison, see our <a href="/tools/aes-encryption.html">AES Encryption tool</a> for symmetric key use cases and <a href="/tools/jwt-decoder.html">JWT Decoder</a> for working with JWTs that use RSA signing.</p>
+
+          <h3>When to Use RSA vs. ECDSA</h3>
+          <p>RSA is the most compatible asymmetric algorithm — every TLS library, operating system, and programming language supports it. However, Elliptic Curve Cryptography (ECDSA/Ed25519) offers equivalent security with much smaller key sizes and faster operations. A 256-bit ECDSA key provides the same security as a 3072-bit RSA key. For new systems where all parties control the implementation (APIs, microservices), ECDSA (P-256) or Ed25519 are better choices. For maximum compatibility with legacy systems (enterprise PKI, old SSH clients), RSA 2048/4096 remains necessary.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is an RSA key pair?</button>
+            <div class="faq-answer">An RSA key pair consists of a mathematically related public key and private key. The public key can be shared freely and is used to encrypt data or verify signatures. The private key must be kept secret and is used to decrypt data or create signatures.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between 2048-bit and 4096-bit RSA?</button>
+            <div class="faq-answer">2048-bit RSA is currently considered secure (minimum recommended). 4096-bit provides a higher security margin for long-lived keys but is 4-8x slower for cryptographic operations. Most TLS certificates use 2048 or 3072 bits. For keys lasting 20+ years, 4096 bits is the safer choice.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is PKCS8 format for private keys?</button>
+            <div class="faq-answer">PKCS8 is the standard format for storing private keys, beginning with "-----BEGIN PRIVATE KEY-----". It stores keys for various algorithms in a unified format and is preferred by modern tools including OpenSSL, Java, and Node.js crypto modules.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is SPKI format for public keys?</button>
+            <div class="faq-answer">SubjectPublicKeyInfo (SPKI) is the standard public key format used in X.509 certificates and the Web Crypto API, beginning with "-----BEGIN PUBLIC KEY-----". It includes both the key data and algorithm metadata, making it self-describing and interoperable.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is it safe to generate RSA keys in a browser?</button>
+            <div class="faq-answer">Yes, when using the Web Crypto API (window.crypto.subtle). Key generation uses the browser's CSPRNG and happens entirely within your browser — keys are never transmitted. For production security-critical applications, consider generating keys in a dedicated HSM or air-gapped machine with additional protections like password-encrypting the private key.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Crypto Tools</h4>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/aes-encryption.html">AES Encrypt</a>
+        <a href="/tools/rsa-key-generator.html">RSA Key Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Encoding Tools</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/base32-encoder.html">Base32/58/85</a>
+        <a href="/tools/binary-code.html">Binary Translator</a>
+        <a href="/tools/punycode-converter.html">Punycode</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var curMode = 'generate';
+      var keySize = 2048;
+
+      // ---- Mode chips ----
+      document.querySelectorAll('[data-mode]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('[data-mode]').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          curMode = btn.getAttribute('data-mode');
+          document.getElementById('generatePanel').style.display = curMode === 'generate' ? '' : 'none';
+          document.getElementById('inspectPanel').style.display = curMode === 'inspect' ? '' : 'none';
+          document.getElementById('referencePanel').style.display = curMode === 'reference' ? '' : 'none';
+        });
+      });
+
+      document.querySelectorAll('[data-size]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('[data-size]').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          keySize = parseInt(btn.getAttribute('data-size'), 10);
+        });
+      });
+
+      // ---- PEM helpers ----
+      function arrayBufferToPem(buf, label) {
+        var binary = '';
+        var bytes = new Uint8Array(buf);
+        for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        var b64 = btoa(binary);
+        var lines = [];
+        for (var j = 0; j < b64.length; j += 64) lines.push(b64.slice(j, j + 64));
+        return '-----BEGIN ' + label + '-----\n' + lines.join('\n') + '\n-----END ' + label + '-----';
+      }
+
+      function pemToArrayBuffer(pem) {
+        var b64 = pem.replace(/-----BEGIN [A-Z ]+-----/, '').replace(/-----END [A-Z ]+-----/, '').replace(/\s+/g, '');
+        var binary = atob(b64);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return bytes.buffer;
+      }
+
+      // ---- Generate ----
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var genStatus = document.getElementById('genStatus');
+        var generateBtn = document.getElementById('generateBtn');
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'Generating... (this may take a moment)';
+        genStatus.className = 'status-bar info';
+        genStatus.textContent = 'Generating ' + keySize + '-bit RSA key pair using Web Crypto API...';
+
+        crypto.subtle.generateKey(
+          {
+            name: 'RSA-OAEP',
+            modulusLength: keySize,
+            publicExponent: new Uint8Array([1, 0, 1]), // 65537
+            hash: 'SHA-256'
+          },
+          true,
+          ['encrypt', 'decrypt']
+        ).then(function (keyPair) {
+          return Promise.all([
+            crypto.subtle.exportKey('pkcs8', keyPair.privateKey),
+            crypto.subtle.exportKey('spki', keyPair.publicKey)
+          ]);
+        }).then(function (exported) {
+          var privatePem = arrayBufferToPem(exported[0], 'PRIVATE KEY');
+          var publicPem = arrayBufferToPem(exported[1], 'PUBLIC KEY');
+          document.getElementById('privateKeyOut').value = privatePem;
+          document.getElementById('publicKeyOut').value = publicPem;
+          document.getElementById('keyOutput').style.display = '';
+          genStatus.className = 'status-bar valid';
+          genStatus.textContent = 'Generated ' + keySize + '-bit RSA key pair (RSA-OAEP, SHA-256). Download or copy your keys below.';
+          DT.trackTool('rsa-key-generator');
+        }).catch(function (err) {
+          genStatus.className = 'status-bar invalid';
+          genStatus.textContent = 'Error generating keys: ' + err.message;
+        }).finally(function () {
+          generateBtn.disabled = false;
+          generateBtn.textContent = 'Generate Key Pair';
+        });
+      });
+
+      document.getElementById('copyPrivBtn').addEventListener('click', function () {
+        DT.copyToClipboard(document.getElementById('privateKeyOut').value, this);
+      });
+      document.getElementById('copyPubBtn').addEventListener('click', function () {
+        DT.copyToClipboard(document.getElementById('publicKeyOut').value, this);
+      });
+      document.getElementById('dlPrivBtn').addEventListener('click', function () {
+        DT.downloadText(document.getElementById('privateKeyOut').value, 'private-key.pem', 'application/x-pem-file');
+      });
+      document.getElementById('dlPubBtn').addEventListener('click', function () {
+        DT.downloadText(document.getElementById('publicKeyOut').value, 'public-key.pem', 'application/x-pem-file');
+      });
+
+      // ---- Inspect ----
+      document.getElementById('inspectBtn').addEventListener('click', function () {
+        var pem = document.getElementById('inspectInput').value.trim();
+        var inspectStatus = document.getElementById('inspectStatus');
+        var inspectResult = document.getElementById('inspectResult');
+        var keyInfoGrid = document.getElementById('keyInfoGrid');
+
+        if (!pem) {
+          inspectStatus.className = 'status-bar invalid';
+          inspectStatus.textContent = 'Please paste a PEM key to inspect.';
+          return;
+        }
+
+        var isPrivate = pem.includes('PRIVATE KEY');
+        var isPublic = pem.includes('PUBLIC KEY') && !isPrivate;
+
+        if (!isPrivate && !isPublic) {
+          inspectStatus.className = 'status-bar invalid';
+          inspectStatus.textContent = 'Unrecognized PEM format. Expected a PUBLIC KEY or PRIVATE KEY.';
+          return;
+        }
+
+        try {
+          var buf = pemToArrayBuffer(pem);
+          var importFn = isPrivate
+            ? crypto.subtle.importKey('pkcs8', buf, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['decrypt'])
+            : crypto.subtle.importKey('spki', buf, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']);
+
+          importFn.then(function (key) {
+            var alg = key.algorithm;
+            var info = [
+              { label: 'Key Type', value: isPrivate ? 'Private Key (PKCS8)' : 'Public Key (SPKI)' },
+              { label: 'Algorithm', value: alg.name || 'RSA' },
+              { label: 'Key Size', value: (alg.modulusLength || '?') + ' bits' },
+              { label: 'Public Exponent', value: alg.publicExponent ? Array.from(alg.publicExponent).reduce(function (acc, b, i) { return acc + b * Math.pow(256, alg.publicExponent.length - 1 - i); }, 0).toString() : '?' },
+              { label: 'Hash', value: (alg.hash && alg.hash.name) ? alg.hash.name : 'SHA-256' },
+              { label: 'Extractable', value: key.extractable ? 'Yes' : 'No' },
+              { label: 'Usages', value: key.usages.join(', ') || 'N/A' },
+              { label: 'PEM Lines', value: pem.split('\n').length }
+            ];
+            keyInfoGrid.innerHTML = info.map(function (item) {
+              return '<div class="key-info-item"><strong>' + item.label + '</strong><span>' + item.value + '</span></div>';
+            }).join('');
+            inspectResult.style.display = '';
+            inspectStatus.className = 'status-bar valid';
+            inspectStatus.textContent = 'Valid ' + (alg.modulusLength || '') + '-bit ' + (alg.name || 'RSA') + ' ' + (isPrivate ? 'private' : 'public') + ' key';
+            DT.trackTool('rsa-key-generator');
+          }).catch(function (err) {
+            inspectResult.style.display = 'none';
+            inspectStatus.className = 'status-bar invalid';
+            inspectStatus.textContent = 'Could not parse key: ' + err.message + '. Note: this tool only supports RSA-OAEP keys.';
+          });
+        } catch (e) {
+          inspectResult.style.display = 'none';
+          inspectStatus.className = 'status-bar invalid';
+          inspectStatus.textContent = 'Invalid PEM format: ' + e.message;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

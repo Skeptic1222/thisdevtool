@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>ROT13 / ROT47 Cipher — Free Online Encoder | DevToolbox</title>
+  <meta name="description" content="Apply ROT13, ROT5, ROT47, or any custom ROTn rotation cipher online. Free ROT13 encoder and decoder with live preview. Runs entirely in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/rot13-cipher.html">
+  <meta property="og:title" content="ROT13 / ROT47 Cipher — DevToolbox">
+  <meta property="og:description" content="Free online ROT13, ROT5, ROT47 and custom ROTn cipher tool. Encode and decode text with rotation ciphers instantly. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/rot13-cipher.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "ROT13 / ROT47 Cipher",
+    "url": "https://thisdevtool.com/tools/rot13-cipher.html",
+    "description": "Apply ROT13, ROT5, ROT47, or custom ROTn rotation ciphers to text. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is ROT13?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ROT13 is a simple letter substitution cipher that replaces each letter with the letter 13 positions after it in the alphabet. Because the alphabet has 26 letters, applying ROT13 twice returns the original text — making it its own inverse. ROT13 is used to hide spoilers, puzzle solutions, and mildly offensive content in online forums and email. It provides no real security and is not suitable for encryption."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between ROT13, ROT5, and ROT47?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ROT13 rotates only letters (A-Z) by 13 positions. ROT5 rotates only digits (0-9) by 5 positions. ROT47 rotates all printable ASCII characters (codes 33 to 126, which includes letters, digits, and symbols) by 47 positions. A combined cipher applying both ROT13 and ROT5 to a text is sometimes called ROT18. ROT47 is the most powerful of these, obfuscating symbols and digits as well as letters."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is ROT13 encryption secure?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. ROT13 (and all simple rotation ciphers) provide no cryptographic security. Any attacker can decode ROT13 in seconds, either by running it through a tool or by recognizing common letter patterns. ROT13 is designed for light obfuscation — hiding spoilers, hiding mildly offensive jokes, or preventing casual readers from seeing answers. For actual security, use AES encryption, bcrypt for passwords, or TLS for network communication."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my text sent to a server when using this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This ROT13 cipher tool runs entirely in your browser using JavaScript. Your text is never sent to any server, there is no logging, and no data collection of any kind."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a custom ROTn cipher?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A custom ROTn cipher lets you choose any rotation value from 1 to 25 instead of the standard 13. For example, ROT3 is the classical Caesar cipher. ROT1 shifts each letter by one position (A becomes B, B becomes C, etc.). Note that only ROT13 is self-inverse; for other values you need to apply the inverse rotation (26 minus the rotation amount) to decode."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .alphabet-wheel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 12px;
+      font-size: 0.75rem;
+    }
+    .wheel-pair {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: var(--surface-2);
+      border-radius: 4px;
+      padding: 4px 6px;
+      min-width: 32px;
+    }
+    .wheel-original { color: var(--text-secondary); font-weight: 600; }
+    .wheel-arrow { color: var(--text-muted); font-size: 0.6rem; }
+    .wheel-rotated { color: var(--accent); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/caesar-cipher.html">Caesar Cipher</a>
+        <a href="/tools/base64.html">Base64</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>ROT13 / ROT47 Cipher</h1>
+          <p class="tool-subtitle">Encode or decode text using ROT13, ROT5, ROT47, or any custom rotation value. Self-inverse and live.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="rot13">ROT13</button>
+            <button class="option-chip" data-mode="rot5">ROT5 (digits)</button>
+            <button class="option-chip" data-mode="rot47">ROT47</button>
+            <button class="option-chip" data-mode="custom">Custom ROTn</button>
+          </div>
+
+          <!-- Custom rotation slider (shown only in custom mode) -->
+          <div id="customControls" style="display:none; margin-top:10px; padding:10px; background:var(--surface-2); border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+              <label style="font-size:0.875rem; font-weight:600;">Rotation: <span id="rotDisplay">13</span></label>
+              <input type="range" id="rotSlider" min="1" max="25" value="13" step="1" style="flex:1; min-width:120px;">
+            </div>
+          </div>
+
+          <div class="split-pane" style="margin-top:14px;">
+            <div>
+              <div class="pane-label">
+                <span>Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="textInput" rows="10" placeholder="Type text to apply ROT13 cipher..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Output (apply again to decode)</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="rotOutput" style="min-height:220px;"></div>
+            </div>
+          </div>
+
+          <!-- Alphabet wheel visualization -->
+          <div style="margin-top:14px;">
+            <p style="font-size:0.875rem; font-weight:600; margin-bottom:6px; color:var(--text-secondary);">Alphabet mapping (original &rarr; rotated):</p>
+            <div class="alphabet-wheel" id="alphabetWheel"></div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type text above to apply ROT13.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the ROT13 Cipher Tool</h2>
+          <ol>
+            <li><strong>Choose a cipher mode</strong> — ROT13 (letters only), ROT5 (digits only), ROT47 (all printable ASCII), or Custom ROTn with your own rotation value.</li>
+            <li><strong>Type or paste your text</strong> — the encoded output appears in real time on the right.</li>
+            <li><strong>Decode by applying again</strong> — ROT13 and ROT47 are self-inverse: paste the output back into the input and you get the original. For ROT5 and custom values, apply the inverse rotation.</li>
+            <li><strong>Copy or download</strong> — save the result using the buttons above the output.</li>
+          </ol>
+
+          <h2>What Is ROT13?</h2>
+          <p>ROT13 is a simple letter substitution cipher that rotates each letter of the alphabet by 13 positions. Because the English alphabet has 26 letters, applying ROT13 twice always returns the original text — it is its own inverse. This self-reversing property makes ROT13 unique among rotation ciphers (only ROT0 and ROT13 have this property in a 26-letter alphabet).</p>
+          <p>The cipher was popularized on Usenet newsgroups in the 1980s and 1990s as a way to hide spoilers, offensive jokes, and puzzle answers from casual readers while still making them accessible to anyone who wanted to read them. It spread to online forums, early web communities, and email. Today it remains a common example cipher in programming tutorials and computer science education.</p>
+
+          <h3>ROT13 in Practice</h3>
+          <p>ROT13 works exclusively on letters. The letters A-M map to N-Z and vice versa: A→N, B→O, C→P ... M→Z, N→A, O→B ... Z→M. Non-letter characters — spaces, digits, punctuation, and symbols — are passed through unchanged. This means "Hello, World!" becomes "Uryyb, Jbeyq!" — the comma and exclamation mark are untouched while all letters are rotated.</p>
+
+          <h3>ROT5, ROT18, and ROT47</h3>
+          <p>ROT5 applies the same rotation concept to digits (0-9). Digit 0 maps to 5, 1 maps to 6, and so on, with 5 mapping back to 0. Combining ROT13 and ROT5 gives ROT18, which rotates both letters and digits while leaving symbols alone. ROT47 takes a different approach: it rotates all printable ASCII characters from code 33 (exclamation mark) to code 126 (tilde) — a range of 94 characters — by 47 positions. This means ROT47 obfuscates symbols, brackets, and punctuation as well as letters and digits.</p>
+
+          <h3>Custom Rotation: The Caesar Cipher Connection</h3>
+          <p>The Custom ROTn mode lets you choose any rotation from 1 to 25. This is exactly the <a href="/tools/caesar-cipher.html">Caesar cipher</a> — one of the oldest known encryption techniques, used by Julius Caesar to protect his military communications. Caesar reportedly used ROT3, shifting each letter three places. The security of any fixed-rotation cipher is minimal: there are only 25 possible shifts, making brute-force decoding trivial even by hand.</p>
+
+          <h3>When Is ROT13 Actually Used Today?</h3>
+          <p>ROT13 is still actively used in specific contexts: hiding movie or book spoilers in online reviews and forums, obfuscating email addresses to reduce scraper visibility in source code, masking quiz answers on educational websites, encoding clues in puzzle hunts and Alternate Reality Games (ARGs), and as a first example in cryptography courses. Some Unix and Linux systems include a <code>rot13</code> command-line utility. The Python string library even has a built-in ROT13 codec.</p>
+
+          <h3>Related Encoding and Cipher Tools</h3>
+          <p>Explore more encoding tools: <a href="/tools/caesar-cipher.html">Caesar Cipher with Brute Force</a> — try all 25 rotations at once with frequency analysis, <a href="/tools/base64.html">Base64 Encoder/Decoder</a> — binary-to-text encoding used in email and web, <a href="/tools/hash-generator.html">Hash Generator</a> — one-way cryptographic hashing with SHA-256, and <a href="/tools/morse-code.html">Morse Code Translator</a> for a completely different encoding system.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is ROT13?</button>
+            <div class="faq-answer">ROT13 is a simple letter substitution cipher that replaces each letter with the letter 13 positions after it in the alphabet. Because the alphabet has 26 letters, applying ROT13 twice returns the original text — making it its own inverse. ROT13 is used to hide spoilers and puzzle solutions in online forums. It provides no real security.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between ROT13, ROT5, and ROT47?</button>
+            <div class="faq-answer">ROT13 rotates only letters (A-Z) by 13 positions. ROT5 rotates only digits (0-9) by 5 positions. ROT47 rotates all printable ASCII characters (codes 33 to 126) by 47 positions, including symbols. A combined ROT13+ROT5 is sometimes called ROT18.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is ROT13 encryption secure?</button>
+            <div class="faq-answer">No. ROT13 provides no cryptographic security. Any attacker can decode it in seconds. ROT13 is designed for light obfuscation — hiding spoilers or preventing casual readers from seeing answers. For actual security, use AES encryption, bcrypt for passwords, or TLS for network communication.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my text sent to a server?</button>
+            <div class="faq-answer">No. This ROT13 cipher tool runs entirely in your browser using JavaScript. Your text is never sent to any server, there is no logging, and no data collection of any kind.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is a custom ROTn cipher?</button>
+            <div class="faq-answer">A custom ROTn cipher lets you choose any rotation value from 1 to 25. For example, ROT3 is the classical Caesar cipher. Only ROT13 is self-inverse; for other values you need to apply the inverse rotation (26 minus the rotation amount) to decode.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Encoding Tools</h4>
+        <a href="/tools/morse-code.html">Morse Code</a>
+        <a href="/tools/braille-translator.html">Braille Translator</a>
+        <a href="/tools/nato-phonetic.html">NATO Phonetic</a>
+        <a href="/tools/rot13-cipher.html">ROT13 Cipher</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/caesar-cipher.html">Caesar Cipher</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+    var currentMode = 'rot13';
+    var customRot = 13;
+
+    var input = document.getElementById('textInput');
+    var output = document.getElementById('rotOutput');
+    var statusBar = document.getElementById('statusBar');
+    var rotSlider = document.getElementById('rotSlider');
+    var rotDisplay = document.getElementById('rotDisplay');
+    var customControls = document.getElementById('customControls');
+    var wheel = document.getElementById('alphabetWheel');
+
+    function rotChar(ch, rot, base, size) {
+      var code = ch.charCodeAt(0) - base;
+      return String.fromCharCode(((code + rot) % size + size) % size + base);
+    }
+
+    function applyROT13(text) {
+      return text.split('').map(function(ch) {
+        if (ch >= 'A' && ch <= 'Z') return rotChar(ch, 13, 65, 26);
+        if (ch >= 'a' && ch <= 'z') return rotChar(ch, 13, 97, 26);
+        return ch;
+      }).join('');
+    }
+
+    function applyROT5(text) {
+      return text.split('').map(function(ch) {
+        if (ch >= '0' && ch <= '9') return rotChar(ch, 5, 48, 10);
+        return ch;
+      }).join('');
+    }
+
+    function applyROT47(text) {
+      return text.split('').map(function(ch) {
+        var code = ch.charCodeAt(0);
+        if (code >= 33 && code <= 126) return String.fromCharCode(((code - 33 + 47) % 94) + 33);
+        return ch;
+      }).join('');
+    }
+
+    function applyCustom(text, rot) {
+      return text.split('').map(function(ch) {
+        if (ch >= 'A' && ch <= 'Z') return rotChar(ch, rot, 65, 26);
+        if (ch >= 'a' && ch <= 'z') return rotChar(ch, rot, 97, 26);
+        return ch;
+      }).join('');
+    }
+
+    function buildWheel(rot, forLetters) {
+      var html = '';
+      if (forLetters) {
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(function(ch) {
+          var rotated = String.fromCharCode(((ch.charCodeAt(0) - 65 + rot) % 26) + 65);
+          html += '<div class="wheel-pair"><span class="wheel-original">' + ch + '</span><span class="wheel-arrow">&#8595;</span><span class="wheel-rotated">' + rotated + '</span></div>';
+        });
+      } else if (currentMode === 'rot5') {
+        '0123456789'.split('').forEach(function(ch) {
+          var rotated = String.fromCharCode(((ch.charCodeAt(0) - 48 + 5) % 10) + 48);
+          html += '<div class="wheel-pair"><span class="wheel-original">' + ch + '</span><span class="wheel-arrow">&#8595;</span><span class="wheel-rotated">' + rotated + '</span></div>';
+        });
+      } else if (currentMode === 'rot47') {
+        '!\"#$%&\'()*+,-./0123456789:;<=>?@ABCDE'.split('').forEach(function(ch) {
+          var code = ch.charCodeAt(0);
+          var rotated = String.fromCharCode(((code - 33 + 47) % 94) + 33);
+          html += '<div class="wheel-pair"><span class="wheel-original">' + ch + '</span><span class="wheel-arrow">&#8595;</span><span class="wheel-rotated">' + rotated + '</span></div>';
+        });
+      }
+      wheel.innerHTML = html;
+    }
+
+    function process() {
+      var raw = input.value;
+      if (!raw) {
+        output.textContent = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Type text above to apply ' + currentMode.toUpperCase().replace('CUSTOM','ROT' + customRot) + '.';
+        buildWheel(currentMode === 'rot5' ? 0 : (currentMode === 'custom' ? customRot : (currentMode === 'rot47' ? 47 : 13)), currentMode !== 'rot5' && currentMode !== 'rot47');
+        return;
+      }
+
+      var result = '';
+      var label = '';
+      if (currentMode === 'rot13') { result = applyROT13(raw); label = 'ROT13'; buildWheel(13, true); }
+      else if (currentMode === 'rot5') { result = applyROT5(raw); label = 'ROT5'; buildWheel(5, false); }
+      else if (currentMode === 'rot47') { result = applyROT47(raw); label = 'ROT47'; buildWheel(47, false); }
+      else { result = applyCustom(raw, customRot); label = 'ROT' + customRot; buildWheel(customRot, true); }
+
+      output.textContent = result;
+      var rotated = raw.split('').filter(function(ch) {
+        if (currentMode === 'rot5') return ch >= '0' && ch <= '9';
+        if (currentMode === 'rot47') { var c = ch.charCodeAt(0); return c >= 33 && c <= 126; }
+        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
+      }).length;
+
+      statusBar.className = 'status-bar valid';
+      statusBar.textContent = label + ' applied — ' + rotated + ' characters rotated';
+      DT.trackTool('rot13-cipher');
+    }
+
+    var debouncedProcess = DT.debounce(process, 150);
+    input.addEventListener('input', debouncedProcess);
+
+    rotSlider.addEventListener('input', function() {
+      customRot = parseInt(rotSlider.value);
+      rotDisplay.textContent = customRot;
+      process();
+    });
+
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        customControls.style.display = currentMode === 'custom' ? 'block' : 'none';
+        process();
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var text = output.textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      var text = output.textContent;
+      if (text) DT.downloadText(text, 'rot13.txt', 'text/plain');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      input.value = '';
+      process();
+      input.focus();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      input.value = 'The quick brown fox jumps over the lazy dog.';
+      process();
+    });
+
+    // Initial wheel
+    buildWheel(13, true);
+  })();
+  </script>
+</body>
+</html>

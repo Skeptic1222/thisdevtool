@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>CORS Headers Generator — Free Online CORS Builder | DevToolbox</title>
+  <meta name="description" content="Generate CORS response headers visually. Configure Allow-Origin, Allow-Methods, Allow-Headers, and more. Get code snippets for Express, Nginx, Apache, and Flask. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/cors-header-builder.html">
+  <meta property="og:title" content="CORS Headers Generator — DevToolbox">
+  <meta property="og:description" content="Free online CORS header builder. Generate Access-Control headers and code snippets for Express.js, Nginx, Apache, and Flask.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/cors-header-builder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "CORS Headers Generator",
+    "url": "https://thisdevtool.com/tools/cors-header-builder.html",
+    "description": "Build CORS response headers visually. Get code snippets for Express.js, Nginx, Apache, and Flask. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is CORS?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "CORS (Cross-Origin Resource Sharing) is a browser security mechanism that restricts web pages from making requests to a different origin than the one that served the page. When your JavaScript at app.example.com tries to call api.example.com, the browser checks the API's response headers to see if the origin is allowed. Without the correct CORS headers, the browser blocks the response."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a preflight request?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A preflight request is an HTTP OPTIONS request that browsers automatically send before certain cross-origin requests. It checks whether the server permits the actual request method and headers. Browsers send a preflight when: the method is not GET, POST, or HEAD; custom headers are included; or the Content-Type is not simple (e.g., application/json triggers a preflight)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use Access-Control-Allow-Origin: * with credentials?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The wildcard origin (*) cannot be used together with Access-Control-Allow-Credentials: true. This is a deliberate browser security restriction. If you need cookies or authentication headers in a cross-origin request, you must specify the exact origin in Access-Control-Allow-Origin and set Allow-Credentials to true."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the Access-Control-Max-Age header?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Access-Control-Max-Age specifies how many seconds the browser can cache the result of a preflight request. Setting a high value (e.g., 86400 = 24 hours) reduces the number of OPTIONS requests, improving performance. The default varies by browser but is typically very short. Chrome caps it at 2 hours; Firefox at 24 hours."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What headers does the browser send in a preflight?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The browser sends Origin (the requesting domain), Access-Control-Request-Method (the HTTP method the actual request will use), and Access-Control-Request-Headers (any custom headers the actual request will include). Your server must respond with matching Allow-Origin, Allow-Methods, and Allow-Headers headers, or the browser will block the actual request."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .section-panel { display: none; }
+    .section-panel.active { display: block; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .form-group .label-hint { font-weight: 400; color: var(--text-muted); font-size: 12px; }
+    .method-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .method-chip { padding: 5px 12px; border-radius: 4px; font-size: 13px; font-family: monospace; cursor: pointer; border: 1px solid var(--border); background: var(--bg); transition: all .15s; user-select: none; }
+    .method-chip.active { background: #10b981; border-color: #10b981; color: #fff; }
+    .origin-row { display: flex; gap: 8px; margin-bottom: 6px; }
+    .origin-row input { flex: 1; }
+    .origin-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .origin-tag { display: flex; align-items: center; gap: 4px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-size: 12px; font-family: monospace; }
+    .origin-tag button { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 0; font-size: 14px; }
+    .output-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .output-card h4 { margin: 0 0 8px 0; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+    .output-card pre { margin: 0; font-size: 12px; white-space: pre-wrap; word-break: break-all; }
+    .tab-bar { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+    .tab-btn { padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); font-size: 13px; cursor: pointer; }
+    .tab-btn.active { background: #10b981; border-color: #10b981; color: #fff; }
+    .preflight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .preflight-grid { grid-template-columns: 1fr; } }
+    .preflight-arrow { text-align: center; font-size: 20px; padding: 8px; color: var(--text-muted); }
+    .cors-flow-step { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-size: 13px; }
+    .cors-flow-step strong { display: block; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/csp-generator.html">CSP Generator</a>
+        <a href="/tools/ssl-cert-decoder.html">SSL Decoder</a>
+        <a href="/tools/jwt-builder.html">JWT Builder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>CORS Headers Generator</h1>
+          <p class="tool-subtitle">Configure Access-Control headers visually and get ready-to-paste code for Express, Nginx, Apache, and Flask.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-panel="simple">Simple</button>
+            <button class="option-chip" data-panel="advanced">Advanced</button>
+            <button class="option-chip" data-panel="preflight">Preflight Check</button>
+            <button class="option-chip" data-panel="reference">Reference</button>
+          </div>
+
+          <!-- SIMPLE PANEL -->
+          <div class="section-panel active" id="panel-simple">
+            <div class="form-group">
+              <label>Allowed Origins <span class="label-hint">— which domains can call this API</span></label>
+              <div style="display:flex;gap:8px;margin-bottom:6px;">
+                <button class="btn btn-sm btn-secondary" id="allowAllBtn">Allow All (*)</button>
+                <button class="btn btn-sm btn-secondary" id="allowSameBtn">Same Origin ('self')</button>
+              </div>
+              <div class="origin-row">
+                <input type="text" id="originInput" placeholder="https://app.example.com">
+                <button class="btn btn-sm btn-secondary" id="addOriginBtn">Add</button>
+              </div>
+              <div class="origin-tags" id="originTags"></div>
+            </div>
+
+            <div class="form-group">
+              <label>Allowed Methods</label>
+              <div class="method-chips" id="methodChips">
+                <button class="method-chip active" data-method="GET">GET</button>
+                <button class="method-chip active" data-method="POST">POST</button>
+                <button class="method-chip" data-method="PUT">PUT</button>
+                <button class="method-chip" data-method="PATCH">PATCH</button>
+                <button class="method-chip" data-method="DELETE">DELETE</button>
+                <button class="method-chip" data-method="OPTIONS">OPTIONS</button>
+                <button class="method-chip" data-method="HEAD">HEAD</button>
+              </div>
+            </div>
+
+            <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-secondary" id="clearSimpleBtn">Clear</button>
+            </div>
+          </div>
+
+          <!-- ADVANCED PANEL -->
+          <div class="section-panel" id="panel-advanced">
+            <div class="form-group">
+              <label>Access-Control-Allow-Headers <span class="label-hint">— request headers clients can send</span></label>
+              <input type="text" id="allowHeaders" placeholder="Content-Type, Authorization, X-Requested-With">
+            </div>
+            <div class="form-group">
+              <label>Access-Control-Expose-Headers <span class="label-hint">— response headers browsers can read</span></label>
+              <input type="text" id="exposeHeaders" placeholder="X-Request-Id, X-Rate-Limit">
+            </div>
+            <div class="form-group">
+              <label>Access-Control-Max-Age <span class="label-hint">— preflight cache (seconds)</span></label>
+              <input type="number" id="maxAge" placeholder="86400" min="0">
+            </div>
+            <div class="form-group">
+              <label style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="allowCredentials">
+                Access-Control-Allow-Credentials: true
+                <span class="label-hint">— allows cookies and auth headers</span>
+              </label>
+              <p id="credWarn" style="display:none;font-size:12px;color:#f59e0b;margin-top:4px;">&#9888; Cannot use wildcard origin (*) with credentials. Set a specific origin above.</p>
+            </div>
+          </div>
+
+          <!-- PREFLIGHT CHECK PANEL -->
+          <div class="section-panel" id="panel-preflight">
+            <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px;">Simulate an OPTIONS preflight request and see the expected server response based on your current configuration.</p>
+            <div class="form-group">
+              <label>Request Origin</label>
+              <input type="text" id="preflightOrigin" placeholder="https://app.example.com" value="https://app.example.com">
+            </div>
+            <div class="form-group">
+              <label>Request Method</label>
+              <select id="preflightMethod">
+                <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Request Headers</label>
+              <input type="text" id="preflightHeaders" placeholder="Content-Type, Authorization" value="Content-Type, Authorization">
+            </div>
+            <button class="btn btn-primary" id="runPreflightBtn">Simulate Preflight</button>
+            <div id="preflightOutput" style="margin-top:16px;"></div>
+          </div>
+
+          <!-- REFERENCE PANEL -->
+          <div class="section-panel" id="panel-reference">
+            <h3 style="margin-top:0;">CORS Flow Explained</h3>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+              <div class="cors-flow-step"><strong>1. Browser sends preflight (OPTIONS)</strong>
+                Sends <code>Origin</code>, <code>Access-Control-Request-Method</code>, and <code>Access-Control-Request-Headers</code> to the server.</div>
+              <div class="cors-flow-step"><strong>2. Server responds to preflight</strong>
+                Must include <code>Access-Control-Allow-Origin</code>, <code>Allow-Methods</code>, <code>Allow-Headers</code>. May include <code>Max-Age</code> for caching.</div>
+              <div class="cors-flow-step"><strong>3. Browser sends actual request</strong>
+                If preflight succeeded, the browser sends the real GET/POST/etc. with the <code>Origin</code> header.</div>
+              <div class="cors-flow-step"><strong>4. Server responds with CORS headers again</strong>
+                The actual response must also include <code>Access-Control-Allow-Origin</code> (and <code>Allow-Credentials</code> if applicable).</div>
+            </div>
+            <h3>Headers Reference</h3>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead><tr>
+                <th style="padding:8px;border:1px solid var(--border);background:var(--bg-secondary);">Header</th>
+                <th style="padding:8px;border:1px solid var(--border);background:var(--bg-secondary);">Direction</th>
+                <th style="padding:8px;border:1px solid var(--border);background:var(--bg-secondary);">Description</th>
+              </tr></thead>
+              <tbody>
+                <tr><td style="padding:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;">Access-Control-Allow-Origin</td><td style="padding:8px;border:1px solid var(--border);">Response</td><td style="padding:8px;border:1px solid var(--border);">Allowed origins. * for all, or specific URL.</td></tr>
+                <tr><td style="padding:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;">Access-Control-Allow-Methods</td><td style="padding:8px;border:1px solid var(--border);">Preflight Response</td><td style="padding:8px;border:1px solid var(--border);">Comma-separated list of allowed HTTP methods.</td></tr>
+                <tr><td style="padding:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;">Access-Control-Allow-Headers</td><td style="padding:8px;border:1px solid var(--border);">Preflight Response</td><td style="padding:8px;border:1px solid var(--border);">Headers the client is allowed to send.</td></tr>
+                <tr><td style="padding:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;">Access-Control-Expose-Headers</td><td style="padding:8px;border:1px solid var(--border);">Response</td><td style="padding:8px;border:1px solid var(--border);">Response headers the browser JS can read.</td></tr>
+                <tr><td style="padding:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;">Access-Control-Max-Age</td><td style="padding:8px;border:1px solid var(--border);">Preflight Response</td><td style="padding:8px;border:1px solid var(--border);">Seconds to cache preflight result.</td></tr>
+                <tr><td style="padding:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;">Access-Control-Allow-Credentials</td><td style="padding:8px;border:1px solid var(--border);">Response</td><td style="padding:8px;border:1px solid var(--border);">Allow cookies/auth. Incompatible with * origin.</td></tr>
+                <tr><td style="padding:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;">Origin</td><td style="padding:8px;border:1px solid var(--border);">Request</td><td style="padding:8px;border:1px solid var(--border);">Sent by browser on cross-origin requests.</td></tr>
+                <tr><td style="padding:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;">Access-Control-Request-Method</td><td style="padding:8px;border:1px solid var(--border);">Preflight Request</td><td style="padding:8px;border:1px solid var(--border);">Method the actual request will use.</td></tr>
+                <tr><td style="padding:8px;border:1px solid var(--border);font-family:monospace;font-size:12px;">Access-Control-Request-Headers</td><td style="padding:8px;border:1px solid var(--border);">Preflight Request</td><td style="padding:8px;border:1px solid var(--border);">Headers the actual request will include.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Configure origins and methods above to generate CORS headers.
+          </div>
+        </div>
+
+        <!-- Output card (always visible) -->
+        <div id="outputSection" style="margin-top:16px;">
+          <div class="tab-bar" id="snippetTabs">
+            <button class="tab-btn active" data-snippet="headers">HTTP Headers</button>
+            <button class="tab-btn" data-snippet="express">Express.js</button>
+            <button class="tab-btn" data-snippet="nginx">Nginx</button>
+            <button class="tab-btn" data-snippet="apache">Apache</button>
+            <button class="tab-btn" data-snippet="flask">Flask</button>
+          </div>
+          <div class="output-card">
+            <h4>Output <button class="btn btn-sm btn-primary" id="copyOutputBtn" style="padding:3px 10px;font-size:12px;">Copy</button></h4>
+            <pre id="snippetOutput">Configure options above to generate code.</pre>
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the CORS Header Builder</h2>
+          <ol>
+            <li><strong>Simple mode</strong> — Enter the allowed origin (or click Allow All for <code>*</code>), select the HTTP methods, and copy the generated headers.</li>
+            <li><strong>Advanced mode</strong> — Configure additional headers: <code>Allow-Headers</code> for custom request headers, <code>Expose-Headers</code> for response headers your client reads, <code>Max-Age</code> to cache the preflight, and the <code>Allow-Credentials</code> flag.</li>
+            <li><strong>Preflight Check</strong> — Enter the request origin, method, and headers your client sends, then click Simulate Preflight to see exactly what your server needs to respond with.</li>
+            <li><strong>Copy code snippets</strong> — Switch between Express.js, Nginx, Apache, and Flask tabs to get ready-to-paste server configuration for your stack.</li>
+          </ol>
+
+          <h2>What Is CORS and Why Does It Exist?</h2>
+          <p>CORS (Cross-Origin Resource Sharing) is a browser-enforced security policy. By default, web pages can only make JavaScript fetch/XHR requests to the same origin (protocol + domain + port) that served the page. This is the Same-Origin Policy (SOP), which prevents a malicious page from silently reading data from your bank's API using your session cookies. CORS is an opt-in mechanism that allows servers to explicitly grant permission to specific origins, relaxing the SOP in a controlled way. CORS headers are only enforced by browsers — server-to-server calls are unaffected.</p>
+
+          <h3>Simple Requests vs. Preflighted Requests</h3>
+          <p>Not all cross-origin requests trigger a preflight. A "simple request" (GET, POST, or HEAD with only allowed headers and simple Content-Types) is sent directly. The browser checks the response's CORS headers afterward. For anything more complex — PUT, PATCH, DELETE, custom headers, or JSON Content-Type — the browser first sends an OPTIONS preflight request asking the server for permission. The server must respond positively before the browser sends the actual request. Use the Preflight Check tab to simulate this flow. Complement your CORS policy with a <a href="/tools/csp-generator.html">Content Security Policy</a> for defence in depth.</p>
+
+          <h3>Common CORS Mistakes</h3>
+          <p>The most common mistake is setting <code>Access-Control-Allow-Origin: *</code> alongside <code>Access-Control-Allow-Credentials: true</code>. Browsers reject this combination because allowing all origins with credentials would enable any site to make authenticated requests as you. Another common mistake is returning CORS headers only on the successful response but not on error responses — browsers check CORS headers before presenting the response body, so a 401 or 500 without CORS headers will appear as a network error in JavaScript. Always add CORS headers to every response from cross-origin endpoints, including error responses.</p>
+
+          <h3>Dynamic Origin Validation</h3>
+          <p>For APIs that need to support multiple specific origins, implement dynamic origin validation on the server: check the incoming <code>Origin</code> header against an allowlist, and if it matches, reflect that origin in the <code>Access-Control-Allow-Origin</code> response header. This approach avoids the wildcard while supporting multiple trusted origins. Also add <code>Vary: Origin</code> to your response to prevent proxy caches from serving a cached CORS response with the wrong origin to a different client. See the <a href="/tools/subnet-calculator.html">Subnet Calculator</a> if you need to plan network-level access controls alongside CORS.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is CORS?</button>
+            <div class="faq-answer">CORS (Cross-Origin Resource Sharing) is a browser security mechanism that restricts web pages from making requests to a different origin. When your JavaScript at app.example.com calls api.example.com, the browser checks the API's response headers to see if the origin is allowed. Without correct CORS headers, the browser blocks the response.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is a preflight request?</button>
+            <div class="faq-answer">A preflight is an HTTP OPTIONS request that browsers automatically send before certain cross-origin requests. It checks whether the server permits the method and headers. Browsers send preflights when: the method is not GET/POST/HEAD, custom headers are included, or Content-Type is not a simple type (e.g., application/json triggers a preflight).</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I use Access-Control-Allow-Origin: * with credentials?</button>
+            <div class="faq-answer">No. Wildcard origin (*) cannot be used with Access-Control-Allow-Credentials: true. This is a deliberate browser security restriction. If you need cookies or auth headers in cross-origin requests, specify the exact origin and set Allow-Credentials to true.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the Access-Control-Max-Age header?</button>
+            <div class="faq-answer">Max-Age specifies how many seconds the browser caches the preflight result. A high value (e.g., 86400 = 24 hours) reduces OPTIONS requests and improves performance. Chrome caps it at 2 hours; Firefox at 24 hours.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What headers does the browser send in a preflight?</button>
+            <div class="faq-answer">The browser sends: Origin (the requesting domain), Access-Control-Request-Method (the HTTP method the actual request will use), and Access-Control-Request-Headers (any custom headers). Your server must respond with matching Allow-Origin, Allow-Methods, and Allow-Headers headers.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Security Tools</h4>
+        <a href="/tools/jwt-builder.html">JWT Builder</a>
+        <a href="/tools/ssl-cert-decoder.html">SSL Cert Decoder</a>
+        <a href="/tools/csp-generator.html">CSP Generator</a>
+        <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+
+      // Panel switching
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var panel = chip.getAttribute('data-panel');
+          document.querySelectorAll('.section-panel').forEach(function (p) {
+            p.classList.toggle('active', p.id === 'panel-' + panel);
+          });
+          updateOutput();
+        });
+      });
+
+      // State
+      var origins = [];
+      var wildcard = false;
+      var methods = new Set(['GET', 'POST']);
+
+      function getOriginValue() {
+        if (wildcard) return '*';
+        if (origins.length === 0) return '';
+        if (origins.length === 1) return origins[0];
+        return origins[0]; // Primary (dynamic validation needed for multiple)
+      }
+
+      function renderOriginTags() {
+        var container = document.getElementById('originTags');
+        container.innerHTML = '';
+        origins.forEach(function (origin) {
+          var tag = document.createElement('span');
+          tag.className = 'origin-tag';
+          tag.innerHTML = origin + '<button title="Remove">&times;</button>';
+          tag.querySelector('button').addEventListener('click', function () {
+            origins = origins.filter(function (o) { return o !== origin; });
+            wildcard = false;
+            renderOriginTags();
+            updateOutput();
+          });
+          container.appendChild(tag);
+        });
+      }
+
+      function addOrigin(val) {
+        if (!val) return;
+        if (val === '*') { wildcard = true; origins = []; } else { wildcard = false; if (!origins.includes(val)) origins.push(val); }
+        renderOriginTags();
+        updateOutput();
+      }
+
+      document.getElementById('allowAllBtn').addEventListener('click', function () { wildcard = true; origins = []; renderOriginTags(); updateOutput(); });
+      document.getElementById('allowSameBtn').addEventListener('click', function () { wildcard = false; origins = []; renderOriginTags(); updateOutput(); });
+
+      var originInput = document.getElementById('originInput');
+      document.getElementById('addOriginBtn').addEventListener('click', function () {
+        addOrigin(originInput.value.trim()); originInput.value = '';
+      });
+      originInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { addOrigin(originInput.value.trim()); originInput.value = ''; }
+      });
+
+      document.querySelectorAll('.method-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var m = chip.getAttribute('data-method');
+          if (methods.has(m)) methods.delete(m); else methods.add(m);
+          chip.classList.toggle('active', methods.has(m));
+          updateOutput();
+        });
+      });
+
+      document.getElementById('allowCredentials').addEventListener('change', function () {
+        document.getElementById('credWarn').style.display = (this.checked && (wildcard || (!origins.length && !wildcard))) ? '' : 'none';
+        updateOutput();
+      });
+
+      ['allowHeaders','exposeHeaders','maxAge'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('input', DT.debounce(updateOutput, 150));
+      });
+
+      function getHeaders() {
+        var hdrs = {};
+        var ov = wildcard ? '*' : (origins.length > 0 ? origins[0] : '');
+        if (ov) hdrs['Access-Control-Allow-Origin'] = ov;
+        var mets = Array.from(methods).join(', ');
+        if (mets) hdrs['Access-Control-Allow-Methods'] = mets;
+        var ah = document.getElementById('allowHeaders').value.trim();
+        if (ah) hdrs['Access-Control-Allow-Headers'] = ah;
+        var eh = document.getElementById('exposeHeaders').value.trim();
+        if (eh) hdrs['Access-Control-Expose-Headers'] = eh;
+        var ma = document.getElementById('maxAge').value.trim();
+        if (ma) hdrs['Access-Control-Max-Age'] = ma;
+        var cred = document.getElementById('allowCredentials').checked;
+        if (cred) hdrs['Access-Control-Allow-Credentials'] = 'true';
+        if (origins.length > 1) hdrs['Vary'] = 'Origin';
+        return hdrs;
+      }
+
+      function buildSnippet(type) {
+        var h = getHeaders();
+        if (!h['Access-Control-Allow-Origin']) return '# No origin configured yet.';
+        var keys = Object.keys(h);
+        if (type === 'headers') {
+          return keys.map(function (k) { return k + ': ' + h[k]; }).join('\n');
+        }
+        if (type === 'express') {
+          var lines = ['const cors = require(\'cors\');\n\napp.use(cors({'];
+          var ov = h['Access-Control-Allow-Origin'];
+          lines.push('  origin: ' + (ov === '*' ? '\'*\'' : (origins.length > 1 ? '[' + origins.map(function (o) { return '\'' + o + '\''; }).join(', ') + ']' : '\'' + ov + '\'')) + ',');
+          if (h['Access-Control-Allow-Methods']) lines.push('  methods: [\'' + Array.from(methods).join('\', \'') + '\'],');
+          if (h['Access-Control-Allow-Headers']) lines.push('  allowedHeaders: [\'' + h['Access-Control-Allow-Headers'].split(',').map(function (s) { return s.trim(); }).join('\', \'') + '\'],');
+          if (h['Access-Control-Expose-Headers']) lines.push('  exposedHeaders: [\'' + h['Access-Control-Expose-Headers'].split(',').map(function (s) { return s.trim(); }).join('\', \'') + '\'],');
+          if (h['Access-Control-Max-Age']) lines.push('  maxAge: ' + h['Access-Control-Max-Age'] + ',');
+          if (h['Access-Control-Allow-Credentials']) lines.push('  credentials: true,');
+          lines.push('}));\n');
+          if (origins.length > 1) lines.push('// Note: cors() with array origin automatically adds Vary: Origin');
+          return lines.join('\n');
+        }
+        if (type === 'nginx') {
+          var ov2 = h['Access-Control-Allow-Origin'];
+          var lines2 = ['# In your server block or location block:'];
+          if (origins.length > 1) {
+            lines2.push('set $cors_origin "";');
+            origins.forEach(function (o) {
+              lines2.push('if ($http_origin = "' + o + '") { set $cors_origin $http_origin; }');
+            });
+            lines2.push('add_header Access-Control-Allow-Origin $cors_origin always;');
+            lines2.push('add_header Vary Origin always;');
+          } else {
+            lines2.push('add_header Access-Control-Allow-Origin "' + ov2 + '" always;');
+          }
+          if (h['Access-Control-Allow-Methods']) lines2.push('add_header Access-Control-Allow-Methods "' + h['Access-Control-Allow-Methods'] + '" always;');
+          if (h['Access-Control-Allow-Headers']) lines2.push('add_header Access-Control-Allow-Headers "' + h['Access-Control-Allow-Headers'] + '" always;');
+          if (h['Access-Control-Expose-Headers']) lines2.push('add_header Access-Control-Expose-Headers "' + h['Access-Control-Expose-Headers'] + '" always;');
+          if (h['Access-Control-Max-Age']) lines2.push('add_header Access-Control-Max-Age ' + h['Access-Control-Max-Age'] + ' always;');
+          if (h['Access-Control-Allow-Credentials']) lines2.push('add_header Access-Control-Allow-Credentials "true" always;');
+          lines2.push('\n# Handle preflight:');
+          lines2.push('if ($request_method = OPTIONS) {');
+          lines2.push('  return 204;');
+          lines2.push('}');
+          return lines2.join('\n');
+        }
+        if (type === 'apache') {
+          var lines3 = ['# In .htaccess or httpd.conf:'];
+          lines3.push('<IfModule mod_headers.c>');
+          var ov3 = origins.length > 1 ? '%{HTTP_ORIGIN}e' : h['Access-Control-Allow-Origin'];
+          lines3.push('  Header set Access-Control-Allow-Origin "' + ov3 + '"');
+          if (origins.length > 1) {
+            lines3.push('  SetEnvIf Origin "(' + origins.join('|').replace(/\./g, '\\.') + ')" HTTP_ORIGIN=$0');
+            lines3.push('  Header set Vary Origin');
+          }
+          if (h['Access-Control-Allow-Methods']) lines3.push('  Header set Access-Control-Allow-Methods "' + h['Access-Control-Allow-Methods'] + '"');
+          if (h['Access-Control-Allow-Headers']) lines3.push('  Header set Access-Control-Allow-Headers "' + h['Access-Control-Allow-Headers'] + '"');
+          if (h['Access-Control-Expose-Headers']) lines3.push('  Header set Access-Control-Expose-Headers "' + h['Access-Control-Expose-Headers'] + '"');
+          if (h['Access-Control-Max-Age']) lines3.push('  Header set Access-Control-Max-Age "' + h['Access-Control-Max-Age'] + '"');
+          if (h['Access-Control-Allow-Credentials']) lines3.push('  Header set Access-Control-Allow-Credentials "true"');
+          lines3.push('</IfModule>\n');
+          lines3.push('# Handle preflight:');
+          lines3.push('RewriteEngine On');
+          lines3.push('RewriteCond %{REQUEST_METHOD} OPTIONS');
+          lines3.push('RewriteRule ^(.*)$ $1 [R=204,L]');
+          return lines3.join('\n');
+        }
+        if (type === 'flask') {
+          var lines4 = ['from flask import Flask\nfrom flask_cors import CORS\n\napp = Flask(__name__)'];
+          var ov4 = wildcard ? '*' : (origins.length > 0 ? (origins.length > 1 ? '[' + origins.map(function (o) { return '\'' + o + '\''; }).join(', ') + ']' : '\'' + origins[0] + '\'') : '');
+          var corsCfg = 'CORS(app, origins=' + (ov4 || '"*"');
+          if (h['Access-Control-Allow-Methods']) corsCfg += ',\n     methods=[' + Array.from(methods).map(function (m) { return '\'' + m + '\''; }).join(', ') + ']';
+          if (h['Access-Control-Allow-Headers']) corsCfg += ',\n     allow_headers=[' + h['Access-Control-Allow-Headers'].split(',').map(function (s) { return '\'' + s.trim() + '\''; }).join(', ') + ']';
+          if (h['Access-Control-Allow-Credentials']) corsCfg += ',\n     supports_credentials=True';
+          if (h['Access-Control-Max-Age']) corsCfg += ',\n     max_age=' + h['Access-Control-Max-Age'];
+          corsCfg += ')';
+          lines4.push(corsCfg + '\n\n# pip install flask-cors');
+          return lines4.join('\n');
+        }
+        return '';
+      }
+
+      var currentSnippet = 'headers';
+      document.querySelectorAll('.tab-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          currentSnippet = btn.getAttribute('data-snippet');
+          renderSnippet();
+        });
+      });
+
+      function renderSnippet() {
+        document.getElementById('snippetOutput').textContent = buildSnippet(currentSnippet);
+      }
+
+      function updateOutput() {
+        renderSnippet();
+        var h = getHeaders();
+        var ov = h['Access-Control-Allow-Origin'];
+        var sb = document.getElementById('statusBar');
+        if (!ov) { sb.className = 'status-bar info'; sb.textContent = 'Configure origins and methods above to generate CORS headers.'; return; }
+        var mets = Array.from(methods);
+        var cred = document.getElementById('allowCredentials').checked;
+        sb.className = 'status-bar valid';
+        sb.textContent = 'CORS: ' + (origins.length > 1 ? origins.length + ' origins' : (wildcard ? 'all origins (*)' : ov)) + ', ' + mets.length + ' method' + (mets.length !== 1 ? 's' : '') + (cred ? ', credentials allowed' : '');
+        DT.trackTool('cors-header-builder');
+      }
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        origins = ['https://app.example.com', 'https://admin.example.com'];
+        wildcard = false;
+        methods = new Set(['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']);
+        document.querySelectorAll('.method-chip').forEach(function (c) {
+          c.classList.toggle('active', methods.has(c.getAttribute('data-method')));
+        });
+        document.getElementById('allowHeaders').value = 'Content-Type, Authorization';
+        document.getElementById('maxAge').value = '86400';
+        renderOriginTags();
+        updateOutput();
+      });
+
+      document.getElementById('clearSimpleBtn').addEventListener('click', function () {
+        origins = []; wildcard = false;
+        methods = new Set(['GET', 'POST']);
+        document.querySelectorAll('.method-chip').forEach(function (c) {
+          c.classList.toggle('active', methods.has(c.getAttribute('data-method')));
+        });
+        document.getElementById('allowHeaders').value = '';
+        document.getElementById('exposeHeaders').value = '';
+        document.getElementById('maxAge').value = '';
+        document.getElementById('allowCredentials').checked = false;
+        document.getElementById('credWarn').style.display = 'none';
+        renderOriginTags();
+        updateOutput();
+      });
+
+      document.getElementById('copyOutputBtn').addEventListener('click', function () {
+        var text = document.getElementById('snippetOutput').textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Preflight simulation
+      document.getElementById('runPreflightBtn').addEventListener('click', function () {
+        var reqOrigin = document.getElementById('preflightOrigin').value.trim();
+        var reqMethod = document.getElementById('preflightMethod').value;
+        var reqHeaders = document.getElementById('preflightHeaders').value.trim();
+        var out = document.getElementById('preflightOutput');
+
+        var allowed = wildcard || origins.includes(reqOrigin);
+        var methodAllowed = methods.has(reqMethod);
+
+        var reqHtml = '<div class="cors-flow-step" style="margin-bottom:8px;">';
+        reqHtml += '<strong>Browser Preflight Request (OPTIONS)</strong>';
+        reqHtml += '<pre style="margin:8px 0 0 0;font-size:12px;">OPTIONS /api/resource HTTP/1.1\nHost: api.example.com\nOrigin: ' + reqOrigin + '\nAccess-Control-Request-Method: ' + reqMethod + (reqHeaders ? '\nAccess-Control-Request-Headers: ' + reqHeaders : '') + '</pre>';
+        reqHtml += '</div>';
+
+        var resHtml = '<div class="cors-flow-step">';
+        resHtml += '<strong>Server Response' + (allowed && methodAllowed ? ' ✓ ALLOWED' : ' ✗ BLOCKED') + '</strong>';
+        var respHeaders = 'HTTP/1.1 204 No Content\n';
+        if (allowed) {
+          respHeaders += 'Access-Control-Allow-Origin: ' + (wildcard ? '*' : reqOrigin) + '\n';
+          if (methods.size) respHeaders += 'Access-Control-Allow-Methods: ' + Array.from(methods).join(', ') + '\n';
+          var ah = document.getElementById('allowHeaders').value.trim();
+          if (ah) respHeaders += 'Access-Control-Allow-Headers: ' + ah + '\n';
+          var ma = document.getElementById('maxAge').value.trim();
+          if (ma) respHeaders += 'Access-Control-Max-Age: ' + ma + '\n';
+          if (document.getElementById('allowCredentials').checked) respHeaders += 'Access-Control-Allow-Credentials: true\n';
+        } else {
+          respHeaders += '# No CORS headers — browser will block the request\n';
+          respHeaders += '# Reason: origin "' + reqOrigin + '" is not in the allowed list';
+        }
+        resHtml += '<pre style="margin:8px 0 0 0;font-size:12px;">' + respHeaders + '</pre>';
+        if (!methodAllowed && allowed) {
+          resHtml += '<p style="color:#f59e0b;font-size:12px;margin:8px 0 0 0;">&#9888; Method ' + reqMethod + ' is not in allowed methods list.</p>';
+        }
+        resHtml += '</div>';
+
+        out.innerHTML = reqHtml + '<div class="preflight-arrow">&#8595;</div>' + resHtml;
+      });
+
+      updateOutput();
+    })();
+  </script>
+</body>
+</html>

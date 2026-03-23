@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>HTTP Header Inspector & Parser — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Parse, inspect, and build HTTP headers online. Security scoring, header explanations, and a reference of all common headers. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/http-header-inspector.html">
+  <meta property="og:title" content="HTTP Header Inspector — DevToolbox">
+  <meta property="og:description" content="Parse raw HTTP headers into a readable table, check security headers, build custom headers, and browse the reference. Free online tool.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/http-header-inspector.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "HTTP Header Inspector",
+    "url": "https://thisdevtool.com/tools/http-header-inspector.html",
+    "description": "Parse raw HTTP headers, check security headers, calculate security score, and build custom headers.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the Content-Security-Policy header?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Content-Security-Policy (CSP) is a security header that controls which resources (scripts, styles, images) the browser is allowed to load. A strong CSP prevents cross-site scripting (XSS) attacks by blocking inline scripts and restricting resource origins. It is one of the most important security headers for web applications."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is HSTS and why is it important?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "HTTP Strict Transport Security (HSTS) instructs browsers to only connect to your site over HTTPS, never HTTP. Once a browser sees the HSTS header, it will automatically upgrade all future requests to HTTPS — even if the user types http:// — for the duration specified in max-age. This prevents SSL stripping attacks and mixed content issues."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the Cache-Control header do?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cache-Control tells browsers and CDNs how to cache a response. Common directives include: max-age=N (cache for N seconds), no-cache (always revalidate before serving from cache), no-store (never cache), public (shareable by CDNs), private (only browser cache). Getting Cache-Control right is critical for both performance and security."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the X-Frame-Options header?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "X-Frame-Options controls whether your page can be embedded in an iframe. DENY prevents any embedding, SAMEORIGIN allows embedding only from the same origin, and ALLOW-FROM (deprecated) allowed specific origins. It protects against clickjacking attacks. Modern browsers prefer the frame-ancestors CSP directive over this legacy header."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What security headers should every website have?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Every production website should have: Strict-Transport-Security (HSTS) to enforce HTTPS, Content-Security-Policy to prevent XSS, X-Content-Type-Options: nosniff to prevent MIME sniffing, X-Frame-Options or CSP frame-ancestors to prevent clickjacking, and Referrer-Policy to control referrer data. Permissions-Policy (formerly Feature-Policy) is also recommended to limit browser API access."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .header-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .header-table th { text-align: left; padding: 0.5rem 0.75rem; background: var(--surface2); font-weight: 600; }
+    .header-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; word-break: break-all; }
+    .header-table tr:hover td { background: var(--surface2); }
+    .cat-tag { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-right: 0.25rem; }
+    .tag-security { background: #fee2e2; color: #991b1b; }
+    .tag-caching { background: #fef9c3; color: #854d0e; }
+    .tag-content { background: #dcfce7; color: #166534; }
+    .tag-cors { background: #e0f2fe; color: #0369a1; }
+    .tag-request { background: #f3e8ff; color: #6b21a8; }
+    .tag-response { background: #fce7f3; color: #9d174d; }
+    [data-theme="dark"] .tag-security { background: #7f1d1d; color: #fca5a5; }
+    [data-theme="dark"] .tag-caching { background: #713f12; color: #fde68a; }
+    [data-theme="dark"] .tag-content { background: #14532d; color: #86efac; }
+    [data-theme="dark"] .tag-cors { background: #0c4a6e; color: #7dd3fc; }
+    [data-theme="dark"] .tag-request { background: #3b0764; color: #d8b4fe; }
+    [data-theme="dark"] .tag-response { background: #500724; color: #fbcfe8; }
+    .sec-score { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--surface2); border-radius: 8px; margin: 1rem 0; }
+    .score-ring { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; flex-shrink: 0; }
+    .score-good { background: #dcfce7; color: #166534; border: 3px solid #16a34a; }
+    .score-ok { background: #fef9c3; color: #854d0e; border: 3px solid #ca8a04; }
+    .score-poor { background: #fee2e2; color: #991b1b; border: 3px solid #dc2626; }
+    [data-theme="dark"] .score-good { background: #14532d; color: #86efac; }
+    [data-theme="dark"] .score-ok { background: #713f12; color: #fde68a; }
+    [data-theme="dark"] .score-poor { background: #7f1d1d; color: #fca5a5; }
+    .sec-checklist { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; font-size: 0.85rem; }
+    .sec-item { display: flex; align-items: center; gap: 0.35rem; }
+    .sec-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-pass { background: #16a34a; }
+    .dot-fail { background: #dc2626; }
+    .build-form { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .build-form label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem; }
+    .build-form select, .build-form input { width: 100%; padding: 0.45rem 0.65rem; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.875rem; }
+    .table-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .ref-search { width: 100%; padding: 0.55rem 0.85rem; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); margin-bottom: 0.75rem; font-size: 0.875rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/http-status-reference.html">Status Codes</a>
+        <a href="/tools/curl-to-code.html">cURL to Code</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>HTTP Header Inspector</h1>
+          <p class="tool-subtitle">Parse raw HTTP headers, check security score, build custom headers, and browse the reference.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="parse">Parse</button>
+            <button class="option-chip" data-mode="build">Build</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <!-- Parse Mode -->
+          <div id="parseMode">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Raw Headers</span>
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+                <textarea id="headerInput" rows="14" placeholder="Paste raw HTTP response headers here...
+
+Example:
+HTTP/2 200
+content-type: text/html; charset=utf-8
+cache-control: max-age=3600, public
+strict-transport-security: max-age=31536000
+x-content-type-options: nosniff" spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Parsed Headers</span>
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                </div>
+                <div id="parseOutput" style="min-height:290px;overflow:auto;">
+                  <div style="padding:2rem;text-align:center;color:var(--text-muted)">Paste headers on the left to inspect them.</div>
+                </div>
+              </div>
+            </div>
+            <div id="securityScore" style="display:none"></div>
+          </div>
+
+          <!-- Build Mode -->
+          <div id="buildMode" style="display:none">
+            <div class="build-form" id="buildForm">
+              <div>
+                <label>Content-Type</label>
+                <select id="b_contentType">
+                  <option value="">— none —</option>
+                  <option value="application/json">application/json</option>
+                  <option value="text/html; charset=utf-8">text/html; charset=utf-8</option>
+                  <option value="text/plain; charset=utf-8">text/plain; charset=utf-8</option>
+                  <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+                  <option value="multipart/form-data">multipart/form-data</option>
+                </select>
+              </div>
+              <div>
+                <label>Cache-Control</label>
+                <select id="b_cacheControl">
+                  <option value="">— none —</option>
+                  <option value="no-store">no-store</option>
+                  <option value="no-cache">no-cache</option>
+                  <option value="max-age=3600, public">max-age=3600, public</option>
+                  <option value="max-age=86400, public">max-age=86400, public</option>
+                  <option value="max-age=31536000, immutable">max-age=31536000, immutable</option>
+                  <option value="private, no-cache">private, no-cache</option>
+                </select>
+              </div>
+              <div>
+                <label>Strict-Transport-Security</label>
+                <select id="b_hsts">
+                  <option value="">— none —</option>
+                  <option value="max-age=31536000">max-age=31536000</option>
+                  <option value="max-age=31536000; includeSubDomains">max-age=31536000; includeSubDomains</option>
+                  <option value="max-age=31536000; includeSubDomains; preload">max-age=31536000; includeSubDomains; preload</option>
+                </select>
+              </div>
+              <div>
+                <label>X-Frame-Options</label>
+                <select id="b_xframe">
+                  <option value="">— none —</option>
+                  <option value="DENY">DENY</option>
+                  <option value="SAMEORIGIN">SAMEORIGIN</option>
+                </select>
+              </div>
+              <div>
+                <label>X-Content-Type-Options</label>
+                <select id="b_xcto">
+                  <option value="">— none —</option>
+                  <option value="nosniff">nosniff</option>
+                </select>
+              </div>
+              <div>
+                <label>Referrer-Policy</label>
+                <select id="b_referrer">
+                  <option value="">— none —</option>
+                  <option value="no-referrer">no-referrer</option>
+                  <option value="strict-origin">strict-origin</option>
+                  <option value="strict-origin-when-cross-origin">strict-origin-when-cross-origin</option>
+                  <option value="origin-when-cross-origin">origin-when-cross-origin</option>
+                </select>
+              </div>
+              <div>
+                <label>Access-Control-Allow-Origin (CORS)</label>
+                <select id="b_cors">
+                  <option value="">— none —</option>
+                  <option value="*">* (public API)</option>
+                  <option value="https://example.com">specific origin</option>
+                </select>
+              </div>
+              <div>
+                <label>Content-Security-Policy</label>
+                <select id="b_csp">
+                  <option value="">— none —</option>
+                  <option value="default-src 'self'">default-src 'self' (strict)</option>
+                  <option value="default-src 'self'; script-src 'self' 'unsafe-inline'">allow inline scripts</option>
+                  <option value="default-src *">allow all (unsafe)</option>
+                </select>
+              </div>
+            </div>
+            <div class="pane-label" style="margin-top:1rem">
+              <span>Generated Headers</span>
+              <button class="btn btn-sm btn-primary" id="copyBuildBtn">Copy</button>
+            </div>
+            <div class="code-output" id="buildOutput" style="min-height:120px;margin-top:0.5rem"></div>
+          </div>
+
+          <!-- Reference Mode -->
+          <div id="referenceMode" style="display:none">
+            <input type="search" class="ref-search" id="refSearch" placeholder="Search headers (e.g. cache, cors, authorization)...">
+            <div class="table-wrap">
+              <table class="header-table" id="refTable">
+                <thead>
+                  <tr>
+                    <th style="width:220px">Header</th>
+                    <th style="width:90px">Category</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody id="refBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste raw HTTP headers to parse and inspect them.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>Understanding HTTP Headers</h2>
+          <p>HTTP headers are key-value pairs sent with every HTTP request and response. They carry metadata about the request or response — things like content type, caching instructions, authentication tokens, and security policies. Understanding headers is essential for debugging web applications, optimizing performance, and securing your site.</p>
+
+          <h3>Security Headers</h3>
+          <p>Security headers protect users from a range of attacks. The most important ones are:</p>
+          <ul>
+            <li><strong>Content-Security-Policy (CSP)</strong> — defines which resources the browser may load, preventing XSS attacks</li>
+            <li><strong>Strict-Transport-Security (HSTS)</strong> — forces HTTPS connections for a specified duration</li>
+            <li><strong>X-Content-Type-Options: nosniff</strong> — prevents browsers from MIME-sniffing the content type</li>
+            <li><strong>X-Frame-Options</strong> — prevents clickjacking by controlling iframe embedding</li>
+            <li><strong>Referrer-Policy</strong> — controls how much referrer information is sent with requests</li>
+            <li><strong>Permissions-Policy</strong> — restricts access to browser APIs like camera, microphone, geolocation</li>
+          </ul>
+
+          <h3>Caching Headers</h3>
+          <p>Caching headers are critical for web performance. <strong>Cache-Control</strong> is the primary header — it controls caching behavior for both browsers and CDNs. Use <code>max-age=31536000, immutable</code> for versioned static assets (JS, CSS with hash in filename) and <code>no-cache</code> for HTML files you want revalidated on every request. <strong>ETag</strong> and <strong>Last-Modified</strong> enable conditional requests — the browser can ask "has this changed?" without downloading the full resource. Use our <a href="/tools/http-status-reference.html">HTTP Status Reference</a> to understand 304 Not Modified responses.</p>
+
+          <h3>CORS Headers</h3>
+          <p>Cross-Origin Resource Sharing (CORS) headers control which origins can access your API. <strong>Access-Control-Allow-Origin</strong> specifies the allowed origin(s). <strong>Access-Control-Allow-Methods</strong> lists the HTTP methods allowed (GET, POST, PUT, etc.). <strong>Access-Control-Allow-Headers</strong> specifies which request headers can be used. CORS is enforced by browsers — it does not protect against server-to-server requests. Misconfigured CORS (using <code>*</code> for credentialed requests) is a common security vulnerability.</p>
+
+          <h3>Content Negotiation Headers</h3>
+          <p>Content negotiation lets clients and servers agree on the format of the response. The client sends <strong>Accept</strong> (desired content types), <strong>Accept-Language</strong> (preferred language), and <strong>Accept-Encoding</strong> (supported compression algorithms). The server responds with <strong>Content-Type</strong> (actual format), <strong>Content-Language</strong>, and <strong>Content-Encoding</strong> (compression used). Getting <strong>Accept-Encoding: gzip, br</strong> and <strong>Content-Encoding: br</strong> right for Brotli compression can reduce response sizes by 20-30% compared to gzip.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the Content-Security-Policy header?</button>
+            <div class="faq-answer">Content-Security-Policy (CSP) controls which resources the browser is allowed to load. A strong CSP prevents cross-site scripting (XSS) attacks by blocking inline scripts and restricting resource origins to trusted domains. It is one of the most important security headers for web applications.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is HSTS and why is it important?</button>
+            <div class="faq-answer">HTTP Strict Transport Security (HSTS) instructs browsers to only connect over HTTPS. Once a browser sees this header, it automatically upgrades all future requests to HTTPS for the duration specified in max-age. This prevents SSL stripping attacks and ensures users always get a secure connection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does the Cache-Control header do?</button>
+            <div class="faq-answer">Cache-Control tells browsers and CDNs how to cache a response. Key directives: max-age=N (cache for N seconds), no-cache (revalidate before serving), no-store (never cache), public (shareable by CDNs), private (browser-only cache). Getting this right is critical for both performance and security.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the X-Frame-Options header?</button>
+            <div class="faq-answer">X-Frame-Options controls whether your page can be embedded in an iframe. DENY prevents all embedding, SAMEORIGIN allows same-origin iframes only. It protects against clickjacking attacks. Modern sites prefer the frame-ancestors CSP directive, but X-Frame-Options is still needed for older browsers.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What security headers should every website have?</button>
+            <div class="faq-answer">Every production site should have: Strict-Transport-Security (HSTS), Content-Security-Policy, X-Content-Type-Options: nosniff, X-Frame-Options (or CSP frame-ancestors), and Referrer-Policy. Permissions-Policy is also recommended to restrict browser API access.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Network Tools</h4>
+        <a href="/tools/http-header-inspector.html">Header Inspector</a>
+        <a href="/tools/http-status-reference.html">Status Codes</a>
+        <a href="/tools/user-agent-parser.html">UA Parser</a>
+        <a href="/tools/dns-record-builder.html">DNS Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/curl-to-code.html">cURL to Code</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    var HEADER_INFO = {
+      'content-type': { cat: 'content', desc: 'Specifies the media type and charset of the response body.' },
+      'content-length': { cat: 'content', desc: 'Size of the response body in bytes.' },
+      'content-encoding': { cat: 'content', desc: 'Compression algorithm applied to the response (gzip, br, deflate).' },
+      'content-language': { cat: 'content', desc: 'Language(s) intended for the audience of the response.' },
+      'content-disposition': { cat: 'content', desc: 'Indicates if content should be displayed inline or as a download.' },
+      'transfer-encoding': { cat: 'content', desc: 'Encoding used to transfer the message body (chunked, compress, deflate, gzip).' },
+      'cache-control': { cat: 'caching', desc: 'Directives for caching in requests and responses.' },
+      'etag': { cat: 'caching', desc: 'Identifier for a specific version of a resource, used for cache revalidation.' },
+      'last-modified': { cat: 'caching', desc: 'Date/time the resource was last modified, used for conditional requests.' },
+      'expires': { cat: 'caching', desc: 'Date/time after which the response is considered stale (legacy; prefer Cache-Control).' },
+      'vary': { cat: 'caching', desc: 'Headers used to determine whether a cached response can be served.' },
+      'age': { cat: 'caching', desc: 'Time in seconds the object has been in a proxy cache.' },
+      'strict-transport-security': { cat: 'security', desc: 'Forces browsers to use HTTPS for the specified max-age duration.' },
+      'content-security-policy': { cat: 'security', desc: 'Controls which resources the browser may load, preventing XSS attacks.' },
+      'x-content-type-options': { cat: 'security', desc: 'Prevents browsers from MIME-sniffing the content type. Should be "nosniff".' },
+      'x-frame-options': { cat: 'security', desc: 'Controls whether the page can be embedded in an iframe (clickjacking protection).' },
+      'referrer-policy': { cat: 'security', desc: 'Controls how much referrer information is included with requests.' },
+      'permissions-policy': { cat: 'security', desc: 'Restricts browser feature access (camera, mic, geolocation) for the page.' },
+      'x-xss-protection': { cat: 'security', desc: 'Enables the browser\'s built-in XSS filter (legacy; use CSP instead).' },
+      'access-control-allow-origin': { cat: 'cors', desc: 'CORS: specifies which origins may access the resource.' },
+      'access-control-allow-methods': { cat: 'cors', desc: 'CORS: lists the HTTP methods permitted for cross-origin requests.' },
+      'access-control-allow-headers': { cat: 'cors', desc: 'CORS: specifies which headers can be used in cross-origin requests.' },
+      'access-control-max-age': { cat: 'cors', desc: 'CORS: how long preflight request results may be cached (seconds).' },
+      'access-control-allow-credentials': { cat: 'cors', desc: 'CORS: whether credentials (cookies, auth) may be sent with cross-origin requests.' },
+      'authorization': { cat: 'request', desc: 'Credentials for authenticating the client with the server.' },
+      'cookie': { cat: 'request', desc: 'HTTP cookies previously sent by the server with Set-Cookie.' },
+      'accept': { cat: 'request', desc: 'MIME types the client can process in the response.' },
+      'accept-encoding': { cat: 'request', desc: 'Compression algorithms the client can decode (gzip, br, deflate).' },
+      'accept-language': { cat: 'request', desc: 'Natural languages preferred by the client.' },
+      'user-agent': { cat: 'request', desc: 'Browser/client name and version string.' },
+      'host': { cat: 'request', desc: 'Domain name and port of the server being requested.' },
+      'origin': { cat: 'request', desc: 'Origin of the cross-site access request or preflight request.' },
+      'referer': { cat: 'request', desc: 'URL of the page making the request (note: intentional typo in the spec).' },
+      'if-none-match': { cat: 'request', desc: 'Conditional request: only return the resource if ETag has changed.' },
+      'if-modified-since': { cat: 'request', desc: 'Conditional request: return resource only if modified after this date.' },
+      'set-cookie': { cat: 'response', desc: 'Sends a cookie from the server to be stored by the client.' },
+      'location': { cat: 'response', desc: 'URL to redirect to (used with 3xx and 201 responses).' },
+      'server': { cat: 'response', desc: 'Software information about the server (often hidden for security).' },
+      'date': { cat: 'response', desc: 'Date and time the response was generated.' },
+      'x-request-id': { cat: 'response', desc: 'Unique identifier for the request, useful for tracing in logs.' },
+      'link': { cat: 'response', desc: 'Provides links related to the resource (pagination, preloads, canonical).' }
+    };
+
+    var SEC_HEADERS = [
+      { key: 'strict-transport-security', label: 'HSTS' },
+      { key: 'content-security-policy', label: 'CSP' },
+      { key: 'x-content-type-options', label: 'X-Content-Type-Options' },
+      { key: 'x-frame-options', label: 'X-Frame-Options' },
+      { key: 'referrer-policy', label: 'Referrer-Policy' },
+      { key: 'permissions-policy', label: 'Permissions-Policy' }
+    ];
+
+    var CAT_LABELS = { security: 'Security', caching: 'Caching', content: 'Content', cors: 'CORS', request: 'Request', response: 'Response' };
+
+    function parseHeaders(raw) {
+      var lines = raw.split('\n');
+      var headers = [];
+      lines.forEach(function (line) {
+        line = line.trim();
+        if (!line || line.match(/^HTTP\//i)) return;
+        var colon = line.indexOf(':');
+        if (colon === -1) return;
+        var name = line.substring(0, colon).trim().toLowerCase();
+        var value = line.substring(colon + 1).trim();
+        headers.push({ name: name, value: value });
+      });
+      return headers;
+    }
+
+    function renderParsed(headers) {
+      if (!headers.length) {
+        document.getElementById('parseOutput').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted)">No valid headers found.</div>';
+        document.getElementById('securityScore').style.display = 'none';
+        return;
+      }
+
+      var found = {};
+      headers.forEach(function (h) { found[h.name] = h.value; });
+
+      var rows = headers.map(function (h) {
+        var info = HEADER_INFO[h.name] || { cat: 'response', desc: 'Custom or non-standard header.' };
+        return '<tr><td><strong>' + h.name + '</strong></td><td><span class="cat-tag tag-' + info.cat + '">' + (CAT_LABELS[info.cat] || info.cat) + '</span></td><td style="word-break:break-all;max-width:240px"><code>' + escHtml(h.value) + '</code></td><td style="color:var(--text-muted);font-size:0.82rem">' + info.desc + '</td></tr>';
+      }).join('');
+
+      document.getElementById('parseOutput').innerHTML =
+        '<div class="table-wrap" style="max-height:280px"><table class="header-table"><thead><tr><th style="width:180px">Header</th><th style="width:80px">Category</th><th style="width:220px">Value</th><th>Description</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+
+      // Security score
+      var secDiv = document.getElementById('securityScore');
+      var passed = SEC_HEADERS.filter(function (s) { return found[s.key]; });
+      var score = passed.length;
+      var total = SEC_HEADERS.length;
+      var ringCls = score >= 5 ? 'score-good' : score >= 3 ? 'score-ok' : 'score-poor';
+      var items = SEC_HEADERS.map(function (s) {
+        var ok = !!found[s.key];
+        return '<div class="sec-item"><div class="dot ' + (ok ? 'dot-pass' : 'dot-fail') + '"></div><span>' + s.label + '</span></div>';
+      }).join('');
+      secDiv.style.display = '';
+      secDiv.innerHTML = '<div class="sec-score"><div class="score-ring ' + ringCls + '">' + score + '/' + total + '</div><div><strong>Security Header Score</strong><div class="sec-checklist" style="margin-top:0.35rem">' + items + '</div></div></div>';
+
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar valid';
+      bar.textContent = headers.length + ' header' + (headers.length !== 1 ? 's' : '') + ' parsed — Security score: ' + score + '/' + total;
+      DT.trackTool('http-header-inspector');
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    var debouncedParse = DT.debounce(function () {
+      var raw = document.getElementById('headerInput').value;
+      if (!raw.trim()) {
+        document.getElementById('parseOutput').innerHTML = '<div style="padding:2rem;text-align:center;color:var(--text-muted)">Paste headers on the left to inspect them.</div>';
+        document.getElementById('securityScore').style.display = 'none';
+        document.getElementById('statusBar').className = 'status-bar info';
+        document.getElementById('statusBar').textContent = 'Paste raw HTTP headers to parse and inspect them.';
+        return;
+      }
+      renderParsed(parseHeaders(raw));
+    }, 200);
+
+    document.getElementById('headerInput').addEventListener('input', debouncedParse);
+
+    document.getElementById('exampleBtn').addEventListener('click', function () {
+      document.getElementById('headerInput').value = 'HTTP/2 200\ncontent-type: text/html; charset=utf-8\ncache-control: max-age=3600, public\nstrict-transport-security: max-age=31536000; includeSubDomains\nx-content-type-options: nosniff\nx-frame-options: SAMEORIGIN\nreferrer-policy: strict-origin-when-cross-origin\ncontent-encoding: gzip\nserver: cloudflare\netag: "abc123def456"\ndate: Sat, 22 Mar 2026 10:00:00 GMT';
+      debouncedParse();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function () {
+      document.getElementById('headerInput').value = '';
+      debouncedParse();
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function () {
+      var headers = parseHeaders(document.getElementById('headerInput').value);
+      if (headers.length) {
+        DT.copyToClipboard(headers.map(function(h){return h.name + ': ' + h.value;}).join('\n'), this);
+      }
+    });
+
+    // Build mode
+    function buildHeaders() {
+      var fields = [
+        { id: 'b_contentType', name: 'Content-Type' },
+        { id: 'b_cacheControl', name: 'Cache-Control' },
+        { id: 'b_hsts', name: 'Strict-Transport-Security' },
+        { id: 'b_xframe', name: 'X-Frame-Options' },
+        { id: 'b_xcto', name: 'X-Content-Type-Options' },
+        { id: 'b_referrer', name: 'Referrer-Policy' },
+        { id: 'b_cors', name: 'Access-Control-Allow-Origin' },
+        { id: 'b_csp', name: 'Content-Security-Policy' }
+      ];
+      var lines = [];
+      fields.forEach(function (f) {
+        var v = document.getElementById(f.id).value;
+        if (v) lines.push(f.name + ': ' + v);
+      });
+      document.getElementById('buildOutput').textContent = lines.length ? lines.join('\n') : '# Select options above to generate headers';
+    }
+
+    document.querySelectorAll('#buildForm select').forEach(function (s) {
+      s.addEventListener('change', buildHeaders);
+    });
+    buildHeaders();
+
+    document.getElementById('copyBuildBtn').addEventListener('click', function () {
+      var t = document.getElementById('buildOutput').textContent;
+      if (t) DT.copyToClipboard(t, this);
+    });
+
+    // Reference mode
+    function renderRef(filter) {
+      var tbody = document.getElementById('refBody');
+      var q = filter ? filter.toLowerCase() : '';
+      var rows = Object.keys(HEADER_INFO).filter(function (k) {
+        return !q || k.includes(q) || HEADER_INFO[k].desc.toLowerCase().includes(q) || HEADER_INFO[k].cat.includes(q);
+      }).map(function (k) {
+        var info = HEADER_INFO[k];
+        return '<tr><td><code>' + k + '</code></td><td><span class="cat-tag tag-' + info.cat + '">' + (CAT_LABELS[info.cat]||info.cat) + '</span></td><td>' + info.desc + '</td></tr>';
+      }).join('');
+      tbody.innerHTML = rows || '<tr><td colspan="3" style="text-align:center;padding:2rem;color:var(--text-muted)">No headers match.</td></tr>';
+    }
+
+    document.getElementById('refSearch').addEventListener('input', DT.debounce(function () {
+      renderRef(this.value);
+    }, 150));
+
+    // Mode switching
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function(c){c.classList.remove('active');});
+        chip.classList.add('active');
+        var mode = chip.dataset.mode;
+        document.getElementById('parseMode').style.display = mode === 'parse' ? '' : 'none';
+        document.getElementById('buildMode').style.display = mode === 'build' ? '' : 'none';
+        document.getElementById('referenceMode').style.display = mode === 'reference' ? '' : 'none';
+        if (mode === 'reference') renderRef('');
+        if (mode === 'build') buildHeaders();
+        var bar = document.getElementById('statusBar');
+        bar.className = 'status-bar info';
+        bar.textContent = mode === 'parse' ? 'Paste raw HTTP headers to parse and inspect them.' :
+          mode === 'build' ? 'Select options to generate HTTP headers.' : 'Browsing ' + Object.keys(HEADER_INFO).length + ' common HTTP headers.';
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

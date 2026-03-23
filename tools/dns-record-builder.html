@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>DNS Record Builder — BIND Zone File Generator | DevToolbox</title>
+  <meta name="description" content="Build DNS records (A, AAAA, CNAME, MX, TXT, SRV, NS) and generate BIND zone file format. SPF, DKIM, and DMARC helpers included. Free online DNS record constructor.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/dns-record-builder.html">
+  <meta property="og:title" content="DNS Record Builder — DevToolbox">
+  <meta property="og:description" content="Construct DNS records and generate BIND zone file format. Supports A, AAAA, CNAME, MX, TXT, SRV, NS with SPF/DKIM/DMARC helpers.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/dns-record-builder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "DNS Record Builder",
+    "url": "https://thisdevtool.com/tools/dns-record-builder.html",
+    "description": "Build DNS records (A, AAAA, CNAME, MX, TXT, SRV, NS) and generate BIND zone file format with SPF/DKIM/DMARC helpers.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between an A record and AAAA record?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An A record maps a hostname to an IPv4 address (32-bit, e.g., 93.184.216.34). An AAAA record maps a hostname to an IPv6 address (128-bit, e.g., 2606:2800:220:1:248:1893:25c8:1946). Most modern websites have both — A records for IPv4 clients and AAAA records for IPv6 clients. The double-A in AAAA is because an IPv6 address is 4 times larger than an IPv4 address."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a CNAME record and when should I use it?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A CNAME (Canonical Name) record creates an alias that points to another hostname rather than directly to an IP address. Use CNAME records for subdomains like www (pointing to your apex domain) or for CDN hostnames. Important: you cannot use a CNAME at the apex/root domain (e.g., example.com) — use an A or AAAA record there. Some DNS providers offer ALIAS or ANAME records as a CNAME-like workaround for apex domains."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is an SPF record and how do I create one?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SPF (Sender Policy Framework) is a TXT record that specifies which mail servers are authorized to send email on behalf of your domain. A typical SPF record looks like: v=spf1 include:_spf.google.com ~all. The v=spf1 declares the SPF version. include: mechanisms authorize third-party mail senders. The qualifier at the end (~all means soft fail, -all means hard fail) controls what happens to unauthorized senders."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does TTL mean in DNS records?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TTL (Time To Live) is the number of seconds that resolvers and browsers may cache a DNS record. A TTL of 3600 means the record is cached for 1 hour. Lower TTLs (300 = 5 minutes) are useful when you plan to change an IP address soon. Higher TTLs (86400 = 24 hours) reduce DNS query load for stable records. When migrating a site, lower the TTL 24-48 hours in advance so the change propagates quickly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the BIND zone file format?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "BIND (Berkeley Internet Name Domain) zone file format is the standard text format for DNS records used by most DNS servers. Each record follows the pattern: name TTL class type rdata. For example: www 3600 IN A 93.184.216.34. The @ symbol represents the zone apex (root domain). Many DNS providers accept BIND-format zone files for import/export, making it useful for migrating DNS records between providers."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .record-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+    .record-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem 1rem; position: relative; }
+    .record-card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.65rem; }
+    .record-type-badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 800; font-family: monospace; }
+    .rtype-A { background: #dcfce7; color: #166534; }
+    .rtype-AAAA { background: #e0f2fe; color: #0369a1; }
+    .rtype-CNAME { background: #fef9c3; color: #854d0e; }
+    .rtype-MX { background: #f3e8ff; color: #6b21a8; }
+    .rtype-TXT { background: #fce7f3; color: #9d174d; }
+    .rtype-SRV { background: #fee2e2; color: #991b1b; }
+    .rtype-NS { background: #f0fdf4; color: #15803d; }
+    [data-theme="dark"] .rtype-A { background: #14532d; color: #86efac; }
+    [data-theme="dark"] .rtype-AAAA { background: #0c4a6e; color: #7dd3fc; }
+    [data-theme="dark"] .rtype-CNAME { background: #713f12; color: #fde68a; }
+    [data-theme="dark"] .rtype-MX { background: #3b0764; color: #d8b4fe; }
+    [data-theme="dark"] .rtype-TXT { background: #500724; color: #fbcfe8; }
+    [data-theme="dark"] .rtype-SRV { background: #7f1d1d; color: #fca5a5; }
+    [data-theme="dark"] .rtype-NS { background: #052e16; color: #86efac; }
+    .record-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; }
+    .record-fields label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.2rem; }
+    .record-fields input, .record-fields select, .record-fields textarea { width: 100%; padding: 0.4rem 0.6rem; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.875rem; }
+    .record-fields textarea { resize: vertical; min-height: 60px; font-family: monospace; }
+    .record-delete { position: absolute; top: 0.6rem; right: 0.6rem; background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; padding: 0.2rem; }
+    .record-delete:hover { color: #ef4444; }
+    .add-record-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+    .zone-output { font-family: monospace; font-size: 0.85rem; white-space: pre; padding: 1rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; min-height: 140px; max-height: 340px; overflow-y: auto; color: var(--text); }
+    .zone-comment { color: #6b7280; }
+    .zone-label { color: #10b981; }
+    .zone-type { color: #f59e0b; font-weight: 700; }
+    .zone-value { color: var(--text); }
+    .spf-builder { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; }
+    .spf-row { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: flex-end; margin-bottom: 0.5rem; }
+    .spf-row label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.2rem; }
+    .spf-row input, .spf-row select { padding: 0.4rem 0.6rem; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.875rem; }
+    .spf-includes { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.5rem; }
+    .spf-include-row { display: flex; gap: 0.5rem; align-items: center; }
+    .spf-include-row input { flex: 1; padding: 0.4rem 0.6rem; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.875rem; }
+    .validation-error { color: #ef4444; font-size: 0.8rem; margin-top: 0.2rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/http-header-inspector.html">Headers</a>
+        <a href="/tools/http-status-reference.html">Status Codes</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>DNS Record Builder</h1>
+          <p class="tool-subtitle">Construct DNS records and export BIND zone file format. Supports A, AAAA, CNAME, MX, TXT, SRV, NS with SPF helpers.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="builder">A/AAAA</button>
+            <button class="option-chip" data-mode="cname">CNAME</button>
+            <button class="option-chip" data-mode="mx">MX</button>
+            <button class="option-chip" data-mode="txt">TXT</button>
+            <button class="option-chip" data-mode="all">All Types</button>
+          </div>
+
+          <!-- Add Record Row -->
+          <div class="add-record-row" id="addRecordRow">
+            <button class="btn btn-primary" onclick="DnsBuilder.addRecord('A')">+ A Record</button>
+            <button class="btn btn-secondary" onclick="DnsBuilder.addRecord('AAAA')">+ AAAA</button>
+            <button class="btn btn-secondary" onclick="DnsBuilder.addRecord('CNAME')">+ CNAME</button>
+            <button class="btn btn-secondary" onclick="DnsBuilder.addRecord('MX')">+ MX</button>
+            <button class="btn btn-secondary" onclick="DnsBuilder.addRecord('TXT')">+ TXT</button>
+            <button class="btn btn-secondary" onclick="DnsBuilder.addRecord('SRV')">+ SRV</button>
+            <button class="btn btn-secondary" onclick="DnsBuilder.addRecord('NS')">+ NS</button>
+          </div>
+
+          <!-- SPF Helper -->
+          <div id="spfHelper" style="display:none">
+            <h3 style="margin-bottom:0.5rem;font-size:1rem">SPF Record Helper</h3>
+            <div class="spf-builder">
+              <div class="spf-row">
+                <div>
+                  <label>Mail provider presets</label>
+                  <select id="spfPreset">
+                    <option value="">Custom</option>
+                    <option value="include:_spf.google.com">Google Workspace</option>
+                    <option value="include:spf.protection.outlook.com">Microsoft 365</option>
+                    <option value="include:amazonses.com">Amazon SES</option>
+                    <option value="include:sendgrid.net">SendGrid</option>
+                    <option value="include:_spf.mailchimp.com">Mailchimp</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Policy (all)</label>
+                  <select id="spfAll">
+                    <option value="~all">~all (Soft fail — recommended)</option>
+                    <option value="-all">-all (Hard fail)</option>
+                    <option value="?all">?all (Neutral)</option>
+                    <option value="+all">+all (Pass all — insecure)</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Include own IPs?</label>
+                  <select id="spfMx">
+                    <option value="">No</option>
+                    <option value="mx">mx (MX servers)</option>
+                    <option value="a">a (A record)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="spf-includes" id="spfIncludes">
+                <div class="spf-include-row">
+                  <input type="text" placeholder="include:_spf.google.com or ip4:1.2.3.4" id="spfCustom1">
+                  <button class="btn btn-sm btn-secondary" onclick="DnsBuilder.addSpfInclude()">+ Add</button>
+                </div>
+              </div>
+              <div style="margin-top:0.5rem">
+                <label style="font-size:0.8rem;font-weight:600;color:var(--text-muted)">Generated SPF value</label>
+                <div class="code-output" id="spfOutput" style="min-height:40px;padding:0.5rem 0.75rem;font-size:0.875rem"></div>
+              </div>
+              <button class="btn btn-sm btn-primary" style="margin-top:0.5rem" onclick="DnsBuilder.insertSpf()">Insert as TXT Record</button>
+            </div>
+          </div>
+
+          <!-- Record List -->
+          <div class="record-list" id="recordList"></div>
+
+          <!-- BIND Output -->
+          <div class="pane-label" style="margin-bottom:0.5rem">
+            <span>BIND Zone File Output</span>
+            <button class="btn btn-sm btn-primary" id="copyZoneBtn">Copy</button>
+            <button class="btn btn-sm btn-secondary" id="downloadZoneBtn">Download .zone</button>
+            <button class="btn btn-sm btn-secondary" id="clearAllBtn">Clear All</button>
+          </div>
+          <div class="zone-output" id="zoneOutput">; Add records above to generate BIND zone file output.</div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Add DNS records above to generate BIND zone format.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>DNS Record Types Explained</h2>
+          <p>DNS (Domain Name System) records are stored in zone files on authoritative nameservers. Each record maps a domain name to some data — an IP address, another hostname, or configuration information. Understanding the different record types is essential for setting up email, configuring servers, and managing domain infrastructure.</p>
+
+          <h3>A and AAAA Records</h3>
+          <p>A records map a hostname to an IPv4 address. They are the most fundamental DNS record — when a user visits your website, their browser queries your domain's A record to find the server IP. AAAA records (pronounced "quad-A") serve the same purpose for IPv6 addresses. Modern best practice is to have both A and AAAA records for every hostname to support both IPv4 and IPv6 clients. The @ symbol is used to represent the root/apex domain (e.g., example.com itself).</p>
+
+          <h3>CNAME Records</h3>
+          <p>CNAME (Canonical Name) records create aliases. When a resolver follows a CNAME, it looks up the target hostname and returns that IP. CNAMEs are useful for the www subdomain (pointing to the apex), for CDN-hosted assets (pointing to CDN hostnames), and for third-party services. Important restrictions: you cannot create a CNAME at the zone apex, and a CNAME cannot coexist with other record types for the same name. Some DNS providers offer ALIAS or ANAME records as a CNAME-at-apex workaround.</p>
+
+          <h3>MX Records</h3>
+          <p>MX (Mail Exchange) records specify which servers handle email for a domain. Each MX record has a priority number — lower values have higher priority. If the primary mail server is unavailable, the secondary (higher priority number) is tried. Most organizations use their email provider's MX records (Google Workspace, Microsoft 365, etc.) rather than running their own mail server. Always point MX records to A/AAAA records, never to CNAMEs — some mail servers reject CNAME-pointed MX records.</p>
+
+          <h3>TXT Records</h3>
+          <p>TXT records store arbitrary text data and are used for domain verification and email security. The most common TXT records are: <strong>SPF</strong> (Sender Policy Framework) for specifying authorized mail senders, <strong>DKIM</strong> (DomainKeys Identified Mail) public keys for email signing, <strong>DMARC</strong> policies for email authentication enforcement, and <strong>site verification</strong> tokens for Google Search Console, various SaaS tools, and TLS certificate issuance. A domain can have multiple TXT records. For more information, see our <a href="/tools/http-header-inspector.html">HTTP Header Inspector</a> for related email authentication headers.</p>
+
+          <h3>SRV Records</h3>
+          <p>SRV (Service) records specify the hostname and port number for specific services. They follow the naming convention <code>_service._protocol.domain</code>, for example <code>_sip._tcp.example.com</code> or <code>_xmpp-server._tcp.example.com</code>. SRV records include priority, weight, port, and target fields. They are used by protocols like SIP (VoIP), XMPP (chat), Microsoft Lync/Teams, and CalDAV/CardDAV for service discovery without hardcoded ports.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between an A record and AAAA record?</button>
+            <div class="faq-answer">An A record maps a hostname to an IPv4 address (32-bit, e.g., 93.184.216.34). An AAAA record maps to an IPv6 address (128-bit, e.g., 2606:2800:220:1:248:1893:25c8:1946). Most websites have both to support all clients. The quad-A name comes from IPv6 being 4x the size of IPv4.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a CNAME record and when should I use it?</button>
+            <div class="faq-answer">A CNAME creates an alias that points to another hostname. Use it for the www subdomain (pointing to the apex domain) or for CDN hostnames. You cannot use a CNAME at the apex domain — use A/AAAA records there instead.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is an SPF record and how do I create one?</button>
+            <div class="faq-answer">An SPF record is a TXT record that lists the mail servers authorized to send email for your domain. Example: v=spf1 include:_spf.google.com ~all. Use the SPF Helper in this tool to generate one for common providers like Google Workspace and Microsoft 365.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does TTL mean in DNS records?</button>
+            <div class="faq-answer">TTL (Time To Live) is the number of seconds a DNS record may be cached. Lower TTLs (300 = 5 min) allow faster propagation of changes. Higher TTLs (86400 = 24 hrs) reduce DNS query load. When migrating a site, lower the TTL 24-48 hours in advance.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the BIND zone file format?</button>
+            <div class="faq-answer">BIND zone file format is the standard text format for DNS records, used by BIND and most DNS servers. Each record follows: name TTL IN type data. The @ symbol represents the zone apex. Most DNS providers can import/export BIND zone files for migration.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Network Tools</h4>
+        <a href="/tools/dns-record-builder.html">DNS Builder</a>
+        <a href="/tools/http-header-inspector.html">Header Inspector</a>
+        <a href="/tools/http-status-reference.html">Status Codes</a>
+        <a href="/tools/user-agent-parser.html">UA Parser</a>
+      </div>
+      <div class="footer-col">
+        <h4>SEO Tools</h4>
+        <a href="/tools/meta-tag-generator.html">Meta Tags</a>
+        <a href="/tools/robots-txt.html">Robots.txt</a>
+        <a href="/tools/canonical-checker.html">Canonical Checker</a>
+        <a href="/tools/hreflang-builder.html">Hreflang Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  var DnsBuilder = (function () {
+    var DT = DevToolbox;
+    var records = [];
+    var idCounter = 0;
+    var currentFilter = 'builder'; // chip filter
+
+    var DEFAULTS = {
+      A:    { hostname: '@', value: '', ttl: '3600' },
+      AAAA: { hostname: '@', value: '', ttl: '3600' },
+      CNAME:{ hostname: 'www', value: '', ttl: '3600' },
+      MX:   { hostname: '@', value: '', priority: '10', ttl: '3600' },
+      TXT:  { hostname: '@', value: '', ttl: '3600' },
+      SRV:  { service: '_sip', protocol: '_tcp', hostname: '', priority: '10', weight: '20', port: '5060', value: '', ttl: '3600' },
+      NS:   { hostname: '@', value: '', ttl: '86400' }
+    };
+
+    var FILTER_TYPES = {
+      builder: ['A','AAAA'],
+      cname:   ['CNAME'],
+      mx:      ['MX'],
+      txt:     ['TXT'],
+      all:     ['A','AAAA','CNAME','MX','TXT','SRV','NS']
+    };
+
+    function validateIPv4(ip) {
+      return /^(\d{1,3}\.){3}\d{1,3}$/.test(ip) && ip.split('.').every(function(n){ return parseInt(n) <= 255; });
+    }
+
+    function validateIPv6(ip) {
+      return /^[0-9a-fA-F:]+$/.test(ip) && ip.includes(':');
+    }
+
+    function validateHostname(h) {
+      if (h === '@' || h === '*') return true;
+      return /^[a-zA-Z0-9._-]+$/.test(h);
+    }
+
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function renderFields(rec) {
+      var type = rec.type;
+      var id = rec.id;
+      var f = rec.fields;
+
+      function field(label, key, placeholder, extraAttrs) {
+        var val = escapeHtml(f[key] || '');
+        var errId = 'err_' + id + '_' + key;
+        return '<div><label>' + label + '</label><input type="text" data-key="' + key + '" data-id="' + id + '" value="' + val + '" placeholder="' + (placeholder||'') + '" ' + (extraAttrs||'') + ' oninput="DnsBuilder.updateField(this)" autocomplete="off" spellcheck="false"><div class="validation-error" id="' + errId + '"></div></div>';
+      }
+
+      function select(label, key, options) {
+        var html = '<div><label>' + label + '</label><select data-key="' + key + '" data-id="' + id + '" onchange="DnsBuilder.updateField(this)">';
+        options.forEach(function(o){ html += '<option value="' + o[0] + '"' + (f[key]===o[0]?' selected':'') + '>' + o[1] + '</option>'; });
+        html += '</select></div>';
+        return html;
+      }
+
+      var ttlOpts = [['300','300 (5 min)'],['900','900 (15 min)'],['3600','3600 (1 hr)'],['14400','14400 (4 hrs)'],['86400','86400 (1 day)']];
+      var ttlSel = '<div><label>TTL (seconds)</label><select data-key="ttl" data-id="' + id + '" onchange="DnsBuilder.updateField(this)">' + ttlOpts.map(function(o){ return '<option value="' + o[0] + '"' + (f.ttl===o[0]?' selected':'') + '>' + o[1] + '</option>'; }).join('') + '</select></div>';
+
+      if (type === 'A')    return '<div class="record-fields">' + field('Hostname','hostname','@ or subdomain') + field('IPv4 Address','value','93.184.216.34') + ttlSel + '</div>';
+      if (type === 'AAAA') return '<div class="record-fields">' + field('Hostname','hostname','@ or subdomain') + field('IPv6 Address','value','2001:db8::1') + ttlSel + '</div>';
+      if (type === 'CNAME') return '<div class="record-fields">' + field('Alias (hostname)','hostname','www') + field('Canonical Name (target)','value','example.com.') + ttlSel + '</div>';
+      if (type === 'MX')   return '<div class="record-fields">' + field('Hostname','hostname','@') + field('Mail Server','value','mail.example.com.') + field('Priority','priority','10') + ttlSel + '</div>';
+      if (type === 'TXT')  return '<div class="record-fields" style="grid-template-columns:1fr">' + field('Hostname','hostname','@') + '<div><label>Text Value</label><textarea data-key="value" data-id="' + id + '" oninput="DnsBuilder.updateField(this)" placeholder="v=spf1 include:_spf.google.com ~all" spellcheck="false">' + escapeHtml(f.value||'') + '</textarea></div>' + ttlSel + '</div>';
+      if (type === 'SRV')  return '<div class="record-fields">' + field('Service','service','_sip') + select('Protocol','protocol',[['_tcp','_tcp'],['_udp','_udp'],['_tls','_tls']]) + field('Priority','priority','10') + field('Weight','weight','20') + field('Port','port','5060') + field('Target','value','sipserver.example.com.') + ttlSel + '</div>';
+      if (type === 'NS')   return '<div class="record-fields">' + field('Hostname','hostname','@') + field('Nameserver','value','ns1.example.com.') + ttlSel + '</div>';
+      return '';
+    }
+
+    function renderRecord(rec) {
+      var div = document.createElement('div');
+      div.className = 'record-card';
+      div.id = 'rec_' + rec.id;
+      div.innerHTML =
+        '<div class="record-card-header"><span class="record-type-badge rtype-' + rec.type + '">' + rec.type + '</span><span style="font-size:0.875rem;color:var(--text-muted)">' + rec.type + ' Record</span></div>' +
+        renderFields(rec) +
+        '<button class="record-delete" title="Remove record" onclick="DnsBuilder.removeRecord(' + rec.id + ')">✕</button>';
+      return div;
+    }
+
+    function toBind(rec) {
+      var f = rec.fields;
+      var type = rec.type;
+      var host = (f.hostname || '@').trim();
+      if (!host.endsWith('.') && host !== '@') host = host;
+      var ttl = f.ttl || '3600';
+
+      if (type === 'A' || type === 'AAAA') {
+        if (!f.value) return null;
+        var err = document.getElementById('err_' + rec.id + '_value');
+        var valid = type === 'A' ? validateIPv4(f.value) : validateIPv6(f.value);
+        if (err) err.textContent = valid ? '' : (type === 'A' ? 'Invalid IPv4 address' : 'Invalid IPv6 address');
+        if (!valid) return null;
+        return host + '\t' + ttl + '\tIN\t' + type + '\t' + f.value;
+      }
+      if (type === 'CNAME') {
+        if (!f.value) return null;
+        var target = f.value.trim();
+        if (!target.endsWith('.')) target += '.';
+        return host + '\t' + ttl + '\tIN\tCNAME\t' + target;
+      }
+      if (type === 'MX') {
+        if (!f.value) return null;
+        var target2 = f.value.trim();
+        if (!target2.endsWith('.')) target2 += '.';
+        return host + '\t' + ttl + '\tIN\tMX\t' + (f.priority||'10') + '\t' + target2;
+      }
+      if (type === 'TXT') {
+        if (!f.value) return null;
+        return host + '\t' + ttl + '\tIN\tTXT\t"' + f.value.replace(/"/g, '\\"') + '"';
+      }
+      if (type === 'SRV') {
+        if (!f.value) return null;
+        var srvName = (f.service||'_sip') + '.' + (f.protocol||'_tcp') + '.' + host;
+        var target3 = f.value.trim();
+        if (!target3.endsWith('.')) target3 += '.';
+        return srvName + '\t' + ttl + '\tIN\tSRV\t' + (f.priority||'10') + '\t' + (f.weight||'20') + '\t' + (f.port||'0') + '\t' + target3;
+      }
+      if (type === 'NS') {
+        if (!f.value) return null;
+        var ns = f.value.trim();
+        if (!ns.endsWith('.')) ns += '.';
+        return host + '\t' + ttl + '\tIN\tNS\t' + ns;
+      }
+      return null;
+    }
+
+    function renderZone() {
+      var visible = getFilteredTypes();
+      var lines = ['; DNS Zone File — Generated by DevToolbox DNS Record Builder', '; https://thisdevtool.com/tools/dns-record-builder.html', '; Generated: ' + new Date().toISOString(), ';'];
+      var count = 0;
+      records.filter(function(r){ return visible.indexOf(r.type) !== -1; }).forEach(function (rec) {
+        var line = toBind(rec);
+        if (line) { lines.push(line); count++; }
+      });
+      if (count === 0) lines.push('; No complete records yet. Fill in record fields above.');
+
+      var out = document.getElementById('zoneOutput');
+      out.innerHTML = lines.map(function (l) {
+        if (l.startsWith(';')) return '<span class="zone-comment">' + escapeHtml(l) + '</span>';
+        var parts = l.split('\t');
+        if (parts.length >= 4) {
+          return '<span class="zone-label">' + escapeHtml(parts[0]) + '</span>\t' +
+            escapeHtml(parts[1]) + '\t' +
+            escapeHtml(parts[2]) + '\t' +
+            '<span class="zone-type">' + escapeHtml(parts[3]) + '</span>\t' +
+            parts.slice(4).map(function(p){ return '<span class="zone-value">' + escapeHtml(p) + '</span>'; }).join('\t');
+        }
+        return escapeHtml(l);
+      }).join('\n');
+
+      var bar = document.getElementById('statusBar');
+      bar.className = count > 0 ? 'status-bar valid' : 'status-bar info';
+      bar.textContent = count > 0 ? count + ' DNS record' + (count !== 1 ? 's' : '') + ' — BIND format' : 'Add DNS records above to generate BIND zone file output.';
+
+      DT.trackTool('dns-record-builder');
+    }
+
+    function getFilteredTypes() {
+      return FILTER_TYPES[currentFilter] || FILTER_TYPES.all;
+    }
+
+    function rerenderList() {
+      var list = document.getElementById('recordList');
+      list.innerHTML = '';
+      var visible = getFilteredTypes();
+      var shown = records.filter(function(r){ return visible.indexOf(r.type) !== -1; });
+      shown.forEach(function (rec) { list.appendChild(renderRecord(rec)); });
+      if (shown.length === 0) {
+        var p = document.createElement('p');
+        p.style.cssText = 'color:var(--text-muted);font-size:.875rem;text-align:center;padding:1rem';
+        p.textContent = 'No records of this type yet. Click a button above to add one.';
+        list.appendChild(p);
+      }
+      renderZone();
+    }
+
+    function addRecord(type) {
+      var def = DEFAULTS[type] || {};
+      var rec = { id: ++idCounter, type: type, fields: JSON.parse(JSON.stringify(def)) };
+      records.push(rec);
+      // Auto-switch chip to show added type
+      var chipMap = { A:'builder', AAAA:'builder', CNAME:'cname', MX:'mx', TXT:'txt', SRV:'all', NS:'all' };
+      if (currentFilter !== 'all') {
+        var target = chipMap[type];
+        if (target && target !== currentFilter) {
+          currentFilter = target;
+          document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+          document.querySelector('[data-mode="' + currentFilter + '"]').classList.add('active');
+        }
+      }
+      rerenderList();
+    }
+
+    function removeRecord(id) {
+      records = records.filter(function(r){ return r.id !== id; });
+      rerenderList();
+    }
+
+    function updateField(el) {
+      var id = parseInt(el.dataset.id);
+      var key = el.dataset.key;
+      var rec = records.find(function(r){ return r.id === id; });
+      if (rec) {
+        rec.fields[key] = el.value;
+        renderZone();
+      }
+    }
+
+    // SPF Builder
+    var spfExtraIncludes = [];
+
+    function buildSpf() {
+      var parts = ['v=spf1'];
+      var mx = document.getElementById('spfMx').value;
+      if (mx) parts.push(mx);
+      var preset = document.getElementById('spfPreset').value;
+      if (preset) parts.push(preset);
+      var custom = document.getElementById('spfCustom1').value.trim();
+      if (custom) parts.push(custom);
+      spfExtraIncludes.forEach(function(v){ if(v.trim()) parts.push(v.trim()); });
+      parts.push(document.getElementById('spfAll').value || '~all');
+      document.getElementById('spfOutput').textContent = parts.join(' ');
+    }
+
+    document.getElementById('spfPreset').addEventListener('change', buildSpf);
+    document.getElementById('spfAll').addEventListener('change', buildSpf);
+    document.getElementById('spfMx').addEventListener('change', buildSpf);
+    document.getElementById('spfCustom1').addEventListener('input', DT.debounce(buildSpf, 200));
+    buildSpf();
+
+    function addSpfInclude() {
+      var container = document.getElementById('spfIncludes');
+      var newVal = '';
+      spfExtraIncludes.push(newVal);
+      var idx = spfExtraIncludes.length - 1;
+      var row = document.createElement('div');
+      row.className = 'spf-include-row';
+      row.innerHTML = '<input type="text" placeholder="include:domain.com or ip4:1.2.3.4"><button class="btn btn-sm btn-secondary" onclick="this.parentElement.remove()">Remove</button>';
+      row.querySelector('input').addEventListener('input', DT.debounce(function(){ spfExtraIncludes[idx] = this.value; buildSpf(); }, 200));
+      container.appendChild(row);
+    }
+
+    function insertSpf() {
+      var val = document.getElementById('spfOutput').textContent.trim();
+      if (!val || val === 'v=spf1 ~all') { alert('Configure SPF settings first.'); return; }
+      var rec = { id: ++idCounter, type: 'TXT', fields: { hostname: '@', value: val, ttl: '3600' } };
+      records.push(rec);
+      currentFilter = 'txt';
+      document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+      document.querySelector('[data-mode="txt"]').classList.add('active');
+      document.getElementById('spfHelper').style.display = 'none';
+      rerenderList();
+    }
+
+    // Chips
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function(c){c.classList.remove('active');});
+        chip.classList.add('active');
+        currentFilter = chip.dataset.mode;
+        document.getElementById('spfHelper').style.display = currentFilter === 'txt' ? '' : 'none';
+        // Update add-record buttons visibility
+        var addRow = document.getElementById('addRecordRow');
+        var visible = FILTER_TYPES[currentFilter];
+        addRow.querySelectorAll('button').forEach(function(btn){
+          var t = btn.textContent.replace('+ ','').trim();
+          btn.style.display = (currentFilter === 'all' || visible.indexOf(t) !== -1) ? '' : 'none';
+        });
+        rerenderList();
+      });
+    });
+
+    // Pre-load example records
+    function loadExample() {
+      records = [];
+      idCounter = 0;
+      var ex = [
+        { type:'A',    fields:{ hostname:'@', value:'93.184.216.34', ttl:'3600' } },
+        { type:'A',    fields:{ hostname:'www', value:'93.184.216.34', ttl:'3600' } },
+        { type:'AAAA', fields:{ hostname:'@', value:'2606:2800:220:1:248:1893:25c8:1946', ttl:'3600' } },
+        { type:'MX',   fields:{ hostname:'@', value:'mail.example.com.', priority:'10', ttl:'3600' } },
+        { type:'TXT',  fields:{ hostname:'@', value:'v=spf1 include:_spf.google.com ~all', ttl:'3600' } }
+      ];
+      ex.forEach(function(e){ e.id = ++idCounter; records.push(e); });
+      currentFilter = 'all';
+      document.querySelectorAll('.option-chip').forEach(function(c){c.classList.remove('active');});
+      document.querySelector('[data-mode="all"]').classList.add('active');
+      rerenderList();
+    }
+
+    // Wire up copy/download/clear
+    document.getElementById('copyZoneBtn').addEventListener('click', function () {
+      var text = document.getElementById('zoneOutput').innerText || document.getElementById('zoneOutput').textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+    document.getElementById('downloadZoneBtn').addEventListener('click', function () {
+      var text = document.getElementById('zoneOutput').innerText || document.getElementById('zoneOutput').textContent;
+      if (text) DT.downloadText(text, 'zone.txt', 'text/plain');
+    });
+    document.getElementById('clearAllBtn').addEventListener('click', function () {
+      records = [];
+      rerenderList();
+    });
+
+    // Initial state
+    rerenderList();
+    loadExample();
+
+    return { addRecord: addRecord, removeRecord: removeRecord, updateField: updateField, insertSpf: insertSpf, addSpfInclude: addSpfInclude };
+  })();
+
+  function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  </script>
+</body>
+</html>

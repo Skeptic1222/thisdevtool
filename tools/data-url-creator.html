@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>File to Data URL Creator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert files to Data URLs (base64 data URIs) and back. Drag-drop any file, preview images inline, convert text to data URLs. 100% client-side — files never leave your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/data-url-creator.html">
+  <meta property="og:title" content="File to Data URL Creator — DevToolbox">
+  <meta property="og:description" content="Convert any file to a Data URL (data URI). Preview images, decode data URLs back to files. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/data-url-creator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "File to Data URL Creator",
+    "url": "https://thisdevtool.com/tools/data-url-creator.html",
+    "description": "Convert files to Data URLs (base64 data URIs) and decode data URLs back to files. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a Data URL?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A Data URL (also called a data URI) is a URL scheme that encodes file data directly in the URL string using Base64 encoding. The format is: data:MIME_TYPE;base64,BASE64_DATA. Data URLs let you embed images, fonts, CSS, and other files directly in HTML, CSS, or JavaScript without needing a separate file request. They are supported in all modern browsers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why are Data URLs larger than the original file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Base64 encoding converts binary data to text using only 64 ASCII characters. Every 3 bytes of binary data becomes 4 characters of Base64, resulting in a 33% size increase. A 1 MB image becomes a 1.37 MB Data URL. When embedded in HTML, the extra size is offset by eliminating a separate HTTP request, but for large files the size increase is usually not worth it."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "When should I use Data URLs?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Data URLs work well for small files (under 10 KB) where eliminating an HTTP request outweighs the size overhead: small icons, inline SVGs, loading spinner GIFs, fonts for email templates, and CSS background images. They are also used in email HTML (where external URLs may be blocked) and in automated screenshots. Avoid Data URLs for large images or files — the size overhead and the inability to cache them separately make them inefficient."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my file uploaded to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool uses the browser's FileReader API to read your file entirely in your browser. No data is sent to any server. You can safely use this tool with sensitive documents, private images, or proprietary files."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I decode a Data URL back to a file?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Switch to 'Data URL to File' mode using the chip at the top. Paste the full data URL (starting with data:) into the input area and click Decode. The tool extracts the MIME type, decodes the Base64 data, and provides a download button for the reconstructed file. Image data URLs are also previewed inline."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: var(--bg-input);
+      color: var(--text-muted);
+    }
+    .drop-zone.drag-over { border-color: var(--accent); background: var(--bg-card); }
+    .drop-zone svg { display: block; margin: 0 auto 0.75rem; opacity: 0.5; }
+    .preview-img { max-width: 100%; max-height: 200px; border-radius: var(--radius-sm); display: block; margin: 0.5rem 0; border: 1px solid var(--border); }
+    .size-compare { display: flex; gap: 1.5rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-muted); }
+    .size-compare strong { color: var(--text); }
+    .mime-select { padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-input); color: var(--text); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/checksum-verifier.html">Checksum Verifier</a>
+        <a href="/tools/image-converter.html">Image Converter</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>File to Data URL Creator</h1>
+          <p class="tool-subtitle">Convert any file to a Base64 Data URL, encode text as a data URI, or decode a Data URL back to a downloadable file. 100% client-side.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="file">File to Data URL</button>
+            <button class="option-chip" data-mode="text">Text to Data URL</button>
+            <button class="option-chip" data-mode="decode">Data URL to File</button>
+          </div>
+
+          <!-- File to Data URL -->
+          <div id="fileSection" style="margin-top:1rem;">
+            <div id="dropZone" class="drop-zone" tabindex="0" role="button" aria-label="Drop file here or click to select">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <p style="margin:0;font-size:1rem;"><strong>Drag &amp; drop a file here</strong></p>
+              <p style="margin:0.25rem 0 0;font-size:0.875rem;">or <a href="#" id="browseLink">browse to select</a> — any file type</p>
+            </div>
+            <input type="file" id="fileInput" style="display:none;">
+
+            <div id="fileResult" style="display:none;margin-top:1rem;">
+              <div id="imagePreview" style="display:none;">
+                <div class="pane-label"><span>Image Preview</span></div>
+                <img id="previewImg" class="preview-img" alt="Preview" src="">
+              </div>
+
+              <div class="size-compare" id="sizeCompare"></div>
+
+              <div class="pane-label" style="margin-top:0.75rem;">
+                <span>Data URL</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyFileDataUrl">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="clearFileBtn">Clear</button>
+                </div>
+              </div>
+              <div class="code-output" id="fileDataUrlOutput" style="font-size:0.75rem;word-break:break-all;max-height:180px;overflow-y:auto;"></div>
+
+              <div class="btn-group" style="margin-top:0.75rem;">
+                <button class="btn btn-sm btn-secondary" id="copyHeaderBtn">Copy Header Only</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Text to Data URL -->
+          <div id="textSection" style="display:none;margin-top:1rem;">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Text Content</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-secondary" id="textExampleBtn">Try Example</button>
+                    <button class="btn btn-sm btn-secondary" id="textClearBtn">Clear</button>
+                  </div>
+                </div>
+                <textarea id="textInput" rows="10" placeholder="Enter text, HTML, SVG, CSS, JSON..." spellcheck="false"></textarea>
+
+                <div style="margin-top:0.75rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+                  <label style="font-size:0.85rem;color:var(--text-muted);">MIME Type:</label>
+                  <select class="mime-select" id="mimeSelect">
+                    <option value="text/plain">text/plain</option>
+                    <option value="text/html">text/html</option>
+                    <option value="text/css">text/css</option>
+                    <option value="text/javascript">text/javascript</option>
+                    <option value="application/json">application/json</option>
+                    <option value="application/xml">application/xml</option>
+                    <option value="image/svg+xml">image/svg+xml</option>
+                    <option value="text/csv">text/csv</option>
+                    <option value="text/markdown">text/markdown</option>
+                  </select>
+                  <label style="font-size:0.85rem;"><input type="checkbox" id="useBase64"> Base64 encode</label>
+                </div>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Data URL</span>
+                  <button class="btn btn-sm btn-primary" id="copyTextDataUrl">Copy</button>
+                </div>
+                <div class="code-output" id="textDataUrlOutput" style="font-size:0.75rem;word-break:break-all;min-height:200px;overflow-y:auto;"></div>
+                <div class="size-compare" id="textSizeCompare" style="margin-top:0.5rem;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data URL to File -->
+          <div id="decodeSection" style="display:none;margin-top:1rem;">
+            <div class="pane-label">
+              <span>Paste Data URL</span>
+              <button class="btn btn-sm btn-secondary" id="decodeExampleBtn">Try Example</button>
+            </div>
+            <textarea id="decodeInput" rows="8" placeholder="Paste a Data URL here (data:image/png;base64,...)" spellcheck="false" style="font-family:var(--font-mono);font-size:0.8rem;"></textarea>
+            <button class="btn btn-primary" id="decodeBtn" style="margin-top:0.75rem;">Decode</button>
+
+            <div id="decodeResult" style="display:none;margin-top:1rem;">
+              <div id="decodeImagePreview" style="display:none;">
+                <div class="pane-label"><span>Image Preview</span></div>
+                <img id="decodePreviewImg" class="preview-img" alt="Decoded preview" src="">
+              </div>
+              <div class="size-compare" id="decodeSizeCompare"></div>
+              <div class="btn-group" style="margin-top:0.75rem;">
+                <button class="btn btn-primary" id="downloadDecoded">Download File</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Drop a file above or enter text to generate a Data URL.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Data URL Creator</h2>
+          <ol>
+            <li><strong>File to Data URL</strong> — drag and drop any file to instantly generate its Base64 Data URL. Images are previewed inline. The size comparison shows the original vs encoded size.</li>
+            <li><strong>Text to Data URL</strong> — enter any text (HTML, SVG, CSS, JSON) and select a MIME type. The Data URL updates live. Toggle Base64 encoding for binary-safe output.</li>
+            <li><strong>Data URL to File</strong> — paste any Data URL to decode it. Images are previewed; all file types can be downloaded back as the original file.</li>
+          </ol>
+
+          <h2>What Is a Data URL?</h2>
+          <p>A Data URL (or data URI) is defined in <a href="https://datatracker.ietf.org/doc/html/rfc2397" rel="noopener noreferrer" target="_blank">RFC 2397</a>. It embeds file content directly in a URL string using this format:</p>
+          <p><code>data:[&lt;mediatype&gt;][;base64],&lt;data&gt;</code></p>
+          <p>For example, a small red pixel PNG might look like: <code>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI6QAAAABJRU5ErkJggg==</code></p>
+
+          <p>Data URLs are supported in all modern browsers in HTML <code>&lt;img&gt;</code> tags, CSS <code>background-image</code> properties, <code>&lt;script&gt;</code> and <code>&lt;link&gt;</code> tags, and anywhere a URL is accepted. They bypass the browser's HTTP cache (since the data is inline) and eliminate a network round-trip, which is beneficial for very small files.</p>
+
+          <h3>When to Use Data URLs</h3>
+          <p>Data URLs work best for small, frequently reused assets where eliminating an HTTP request outweighs the 33% size overhead:</p>
+          <ul>
+            <li><strong>Small icons and favicons</strong> — embed a 1 KB icon directly in your HTML or CSS</li>
+            <li><strong>Loading spinners</strong> — avoid a request for a tiny GIF or SVG animation</li>
+            <li><strong>Email HTML</strong> — many email clients block external images; embedded Data URLs always display</li>
+            <li><strong>CSS background images</strong> — patterns and gradients under 5 KB</li>
+            <li><strong>Inline SVGs in CSS</strong> — complex vector icons that change color via CSS filter</li>
+            <li><strong>Auto-generated reports</strong> — self-contained HTML files with all assets embedded</li>
+          </ul>
+
+          <h3>When Not to Use Data URLs</h3>
+          <p>Avoid Data URLs for:</p>
+          <ul>
+            <li><strong>Large images</strong> — a 500 KB photo becomes 667 KB of text and cannot be cached separately</li>
+            <li><strong>Files used on multiple pages</strong> — a separately cached asset file loads once; a Data URL re-transmits every page load</li>
+            <li><strong>Resources that change frequently</strong> — cache invalidation is harder since the URL contains the content</li>
+          </ul>
+
+          <h3>SVG Data URLs</h3>
+          <p>SVG files can be used as Data URLs without Base64 encoding. A plain text SVG can use URL encoding: <code>data:image/svg+xml,%3Csvg...%3E</code>. This is often smaller than the Base64 equivalent. The Text mode in this tool generates both formats. For related tools, see the <a href="/tools/base64.html">Base64 Encoder/Decoder</a> and <a href="/tools/checksum-verifier.html">File Checksum Verifier</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a Data URL?</button>
+            <div class="faq-answer">A Data URL (data URI) is a URL scheme that encodes file data directly in the URL string using Base64. Format: data:MIME_TYPE;base64,BASE64_DATA. Data URLs let you embed images, fonts, CSS, and other files directly in HTML or CSS without separate HTTP requests. Supported in all modern browsers.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why are Data URLs larger than the original file?</button>
+            <div class="faq-answer">Base64 encoding converts binary data to text using 64 ASCII characters. Every 3 bytes of binary becomes 4 characters of Base64, resulting in a 33% size increase. A 1 MB image becomes a 1.37 MB Data URL. For small files the eliminated HTTP request usually outweighs this overhead.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">When should I use Data URLs?</button>
+            <div class="faq-answer">Data URLs work best for small files (under 10 KB): small icons, loading spinners, email HTML images, CSS background patterns, and self-contained HTML reports. Avoid for large images or frequently reused assets that benefit from browser caching.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my file uploaded to a server?</button>
+            <div class="faq-answer">No. This tool uses the browser's FileReader API to read your file entirely in your browser. No data is sent to any server. You can safely use this tool with sensitive documents, private images, or proprietary files.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How do I decode a Data URL back to a file?</button>
+            <div class="faq-answer">Switch to 'Data URL to File' mode, paste the full data URL (starting with data:), and click Decode. The tool extracts the MIME type, decodes the Base64 data, previews images inline, and provides a download button for the reconstructed file.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Crypto / Auth</h4>
+        <a href="/tools/hmac-generator.html">HMAC Generator</a>
+        <a href="/tools/checksum-verifier.html">Checksum Verifier</a>
+        <a href="/tools/totp-generator.html">TOTP Generator</a>
+        <a href="/tools/bcrypt-hash.html">Bcrypt / PBKDF2</a>
+        <a href="/tools/data-url-creator.html">Data URL Creator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/checksum-verifier.html">Checksum Verifier</a>
+        <a href="/tools/image-converter.html">Image Converter</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var statusBar = document.getElementById('statusBar');
+      var currentMode = 'file';
+      var decodedBlob = null;
+      var decodedMime = '';
+      var currentDataUrl = '';
+
+      // ---- Mode switching ----
+      document.querySelectorAll('[data-mode]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          document.getElementById('fileSection').style.display = currentMode === 'file' ? 'block' : 'none';
+          document.getElementById('textSection').style.display = currentMode === 'text' ? 'block' : 'none';
+          document.getElementById('decodeSection').style.display = currentMode === 'decode' ? 'block' : 'none';
+        });
+      });
+
+      // ---- File to Data URL ----
+      var dropZone = document.getElementById('dropZone');
+      var fileInput = document.getElementById('fileInput');
+
+      function handleFile(file) {
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Reading ' + file.name + '...';
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          currentDataUrl = e.target.result;
+          var isImage = file.type.startsWith('image/');
+          var preview = document.getElementById('imagePreview');
+          if (isImage) {
+            preview.style.display = 'block';
+            document.getElementById('previewImg').src = currentDataUrl;
+          } else {
+            preview.style.display = 'none';
+          }
+          document.getElementById('fileDataUrlOutput').textContent = currentDataUrl;
+          var origSize = file.size;
+          var urlSize = new Blob([currentDataUrl]).size;
+          var pct = Math.round((urlSize / origSize - 1) * 100);
+          document.getElementById('sizeCompare').innerHTML =
+            '<span>Original: <strong>' + DT.formatBytes(origSize) + '</strong></span>' +
+            '<span>Data URL: <strong>' + DT.formatBytes(urlSize) + '</strong></span>' +
+            '<span>Overhead: <strong>+' + pct + '%</strong></span>';
+          document.getElementById('fileResult').style.display = 'block';
+          var mime = currentDataUrl.split(';')[0].replace('data:', '');
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = mime + ';base64 — ' + DT.formatBytes(origSize) + ' → ' + DT.formatBytes(urlSize) + ' (+' + pct + '%)';
+          DT.trackTool('data-url-creator');
+        };
+        reader.readAsDataURL(file);
+      }
+
+      dropZone.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+      dropZone.addEventListener('dragleave', function () { dropZone.classList.remove('drag-over'); });
+      dropZone.addEventListener('drop', function (e) { e.preventDefault(); dropZone.classList.remove('drag-over'); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+      dropZone.addEventListener('click', function () { fileInput.click(); });
+      dropZone.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+      document.getElementById('browseLink').addEventListener('click', function (e) { e.preventDefault(); fileInput.click(); });
+      fileInput.addEventListener('change', function () { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+      document.getElementById('copyFileDataUrl').addEventListener('click', function () {
+        if (currentDataUrl) DT.copyToClipboard(currentDataUrl, this);
+      });
+      document.getElementById('copyHeaderBtn').addEventListener('click', function () {
+        if (currentDataUrl) DT.copyToClipboard(currentDataUrl.split(',')[0] + ',', this);
+      });
+      document.getElementById('clearFileBtn').addEventListener('click', function () {
+        currentDataUrl = '';
+        document.getElementById('fileResult').style.display = 'none';
+        document.getElementById('imagePreview').style.display = 'none';
+        fileInput.value = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Drop a file above or enter text to generate a Data URL.';
+      });
+
+      // ---- Text to Data URL ----
+      function updateTextDataUrl() {
+        var text = document.getElementById('textInput').value;
+        var mime = document.getElementById('mimeSelect').value;
+        var useB64 = document.getElementById('useBase64').checked;
+        var output = document.getElementById('textDataUrlOutput');
+        var sizeEl = document.getElementById('textSizeCompare');
+        if (!text) { output.textContent = ''; sizeEl.innerHTML = ''; return; }
+        var dataUrl;
+        if (useB64) {
+          dataUrl = 'data:' + mime + ';base64,' + btoa(unescape(encodeURIComponent(text)));
+        } else {
+          dataUrl = 'data:' + mime + ',' + encodeURIComponent(text);
+        }
+        output.textContent = dataUrl;
+        var origSize = new Blob([text]).size;
+        var urlSize = new Blob([dataUrl]).size;
+        var pct = Math.round((urlSize / origSize - 1) * 100);
+        sizeEl.innerHTML = '<span>Original: <strong>' + DT.formatBytes(origSize) + '</strong></span>' +
+          '<span>Data URL: <strong>' + DT.formatBytes(urlSize) + '</strong></span>' +
+          (origSize > 0 ? '<span>Overhead: <strong>' + (pct >= 0 ? '+' : '') + pct + '%</strong></span>' : '');
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = mime + (useB64 ? ';base64' : '') + ' — ' + DT.formatBytes(origSize) + ' → ' + DT.formatBytes(urlSize);
+        DT.trackTool('data-url-creator');
+      }
+
+      var debouncedUpdate = DT.debounce(updateTextDataUrl, 150);
+      document.getElementById('textInput').addEventListener('input', debouncedUpdate);
+      document.getElementById('mimeSelect').addEventListener('change', updateTextDataUrl);
+      document.getElementById('useBase64').addEventListener('change', updateTextDataUrl);
+
+      document.getElementById('copyTextDataUrl').addEventListener('click', function () {
+        var text = document.getElementById('textDataUrlOutput').textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+      document.getElementById('textExampleBtn').addEventListener('click', function () {
+        document.getElementById('textInput').value = '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="35" fill="#10b981"/><text x="40" y="46" text-anchor="middle" fill="white" font-size="16" font-family="sans-serif">DT</text></svg>';
+        document.getElementById('mimeSelect').value = 'image/svg+xml';
+        updateTextDataUrl();
+      });
+      document.getElementById('textClearBtn').addEventListener('click', function () {
+        document.getElementById('textInput').value = '';
+        document.getElementById('textDataUrlOutput').textContent = '';
+        document.getElementById('textSizeCompare').innerHTML = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Drop a file above or enter text to generate a Data URL.';
+      });
+
+      // ---- Data URL to File ----
+      document.getElementById('decodeBtn').addEventListener('click', function () {
+        var raw = document.getElementById('decodeInput').value.trim();
+        if (!raw || !raw.startsWith('data:')) {
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid Data URL. Must start with "data:".';
+          return;
+        }
+        try {
+          var commaIdx = raw.indexOf(',');
+          var header = raw.substring(5, commaIdx);
+          var dataPart = raw.substring(commaIdx + 1);
+          var isBase64 = header.indexOf(';base64') !== -1;
+          decodedMime = header.replace(';base64', '').trim() || 'application/octet-stream';
+
+          var bytes;
+          if (isBase64) {
+            var binary = atob(dataPart);
+            bytes = new Uint8Array(binary.length);
+            for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          } else {
+            var decoded = decodeURIComponent(dataPart);
+            bytes = new TextEncoder().encode(decoded);
+          }
+
+          decodedBlob = new Blob([bytes], { type: decodedMime });
+          var isImage = decodedMime.startsWith('image/');
+          var decPreview = document.getElementById('decodeImagePreview');
+          if (isImage) {
+            decPreview.style.display = 'block';
+            document.getElementById('decodePreviewImg').src = raw;
+          } else {
+            decPreview.style.display = 'none';
+          }
+          document.getElementById('decodeSizeCompare').innerHTML =
+            '<span>MIME: <strong>' + decodedMime + '</strong></span>' +
+            '<span>Decoded size: <strong>' + DT.formatBytes(bytes.length) + '</strong></span>' +
+            '<span>Data URL size: <strong>' + DT.formatBytes(new Blob([raw]).size) + '</strong></span>';
+          document.getElementById('decodeResult').style.display = 'block';
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = decodedMime + ' — Decoded ' + DT.formatBytes(bytes.length) + '. Ready to download.';
+          DT.trackTool('data-url-creator');
+        } catch (e) {
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Decode error: ' + e.message;
+        }
+      });
+
+      document.getElementById('downloadDecoded').addEventListener('click', function () {
+        if (!decodedBlob) return;
+        var ext = decodedMime.split('/')[1] || 'bin';
+        ext = ext.replace(/\+.*/, '');
+        var url = URL.createObjectURL(decodedBlob);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'decoded.' + ext; a.click();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      });
+
+      document.getElementById('decodeExampleBtn').addEventListener('click', function () {
+        document.getElementById('decodeInput').value = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2280%22%20height%3D%2280%22%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%2240%22%20r%3D%2235%22%20fill%3D%22%2310b981%22%2F%3E%3C%2Fsvg%3E';
+      });
+    })();
+  </script>
+</body>
+</html>

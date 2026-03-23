@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>AES Encrypt / Decrypt Online — Free Tool | DevToolbox</title>
+  <meta name="description" content="Encrypt and decrypt text with AES-256-GCM in your browser. Uses Web Crypto API and PBKDF2 key derivation. No data sent to server. Free, educational AES encryption tool.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/aes-encryption.html">
+  <meta property="og:title" content="AES Encrypt / Decrypt Online — DevToolbox">
+  <meta property="og:description" content="AES-256-GCM encryption in your browser. Password-based key derivation (PBKDF2), random IV, Base64 output. Web Crypto API. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/aes-encryption.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "AES Encrypt / Decrypt Online",
+    "url": "https://thisdevtool.com/tools/aes-encryption.html",
+    "description": "Encrypt and decrypt text with AES-256-GCM using PBKDF2 key derivation. Uses Web Crypto API. 100% client-side, educational tool.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is AES-256-GCM?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AES-256-GCM is a symmetric encryption algorithm combining AES (Advanced Encryption Standard) with a 256-bit key and GCM (Galois/Counter Mode). GCM provides both encryption and authentication — it ensures that ciphertext has not been tampered with. AES-256-GCM is widely considered the gold standard for symmetric encryption and is used in TLS 1.3, Signal, and most modern secure protocols."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is PBKDF2 and why is it used?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PBKDF2 (Password-Based Key Derivation Function 2) converts a human-readable password into a cryptographic key. Raw passwords are not suitable as encryption keys because they have uneven entropy and predictable patterns. PBKDF2 applies HMAC-SHA256 thousands of times (iterations) to slow down brute-force attacks. This tool uses 100,000 iterations with a random salt, which is the NIST-recommended minimum as of 2023."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is an IV (initialization vector)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An IV (initialization vector), also called a nonce in GCM mode, is a random value generated fresh for every encryption operation. It ensures that encrypting the same plaintext with the same key twice produces different ciphertexts. Without a unique IV, an attacker could detect when the same message has been encrypted multiple times. This tool generates a cryptographically random 12-byte IV for each encryption and prepends it to the output."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this tool safe for production use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool is designed for educational purposes and quick prototyping, not production systems. For production: use a well-audited library (libsodium, OpenSSL), manage key rotation, use hardware security modules for key storage, and follow your organization's cryptographic standards. The algorithms used here (AES-256-GCM, PBKDF2) are sound, but secure key management and protocol design require deeper expertise."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is the encrypted output formatted?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The output is a Base64-encoded string containing three concatenated parts: a 16-byte random salt (used for PBKDF2 key derivation), a 12-byte random IV (used for AES-GCM), and the AES-GCM ciphertext (which includes the 16-byte authentication tag). All three parts must be present to decrypt the message. Sharing the output string is sufficient — the salt and IV are not secret."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .password-wrapper { position: relative; display: flex; gap: 8px; align-items: center; }
+    .password-wrapper input[type="password"],
+    .password-wrapper input[type="text"] { flex: 1; }
+    .strength-bar { height: 4px; border-radius: 2px; margin-top: 4px; background: var(--border, #e2e8f0); transition: background 0.3s; }
+    .strength-bar-inner { height: 100%; border-radius: 2px; width: 0; transition: width 0.3s, background 0.3s; }
+    .warning-box { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 10px 14px; font-size: 0.83rem; color: #856404; margin-bottom: 12px; }
+    [data-theme="dark"] .warning-box { background: #332900; border-color: #997a00; color: #ffe085; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/rsa-key-generator.html">RSA Keys</a>
+        <a href="/tools/base64.html">Base64</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>AES Encrypt / Decrypt</h1>
+          <p class="tool-subtitle">AES-256-GCM encryption with PBKDF2 key derivation. Runs 100% in your browser using the Web Crypto API.</p>
+
+          <div class="warning-box">
+            &#9888; <strong>Educational use only.</strong> For production applications, use a professionally audited encryption library. Never share private keys or passwords via untrusted channels.
+          </div>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encrypt">Encrypt</button>
+            <button class="option-chip" data-mode="decrypt">Decrypt</button>
+          </div>
+
+          <div style="margin-bottom:12px;">
+            <label style="font-size:0.85rem;font-weight:600;display:block;margin-bottom:6px;">Password</label>
+            <div class="password-wrapper">
+              <input type="password" id="passwordInput" placeholder="Enter a strong password..." autocomplete="new-password">
+              <button class="btn btn-sm btn-secondary" id="togglePwdBtn" type="button">Show</button>
+            </div>
+            <div class="strength-bar"><div class="strength-bar-inner" id="strengthBar"></div></div>
+            <div style="font-size:0.76rem;margin-top:3px;color:var(--text-muted,#64748b);" id="strengthLabel">Enter a password</div>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">Plaintext</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="mainInput" rows="10" placeholder="Enter text to encrypt..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span id="outputLabel">Encrypted (Base64)</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="mainOutput" style="min-height:240px;word-break:break-all;"></div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <button class="btn btn-primary" id="processBtn">Encrypt</button>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter text and a password, then click Encrypt.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the AES Encryption Tool</h2>
+          <ol>
+            <li><strong>Choose a direction:</strong> "Encrypt" converts plaintext to Base64-encoded ciphertext; "Decrypt" reverses it.</li>
+            <li><strong>Enter a password.</strong> The strength indicator shows how secure your password is. Use a mix of upper/lowercase, digits, and symbols for maximum security.</li>
+            <li><strong>Paste your text</strong> into the input area.</li>
+            <li><strong>Click Encrypt/Decrypt</strong> — the result appears on the right.</li>
+            <li><strong>Copy or download</strong> the result. To decrypt later, you need both the Base64 output and the exact same password.</li>
+          </ol>
+
+          <h2>About AES-256-GCM Encryption</h2>
+          <p>AES (Advanced Encryption Standard) is the most widely deployed symmetric encryption algorithm in the world. It was selected by NIST in 2001 after an international competition and has withstood over 20 years of cryptanalysis without a practical break. The "256" refers to the key length in bits — a 256-bit key has 2<sup>256</sup> possible values, making brute-force attacks computationally infeasible with current and foreseeable technology.</p>
+          <p>GCM (Galois/Counter Mode) transforms AES from a block cipher into an authenticated encryption scheme. It simultaneously encrypts data and produces an authentication tag — a 16-byte checksum that proves the ciphertext hasn't been modified. Any tampering with the ciphertext will cause decryption to fail with an "authentication failed" error rather than silently producing garbage output. This property, called "integrity," is critical for security.</p>
+
+          <h3>How This Tool Works Internally</h3>
+          <p>When you click Encrypt, this tool performs the following steps using the browser's native <code>window.crypto.subtle</code> API:</p>
+          <ol>
+            <li>Generate a cryptographically random 16-byte salt</li>
+            <li>Derive a 256-bit AES key from your password using PBKDF2 with HMAC-SHA256, 100,000 iterations, and the salt</li>
+            <li>Generate a cryptographically random 12-byte IV (nonce)</li>
+            <li>Encrypt the plaintext using AES-256-GCM with the derived key and IV</li>
+            <li>Concatenate salt + IV + ciphertext and encode as Base64</li>
+          </ol>
+          <p>Decryption extracts the salt and IV from the Base64 payload, re-derives the key from your password, and decrypts. The GCM authentication tag is verified automatically — if the password or ciphertext is wrong, decryption fails.</p>
+
+          <h3>Password Strength Matters</h3>
+          <p>AES-256 is theoretically unbreakable, but weak passwords are still vulnerable to dictionary attacks even with PBKDF2 stretching. A password like "password123" can be cracked in seconds even with 100,000 PBKDF2 iterations. Use a random passphrase of 4+ words (e.g., "correct horse battery staple") or a 20+ character random string. A password manager can generate and store strong passwords for you. See also our <a href="/tools/rsa-key-generator.html">RSA Key Generator</a> for asymmetric encryption needs.</p>
+
+          <h3>When to Use AES vs. RSA</h3>
+          <p>AES (symmetric) uses the same key to encrypt and decrypt — both parties must know the secret key. RSA (asymmetric) uses a public key to encrypt and a private key to decrypt, making it suitable for exchanging data with someone you haven't pre-shared a secret with. In practice, most secure systems use RSA or ECDH to establish a shared secret, then use AES to encrypt bulk data — this is exactly what TLS does. Use this AES tool when you need to encrypt personal data for your own use or share encrypted messages with someone you can securely share a password with.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is AES-256-GCM?</button>
+            <div class="faq-answer">AES-256-GCM combines AES with a 256-bit key and GCM (Galois/Counter Mode), which provides both encryption and authentication. GCM ensures ciphertext hasn't been tampered with. It's the gold standard for symmetric encryption, used in TLS 1.3, Signal, and modern secure protocols.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is PBKDF2 and why is it used?</button>
+            <div class="faq-answer">PBKDF2 converts a human password into a cryptographic key by applying HMAC-SHA256 thousands of times with a random salt. This slows brute-force attacks. This tool uses 100,000 iterations with a random salt — the NIST-recommended minimum as of 2023.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is an IV (initialization vector)?</button>
+            <div class="faq-answer">An IV (nonce in GCM mode) is a random value generated fresh for every encryption. It ensures encrypting the same plaintext twice produces different ciphertexts. This tool generates a cryptographically random 12-byte IV per encryption and prepends it to the output.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is this tool safe for production use?</button>
+            <div class="faq-answer">This tool is for educational purposes and quick prototyping. For production: use an audited library (libsodium, OpenSSL), manage key rotation, use HSMs for key storage, and follow your organization's crypto standards. The algorithms (AES-256-GCM, PBKDF2) are sound, but secure key management requires deeper expertise.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How is the encrypted output formatted?</button>
+            <div class="faq-answer">The Base64 output contains three concatenated parts: 16-byte random salt (for PBKDF2), 12-byte random IV (for AES-GCM), and the AES-GCM ciphertext (including the 16-byte authentication tag). All three are needed for decryption. The salt and IV are not secret — they're included in the output.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Crypto Tools</h4>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/aes-encryption.html">AES Encrypt</a>
+        <a href="/tools/rsa-key-generator.html">RSA Key Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Encoding Tools</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/base32-encoder.html">Base32/58/85</a>
+        <a href="/tools/binary-code.html">Binary Translator</a>
+        <a href="/tools/punycode-converter.html">Punycode</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var passwordInput = document.getElementById('passwordInput');
+      var togglePwdBtn = document.getElementById('togglePwdBtn');
+      var strengthBar = document.getElementById('strengthBar');
+      var strengthLabel = document.getElementById('strengthLabel');
+      var mainInput = document.getElementById('mainInput');
+      var mainOutput = document.getElementById('mainOutput');
+      var statusBar = document.getElementById('statusBar');
+      var processBtn = document.getElementById('processBtn');
+      var inputLabel = document.getElementById('inputLabel');
+      var outputLabel = document.getElementById('outputLabel');
+
+      var curMode = 'encrypt';
+
+      // ---- Mode chips ----
+      document.querySelectorAll('[data-mode]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('[data-mode]').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          curMode = btn.getAttribute('data-mode');
+          inputLabel.textContent = curMode === 'encrypt' ? 'Plaintext' : 'Encrypted Base64';
+          outputLabel.textContent = curMode === 'encrypt' ? 'Encrypted (Base64)' : 'Decrypted Plaintext';
+          mainInput.placeholder = curMode === 'encrypt' ? 'Enter text to encrypt...' : 'Paste Base64-encoded ciphertext here...';
+          processBtn.textContent = curMode === 'encrypt' ? 'Encrypt' : 'Decrypt';
+          mainOutput.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = curMode === 'encrypt' ? 'Enter text and a password, then click Encrypt.' : 'Paste encrypted text and enter your password, then click Decrypt.';
+        });
+      });
+
+      // ---- Password toggle ----
+      togglePwdBtn.addEventListener('click', function () {
+        var isHidden = passwordInput.type === 'password';
+        passwordInput.type = isHidden ? 'text' : 'password';
+        togglePwdBtn.textContent = isHidden ? 'Hide' : 'Show';
+      });
+
+      // ---- Password strength ----
+      function assessStrength(pwd) {
+        if (!pwd) return { score: 0, label: 'Enter a password', color: '#e2e8f0' };
+        var score = 0;
+        if (pwd.length >= 8) score++;
+        if (pwd.length >= 14) score++;
+        if (/[A-Z]/.test(pwd)) score++;
+        if (/[a-z]/.test(pwd)) score++;
+        if (/[0-9]/.test(pwd)) score++;
+        if (/[^A-Za-z0-9]/.test(pwd)) score++;
+        var levels = [
+          { score: 0, label: 'Very weak', color: '#ef4444' },
+          { score: 2, label: 'Weak', color: '#f97316' },
+          { score: 3, label: 'Fair', color: '#eab308' },
+          { score: 4, label: 'Good', color: '#84cc16' },
+          { score: 5, label: 'Strong', color: '#10b981' },
+          { score: 6, label: 'Very strong', color: '#06b6d4' }
+        ];
+        var level = levels[0];
+        for (var i = levels.length - 1; i >= 0; i--) { if (score >= levels[i].score) { level = levels[i]; break; } }
+        return { score: score, label: level.label, color: level.color, pct: Math.min(100, (score / 6) * 100) };
+      }
+
+      passwordInput.addEventListener('input', function () {
+        var s = assessStrength(passwordInput.value);
+        strengthBar.style.width = s.pct + '%';
+        strengthBar.style.background = s.color;
+        strengthLabel.textContent = s.label;
+        strengthLabel.style.color = s.color;
+      });
+
+      // ---- Crypto helpers ----
+      function strToBytes(str) {
+        return new TextEncoder().encode(str);
+      }
+      function bytesToStr(buf) {
+        return new TextDecoder().decode(buf);
+      }
+      function toBase64(buf) {
+        var bytes = new Uint8Array(buf);
+        var binary = '';
+        for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        return btoa(binary);
+      }
+      function fromBase64(b64) {
+        var binary = atob(b64);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        return bytes;
+      }
+      function concat() {
+        var arrays = Array.prototype.slice.call(arguments);
+        var total = arrays.reduce(function (s, a) { return s + a.length; }, 0);
+        var result = new Uint8Array(total);
+        var offset = 0;
+        arrays.forEach(function (a) { result.set(a, offset); offset += a.length; });
+        return result;
+      }
+
+      function deriveKey(password, salt) {
+        var enc = strToBytes(password);
+        return crypto.subtle.importKey('raw', enc, 'PBKDF2', false, ['deriveKey']).then(function (baseKey) {
+          return crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+            baseKey,
+            { name: 'AES-GCM', length: 256 },
+            false,
+            ['encrypt', 'decrypt']
+          );
+        });
+      }
+
+      function encryptText(plaintext, password) {
+        var salt = crypto.getRandomValues(new Uint8Array(16));
+        var iv = crypto.getRandomValues(new Uint8Array(12));
+        return deriveKey(password, salt).then(function (key) {
+          return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, strToBytes(plaintext));
+        }).then(function (ciphertext) {
+          return toBase64(concat(salt, iv, new Uint8Array(ciphertext)));
+        });
+      }
+
+      function decryptText(b64, password) {
+        var data = fromBase64(b64);
+        var salt = data.slice(0, 16);
+        var iv = data.slice(16, 28);
+        var ciphertext = data.slice(28);
+        return deriveKey(password, salt).then(function (key) {
+          return crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ciphertext);
+        }).then(function (plaintext) {
+          return bytesToStr(plaintext);
+        });
+      }
+
+      // ---- Process button ----
+      processBtn.addEventListener('click', function () {
+        var text = mainInput.value.trim();
+        var pwd = passwordInput.value;
+        if (!text) {
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Please enter text to ' + curMode + '.';
+          return;
+        }
+        if (!pwd) {
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Please enter a password.';
+          passwordInput.focus();
+          return;
+        }
+
+        processBtn.disabled = true;
+        processBtn.textContent = curMode === 'encrypt' ? 'Encrypting...' : 'Decrypting...';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Processing...';
+
+        var promise = curMode === 'encrypt' ? encryptText(text, pwd) : decryptText(text, pwd);
+        promise.then(function (result) {
+          mainOutput.textContent = result;
+          statusBar.className = 'status-bar valid';
+          if (curMode === 'encrypt') {
+            statusBar.textContent = 'AES-256-GCM \u2014 Encrypted ' + DT.formatBytes(new Blob([text]).size) + ' \u2192 ' + DT.formatBytes(new Blob([result]).size) + ' (Base64)';
+          } else {
+            statusBar.textContent = 'AES-256-GCM \u2014 Decrypted successfully. ' + DT.formatBytes(new Blob([result]).size);
+          }
+          DT.trackTool('aes-encryption');
+        }).catch(function (err) {
+          mainOutput.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + (curMode === 'decrypt' ? 'Decryption failed. Wrong password or corrupted data.' : err.message);
+        }).finally(function () {
+          processBtn.disabled = false;
+          processBtn.textContent = curMode === 'encrypt' ? 'Encrypt' : 'Decrypt';
+        });
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var t = mainOutput.textContent; if (t) DT.copyToClipboard(t, this);
+      });
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var t = mainOutput.textContent;
+        if (t) DT.downloadText(t, curMode === 'encrypt' ? 'encrypted.txt' : 'decrypted.txt', 'text/plain');
+      });
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        mainInput.value = ''; mainOutput.textContent = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter text and a password, then click Encrypt.';
+        mainInput.focus();
+      });
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        if (curMode === 'encrypt') {
+          mainInput.value = 'This is a secret message. AES-256-GCM will encrypt it securely.';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

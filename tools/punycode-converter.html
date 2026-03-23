@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Punycode / IDN Converter — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Convert internationalized domain names (IDN) to Punycode (xn--) and back. Encode Unicode domains like münchen.de to ASCII. Batch mode included. Free, 100% in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/punycode-converter.html">
+  <meta property="og:title" content="Punycode / IDN Converter — DevToolbox">
+  <meta property="og:description" content="Free online Punycode converter. Encode Unicode domain names to xn-- Punycode and decode Punycode back to Unicode. Batch mode, RFC 3492 compliant.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/punycode-converter.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Punycode / IDN Converter",
+    "url": "https://thisdevtool.com/tools/punycode-converter.html",
+    "description": "Convert internationalized domain names (IDN) to Punycode (xn--) and back. RFC 3492 compliant. Batch mode included.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Punycode?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Punycode is an encoding syntax defined in RFC 3492 that converts Unicode domain names to an ASCII-compatible format. The Domain Name System (DNS) was originally designed for ASCII-only labels. Punycode lets domains with non-ASCII characters (like Chinese, Arabic, or accented Latin characters) work within that system by encoding them as 'xn--' followed by ASCII characters."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does xn-- mean in a domain name?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The 'xn--' prefix is the ACE (ASCII Compatible Encoding) prefix defined by the IDNA standard. It signals to DNS resolvers that the label following it is a Punycode-encoded internationalized label. For example, 'münchen.de' becomes 'xn--mnchen-3ya.de' — the 'xn--' introduces the encoded form."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Punycode the same as URL encoding (%xx)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. URL encoding (percent-encoding) is used for paths, query strings, and other parts of a URL. Punycode is specifically for domain name labels in DNS. A URL with an IDN domain uses Punycode for the hostname and percent-encoding for path and query components that contain non-ASCII characters."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why do attackers use Punycode in phishing?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Homograph attacks use Punycode to register domains that look visually identical to legitimate ones but use different Unicode characters. For example, 'аpple.com' using the Cyrillic 'а' looks like 'apple.com' but resolves to a different domain. Browsers now display the Punycode form when all characters in a label come from a single non-Latin script to mitigate this."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool handle full URLs or only domains?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool is optimized for domain names and individual labels. Enter a domain like 'münchen.de' or a single label like 'münchen'. For full URLs, the tool processes the hostname component only. Paths and query strings are not Punycode-encoded — use URL encoding for those parts."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/binary-code.html">Binary</a>
+        <a href="/tools/base64.html">Base64</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Punycode / IDN Converter</h1>
+          <p class="tool-subtitle">Encode Unicode domain names to Punycode (xn--) or decode them back. RFC 3492 compliant.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="encode">Unicode &rarr; Punycode</button>
+            <button class="option-chip" data-mode="decode">Punycode &rarr; Unicode</button>
+            <button class="option-chip" data-mode="batch">Batch</button>
+          </div>
+
+          <!-- Single mode -->
+          <div id="singlePane">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span id="inputLabel">Unicode Domain</span>
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+                <textarea id="mainInput" rows="6" placeholder="e.g. münchen.de" spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span id="outputLabel">Punycode</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  </div>
+                </div>
+                <div class="code-output" id="mainOutput" style="min-height:140px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Batch mode -->
+          <div id="batchPane" style="display:none;">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>Domains (one per line)</span>
+                  <button class="btn btn-sm btn-secondary" id="batchExampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="batchClearBtn">Clear</button>
+                </div>
+                <textarea id="batchInput" rows="10" placeholder="münchen.de&#10;中文.com&#10;xn--bcher-kva.de" spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Results</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="batchCopyBtn">Copy</button>
+                    <button class="btn btn-sm btn-secondary" id="batchDownloadBtn">Download</button>
+                  </div>
+                </div>
+                <div class="code-output" id="batchOutput" style="min-height:220px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a domain name to convert.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Punycode Converter</h2>
+          <ol>
+            <li><strong>Choose a direction:</strong> "Unicode &rarr; Punycode" converts an IDN domain to its xn-- form; "Punycode &rarr; Unicode" reverses it.</li>
+            <li><strong>Enter your domain</strong> — e.g., <code>münchen.de</code> or <code>xn--mnchen-3ya.de</code>.</li>
+            <li><strong>See the result</strong> — both forms are shown side by side with immediate feedback.</li>
+            <li><strong>Batch mode:</strong> paste one domain per line to convert multiple domains at once.</li>
+          </ol>
+
+          <h2>What Is Punycode and Why Does It Exist?</h2>
+          <p>The Domain Name System was designed in 1983 when the internet was primarily used in English-speaking countries. DNS labels were restricted to letters A–Z, digits 0–9, and hyphens — a subset of ASCII. As the internet expanded globally, this limitation became a barrier. A Chinese speaker, for example, couldn't register a domain in Chinese characters.</p>
+          <p>IDNA (Internationalized Domain Names in Applications) was the solution. It defines how Unicode domain names are handled by applications, and Punycode (RFC 3492) is the encoding algorithm that bridges Unicode and ASCII. Punycode converts non-ASCII labels to a compact ASCII representation prefixed with <code>xn--</code> — the "ACE prefix" that tells DNS software to treat the label as encoded Punycode.</p>
+
+          <h3>How Punycode Encoding Works</h3>
+          <p>Punycode uses a clever algorithm. For a label like <code>münchen</code>: first, the basic ASCII characters are extracted and placed at the start of the encoded output (<code>mnchen</code>). Then, the non-ASCII characters (ü = U+00FC) and their positions are encoded using a variable-length integer scheme called "generalized variable-length integers." The result is appended after a hyphen: <code>mnchen-3ya</code>. Adding the ACE prefix yields <code>xn--mnchen-3ya</code>.</p>
+
+          <h3>Punycode and Phishing (Homograph Attacks)</h3>
+          <p>Punycode can be misused in homograph attacks. Some Unicode characters look identical to ASCII letters — the Cyrillic "а" (U+0430) is visually indistinguishable from the Latin "a" (U+0061). An attacker could register <code>xn--pple-43d.com</code> (which displays as <code>аpple.com</code> with Cyrillic а) to trick users. Modern browsers combat this by showing the raw Punycode form whenever a label mixes scripts or uses certain confusable characters. Always verify the Punycode form of unfamiliar domains before clicking. Use our <a href="/tools/url-encoder.html">URL Encoder</a> alongside this tool for full URL analysis.</p>
+
+          <h3>Where Punycode Appears in Practice</h3>
+          <ul>
+            <li><strong>DNS records</strong> — BIND and other DNS servers store Punycode labels</li>
+            <li><strong>SSL/TLS certificates</strong> — SANs and CNs use Punycode for IDN domains</li>
+            <li><strong>Email addresses</strong> — SMTPUTF8 allows Unicode, but older systems use Punycode for the domain part</li>
+            <li><strong>Browser address bars</strong> — display Unicode for trusted scripts, raw Punycode for mixed/suspicious scripts</li>
+            <li><strong>Web crawlers and scrapers</strong> — need to handle both forms when processing links</li>
+          </ul>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is Punycode?</button>
+            <div class="faq-answer">Punycode is an encoding syntax (RFC 3492) that converts Unicode domain names to an ASCII-compatible format. The DNS was designed for ASCII-only labels, so Punycode bridges the gap by encoding non-ASCII characters as "xn--" followed by ASCII characters, allowing internationalized domains to work in the DNS.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does xn-- mean in a domain name?</button>
+            <div class="faq-answer">The "xn--" prefix is the ACE (ASCII Compatible Encoding) prefix defined by the IDNA standard. It signals to DNS resolvers that the label is Punycode-encoded. For example, "münchen.de" becomes "xn--mnchen-3ya.de" — the xn-- prefix introduces the encoded form.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is Punycode the same as URL encoding (%xx)?</button>
+            <div class="faq-answer">No. URL encoding (percent-encoding) is used for paths, query strings, and other URL parts. Punycode is specifically for domain name labels in DNS. A URL with an IDN domain uses Punycode for the hostname and percent-encoding for path/query components with non-ASCII characters.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why do attackers use Punycode in phishing?</button>
+            <div class="faq-answer">Homograph attacks use Punycode to register domains that look visually identical to legitimate ones but use different Unicode characters (e.g., Cyrillic "а" vs Latin "a"). Browsers now display the raw Punycode when all characters come from a single non-Latin script to mitigate this threat.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does this tool handle full URLs or only domains?</button>
+            <div class="faq-answer">This tool is optimized for domain names and individual labels. Enter a domain like "münchen.de" or a single label like "münchen". Paths and query strings are not Punycode-encoded — use URL encoding for those parts.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Encoding Tools</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/base32-encoder.html">Base32/58/85</a>
+        <a href="/tools/binary-code.html">Binary Translator</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/aes-encryption.html">AES Encrypt</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var statusBar = document.getElementById('statusBar');
+      var curMode = 'encode';
+
+      // ---- RFC 3492 Punycode implementation ----
+      var Punycode = (function () {
+        var BASE = 36, TMIN = 1, TMAX = 26, SKEW = 38, DAMP = 700,
+          INITIAL_BIAS = 72, INITIAL_N = 128, DELIMITER = '-';
+
+        function adapt(delta, numPoints, firstTime) {
+          delta = firstTime ? Math.floor(delta / DAMP) : delta >> 1;
+          delta += Math.floor(delta / numPoints);
+          var k = 0;
+          while (delta > ((BASE - TMIN) * TMAX) >> 1) { delta = Math.floor(delta / (BASE - TMIN)); k += BASE; }
+          return k + Math.floor(((BASE - TMIN + 1) * delta) / (delta + SKEW));
+        }
+
+        function digitToBasic(d) { return d + (d < 26 ? 97 : 22); }
+        function basicToDigit(c) {
+          if (c >= 48 && c <= 57) return c - 22;
+          if (c >= 65 && c <= 90) return c - 65;
+          if (c >= 97 && c <= 122) return c - 97;
+          return BASE;
+        }
+
+        function encode(input) {
+          var n = INITIAL_N, delta = 0, bias = INITIAL_BIAS;
+          var output = [], b = 0;
+          for (var i = 0; i < input.length; i++) {
+            var c = input.charCodeAt(i);
+            if (c < 128) { output.push(String.fromCharCode(c)); b++; }
+          }
+          if (b === input.length) return output.join('');
+          if (b > 0) output.push(DELIMITER);
+          var h = b;
+          while (h < input.length) {
+            var m = Infinity;
+            for (var j = 0; j < input.length; j++) {
+              var cc = input.charCodeAt(j);
+              if (cc >= n && cc < m) m = cc;
+            }
+            delta += (m - n) * (h + 1);
+            n = m;
+            for (var k2 = 0; k2 < input.length; k2++) {
+              var c2 = input.charCodeAt(k2);
+              if (c2 < n) delta++;
+              if (c2 === n) {
+                var q = delta;
+                for (var kk = BASE; ; kk += BASE) {
+                  var t = kk <= bias ? TMIN : kk >= bias + TMAX ? TMAX : kk - bias;
+                  if (q < t) break;
+                  output.push(String.fromCharCode(digitToBasic(t + (q - t) % (BASE - t))));
+                  q = Math.floor((q - t) / (BASE - t));
+                }
+                output.push(String.fromCharCode(digitToBasic(q)));
+                bias = adapt(delta, h + 1, h === b);
+                delta = 0;
+                h++;
+              }
+            }
+            delta++;
+            n++;
+          }
+          return output.join('');
+        }
+
+        function decode(input) {
+          var output = [], n = INITIAL_N, i = 0, bias = INITIAL_BIAS;
+          var basic = input.lastIndexOf(DELIMITER);
+          if (basic < 0) basic = 0;
+          for (var j = 0; j < basic; j++) {
+            var c = input.charCodeAt(j);
+            if (c >= 128) throw new Error('Non-basic char before delimiter');
+            output.push(input.charAt(j));
+          }
+          var ic = basic > 0 ? basic + 1 : 0;
+          while (ic < input.length) {
+            var oldi = i;
+            for (var w = 1, k = BASE; ; k += BASE) {
+              if (ic >= input.length) throw new Error('Invalid Punycode');
+              var digit = basicToDigit(input.charCodeAt(ic++));
+              if (digit >= BASE) throw new Error('Invalid Punycode digit');
+              i += digit * w;
+              var t = k <= bias ? TMIN : k >= bias + TMAX ? TMAX : k - bias;
+              if (digit < t) break;
+              w *= BASE - t;
+            }
+            bias = adapt(i - oldi, output.length + 1, oldi === 0);
+            n += Math.floor(i / (output.length + 1));
+            i %= output.length + 1;
+            output.splice(i, 0, String.fromCharCode(n));
+            i++;
+          }
+          return output.join('');
+        }
+
+        function encodeLabel(label) {
+          var hasNonASCII = false;
+          for (var i = 0; i < label.length; i++) { if (label.charCodeAt(i) > 127) { hasNonASCII = true; break; } }
+          if (!hasNonASCII) return label;
+          return 'xn--' + encode(label);
+        }
+
+        function decodeLabel(label) {
+          if (label.toLowerCase().slice(0, 4) !== 'xn--') return label;
+          return decode(label.slice(4));
+        }
+
+        function encodeDomain(domain) {
+          return domain.split('.').map(encodeLabel).join('.');
+        }
+
+        function decodeDomain(domain) {
+          return domain.split('.').map(decodeLabel).join('.');
+        }
+
+        return { encodeDomain: encodeDomain, decodeDomain: decodeDomain };
+      })();
+
+      // ---- Single mode ----
+      var mainInput = document.getElementById('mainInput');
+      var mainOutput = document.getElementById('mainOutput');
+      var inputLabel = document.getElementById('inputLabel');
+      var outputLabel = document.getElementById('outputLabel');
+
+      function updateLabels() {
+        if (curMode === 'encode') { inputLabel.textContent = 'Unicode Domain'; outputLabel.textContent = 'Punycode'; }
+        else { inputLabel.textContent = 'Punycode Domain'; outputLabel.textContent = 'Unicode'; }
+      }
+
+      function processSingle() {
+        if (curMode === 'batch') return;
+        var raw = mainInput.value.trim();
+        if (!raw) {
+          mainOutput.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter a domain name to convert.';
+          return;
+        }
+        try {
+          var result = curMode === 'encode' ? Punycode.encodeDomain(raw) : Punycode.decodeDomain(raw);
+          mainOutput.textContent = result;
+          if (curMode === 'encode') {
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Converted: ' + raw + ' \u2192 ' + result;
+          } else {
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Decoded: ' + raw + ' \u2192 ' + result;
+          }
+        } catch (e) {
+          mainOutput.textContent = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error: ' + e.message;
+        }
+        DT.trackTool('punycode-converter');
+      }
+
+      var debSingle = DT.debounce(processSingle, 200);
+      mainInput.addEventListener('input', debSingle);
+
+      // ---- Batch mode ----
+      var batchInput = document.getElementById('batchInput');
+      var batchOutput = document.getElementById('batchOutput');
+
+      function processBatch() {
+        var lines = batchInput.value.split('\n').filter(function (l) { return l.trim(); });
+        if (!lines.length) { batchOutput.textContent = ''; statusBar.textContent = 'Enter domains, one per line.'; return; }
+        var results = lines.map(function (line) {
+          var domain = line.trim();
+          try {
+            var isAce = domain.toLowerCase().split('.').some(function (l) { return l.slice(0, 4) === 'xn--'; });
+            var converted = isAce ? Punycode.decodeDomain(domain) : Punycode.encodeDomain(domain);
+            return domain + '  \u2192  ' + converted;
+          } catch (e) {
+            return domain + '  \u2192  ERROR: ' + e.message;
+          }
+        });
+        batchOutput.textContent = results.join('\n');
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Converted ' + lines.length + ' domain' + (lines.length > 1 ? 's' : '');
+        DT.trackTool('punycode-converter');
+      }
+
+      var debBatch = DT.debounce(processBatch, 200);
+      batchInput.addEventListener('input', debBatch);
+
+      // ---- Mode chips ----
+      document.querySelectorAll('[data-mode]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('[data-mode]').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          curMode = btn.getAttribute('data-mode');
+          var isBatch = curMode === 'batch';
+          document.getElementById('singlePane').style.display = isBatch ? 'none' : '';
+          document.getElementById('batchPane').style.display = isBatch ? '' : 'none';
+          updateLabels();
+          if (isBatch) processBatch(); else processSingle();
+        });
+      });
+
+      // ---- Buttons ----
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var t = mainOutput.textContent; if (t) DT.copyToClipboard(t, this);
+      });
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        mainInput.value = ''; processSingle(); mainInput.focus();
+      });
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        mainInput.value = curMode === 'decode' ? 'xn--mnchen-3ya.de' : 'münchen.de';
+        processSingle();
+      });
+      document.getElementById('batchCopyBtn').addEventListener('click', function () {
+        var t = batchOutput.textContent; if (t) DT.copyToClipboard(t, this);
+      });
+      document.getElementById('batchDownloadBtn').addEventListener('click', function () {
+        var t = batchOutput.textContent; if (t) DT.downloadText(t, 'punycode-batch.txt', 'text/plain');
+      });
+      document.getElementById('batchClearBtn').addEventListener('click', function () {
+        batchInput.value = ''; processBatch(); batchInput.focus();
+      });
+      document.getElementById('batchExampleBtn').addEventListener('click', function () {
+        batchInput.value = 'münchen.de\n中文.com\nτεστ.gr\nxn--bcher-kva.de\narabic-مثال.com';
+        processBatch();
+      });
+
+      updateLabels();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Braille Translator — Unicode Braille Converter Online | DevToolbox</title>
+  <meta name="description" content="Translate text to Unicode Braille patterns online. Free Braille converter supporting Grade 1 letter-by-letter and Grade 2 contractions. Runs entirely in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/braille-translator.html">
+  <meta property="og:title" content="Braille Translator — DevToolbox">
+  <meta property="og:description" content="Free online Braille translator. Convert text to Unicode Braille patterns with Grade 1 and Grade 2 support. 100% client-side, no data sent to servers.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/braille-translator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Braille Translator",
+    "url": "https://thisdevtool.com/tools/braille-translator.html",
+    "description": "Translate text to Unicode Braille patterns. Supports Grade 1 and simplified Grade 2 contractions. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Braille?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Braille is a tactile writing system used by people who are visually impaired. Invented by Louis Braille in 1824, it represents letters, numbers, and punctuation as patterns of raised dots arranged in a 2x3 grid (6 dots). Each cell can encode up to 64 different patterns. Unicode includes a full Braille Patterns block (U+2800 to U+28FF) representing all 256 possible 8-dot Braille cells."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between Grade 1 and Grade 2 Braille?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Grade 1 Braille (also called uncontracted Braille) is a direct letter-for-letter translation where each Braille cell represents one letter, number, or punctuation mark. Grade 2 Braille (contracted Braille) uses special cells to represent common words and letter combinations — for example, a single cell represents 'the', 'and', 'for', 'of', and 'with'. Grade 2 is faster to read and write and is the standard for most published Braille materials."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this translated Braille with a Braille embosser?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool produces Unicode Braille characters which can be copied and used in documents, web pages, or software that supports Unicode. However, for printing on a Braille embosser, you typically need specialized software like Duxbury Braille Translator or BrailleBlaster that handles formatting, page layout, and the specific BRF (Braille Ready Format) file format required by embossers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my text sent to a server when I use this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This Braille translator runs entirely in your browser using JavaScript. Your text never leaves your device. There is no server processing, no logging, and no data collection of any kind."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many dots does a Braille cell have?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A standard Braille cell has 6 dots arranged in two columns of three dots each, numbered 1-6 from top to bottom, left to right. This allows 64 possible combinations (including the blank cell). Computer Braille (8-dot Braille) adds two more dots at the bottom of each column, enabling 256 combinations — enough to represent every ASCII character."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .braille-preview {
+      font-size: 2.5rem;
+      line-height: 1.8;
+      letter-spacing: 0.15em;
+      word-break: break-all;
+      padding: 16px;
+      background: var(--surface-2);
+      border-radius: 8px;
+      min-height: 80px;
+      margin-top: 10px;
+      color: var(--text-primary);
+    }
+    .braille-char-table {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .braille-char-cell {
+      background: var(--surface-2);
+      border-radius: 6px;
+      padding: 8px 6px;
+      text-align: center;
+      font-size: 0.75rem;
+    }
+    .braille-char-cell .br-sym { font-size: 1.5rem; display: block; }
+    .braille-char-cell .br-label { color: var(--text-secondary); margin-top: 2px; display: block; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/morse-code.html">Morse Code</a>
+        <a href="/tools/nato-phonetic.html">NATO Phonetic</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>Braille Translator</h1>
+          <p class="tool-subtitle">Convert text to Unicode Braille patterns. Supports Grade 1 (letter-by-letter) and Grade 2 (contractions).</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="grade1">Text &rarr; Braille (Grade 1)</button>
+            <button class="option-chip" data-mode="grade2">Text &rarr; Braille (Grade 2)</button>
+            <button class="option-chip" data-mode="reverse">Braille &rarr; Text</button>
+          </div>
+
+          <div class="split-pane">
+            <div>
+              <div class="pane-label">
+                <span id="inputLabel">Text Input</span>
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+              <textarea id="textInput" rows="10" placeholder="Type text to convert to Braille..." spellcheck="false"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">
+                <span>Braille Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="brailleOutput" style="min-height:200px; font-size:1.5rem; letter-spacing:0.1em; word-break:break-all;"></div>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type text above to convert to Unicode Braille.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the Braille Translator</h2>
+          <ol>
+            <li><strong>Select a mode</strong> — "Grade 1" for direct letter-by-letter translation, "Grade 2" for contracted Braille with common word abbreviations, or "Braille → Text" to decode Unicode Braille back to text.</li>
+            <li><strong>Enter your text</strong> — type or paste in the left panel. The Braille output appears on the right instantly.</li>
+            <li><strong>Copy or download</strong> — use the buttons above the output to copy the Unicode Braille characters or save as a .txt file.</li>
+          </ol>
+
+          <h2>About Braille</h2>
+          <p>Braille is a tactile writing system used by millions of people who are blind or visually impaired around the world. French educator Louis Braille invented the system in 1824 when he was just 15 years old, adapting a military encoding system called "night writing" into a practical tactile alphabet. The system uses a 2x3 grid of six dot positions, where each combination of raised and flat dots represents a different character.</p>
+          <p>Braille is not a language — it is a code that can represent any language. English Braille, French Braille, Arabic Braille, and Chinese Braille all use the same physical dot cells but assign different meanings. This translator works with the English Braille standard (Unified English Braille, or UEB).</p>
+
+          <h3>Grade 1 vs. Grade 2 Braille</h3>
+          <p>Grade 1 Braille is the simplest form: each Braille cell maps directly to one letter, number, or punctuation mark. It is used for short labels, personal notes, and by learners just starting out. Grade 2 Braille adds a system of contractions — single cells or short cell combinations that represent common whole words or letter groups. For example, one cell represents "the", another represents "and", and "st" at the start of a word can be written as a single cell instead of two. Grade 2 contractions reduce the length of Braille text by roughly 25%, making books shorter and faster to read.</p>
+
+          <h3>Unicode Braille</h3>
+          <p>The Unicode standard includes a dedicated Braille Patterns block from U+2800 to U+28FF, covering all 256 possible 8-dot Braille cells. The 6-dot standard Braille characters start at U+2801 (single dot in position 1, representing the letter A) through U+283F. This means you can include Braille in any Unicode-aware application — websites, word processors, email, or messaging apps — and screen readers can interpret the characters. This translator outputs standard Unicode Braille characters that can be copied into any text field.</p>
+
+          <h3>Braille in Accessibility and Technology</h3>
+          <p>Modern Braille technology goes far beyond printed pages. Refreshable Braille displays are electronic devices that display a line of Braille by raising and lowering physical pins in real time, allowing blind users to read digital content. These displays connect to computers, phones, and tablets and work with screen reader software. Braille printers (embossers) create physical pages by punching raised dots into thick paper. Many smartphones now include tactile Braille keyboards and virtual Braille input methods.</p>
+
+          <h3>Learning Braille</h3>
+          <p>Learning to read Braille requires practice recognizing dot patterns by touch, not by sight. The dots are numbered 1-6: dots 1, 2, 3 form the left column (top to bottom) and dots 4, 5, 6 form the right column. The letter A is dot 1 only. B is dots 1 and 2. C is dots 1 and 4. This pattern continues systematically through the alphabet. Organizations like the National Federation of the Blind and the Royal National Institute of Blind People offer free Braille learning resources.</p>
+
+          <h3>Related Accessibility and Encoding Tools</h3>
+          <p>Explore related tools on DevToolbox: <a href="/tools/morse-code.html">Morse Code Translator</a> for another historical tactile/auditory encoding system, <a href="/tools/nato-phonetic.html">NATO Phonetic Alphabet</a> for spelling out text unambiguously, and <a href="/tools/color-contrast.html">Color Contrast Checker</a> for visual accessibility testing. For general text encoding tasks, see our <a href="/tools/base64.html">Base64 Encoder</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is Braille?</button>
+            <div class="faq-answer">Braille is a tactile writing system used by people who are visually impaired. Invented by Louis Braille in 1824, it represents letters, numbers, and punctuation as patterns of raised dots arranged in a 2x3 grid. Unicode includes a full Braille Patterns block (U+2800 to U+28FF) representing all 256 possible 8-dot Braille cells.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between Grade 1 and Grade 2 Braille?</button>
+            <div class="faq-answer">Grade 1 Braille is a direct letter-for-letter translation where each cell represents one character. Grade 2 Braille uses special cells to represent common words and letter combinations — for example, a single cell represents "the", "and", "for", "of", and "with". Grade 2 is faster to read and is the standard for most published Braille materials.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Can I use this translated Braille with a Braille embosser?</button>
+            <div class="faq-answer">This tool produces Unicode Braille characters for use in documents, web pages, or software. For printing on a Braille embosser, you typically need specialized software like Duxbury Braille Translator or BrailleBlaster that handles formatting and the BRF file format required by embossers.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my text sent to a server?</button>
+            <div class="faq-answer">No. This Braille translator runs entirely in your browser using JavaScript. Your text never leaves your device. There is no server processing, no logging, and no data collection of any kind.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">How many dots does a Braille cell have?</button>
+            <div class="faq-answer">A standard Braille cell has 6 dots arranged in two columns of three dots each, numbered 1-6 from top to bottom, left to right. This allows 64 possible combinations. Computer Braille (8-dot) adds two more dots, enabling 256 combinations — enough to represent every ASCII character.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Encoding Tools</h4>
+        <a href="/tools/morse-code.html">Morse Code</a>
+        <a href="/tools/braille-translator.html">Braille Translator</a>
+        <a href="/tools/nato-phonetic.html">NATO Phonetic</a>
+        <a href="/tools/rot13-cipher.html">ROT13 Cipher</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/caesar-cipher.html">Caesar Cipher</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/color-contrast.html">Color Contrast</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    'use strict';
+    var DT = DevToolbox;
+
+    // Grade 1: letter to Braille Unicode (A=⠁ U+2801, etc.)
+    // Using Unicode Braille block U+2800+
+    var G1_MAP = {
+      'a':'\u2801','b':'\u2803','c':'\u2809','d':'\u2819','e':'\u2811',
+      'f':'\u280B','g':'\u281B','h':'\u2813','i':'\u280A','j':'\u281A',
+      'k':'\u2805','l':'\u2807','m':'\u280D','n':'\u281D','o':'\u2815',
+      'p':'\u280F','q':'\u281F','r':'\u2817','s':'\u280E','t':'\u281E',
+      'u':'\u2825','v':'\u2827','w':'\u283A','x':'\u282D','y':'\u283D',
+      'z':'\u2835',
+      '1':'\u2801','2':'\u2803','3':'\u2809','4':'\u2819','5':'\u2811',
+      '6':'\u280B','7':'\u281B','8':'\u2813','9':'\u280A','0':'\u281A',
+      ' ':' ',
+      '.':'\u2832',',':'\u2802','?':'\u2826','!':'\u2816',
+      ';':'\u2806',':':'\u2812','-':'\u2824','"':'\u2826',
+      '\'':'\u2804','(':'\u2836',')':'\u2836'
+    };
+
+    // Grade 2 contractions (whole-word)
+    var G2_WORDS = {
+      'the':'\u2819\u2811',
+      'and':'\u2801\u281D\u2819',
+      'for':'\u280B\u2815\u2817',
+      'of':'\u2815\u280B',
+      'with':'\u283C\u280B',
+      'in':'\u280A\u281D',
+      'it':'\u280A\u281E',
+      'you':'\u283D\u2815\u2825',
+      'have':'\u2813\u2801\u2827\u2811',
+      'his':'\u2813\u280A\u280E',
+      'not':'\u281D\u2815\u281E',
+      'that':'\u281E\u2813\u2801\u281E',
+      'was':'\u283C\u2801\u280E',
+      'be':'\u2803\u2811',
+      'can':'\u2809\u2801\u281D'
+    };
+
+    var REVERSE_G1 = {};
+    Object.keys(G1_MAP).forEach(function(k){ REVERSE_G1[G1_MAP[k]] = k; });
+
+    var currentMode = 'grade1';
+
+    var input = document.getElementById('textInput');
+    var output = document.getElementById('brailleOutput');
+    var statusBar = document.getElementById('statusBar');
+    var inputLabel = document.getElementById('inputLabel');
+
+    function toGrade1(text) {
+      var result = '';
+      for (var i = 0; i < text.length; i++) {
+        var ch = text[i].toLowerCase();
+        result += G1_MAP[ch] || '\u2800';
+      }
+      return result;
+    }
+
+    function toGrade2(text) {
+      var words = text.toLowerCase().split(/(\s+)/);
+      var result = '';
+      words.forEach(function(part) {
+        if (/^\s+$/.test(part)) {
+          result += part;
+        } else if (G2_WORDS[part]) {
+          result += G2_WORDS[part];
+        } else {
+          for (var i = 0; i < part.length; i++) {
+            var ch = part[i];
+            result += G1_MAP[ch] || '\u2800';
+          }
+        }
+      });
+      return result;
+    }
+
+    function fromBraille(brailleText) {
+      var result = '';
+      for (var i = 0; i < brailleText.length; i++) {
+        var ch = brailleText[i];
+        if (ch === ' ') { result += ' '; }
+        else { result += REVERSE_G1[ch] || '?'; }
+      }
+      return result;
+    }
+
+    function process() {
+      var raw = input.value;
+      if (!raw.trim()) {
+        output.textContent = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = currentMode === 'reverse'
+          ? 'Paste Unicode Braille to decode to text.'
+          : 'Type text above to convert to Unicode Braille.';
+        return;
+      }
+
+      var result = '';
+      if (currentMode === 'grade1') {
+        result = toGrade1(raw);
+      } else if (currentMode === 'grade2') {
+        result = toGrade2(raw);
+      } else {
+        result = fromBraille(raw);
+      }
+
+      output.textContent = result;
+      var inputChars = raw.replace(/\s/g,'').length;
+      var outputChars = result.replace(/\s/g,'').length;
+      statusBar.className = 'status-bar valid';
+      if (currentMode === 'reverse') {
+        statusBar.textContent = 'Decoded ' + inputChars + ' Braille cells to ' + outputChars + ' characters';
+      } else {
+        statusBar.textContent = 'Converted ' + inputChars + ' characters to ' + outputChars + ' Braille cells';
+      }
+      DT.trackTool('braille-translator');
+    }
+
+    var debouncedProcess = DT.debounce(process, 150);
+    input.addEventListener('input', debouncedProcess);
+
+    document.querySelectorAll('.option-chip').forEach(function(chip) {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.option-chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        if (currentMode === 'reverse') {
+          inputLabel.textContent = 'Braille Input';
+          input.placeholder = 'Paste Unicode Braille characters here...';
+        } else {
+          inputLabel.textContent = 'Text Input';
+          input.placeholder = 'Type text to convert to Braille...';
+        }
+        process();
+      });
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      var text = output.textContent;
+      if (text) DT.copyToClipboard(text, this);
+    });
+
+    document.getElementById('downloadBtn').addEventListener('click', function() {
+      var text = output.textContent;
+      if (text) DT.downloadText(text, 'braille.txt', 'text/plain');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', function() {
+      input.value = '';
+      process();
+      input.focus();
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', function() {
+      if (currentMode === 'reverse') {
+        input.value = '\u2813\u2811\u2807\u2807\u2815 \u283C\u2815\u2817\u2807\u2819';
+      } else {
+        input.value = 'Hello World';
+      }
+      process();
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>MIME Type Lookup — File Extension to MIME Type | DevToolbox</title>
+  <meta name="description" content="Look up MIME types by file extension or find extensions for any MIME type. Browse 200+ MIME types with categories, descriptions, and binary/text classification. Free online tool.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/mime-type-lookup.html">
+  <meta property="og:title" content="MIME Type Lookup — DevToolbox">
+  <meta property="og:description" content="Look up MIME types by file extension (.jpg → image/jpeg) or reverse lookup. 200+ MIME types covering images, audio, video, text, application, and font.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/mime-type-lookup.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "MIME Type Lookup",
+    "url": "https://thisdevtool.com/tools/mime-type-lookup.html",
+    "description": "Look up MIME types by file extension or reverse lookup. Browse 200+ MIME types with categories and descriptions.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a MIME type?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A MIME type (Multipurpose Internet Mail Extensions type) is a standardized identifier that tells browsers and servers what type of data a file contains. It consists of a type and subtype separated by a slash — for example image/jpeg, text/html, or application/json. Servers send MIME types in the Content-Type header so browsers know how to process and display the content."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between application/json and text/json?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The official IANA-registered MIME type for JSON is application/json, not text/json. The application prefix is used because JSON is a structured data format for machine consumption, not just plain text. While text/json may work in some contexts, application/json is the correct and universally recognized type for JSON data in APIs, HTTP headers, and configuration."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What MIME type should I use for file uploads?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For generic file uploads where the type is unknown, use application/octet-stream, which means raw binary data. For multipart form uploads (HTML forms), the form should use enctype='multipart/form-data' and the server reads the individual file MIME types. For specific file types, always use the correct MIME type: image/jpeg for JPEGs, application/pdf for PDFs, etc."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does charset=utf-8 mean in a MIME type?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The charset parameter specifies the character encoding for text-based MIME types. For example, Content-Type: text/html; charset=utf-8 means the HTML file is encoded in UTF-8. Without this parameter, browsers may guess the encoding incorrectly, causing garbled characters. Always include charset=utf-8 for text/html, text/css, application/javascript, and application/json responses."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the MIME type for WebP images?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The correct MIME type for WebP images is image/webp. WebP is a modern image format developed by Google that provides superior compression compared to JPEG and PNG. It supports both lossy and lossless compression, as well as transparency and animation. Most modern web servers automatically serve the correct MIME type for .webp files."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .mime-result { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; margin: 1rem 0; }
+    .mime-result-type { font-family: monospace; font-size: 1.4rem; font-weight: 700; color: #10b981; word-break: break-all; }
+    .mime-result-meta { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.65rem; }
+    .mime-tag { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+    .tag-image { background: #e0f2fe; color: #0369a1; }
+    .tag-audio { background: #f3e8ff; color: #6b21a8; }
+    .tag-video { background: #fee2e2; color: #991b1b; }
+    .tag-text { background: #dcfce7; color: #166534; }
+    .tag-application { background: #fef9c3; color: #854d0e; }
+    .tag-font { background: #fce7f3; color: #9d174d; }
+    .tag-multipart { background: #f0fdf4; color: #15803d; }
+    [data-theme="dark"] .tag-image { background: #0c4a6e; color: #7dd3fc; }
+    [data-theme="dark"] .tag-audio { background: #3b0764; color: #d8b4fe; }
+    [data-theme="dark"] .tag-video { background: #7f1d1d; color: #fca5a5; }
+    [data-theme="dark"] .tag-text { background: #14532d; color: #86efac; }
+    [data-theme="dark"] .tag-application { background: #713f12; color: #fde68a; }
+    [data-theme="dark"] .tag-font { background: #500724; color: #fbcfe8; }
+    .mime-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .mime-table th { text-align: left; padding: 0.5rem 0.75rem; background: var(--surface2); font-weight: 600; position: sticky; top: 0; }
+    .mime-table td { padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .mime-table tr:hover td { background: var(--surface2); }
+    .table-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; max-height: 500px; overflow-y: auto; }
+    .cat-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+    .cat-pill { padding: 0.2rem 0.6rem; border-radius: 20px; border: 2px solid transparent; font-size: 0.8rem; cursor: pointer; font-weight: 600; background: var(--surface2); color: var(--text-muted); }
+    .cat-pill.active { border-color: #10b981; color: #10b981; background: #f0fdf4; }
+    [data-theme="dark"] .cat-pill.active { background: #052e16; }
+    .ext-list { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .ext-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; background: var(--surface2); border: 1px solid var(--border); font-family: monospace; font-size: 0.82rem; cursor: pointer; transition: all .15s; }
+    .ext-badge:hover { border-color: #10b981; color: #10b981; }
+    .copy-mime { padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid var(--border); background: var(--surface); font-size: 0.75rem; cursor: pointer; color: var(--text-muted); }
+    .copy-mime:hover { border-color: #10b981; color: #10b981; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/http-header-inspector.html">Header Inspector</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>MIME Type Lookup</h1>
+          <p class="tool-subtitle">Look up MIME types by file extension or find extensions for any MIME type. 200+ types covered.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="ext">Extension → MIME</button>
+            <button class="option-chip" data-mode="mime">MIME → Extension</button>
+            <button class="option-chip" data-mode="browse">Browse All</button>
+          </div>
+
+          <!-- Extension to MIME -->
+          <div id="extMode">
+            <div class="pane-label">
+              <span>File Extension</span>
+              <button class="btn btn-sm btn-secondary" id="clearExtBtn">Clear</button>
+            </div>
+            <input type="text" id="extInput" placeholder="Type a file extension (e.g. jpg, .mp4, wasm, svg)..." style="width:100%;padding:0.65rem 0.85rem;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;margin-bottom:0.75rem" autocomplete="off" spellcheck="false">
+            <div id="extResult"></div>
+          </div>
+
+          <!-- MIME to Extension -->
+          <div id="mimeMode" style="display:none">
+            <div class="pane-label">
+              <span>MIME Type</span>
+              <button class="btn btn-sm btn-secondary" id="clearMimeBtn">Clear</button>
+            </div>
+            <input type="text" id="mimeInput" placeholder="Type a MIME type (e.g. image/jpeg, application/json)..." style="width:100%;padding:0.65rem 0.85rem;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;margin-bottom:0.75rem" autocomplete="off" spellcheck="false">
+            <div id="mimeResult"></div>
+          </div>
+
+          <!-- Browse All -->
+          <div id="browseMode" style="display:none">
+            <div class="cat-filters" id="catFilters"></div>
+            <input type="search" id="browseSearch" placeholder="Search MIME types, extensions, or descriptions..." style="width:100%;padding:0.55rem 0.85rem;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:0.875rem;margin-bottom:0.75rem">
+            <div class="table-wrap">
+              <table class="mime-table">
+                <thead>
+                  <tr>
+                    <th style="width:180px">MIME Type</th>
+                    <th style="width:120px">Extensions</th>
+                    <th style="width:80px">Category</th>
+                    <th style="width:60px">Binary?</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody id="browseBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Type a file extension to look up its MIME type.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>What Are MIME Types?</h2>
+          <p>MIME types (Multipurpose Internet Mail Extensions) are standardized identifiers used to describe the nature and format of data. Originally defined for email attachments, MIME types are now central to the web — they appear in the <code>Content-Type</code> HTTP header, HTML <code>&lt;link&gt;</code> and <code>&lt;script&gt;</code> tags, and file upload validation. Every MIME type follows the pattern <code>type/subtype</code>, optionally followed by parameters like <code>; charset=utf-8</code>.</p>
+
+          <h3>MIME Type Categories</h3>
+          <ul>
+            <li><strong>image/*</strong> — image/jpeg, image/png, image/webp, image/svg+xml, image/gif, image/avif</li>
+            <li><strong>audio/*</strong> — audio/mpeg (MP3), audio/ogg, audio/wav, audio/flac, audio/aac</li>
+            <li><strong>video/*</strong> — video/mp4, video/webm, video/ogg, video/quicktime</li>
+            <li><strong>text/*</strong> — text/html, text/css, text/javascript, text/csv, text/plain, text/xml</li>
+            <li><strong>application/*</strong> — application/json, application/pdf, application/zip, application/wasm, application/octet-stream</li>
+            <li><strong>font/*</strong> — font/woff2, font/woff, font/ttf, font/otf</li>
+            <li><strong>multipart/*</strong> — multipart/form-data, multipart/mixed</li>
+          </ul>
+
+          <h3>Content-Type Header</h3>
+          <p>Servers set the <code>Content-Type</code> response header to tell browsers how to handle the response body. If a server sends a JavaScript file with <code>Content-Type: text/plain</code>, the browser will display it as text rather than execute it. Getting the Content-Type right is essential for security — sending HTML with the wrong MIME type and without <code>X-Content-Type-Options: nosniff</code> can enable MIME-sniffing attacks. Use our <a href="/tools/http-header-inspector.html">HTTP Header Inspector</a> to check headers on any response.</p>
+
+          <h3>MIME Types for Web Assets</h3>
+          <p>Common web asset MIME types and their correct values:</p>
+          <ul>
+            <li>HTML: <code>text/html; charset=utf-8</code></li>
+            <li>CSS: <code>text/css</code></li>
+            <li>JavaScript: <code>text/javascript</code> (the official type; <code>application/javascript</code> is also accepted)</li>
+            <li>JSON: <code>application/json</code></li>
+            <li>WebAssembly: <code>application/wasm</code></li>
+            <li>SVG: <code>image/svg+xml</code></li>
+            <li>Web fonts: <code>font/woff2</code>, <code>font/woff</code></li>
+            <li>Source maps: <code>application/json</code></li>
+          </ul>
+
+          <h3>Binary vs. Text MIME Types</h3>
+          <p>MIME types can be classified as binary or text. Text types (text/html, text/css, application/json) contain human-readable characters and should be served with a charset parameter. Binary types (image/jpeg, audio/mpeg, application/pdf) contain raw byte data that should not be modified by line-ending normalization. When serving files, always use the correct binary/text classification to avoid data corruption. The <code>application/octet-stream</code> type is a safe default for unknown binary data and causes browsers to trigger a download rather than attempting to display the content.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a MIME type?</button>
+            <div class="faq-answer">A MIME type is a standardized identifier for the type and format of data, used in HTTP headers, email, and HTML. It follows the format type/subtype (e.g., image/jpeg, text/html). Servers send MIME types in the Content-Type header so browsers know how to process the response.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between application/json and text/json?</button>
+            <div class="faq-answer">The official IANA-registered MIME type for JSON is application/json. The application prefix indicates it is a structured data format for machine consumption. While text/json may work in some contexts, application/json is the correct and universally recognized type.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What MIME type should I use for file uploads?</button>
+            <div class="faq-answer">For unknown binary files, use application/octet-stream. For HTML forms, use enctype="multipart/form-data". For specific file types, use the correct MIME type: image/jpeg for JPEGs, application/pdf for PDFs, etc.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does charset=utf-8 mean in a MIME type?</button>
+            <div class="faq-answer">The charset parameter specifies the character encoding for text-based responses. Content-Type: text/html; charset=utf-8 means the HTML is UTF-8 encoded. Always include charset=utf-8 for text/html, text/css, application/javascript, and application/json to avoid garbled characters.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the MIME type for WebP images?</button>
+            <div class="faq-answer">The correct MIME type for WebP images is image/webp. WebP is a modern format from Google offering superior compression over JPEG and PNG, with support for transparency and animation. Most modern web servers automatically serve the correct MIME type for .webp files.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Network Tools</h4>
+        <a href="/tools/mime-type-lookup.html">MIME Types</a>
+        <a href="/tools/http-header-inspector.html">Header Inspector</a>
+        <a href="/tools/http-status-reference.html">Status Codes</a>
+        <a href="/tools/user-agent-parser.html">UA Parser</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    // [mime, extensions[], category, isBinary, description]
+    var DB = [
+      // Images
+      ['image/jpeg', ['jpg','jpeg','jpe','jfif'], 'image', true, 'JPEG image — lossy compression, best for photos'],
+      ['image/png', ['png'], 'image', true, 'PNG image — lossless, supports transparency'],
+      ['image/gif', ['gif'], 'image', true, 'GIF image — lossless, supports animation and transparency'],
+      ['image/webp', ['webp'], 'image', true, 'WebP image — modern format with superior compression'],
+      ['image/avif', ['avif'], 'image', true, 'AVIF image — next-gen format based on AV1 codec'],
+      ['image/svg+xml', ['svg','svgz'], 'image', false, 'SVG vector image — XML-based scalable graphics'],
+      ['image/tiff', ['tif','tiff'], 'image', true, 'TIFF image — lossless, used in print and professional photography'],
+      ['image/bmp', ['bmp'], 'image', true, 'BMP bitmap image — uncompressed Windows bitmap'],
+      ['image/ico', ['ico'], 'image', true, 'ICO icon format — used for favicons'],
+      ['image/heic', ['heic'], 'image', true, 'HEIC/HEIF image — Apple\'s high-efficiency format'],
+      ['image/x-icon', ['ico','cur'], 'image', true, 'Windows icon or cursor file'],
+      ['image/apng', ['apng'], 'image', true, 'Animated PNG — lossless animation format'],
+      // Audio
+      ['audio/mpeg', ['mp3','mpga'], 'audio', true, 'MP3 audio — most common compressed audio format'],
+      ['audio/ogg', ['ogg','oga'], 'audio', true, 'Ogg Vorbis audio — open-source audio compression'],
+      ['audio/wav', ['wav'], 'audio', true, 'WAV audio — uncompressed PCM audio'],
+      ['audio/flac', ['flac'], 'audio', true, 'FLAC audio — lossless audio compression'],
+      ['audio/aac', ['aac','m4a'], 'audio', true, 'AAC audio — advanced audio coding, used in MPEG-4'],
+      ['audio/webm', ['weba'], 'audio', true, 'WebM audio — open web audio format'],
+      ['audio/midi', ['mid','midi'], 'audio', true, 'MIDI musical instrument data'],
+      ['audio/opus', ['opus'], 'audio', true, 'Opus audio — low-latency codec for web/VoIP'],
+      // Video
+      ['video/mp4', ['mp4','m4v','mp4v'], 'video', true, 'MP4 video — the most widely supported video format'],
+      ['video/webm', ['webm'], 'video', true, 'WebM video — open web video format'],
+      ['video/ogg', ['ogv'], 'video', true, 'Ogg Theora video — open-source video'],
+      ['video/quicktime', ['mov','qt'], 'video', true, 'QuickTime video — Apple\'s video container'],
+      ['video/x-msvideo', ['avi'], 'video', true, 'AVI video — Audio Video Interleave container'],
+      ['video/mpeg', ['mpeg','mpg','mpe'], 'video', true, 'MPEG video — older compressed video standard'],
+      ['video/3gpp', ['3gp'], 'video', true, '3GPP video — mobile video format'],
+      ['video/x-matroska', ['mkv'], 'video', true, 'Matroska video container'],
+      // Text
+      ['text/html', ['html','htm','shtml'], 'text', false, 'HTML document — the standard web page format'],
+      ['text/css', ['css'], 'text', false, 'CSS stylesheet — Cascading Style Sheets'],
+      ['text/javascript', ['js','mjs','cjs'], 'text', false, 'JavaScript source code'],
+      ['text/plain', ['txt','text','conf','log'], 'text', false, 'Plain text — no formatting'],
+      ['text/csv', ['csv'], 'text', false, 'CSV file — comma-separated values'],
+      ['text/xml', ['xml'], 'text', false, 'XML document (text encoding)'],
+      ['text/markdown', ['md','markdown'], 'text', false, 'Markdown document'],
+      ['text/tab-separated-values', ['tsv'], 'text', false, 'TSV file — tab-separated values'],
+      ['text/calendar', ['ics','ifb'], 'text', false, 'iCalendar format — calendar events'],
+      ['text/vcard', ['vcf','vcard'], 'text', false, 'vCard — electronic business card format'],
+      ['text/x-python', ['py'], 'text', false, 'Python source code'],
+      ['text/x-c', ['c','h'], 'text', false, 'C source code'],
+      ['text/x-java-source', ['java'], 'text', false, 'Java source code'],
+      ['text/x-sh', ['sh','bash'], 'text', false, 'Shell script'],
+      ['text/rtf', ['rtf'], 'text', false, 'Rich Text Format document'],
+      // Application
+      ['application/json', ['json'], 'application', false, 'JSON data — JavaScript Object Notation'],
+      ['application/xml', ['xml'], 'application', false, 'XML document (application type)'],
+      ['application/pdf', ['pdf'], 'application', true, 'PDF document — Portable Document Format'],
+      ['application/zip', ['zip'], 'application', true, 'ZIP archive — compressed file collection'],
+      ['application/gzip', ['gz','gzip'], 'application', true, 'Gzip compressed file'],
+      ['application/x-7z-compressed', ['7z'], 'application', true, '7-Zip compressed archive'],
+      ['application/x-tar', ['tar'], 'application', true, 'TAR archive — uncompressed tape archive'],
+      ['application/x-rar-compressed', ['rar'], 'application', true, 'RAR compressed archive'],
+      ['application/wasm', ['wasm'], 'application', true, 'WebAssembly binary module'],
+      ['application/javascript', ['js'], 'application', false, 'JavaScript (legacy MIME type; prefer text/javascript)'],
+      ['application/typescript', ['ts'], 'application', false, 'TypeScript source code'],
+      ['application/octet-stream', ['bin','exe','dll','so','dylib'], 'application', true, 'Generic binary data — triggers download in browsers'],
+      ['application/x-www-form-urlencoded', [], 'application', false, 'HTML form data — URL-encoded key-value pairs'],
+      ['application/ld+json', ['jsonld'], 'application', false, 'JSON-LD — linked data in JSON format'],
+      ['application/manifest+json', ['webmanifest'], 'application', false, 'Web App Manifest — PWA configuration'],
+      ['application/rss+xml', ['rss'], 'application', false, 'RSS feed — web syndication format'],
+      ['application/atom+xml', ['atom'], 'application', false, 'Atom feed — web syndication format'],
+      ['application/graphql', ['graphql','gql'], 'application', false, 'GraphQL query document'],
+      ['application/sql', ['sql'], 'application', false, 'SQL query file'],
+      ['application/x-sqlite3', ['sqlite','db'], 'application', true, 'SQLite database file'],
+      ['application/msword', ['doc'], 'application', true, 'Microsoft Word document (legacy)'],
+      ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', ['docx'], 'application', true, 'Microsoft Word document (OOXML)'],
+      ['application/vnd.ms-excel', ['xls'], 'application', true, 'Microsoft Excel spreadsheet (legacy)'],
+      ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', ['xlsx'], 'application', true, 'Microsoft Excel spreadsheet (OOXML)'],
+      ['application/vnd.ms-powerpoint', ['ppt'], 'application', true, 'Microsoft PowerPoint presentation (legacy)'],
+      ['application/vnd.openxmlformats-officedocument.presentationml.presentation', ['pptx'], 'application', true, 'Microsoft PowerPoint presentation (OOXML)'],
+      ['application/vnd.oasis.opendocument.text', ['odt'], 'application', true, 'OpenDocument Text — LibreOffice Writer'],
+      ['application/vnd.oasis.opendocument.spreadsheet', ['ods'], 'application', true, 'OpenDocument Spreadsheet — LibreOffice Calc'],
+      ['application/x-httpd-php', ['php'], 'application', false, 'PHP source file'],
+      ['application/java-archive', ['jar'], 'application', true, 'Java Archive (JAR)'],
+      ['application/epub+zip', ['epub'], 'application', true, 'EPUB ebook format'],
+      ['application/x-shockwave-flash', ['swf'], 'application', true, 'Adobe Flash (deprecated)'],
+      ['application/vnd.android.package-archive', ['apk'], 'application', true, 'Android app package'],
+      ['application/x-apple-diskimage', ['dmg'], 'application', true, 'macOS disk image'],
+      // Font
+      ['font/woff', ['woff'], 'font', true, 'WOFF web font — compressed font format'],
+      ['font/woff2', ['woff2'], 'font', true, 'WOFF2 web font — compressed (Brotli), recommended'],
+      ['font/ttf', ['ttf'], 'font', true, 'TrueType font'],
+      ['font/otf', ['otf'], 'font', true, 'OpenType font'],
+      ['font/sfnt', ['ttf','otf'], 'font', true, 'SFNT font — generic TrueType/OpenType'],
+      // Multipart
+      ['multipart/form-data', [], 'multipart', false, 'Multipart form data — used for file uploads'],
+      ['multipart/mixed', [], 'multipart', false, 'Mixed multipart — multiple different content types'],
+      ['multipart/alternative', [], 'multipart', false, 'Alternative versions of same content (plain+HTML email)']
+    ];
+
+    // Build extension index
+    var EXT_INDEX = {};
+    DB.forEach(function (row) {
+      row[1].forEach(function (ext) {
+        if (!EXT_INDEX[ext]) EXT_INDEX[ext] = [];
+        EXT_INDEX[ext].push(row);
+      });
+    });
+
+    var CAT_LABELS = { image: 'Image', audio: 'Audio', video: 'Video', text: 'Text', application: 'Application', font: 'Font', multipart: 'Multipart' };
+
+    function catTag(cat) {
+      return '<span class="mime-tag tag-' + cat + '">' + (CAT_LABELS[cat] || cat) + '</span>';
+    }
+
+    function copyBtn(mime) {
+      return '<button class="copy-mime" onclick="var DT=DevToolbox;DT.copyToClipboard(\'' + mime.replace(/'/g,"\\'") + '\',this)">Copy</button>';
+    }
+
+    // Extension lookup
+    var debouncedExt = DT.debounce(function () {
+      var raw = document.getElementById('extInput').value.trim().toLowerCase().replace(/^\.+/, '');
+      var resultDiv = document.getElementById('extResult');
+      if (!raw) { resultDiv.innerHTML = ''; setBar('info', 'Type a file extension to look up its MIME type.'); return; }
+
+      var matches = EXT_INDEX[raw];
+      if (!matches || !matches.length) {
+        // partial match
+        var partials = DB.filter(function(r){ return r[1].some(function(e){ return e.includes(raw); }); });
+        if (partials.length) {
+          resultDiv.innerHTML = '<p style="color:var(--text-muted);font-size:0.875rem">No exact match for <strong>.' + raw + '</strong>. Did you mean:</p>' +
+            partials.slice(0,5).map(function(r){
+              return '<div class="mime-result"><div class="mime-result-type">' + r[0] + ' ' + copyBtn(r[0]) + '</div><div class="mime-result-meta">' + catTag(r[2]) + '<span class="mime-tag" style="background:var(--surface2);color:var(--text-muted)">.' + r[1].join(', .') + '</span><span class="mime-tag" style="background:var(--surface2);color:var(--text-muted)">' + (r[3] ? 'Binary' : 'Text') + '</span></div><p style="margin:.5rem 0 0;font-size:.875rem">' + r[4] + '</p></div>';
+            }).join('');
+        } else {
+          resultDiv.innerHTML = '<div class="mime-result"><p style="color:var(--text-muted)">No MIME type found for <strong>.' + raw + '</strong>. It may be a proprietary or uncommon format.</p></div>';
+        }
+        setBar('invalid', 'No exact match for .' + raw);
+        return;
+      }
+
+      resultDiv.innerHTML = matches.map(function (r) {
+        return '<div class="mime-result"><div class="mime-result-type">' + r[0] + ' ' + copyBtn(r[0]) + '</div><div class="mime-result-meta">' + catTag(r[2]) + '<span class="mime-tag" style="background:var(--surface2);color:var(--text-muted)">.' + r[1].join(', .') + '</span><span class="mime-tag" style="background:var(--surface2);color:var(--text-muted)">' + (r[3] ? 'Binary' : 'Text') + '</span></div><p style="margin:.5rem 0 0;font-size:.875rem">' + r[4] + '</p></div>';
+      }).join('');
+      setBar('valid', '.' + raw + ' → ' + matches[0][0] + ' — ' + (matches[0][3] ? 'Binary' : 'Text') + ' — ' + CAT_LABELS[matches[0][2]]);
+      DT.trackTool('mime-type-lookup');
+    }, 150);
+
+    document.getElementById('extInput').addEventListener('input', debouncedExt);
+    document.getElementById('clearExtBtn').addEventListener('click', function () {
+      document.getElementById('extInput').value = '';
+      document.getElementById('extResult').innerHTML = '';
+      setBar('info', 'Type a file extension to look up its MIME type.');
+    });
+
+    // MIME reverse lookup
+    var debouncedMime = DT.debounce(function () {
+      var raw = document.getElementById('mimeInput').value.trim().toLowerCase();
+      var resultDiv = document.getElementById('mimeResult');
+      if (!raw) { resultDiv.innerHTML = ''; setBar('info', 'Type a MIME type to find its extensions.'); return; }
+
+      var exact = DB.filter(function(r){ return r[0] === raw; });
+      var partial = exact.length ? [] : DB.filter(function(r){ return r[0].includes(raw); }).slice(0,8);
+      var results = exact.length ? exact : partial;
+
+      if (!results.length) {
+        resultDiv.innerHTML = '<div class="mime-result"><p style="color:var(--text-muted)">No results for <strong>' + raw + '</strong>.</p></div>';
+        setBar('invalid', 'No match for ' + raw);
+        return;
+      }
+
+      resultDiv.innerHTML = results.map(function (r) {
+        var exts = r[1].length ? '<div class="ext-list" style="margin-top:.65rem">' + r[1].map(function(e){ return '<span class="ext-badge">.' + e + '</span>'; }).join('') + '</div>' : '<p style="margin:.5rem 0;font-size:.875rem;color:var(--text-muted)">No file extensions defined.</p>';
+        return '<div class="mime-result"><div class="mime-result-type">' + r[0] + ' ' + copyBtn(r[0]) + '</div><div class="mime-result-meta">' + catTag(r[2]) + '<span class="mime-tag" style="background:var(--surface2);color:var(--text-muted)">' + (r[3] ? 'Binary' : 'Text') + '</span></div><p style="margin:.5rem 0;font-size:.875rem">' + r[4] + '</p>' + exts + '</div>';
+      }).join('');
+      setBar('valid', results[0][0] + ' → .' + (results[0][1][0] || '?') + ' — ' + (results[0][3] ? 'Binary' : 'Text') + ' — ' + CAT_LABELS[results[0][2]]);
+      DT.trackTool('mime-type-lookup');
+    }, 150);
+
+    document.getElementById('mimeInput').addEventListener('input', debouncedMime);
+    document.getElementById('clearMimeBtn').addEventListener('click', function () {
+      document.getElementById('mimeInput').value = '';
+      document.getElementById('mimeResult').innerHTML = '';
+      setBar('info', 'Type a MIME type to find its extensions.');
+    });
+
+    // Browse all
+    var activeCat = null;
+
+    function renderBrowse(q) {
+      var filter = q ? q.toLowerCase() : '';
+      var rows = DB.filter(function (r) {
+        var matchCat = !activeCat || r[2] === activeCat;
+        var matchQ = !filter || r[0].includes(filter) || r[1].some(function(e){ return e.includes(filter); }) || r[4].toLowerCase().includes(filter);
+        return matchCat && matchQ;
+      }).map(function (r) {
+        return '<tr><td><code style="font-size:0.8rem">' + r[0] + '</code> <button class="copy-mime" onclick="var DT=DevToolbox;DT.copyToClipboard(\'' + r[0].replace(/'/g,"\\'") + '\',this)">Copy</button></td>' +
+          '<td>' + (r[1].length ? r[1].map(function(e){ return '<code>.' + e + '</code>'; }).join(' ') : '<span style="color:var(--text-muted)">—</span>') + '</td>' +
+          '<td>' + catTag(r[2]) + '</td>' +
+          '<td style="text-align:center">' + (r[3] ? '✓' : '') + '</td>' +
+          '<td style="font-size:0.82rem;color:var(--text-muted)">' + r[4] + '</td></tr>';
+      }).join('');
+      var tbody = document.getElementById('browseBody');
+      tbody.innerHTML = rows || '<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-muted)">No results.</td></tr>';
+      var count = DB.filter(function(r){ return (!activeCat||r[2]===activeCat)&&(!filter||r[0].includes(filter)||r[1].some(function(e){return e.includes(filter);})||r[4].toLowerCase().includes(filter)); }).length;
+      setBar('info', 'Showing ' + count + ' of ' + DB.length + ' MIME types.');
+    }
+
+    function initCatFilters() {
+      var cats = ['image','audio','video','text','application','font','multipart'];
+      var div = document.getElementById('catFilters');
+      div.innerHTML = cats.map(function(c){ return '<button class="cat-pill" data-cat="' + c + '">' + CAT_LABELS[c] + '</button>'; }).join('');
+      div.querySelectorAll('.cat-pill').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          if (activeCat === btn.dataset.cat) { activeCat = null; btn.classList.remove('active'); }
+          else { div.querySelectorAll('.cat-pill').forEach(function(b){b.classList.remove('active');}); activeCat = btn.dataset.cat; btn.classList.add('active'); }
+          renderBrowse(document.getElementById('browseSearch').value);
+        });
+      });
+    }
+
+    document.getElementById('browseSearch').addEventListener('input', DT.debounce(function(){ renderBrowse(this.value); }, 150));
+
+    function setBar(cls, msg) {
+      var bar = document.getElementById('statusBar');
+      bar.className = 'status-bar ' + cls;
+      bar.textContent = msg;
+    }
+
+    // Mode switching
+    document.querySelectorAll('.option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.option-chip').forEach(function(c){c.classList.remove('active');});
+        chip.classList.add('active');
+        var mode = chip.dataset.mode;
+        document.getElementById('extMode').style.display = mode === 'ext' ? '' : 'none';
+        document.getElementById('mimeMode').style.display = mode === 'mime' ? '' : 'none';
+        document.getElementById('browseMode').style.display = mode === 'browse' ? '' : 'none';
+        if (mode === 'browse') { initCatFilters(); renderBrowse(''); }
+        else if (mode === 'ext') setBar('info', 'Type a file extension to look up its MIME type.');
+        else setBar('info', 'Type a MIME type to find its extensions.');
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

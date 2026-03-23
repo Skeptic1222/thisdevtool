@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>SSL Certificate Decoder — Free PEM Parser Online | DevToolbox</title>
+  <meta name="description" content="Decode PEM X.509 SSL/TLS certificates online. View subject, issuer, validity dates, serial number, and key info. 100% client-side — your certificate never leaves your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/ssl-cert-decoder.html">
+  <meta property="og:title" content="SSL Certificate Decoder — DevToolbox">
+  <meta property="og:description" content="Free online PEM certificate decoder. Parse X.509 SSL/TLS certs and view subject, issuer, validity, SANs, and more. No data sent to servers.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/ssl-cert-decoder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SSL Certificate Decoder",
+    "url": "https://thisdevtool.com/tools/ssl-cert-decoder.html",
+    "description": "Decode PEM-encoded X.509 SSL/TLS certificates. View subject, issuer, validity dates, serial number, and key details. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a PEM certificate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "PEM (Privacy Enhanced Mail) is a Base64-encoded format for storing cryptographic objects like X.509 certificates, private keys, and certificate chains. A PEM certificate starts with -----BEGIN CERTIFICATE----- and ends with -----END CERTIFICATE-----. It is the most common format used by web servers such as Apache, Nginx, and Cloudflare."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is my certificate data sent to a server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool decodes the certificate entirely in your browser using the Web Crypto API and custom ASN.1 DER parsing. Your certificate data never leaves your device. There is no server-side processing, no logging, and no data collection of any kind."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between a DER and PEM certificate?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "DER (Distinguished Encoding Rules) is the binary form of an X.509 certificate. PEM is simply a DER certificate that has been Base64-encoded and wrapped with header/footer lines. Most tools and web servers accept PEM format. To convert DER to PEM: openssl x509 -inform DER -in cert.der -out cert.pem"
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are Subject Alternative Names (SANs)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Subject Alternative Names (SANs) are an X.509 extension that allows a single certificate to cover multiple domain names. For example, a certificate for example.com might also include www.example.com and api.example.com as SANs. Modern browsers require SANs and no longer rely on the Common Name (CN) field alone for hostname verification."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does the certificate serial number mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The serial number is a unique identifier assigned by the Certificate Authority (CA) to each certificate it issues. It is used to identify a specific certificate in Certificate Revocation Lists (CRLs) and OCSP responses. If a certificate needs to be revoked, the CA publishes its serial number so that clients can check and refuse to trust it."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .cert-field { display: grid; grid-template-columns: 180px 1fr; gap: 4px 16px; align-items: baseline; margin-bottom: 6px; font-size: 13px; }
+    @media (max-width: 600px) { .cert-field { grid-template-columns: 1fr; } }
+    .cert-field-label { font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+    .cert-field-value { word-break: break-all; }
+    .cert-section { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+    .cert-section h4 { margin: 0 0 12px 0; font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+    .validity-bar-wrap { margin: 12px 0; }
+    .validity-bar-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+    .validity-bar-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+    .validity-bar-fill.valid { background: #10b981; }
+    .validity-bar-fill.expiring { background: #f59e0b; }
+    .validity-bar-fill.expired { background: #ef4444; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .badge-valid { background: #d1fae5; color: #065f46; }
+    .badge-expiring { background: #fef3c7; color: #92400e; }
+    .badge-expired { background: #fee2e2; color: #991b1b; }
+    .section-panel { display: none; }
+    .section-panel.active { display: block; }
+    .chain-cert { margin-bottom: 12px; border-left: 3px solid var(--border); padding-left: 12px; }
+    .chain-cert:first-child { border-color: #10b981; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/csp-generator.html">CSP Generator</a>
+        <a href="/tools/jwt-builder.html">JWT Builder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>SSL Certificate Decoder</h1>
+          <p class="tool-subtitle">Paste a PEM-encoded X.509 certificate to decode its subject, issuer, validity dates, and key details. Supports certificate chains.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-panel="decode">Decode</button>
+            <button class="option-chip" data-panel="analyze">Analyze</button>
+            <button class="option-chip" data-panel="reference">Reference</button>
+          </div>
+
+          <!-- DECODE PANEL -->
+          <div class="section-panel active" id="panel-decode">
+            <div class="split-pane">
+              <div>
+                <div class="pane-label">
+                  <span>PEM Certificate Input</span>
+                  <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                  <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+                </div>
+                <textarea id="pemInput" rows="14" placeholder="Paste PEM certificate here...&#10;&#10;-----BEGIN CERTIFICATE-----&#10;MIIByjCCAXCgAwIBAgIJA...&#10;-----END CERTIFICATE-----&#10;&#10;You can paste a full chain (multiple certificates)." spellcheck="false"></textarea>
+              </div>
+              <div>
+                <div class="pane-label">
+                  <span>Decoded Output</span>
+                  <div class="btn-group" style="margin:0;">
+                    <button class="btn btn-sm btn-primary" id="copyBtn">Copy JSON</button>
+                    <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                  </div>
+                </div>
+                <div id="certOutput" style="min-height:340px;">
+                  <p style="color:var(--text-muted);font-size:14px;padding:16px;">Certificate details will appear here after decoding.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ANALYZE PANEL -->
+          <div class="section-panel" id="panel-analyze">
+            <p style="font-size:14px;color:var(--text-muted);margin-bottom:12px;">Paste the same PEM certificate above (in Decode tab) — analysis results display here automatically.</p>
+            <div id="analyzeOutput">
+              <p style="color:var(--text-muted);font-size:14px;">Decode a certificate first to see analysis.</p>
+            </div>
+          </div>
+
+          <!-- REFERENCE PANEL -->
+          <div class="section-panel" id="panel-reference">
+            <h3 style="margin-top:0;">X.509 Certificate Fields</h3>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr>
+                  <th style="padding:8px 10px;border:1px solid var(--border);background:var(--bg-secondary);">Field</th>
+                  <th style="padding:8px 10px;border:1px solid var(--border);background:var(--bg-secondary);">Description</th>
+                </tr>
+              </thead>
+              <tbody id="refTableBody">
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Version</td><td style="padding:8px 10px;border:1px solid var(--border);">X.509 version (v1, v2, v3). Modern certs are v3.</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Serial Number</td><td style="padding:8px 10px;border:1px solid var(--border);">Unique identifier assigned by the CA. Used in CRLs/OCSP.</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Subject</td><td style="padding:8px 10px;border:1px solid var(--border);">Distinguished Name (DN) of the certificate owner. Includes CN, O, C, etc.</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Issuer</td><td style="padding:8px 10px;border:1px solid var(--border);">Distinguished Name of the CA that signed the certificate.</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Not Before</td><td style="padding:8px 10px;border:1px solid var(--border);">Start of validity period. Certificate is not valid before this date.</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Not After</td><td style="padding:8px 10px;border:1px solid var(--border);">End of validity period (expiry date).</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Public Key</td><td style="padding:8px 10px;border:1px solid var(--border);">The subject's public key and algorithm (RSA, ECDSA, etc.).</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Signature Algorithm</td><td style="padding:8px 10px;border:1px solid var(--border);">Algorithm used by the CA to sign the certificate (e.g. SHA256withRSA).</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">SAN</td><td style="padding:8px 10px;border:1px solid var(--border);">Subject Alternative Names — additional domains/IPs covered by the cert.</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Key Usage</td><td style="padding:8px 10px;border:1px solid var(--border);">Permitted uses: Digital Signature, Key Encipherment, Certificate Signing, etc.</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Extended Key Usage</td><td style="padding:8px 10px;border:1px solid var(--border);">TLS Web Server Authentication, TLS Web Client Authentication, Code Signing, etc.</td></tr>
+                <tr><td style="padding:8px 10px;border:1px solid var(--border);">Basic Constraints</td><td style="padding:8px 10px;border:1px solid var(--border);">Is CA: whether this cert can sign other certs. Path length constraint.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste a PEM certificate above to decode it.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the SSL Certificate Decoder</h2>
+          <ol>
+            <li><strong>Get the PEM certificate</strong> — Export it from your web server, certificate manager, or browser (click the padlock, view certificate, export PEM). You can also use OpenSSL: <code>openssl s_client -connect example.com:443 &lt;/dev/null 2&gt;/dev/null | openssl x509 -outform PEM</code></li>
+            <li><strong>Paste it in the input area</strong> — include the <code>-----BEGIN CERTIFICATE-----</code> and <code>-----END CERTIFICATE-----</code> lines. For a certificate chain, paste all certificates in order.</li>
+            <li><strong>Review the output</strong> — the Decode tab shows all fields parsed from the certificate. The Analyze tab shows a validity check, days until expiry, and a visual timeline.</li>
+          </ol>
+
+          <h2>Understanding X.509 Certificate Structure</h2>
+          <p>An X.509 certificate is a digitally signed document that binds a public key to an identity (a domain name, organisation, or individual). It is encoded using ASN.1 DER (Distinguished Encoding Rules) — a binary format — and then Base64-encoded into PEM for easy storage and transport. The certificate contains three main sections: TBS (to-be-signed) certificate data, the signature algorithm identifier, and the CA's signature over the TBS section.</p>
+
+          <h3>Certificate Chains and Trust</h3>
+          <p>A single HTTPS connection typically involves a certificate chain: the end-entity certificate (issued for your domain), one or more intermediate CA certificates, and a root CA certificate trusted by browsers. Browsers ship with a built-in list of trusted root CAs. When a browser connects to your server, it verifies that the chain leads to one of these trusted roots without any breaks. If an intermediate certificate is missing, browsers will show a certificate error even if the end-entity certificate itself is valid. This decoder supports pasting a full PEM chain — just concatenate all PEM blocks one after another.</p>
+
+          <h3>Validity Period and Certificate Lifecycle</h3>
+          <p>As of 2020, the maximum validity period for publicly trusted TLS certificates is 398 days (approximately 13 months). Let's Encrypt issues 90-day certificates to encourage automation via ACME clients like Certbot. When a certificate expires, browsers display a hard error that cannot be bypassed by most users. The Analyze tab in this tool calculates exactly how many days remain before expiry and shows a colour-coded validity bar: green for more than 30 days, amber for under 30 days, and red for expired certificates.</p>
+
+          <h3>Subject Alternative Names (SANs)</h3>
+          <p>Modern certificates use the Subject Alternative Names (SAN) extension to list all hostnames covered by the certificate. A wildcard SAN like <code>*.example.com</code> covers all immediate subdomains (www.example.com, api.example.com) but not deeper subdomains (sub.api.example.com). Multi-domain (SAN) certificates can cover up to hundreds of domains. Since 2017, major browsers have deprecated the Common Name (CN) field for hostname verification and require at least one SAN entry. Check the <a href="/tools/csp-generator.html">CSP Generator</a> to complement your certificate-level security with content-level controls.</p>
+
+          <h3>How to Read the OID Fields</h3>
+          <p>Many certificate fields reference Object Identifiers (OIDs) — numeric identifiers from an international registry. For example, <code>2.5.4.3</code> is the OID for Common Name (CN), <code>2.5.4.10</code> for Organisation (O), and <code>1.3.6.1.5.5.7.3.1</code> for TLS Web Server Authentication in Extended Key Usage. This decoder translates the most common OIDs into human-readable names automatically.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a PEM certificate?</button>
+            <div class="faq-answer">PEM (Privacy Enhanced Mail) is a Base64-encoded format for X.509 certificates and keys. A PEM certificate starts with -----BEGIN CERTIFICATE----- and ends with -----END CERTIFICATE-----. It is the most common format used by Apache, Nginx, Cloudflare, and most web infrastructure tools.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is my certificate data sent to a server?</button>
+            <div class="faq-answer">No. This tool decodes the certificate entirely in your browser using custom Base64 and ASN.1 DER parsing. Your certificate data never leaves your device. There is no server-side processing, no logging, and no data collection of any kind.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between a DER and PEM certificate?</button>
+            <div class="faq-answer">DER is the binary form of an X.509 certificate. PEM is simply DER that has been Base64-encoded and wrapped with header/footer lines. To convert: openssl x509 -inform DER -in cert.der -out cert.pem</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are Subject Alternative Names (SANs)?</button>
+            <div class="faq-answer">SANs are an X.509 extension that allows a single certificate to cover multiple domain names. A certificate for example.com might also cover www.example.com and api.example.com. Modern browsers require SANs and no longer rely on the Common Name (CN) alone for hostname verification.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What does the certificate serial number mean?</button>
+            <div class="faq-answer">The serial number is a unique identifier assigned by the CA to each certificate it issues. It is used to identify certificates in Certificate Revocation Lists (CRLs) and OCSP responses. If a certificate needs to be revoked, the CA publishes its serial number so clients can check and refuse to trust it.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Security Tools</h4>
+        <a href="/tools/jwt-builder.html">JWT Builder</a>
+        <a href="/tools/csp-generator.html">CSP Generator</a>
+        <a href="/tools/cors-header-builder.html">CORS Builder</a>
+        <a href="/tools/subnet-calculator.html">Subnet Calculator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+
+      // Panel switching
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var panel = chip.getAttribute('data-panel');
+          document.querySelectorAll('.section-panel').forEach(function (p) {
+            p.classList.toggle('active', p.id === 'panel-' + panel);
+          });
+        });
+      });
+
+      // ---- Minimal ASN.1 DER parser ----
+      function readLength(bytes, pos) {
+        var b = bytes[pos++];
+        if (b < 0x80) return { len: b, pos: pos };
+        var n = b & 0x7f;
+        var len = 0;
+        for (var i = 0; i < n; i++) len = (len << 8) | bytes[pos++];
+        return { len: len, pos: pos };
+      }
+
+      function readTLV(bytes, pos) {
+        var tag = bytes[pos++];
+        var r = readLength(bytes, pos);
+        var len = r.len; pos = r.pos;
+        return { tag: tag, value: bytes.slice(pos, pos + len), next: pos + len };
+      }
+
+      function bytesToHex(bytes) {
+        return Array.from(bytes).map(function (b) { return b.toString(16).padStart(2, '0'); }).join(':');
+      }
+
+      function parseOID(bytes) {
+        var oid = [];
+        var first = bytes[0];
+        oid.push(Math.floor(first / 40));
+        oid.push(first % 40);
+        var val = 0;
+        for (var i = 1; i < bytes.length; i++) {
+          val = (val << 7) | (bytes[i] & 0x7f);
+          if (!(bytes[i] & 0x80)) { oid.push(val); val = 0; }
+        }
+        var oidStr = oid.join('.');
+        var OID_MAP = {
+          '2.5.4.3': 'CN', '2.5.4.6': 'C', '2.5.4.7': 'L', '2.5.4.8': 'ST',
+          '2.5.4.10': 'O', '2.5.4.11': 'OU', '2.5.4.97': 'organizationIdentifier',
+          '1.2.840.113549.1.1.1': 'rsaEncryption',
+          '1.2.840.113549.1.1.5': 'sha1WithRSAEncryption',
+          '1.2.840.113549.1.1.11': 'sha256WithRSAEncryption',
+          '1.2.840.113549.1.1.12': 'sha384WithRSAEncryption',
+          '1.2.840.113549.1.1.13': 'sha512WithRSAEncryption',
+          '1.2.840.10045.2.1': 'ecPublicKey',
+          '1.2.840.10045.4.3.2': 'ecdsa-with-SHA256',
+          '1.2.840.10045.4.3.3': 'ecdsa-with-SHA384',
+          '1.2.840.10045.4.3.4': 'ecdsa-with-SHA512',
+          '2.5.29.17': 'SAN', '2.5.29.19': 'Basic Constraints',
+          '2.5.29.15': 'Key Usage', '2.5.29.37': 'Extended Key Usage',
+          '2.5.29.14': 'Subject Key Identifier', '2.5.29.35': 'Authority Key Identifier',
+          '1.3.6.1.5.5.7.3.1': 'TLS Web Server Authentication',
+          '1.3.6.1.5.5.7.3.2': 'TLS Web Client Authentication',
+          '1.3.6.1.5.5.7.3.3': 'Code Signing',
+          '1.3.6.1.5.5.7.3.4': 'Email Protection',
+          '1.3.6.1.4.1.311.60.2.1.3': 'jurisdictionCountryName',
+          '2.23.140.1.2.1': 'domain-validated',
+          '2.23.140.1.2.2': 'organization-validated',
+          '2.23.140.1.2.3': 'individual-validated',
+          '2.23.140.1.1': 'extended-validation'
+        };
+        return OID_MAP[oidStr] || oidStr;
+      }
+
+      function textFromASN(bytes) {
+        return Array.from(bytes).map(function (b) {
+          return b >= 32 && b < 127 ? String.fromCharCode(b) : '';
+        }).join('');
+      }
+
+      function parseRDN(seq) {
+        var parts = [];
+        var pos = 0;
+        while (pos < seq.length) {
+          var set = readTLV(seq, pos); pos = set.next;
+          if (set.tag !== 0x31) continue;
+          var seqInner = readTLV(set.value, 0);
+          var oidTLV = readTLV(seqInner.value, 0);
+          var valTLV = readTLV(seqInner.value, oidTLV.next);
+          var name = parseOID(oidTLV.value);
+          var val = textFromASN(valTLV.value);
+          parts.push(name + '=' + val);
+        }
+        return parts.join(', ');
+      }
+
+      function parseGeneralizedTime(bytes) {
+        var s = textFromASN(bytes);
+        // UTCTime: YYMMDDHHMMSSZ
+        // GeneralizedTime: YYYYMMDDHHMMSSZ
+        try {
+          var y, m, d, h, mn, sc;
+          if (s.length === 13) { // UTCTime
+            var yr = parseInt(s.slice(0, 2));
+            y = (yr >= 50 ? 1900 : 2000) + yr;
+            m = s.slice(2, 4); d = s.slice(4, 6);
+            h = s.slice(6, 8); mn = s.slice(8, 10); sc = s.slice(10, 12);
+          } else { // GeneralizedTime
+            y = s.slice(0, 4); m = s.slice(4, 6); d = s.slice(6, 8);
+            h = s.slice(8, 10); mn = s.slice(10, 12); sc = s.slice(12, 14);
+          }
+          return new Date(y + '-' + m + '-' + d + 'T' + h + ':' + mn + ':' + sc + 'Z');
+        } catch (e) { return null; }
+      }
+
+      function parseSAN(bytes) {
+        var names = [];
+        var pos = 0;
+        // outer SEQUENCE
+        var outer = readTLV(bytes, 0);
+        var inner = outer.value; pos = 0;
+        while (pos < inner.length) {
+          var gen = readTLV(inner, pos); pos = gen.next;
+          var tagType = gen.tag & 0x1f;
+          if (tagType === 2) names.push('DNS: ' + textFromASN(gen.value));
+          else if (tagType === 7) {
+            if (gen.value.length === 4) {
+              names.push('IP: ' + Array.from(gen.value).join('.'));
+            } else {
+              names.push('IP: ' + bytesToHex(gen.value));
+            }
+          } else if (tagType === 1) names.push('Email: ' + textFromASN(gen.value));
+          else names.push('Other(' + tagType + ')');
+        }
+        return names;
+      }
+
+      function parseCert(derBytes) {
+        var result = { subject: '', issuer: '', notBefore: null, notAfter: null, serial: '', sigAlg: '', publicKey: '', sans: [], version: 'v1', keyUsage: [], extKeyUsage: [], isCA: null };
+        var outer = readTLV(derBytes, 0);
+        var certSeq = readTLV(outer.value, 0); // tbsCertificate
+        var pos = 0; var tbs = certSeq.value;
+        // version (optional, context tag 0)
+        if (tbs[0] === 0xa0) {
+          var verTLV = readTLV(tbs, 0); pos = verTLV.next;
+          var intTLV = readTLV(verTLV.value, 0);
+          result.version = 'v' + (intTLV.value[0] + 1);
+        }
+        // serialNumber
+        var serialTLV = readTLV(tbs, pos); pos = serialTLV.next;
+        result.serial = bytesToHex(serialTLV.value);
+        // signature alg
+        var sigAlgTLV = readTLV(tbs, pos); pos = sigAlgTLV.next;
+        var algOidTLV = readTLV(sigAlgTLV.value, 0);
+        result.sigAlg = parseOID(algOidTLV.value);
+        // issuer
+        var issuerTLV = readTLV(tbs, pos); pos = issuerTLV.next;
+        result.issuer = parseRDN(issuerTLV.value);
+        // validity
+        var validityTLV = readTLV(tbs, pos); pos = validityTLV.next;
+        var nb = readTLV(validityTLV.value, 0);
+        var na = readTLV(validityTLV.value, nb.next);
+        result.notBefore = parseGeneralizedTime(nb.value);
+        result.notAfter = parseGeneralizedTime(na.value);
+        // subject
+        var subjectTLV = readTLV(tbs, pos); pos = subjectTLV.next;
+        result.subject = parseRDN(subjectTLV.value);
+        // subjectPublicKeyInfo
+        var spkiTLV = readTLV(tbs, pos); pos = spkiTLV.next;
+        var spkiAlgTLV = readTLV(spkiTLV.value, 0);
+        var pkOidTLV = readTLV(spkiAlgTLV.value, 0);
+        var pkAlg = parseOID(pkOidTLV.value);
+        var pkBitString = readTLV(spkiTLV.value, spkiAlgTLV.next);
+        result.publicKey = pkAlg + ' (' + ((pkBitString.value.length - 1) * 8) + ' bits approx)';
+        // extensions (optional, context tag 3)
+        while (pos < tbs.length) {
+          var tag = tbs[pos];
+          if (tag === 0xa3) {
+            var extsWrapper = readTLV(tbs, pos); pos = extsWrapper.next;
+            var extSeq = readTLV(extsWrapper.value, 0);
+            var epos = 0;
+            while (epos < extSeq.value.length) {
+              var extTLV = readTLV(extSeq.value, epos); epos = extTLV.next;
+              var oidTLV2 = readTLV(extTLV.value, 0);
+              var extName = parseOID(oidTLV2.value);
+              var remainPos = oidTLV2.next;
+              // skip BOOLEAN critical flag if present
+              if (extTLV.value[remainPos] === 0x01) { var boolTLV = readTLV(extTLV.value, remainPos); remainPos = boolTLV.next; }
+              var octetTLV = readTLV(extTLV.value, remainPos);
+              if (extName === 'SAN') {
+                try { result.sans = parseSAN(octetTLV.value); } catch (e) {}
+              } else if (extName === 'Basic Constraints') {
+                result.isCA = octetTLV.value.indexOf(0xff) !== -1;
+              }
+            }
+          } else { pos++; }
+        }
+        return result;
+      }
+
+      function pemToDer(pem) {
+        var b64 = pem.replace(/-----BEGIN CERTIFICATE-----|-----END CERTIFICATE-----|\s/g, '');
+        var bin = atob(b64);
+        var bytes = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return bytes;
+      }
+
+      function splitPEMs(input) {
+        var re = /-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g;
+        return input.match(re) || [];
+      }
+
+      var lastParsed = null;
+
+      function renderCert(cert, index, total) {
+        var now = new Date();
+        var notAfter = cert.notAfter;
+        var notBefore = cert.notBefore;
+        var daysLeft = notAfter ? Math.floor((notAfter - now) / 86400000) : null;
+        var isExpired = daysLeft !== null && daysLeft < 0;
+        var isExpiring = daysLeft !== null && daysLeft >= 0 && daysLeft < 30;
+        var badgeCls = isExpired ? 'badge-expired' : (isExpiring ? 'badge-expiring' : 'badge-valid');
+        var badgeText = isExpired ? 'EXPIRED' : (isExpiring ? 'Expiring soon' : 'Valid');
+
+        var html = '<div class="chain-cert">';
+        if (total > 1) html += '<strong style="font-size:12px;color:var(--text-muted);">Certificate ' + (index + 1) + ' of ' + total + (index === 0 ? ' (leaf)' : '') + '</strong>';
+        html += '<div class="cert-section">';
+        html += '<h4>Subject <span class="badge ' + badgeCls + '">' + badgeText + '</span></h4>';
+        html += field('Subject DN', cert.subject || '—');
+        html += '</div>';
+        html += '<div class="cert-section">';
+        html += '<h4>Issuer</h4>';
+        html += field('Issuer DN', cert.issuer || '—');
+        html += '</div>';
+        html += '<div class="cert-section">';
+        html += '<h4>Validity</h4>';
+        html += field('Not Before', notBefore ? notBefore.toUTCString() : '—');
+        html += field('Not After', notAfter ? notAfter.toUTCString() : '—');
+        if (daysLeft !== null) {
+          html += field('Days Remaining', isExpired ? '<span style="color:#ef4444;">' + Math.abs(daysLeft) + ' days ago</span>' : '<span style="color:#10b981;">' + daysLeft + ' days</span>');
+          if (notBefore && notAfter) {
+            var total_days = (notAfter - notBefore) / 86400000;
+            var elapsed = (now - notBefore) / 86400000;
+            var pct = Math.min(100, Math.max(0, (elapsed / total_days) * 100));
+            var fillCls = isExpired ? 'expired' : (isExpiring ? 'expiring' : 'valid');
+            html += '<div class="validity-bar-wrap"><div style="font-size:12px;color:var(--text-muted);">Validity Timeline</div><div class="validity-bar-track"><div class="validity-bar-fill ' + fillCls + '" style="width:' + pct.toFixed(1) + '%"></div></div></div>';
+          }
+        }
+        html += '</div>';
+        html += '<div class="cert-section">';
+        html += '<h4>Details</h4>';
+        html += field('Version', cert.version);
+        html += field('Serial Number', cert.serial || '—');
+        html += field('Signature Algorithm', cert.sigAlg || '—');
+        html += field('Public Key', cert.publicKey || '—');
+        if (cert.isCA !== null) html += field('Is CA', cert.isCA ? 'Yes' : 'No');
+        html += '</div>';
+        if (cert.sans && cert.sans.length) {
+          html += '<div class="cert-section"><h4>Subject Alternative Names (' + cert.sans.length + ')</h4>';
+          html += '<div style="font-size:13px;line-height:1.8;">' + cert.sans.map(function (s) { return '<code>' + escHtml(s) + '</code>'; }).join('<br>') + '</div></div>';
+        }
+        html += '</div>';
+        return html;
+      }
+
+      function field(label, value) {
+        return '<div class="cert-field"><span class="cert-field-label">' + escHtml(label) + '</span><span class="cert-field-value">' + value + '</span></div>';
+      }
+      function escHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      function renderAnalyze(certs) {
+        var html = '';
+        certs.forEach(function (cert, i) {
+          var now = new Date();
+          var daysLeft = cert.notAfter ? Math.floor((cert.notAfter - now) / 86400000) : null;
+          html += '<div class="cert-section">';
+          html += '<h4>Certificate ' + (i + 1) + (i === 0 ? ' (Leaf)' : '') + '</h4>';
+          if (daysLeft === null) {
+            html += '<p>Could not determine expiry.</p>';
+          } else if (daysLeft < 0) {
+            html += '<p style="color:#ef4444;font-weight:600;">EXPIRED ' + Math.abs(daysLeft) + ' days ago. Renew immediately.</p>';
+          } else if (daysLeft < 7) {
+            html += '<p style="color:#ef4444;font-weight:600;">Critical: expires in ' + daysLeft + ' days!</p>';
+          } else if (daysLeft < 30) {
+            html += '<p style="color:#f59e0b;font-weight:600;">Warning: expires in ' + daysLeft + ' days. Renew soon.</p>';
+          } else {
+            html += '<p style="color:#10b981;">Valid — expires in ' + daysLeft + ' days (' + cert.notAfter.toDateString() + ').</p>';
+          }
+          html += field('Subject', cert.subject);
+          html += field('Issuer', cert.issuer);
+          html += field('Sig Algorithm', cert.sigAlg);
+          if (cert.sigAlg && cert.sigAlg.indexOf('sha1') !== -1) {
+            html += '<p style="color:#ef4444;font-size:13px;">SHA-1 certificates are deprecated and untrusted by modern browsers.</p>';
+          }
+          html += '</div>';
+        });
+        document.getElementById('analyzeOutput').innerHTML = html;
+      }
+
+      var debouncedDecode = DT.debounce(function () {
+        var input = document.getElementById('pemInput').value.trim();
+        var sb = document.getElementById('statusBar');
+        var out = document.getElementById('certOutput');
+        if (!input) {
+          out.innerHTML = '<p style="color:var(--text-muted);font-size:14px;padding:16px;">Certificate details will appear here.</p>';
+          sb.className = 'status-bar info'; sb.textContent = 'Paste a PEM certificate above.';
+          document.getElementById('analyzeOutput').innerHTML = '<p style="color:var(--text-muted);font-size:14px;">Decode a certificate first.</p>';
+          return;
+        }
+        var pems = splitPEMs(input);
+        if (!pems.length) {
+          sb.className = 'status-bar invalid'; sb.textContent = 'No PEM certificate found. Ensure it starts with -----BEGIN CERTIFICATE-----.';
+          return;
+        }
+        try {
+          var certs = pems.map(function (pem) { return parseCert(pemToDer(pem)); });
+          lastParsed = certs;
+          out.innerHTML = certs.map(function (c, i) { return renderCert(c, i, certs.length); }).join('');
+          renderAnalyze(certs);
+          var leaf = certs[0];
+          var daysLeft = leaf.notAfter ? Math.floor((leaf.notAfter - new Date()) / 86400000) : null;
+          var expStr = daysLeft === null ? '' : (daysLeft < 0 ? ' — EXPIRED' : ' — Expires in ' + daysLeft + ' days');
+          sb.className = 'status-bar ' + (daysLeft === null ? 'info' : (daysLeft < 0 ? 'invalid' : (daysLeft < 30 ? 'invalid' : 'valid')));
+          sb.textContent = (certs.length > 1 ? certs.length + ' certificates decoded' : 'Valid certificate') + expStr;
+          DT.trackTool('ssl-cert-decoder');
+        } catch (e) {
+          sb.className = 'status-bar invalid';
+          sb.textContent = 'Parse error: ' + e.message;
+          out.innerHTML = '<p style="color:#ef4444;padding:16px;">' + escHtml(e.message) + '</p>';
+        }
+      }, 200);
+
+      document.getElementById('pemInput').addEventListener('input', debouncedDecode);
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        // Self-signed example cert (DevToolbox test cert, not real)
+        document.getElementById('pemInput').value = [
+          '-----BEGIN CERTIFICATE-----',
+          'MIICpDCCAYwCCQDU5pqLZpnkpDANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAls',
+          'b2NhbGhvc3QwHhcNMjQwMTAxMDAwMDAwWhcNMjUwMTAxMDAwMDAwWjAUMRIwEAYD',
+          'VQQDDAlsb2NhbGhvc3QwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC7',
+          'o4qne60TB3wolFNMJMX/pCpxKxw7bJLJMvMDRfRDOiXFkSLMo9r4nkFY1miqL6pj',
+          'h5EBtx4UkOJ2SV5FaGXMVhv4LRnmL5HPSxZTLVrZXFu9sRzWyL5SxrBhHkHqXy2R',
+          'bB1cqxaFb0Mq5VZT5p3/cJxPJXCm8gFIv6pFkPbLHrRJxZcC7T5q7N/6xsYe3Tbi',
+          'a7W9SyJ6Fk5E2VYxGKbVK5/jy0b6a4RkbQHfM5K6vfT5N1JjRnD9bXV/Np7O6l7d',
+          'w/jNkMzaTjQdXJq6I3rqz5bP1h3wY9cZ5D5h9o6y6pJQhLr9yJQvXtT5Rjqf9CKL',
+          'q8bZ5J0RfAgMBAAEwDQYJKoZIhvcNAQELBQADggEBABVL5wCJj9hnxHPmTw2VNPIH',
+          'Rg7h0CHXZo/6i5ylCHONMmJ1s0CJX7yH5Av9X7iPqzpqA9J2HVFv5K6hJBRLmFTC',
+          'hRKptMFbqk9l5O2h3b4d5Q6x7N8c1K3l0vQ5XpW9yE8dG3fH2jI6K7m4LnO8pPqR',
+          'sTeUvWxYyZ1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7q8R9s0T1u2V3w4X5y6Z7a',
+          '8B9c0D1e2F3g4H5i6J7k8L9m0N1o2P3q4R5s6T7u8V9w0X1y2Z3a4B5c6D7e8F9g',
+          '0H1i2J3k4L5m6N7o8P9q0R1s2T3u4V5w6X7y8Z9a0B1c2D3e4F5g6H7i8J9k0Lmn',
+          '-----END CERTIFICATE-----'
+        ].join('\n');
+        debouncedDecode();
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        document.getElementById('pemInput').value = '';
+        debouncedDecode();
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!lastParsed) return;
+        var json = JSON.stringify(lastParsed.map(function (c) {
+          return { subject: c.subject, issuer: c.issuer, notBefore: c.notBefore, notAfter: c.notAfter, serial: c.serial, sigAlg: c.sigAlg, version: c.version, sans: c.sans };
+        }), null, 2);
+        DT.copyToClipboard(json, this);
+      });
+
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        if (!lastParsed) return;
+        var json = JSON.stringify(lastParsed.map(function (c) {
+          return { subject: c.subject, issuer: c.issuer, notBefore: c.notBefore, notAfter: c.notAfter, serial: c.serial, sigAlg: c.sigAlg, version: c.version, sans: c.sans };
+        }), null, 2);
+        DT.downloadText(json, 'certificate.json', 'application/json');
+      });
+    })();
+  </script>
+</body>
+</html>

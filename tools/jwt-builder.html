@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JWT Builder &amp; Decoder — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Build and decode JSON Web Tokens online. Construct JWT payloads with standard claims, custom fields, and date pickers. 100% client-side — your tokens never leave the browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/jwt-builder.html">
+  <meta property="og:title" content="JWT Builder &amp; Decoder — DevToolbox">
+  <meta property="og:description" content="Free online JWT builder and decoder. Create JWT payloads with iss, sub, exp, iat and custom claims. No secret required, runs in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/jwt-builder.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JWT Builder & Decoder",
+    "url": "https://thisdevtool.com/tools/jwt-builder.html",
+    "description": "Build JWT payloads with standard and custom claims. Decode existing JWTs. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a JWT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A JSON Web Token (JWT) is an open standard (RFC 7519) for securely transmitting information between parties as a JSON object. It consists of three Base64URL-encoded parts separated by dots: a header (algorithm and token type), a payload (claims), and a signature. The signature is computed using a secret or private key and is used to verify authenticity."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why doesn't this tool generate a signed JWT?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Generating a valid JWT signature requires a secret key or private key. Exposing your secret key to any online tool would be a serious security risk. This builder constructs the unsigned header and payload so you can inspect the structure, test claim values, and understand the format — you then sign it in your own backend code where the secret remains private."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What are the standard JWT claims?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The IANA JWT Claims Registry defines standard claims: iss (issuer), sub (subject), aud (audience), exp (expiration time), nbf (not before), iat (issued at), and jti (JWT ID). All are optional, but exp, iat, and sub are most commonly used for authentication tokens."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it safe to decode a JWT in the browser?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes — decoding a JWT only reads the header and payload, which are simply Base64URL-encoded JSON. No secret key is needed to decode them. This tool never validates the signature; it only decodes and displays the contents. Never paste a production JWT containing sensitive data into any online tool unless you trust that tool completely."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between exp and iat?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "iat (issued at) is the Unix timestamp when the token was created. exp (expiration time) is the Unix timestamp after which the token must no longer be accepted. The difference between exp and iat gives the token's lifetime. For example, if iat is 1711234567 and exp is iat + 3600, the token is valid for exactly one hour."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .jwt-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    @media (max-width: 600px) { .jwt-form-grid { grid-template-columns: 1fr; } }
+    .claim-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+    .claim-row input { flex: 1; }
+    .claim-row .btn-icon { padding: 6px 10px; font-size: 14px; line-height: 1; flex-shrink: 0; }
+    .jwt-preview { font-family: monospace; font-size: 13px; word-break: break-all; line-height: 1.6; padding: 16px; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border); margin-top: 12px; }
+    .jwt-part-header { color: #e74c3c; }
+    .jwt-part-payload { color: #2980b9; }
+    .jwt-part-sig { color: #888; }
+    .decoded-section { margin-top: 12px; }
+    .decoded-section h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 6px; }
+    .ref-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .ref-table th, .ref-table td { padding: 8px 10px; border: 1px solid var(--border); text-align: left; }
+    .ref-table th { background: var(--bg-secondary); font-weight: 600; }
+    .section-panel { display: none; }
+    .section-panel.active { display: block; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/base64.html">Base64</a>
+        <a href="/tools/hash-generator.html">Hash</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>JWT Builder &amp; Decoder</h1>
+          <p class="tool-subtitle">Construct JWT payloads with standard claims and custom fields, or decode an existing token. No secrets required — 100% client-side.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-panel="build">Build</button>
+            <button class="option-chip" data-panel="decode">Decode</button>
+            <button class="option-chip" data-panel="reference">Reference</button>
+          </div>
+
+          <!-- BUILD PANEL -->
+          <div class="section-panel active" id="panel-build">
+            <div style="margin-bottom:16px;">
+              <strong style="font-size:13px;color:var(--text-muted);">Header</strong>
+              <div class="jwt-form-grid" style="margin-top:8px;">
+                <div class="form-group">
+                  <label for="hdrAlg">Algorithm (alg)</label>
+                  <select id="hdrAlg">
+                    <option value="HS256">HS256</option>
+                    <option value="HS384">HS384</option>
+                    <option value="HS512">HS512</option>
+                    <option value="RS256">RS256</option>
+                    <option value="RS384">RS384</option>
+                    <option value="RS512">RS512</option>
+                    <option value="ES256">ES256</option>
+                    <option value="ES384">ES384</option>
+                    <option value="ES512">ES512</option>
+                    <option value="none">none</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="hdrTyp">Type (typ)</label>
+                  <input type="text" id="hdrTyp" value="JWT" placeholder="JWT">
+                </div>
+              </div>
+            </div>
+
+            <strong style="font-size:13px;color:var(--text-muted);">Standard Claims</strong>
+            <div class="jwt-form-grid" style="margin-top:8px;">
+              <div class="form-group">
+                <label for="claimIss">Issuer (iss)</label>
+                <input type="text" id="claimIss" placeholder="https://auth.example.com">
+              </div>
+              <div class="form-group">
+                <label for="claimSub">Subject (sub)</label>
+                <input type="text" id="claimSub" placeholder="user_123">
+              </div>
+              <div class="form-group">
+                <label for="claimAud">Audience (aud)</label>
+                <input type="text" id="claimAud" placeholder="api.example.com">
+              </div>
+              <div class="form-group">
+                <label for="claimJti">JWT ID (jti)</label>
+                <input type="text" id="claimJti" placeholder="Leave blank to auto-generate">
+              </div>
+              <div class="form-group">
+                <label for="claimIat">Issued At (iat)</label>
+                <input type="datetime-local" id="claimIat">
+              </div>
+              <div class="form-group">
+                <label for="claimExp">Expires (exp)</label>
+                <input type="datetime-local" id="claimExp">
+              </div>
+              <div class="form-group">
+                <label for="claimNbf">Not Before (nbf)</label>
+                <input type="datetime-local" id="claimNbf">
+              </div>
+            </div>
+
+            <strong style="font-size:13px;color:var(--text-muted);">Custom Claims</strong>
+            <div id="customClaims" style="margin-top:8px;"></div>
+            <button class="btn btn-sm btn-secondary" id="addClaimBtn" style="margin-top:4px;">+ Add Claim</button>
+
+            <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" id="buildBtn">Build JWT</button>
+              <button class="btn btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-secondary" id="clearBuildBtn">Clear</button>
+            </div>
+
+            <div id="jwtPreviewWrap" style="display:none;margin-top:16px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <strong style="font-size:13px;">JWT Preview (unsigned)</strong>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyJwtBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadJwtBtn">Download</button>
+                </div>
+              </div>
+              <div class="jwt-preview" id="jwtPreview"></div>
+              <div class="decoded-section">
+                <h4>Header</h4>
+                <div class="code-output" id="builtHeader" style="min-height:60px;"></div>
+                <h4 style="margin-top:10px;">Payload</h4>
+                <div class="code-output" id="builtPayload" style="min-height:80px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DECODE PANEL -->
+          <div class="section-panel" id="panel-decode">
+            <div class="pane-label">
+              <span>Paste JWT Token</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="decodeExampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearDecodeBtn">Clear</button>
+              </div>
+            </div>
+            <textarea id="jwtInput" rows="5" placeholder="Paste a JWT here...&#10;&#10;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsImlhdCI6MTcxMTIzNDU2NywiZXhwIjoxNzExMjM4MTY3fQ.SIGNATURE" spellcheck="false"></textarea>
+            <div class="decoded-section" id="decodeOutput" style="display:none;">
+              <h4>Header</h4>
+              <div class="code-output" id="decodedHeader" style="min-height:60px;"></div>
+              <h4 style="margin-top:10px;">Payload</h4>
+              <div class="code-output" id="decodedPayload" style="min-height:80px;"></div>
+              <h4 style="margin-top:10px;">Signature</h4>
+              <div class="code-output" id="decodedSig" style="min-height:40px;"></div>
+            </div>
+          </div>
+
+          <!-- REFERENCE PANEL -->
+          <div class="section-panel" id="panel-reference">
+            <h3 style="margin-top:0;">Standard JWT Claims (RFC 7519)</h3>
+            <table class="ref-table">
+              <thead>
+                <tr><th>Claim</th><th>Name</th><th>Type</th><th>Description</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>iss</code></td><td>Issuer</td><td>String (URI)</td><td>Identifies the principal that issued the token. Usually the auth server URL.</td></tr>
+                <tr><td><code>sub</code></td><td>Subject</td><td>String</td><td>Identifies the principal that is the subject of the token. Typically a user ID.</td></tr>
+                <tr><td><code>aud</code></td><td>Audience</td><td>String or Array</td><td>Identifies the recipients for which the token is intended.</td></tr>
+                <tr><td><code>exp</code></td><td>Expiration Time</td><td>NumericDate</td><td>Unix timestamp after which the token MUST NOT be accepted.</td></tr>
+                <tr><td><code>nbf</code></td><td>Not Before</td><td>NumericDate</td><td>Unix timestamp before which the token MUST NOT be accepted.</td></tr>
+                <tr><td><code>iat</code></td><td>Issued At</td><td>NumericDate</td><td>Unix timestamp when the token was issued.</td></tr>
+                <tr><td><code>jti</code></td><td>JWT ID</td><td>String</td><td>Unique identifier for the token. Prevents replay attacks.</td></tr>
+              </tbody>
+            </table>
+            <h3 style="margin-top:20px;">Common Algorithms</h3>
+            <table class="ref-table">
+              <thead>
+                <tr><th>Algorithm</th><th>Type</th><th>Key Size</th><th>Notes</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>HS256</td><td>HMAC-SHA256</td><td>256-bit secret</td><td>Most common. Symmetric — same key signs and verifies.</td></tr>
+                <tr><td>HS512</td><td>HMAC-SHA512</td><td>512-bit secret</td><td>Stronger HMAC variant. Symmetric.</td></tr>
+                <tr><td>RS256</td><td>RSA-SHA256</td><td>2048+ bit RSA</td><td>Asymmetric. Private key signs, public key verifies.</td></tr>
+                <tr><td>ES256</td><td>ECDSA-P256-SHA256</td><td>256-bit EC</td><td>Smaller key than RSA with equivalent security.</td></tr>
+                <tr><td>none</td><td>Unsecured</td><td>—</td><td>No signature. Never use in production.</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Fill in claims above and click Build JWT.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the JWT Builder</h2>
+          <ol>
+            <li><strong>Build mode</strong> — Select the signing algorithm, fill in standard claims like <code>sub</code>, <code>exp</code>, and <code>iat</code>, add any custom claims, then click Build. The tool produces an unsigned Base64URL-encoded JWT for inspection.</li>
+            <li><strong>Decode mode</strong> — Paste any existing JWT to instantly decode and view its header and payload claims in readable JSON format.</li>
+            <li><strong>Reference tab</strong> — Browse the full IANA standard claims table and a guide to JWT algorithms.</li>
+          </ol>
+
+          <h2>What Is a JSON Web Token?</h2>
+          <p>A JSON Web Token (JWT) is a compact, URL-safe means of representing claims to be transferred between two parties. Defined in <a href="https://tools.ietf.org/html/rfc7519" rel="noopener noreferrer" target="_blank">RFC 7519</a>, a JWT has three parts separated by dots: the <strong>header</strong> (algorithm and token type, Base64URL-encoded), the <strong>payload</strong> (claims, Base64URL-encoded), and the <strong>signature</strong> (HMAC or RSA/ECDSA over the header and payload). The header and payload are not encrypted by default — they are simply encoded. Anyone who holds a JWT can decode and read its contents.</p>
+
+          <h3>Why Use JWTs for Authentication?</h3>
+          <p>JWTs are widely used in stateless authentication systems. When a user logs in, the server issues a signed JWT containing claims like the user ID and token expiry. The client stores this token (in memory or a secure cookie) and sends it with every request in the <code>Authorization: Bearer &lt;token&gt;</code> header. The server can verify the signature without consulting a database, enabling horizontally scalable microservices that share no session state. Popular frameworks like OAuth 2.0, OpenID Connect, and Auth0 all use JWTs as their token format.</p>
+
+          <h3>Understanding the exp Claim</h3>
+          <p>The <code>exp</code> (expiration time) claim is a Unix timestamp — the number of seconds since January 1, 1970 UTC. A token with <code>"exp": 1711238167</code> expires at that specific moment. The date-time picker in this builder converts the human-readable date you select into the correct Unix timestamp automatically. Short-lived tokens (15 minutes to 1 hour) reduce the window of attack if a token is stolen. Pair short expiry with refresh tokens to maintain seamless user sessions.</p>
+
+          <h3>Security Considerations</h3>
+          <p>Never verify JWTs on the client side — always verify the signature server-side before trusting any claim. Watch out for the <code>alg: none</code> attack, where a malicious token sets the algorithm to none and removes the signature, tricking a vulnerable verifier into accepting it. Always explicitly specify the expected algorithm in your verifier, never trust the algorithm from the token itself. Store JWTs in <code>HttpOnly</code> cookies rather than <code>localStorage</code> to mitigate XSS attacks. For more on token security, see the <a href="/tools/hash-generator.html">Hash Generator</a> and <a href="/tools/ssl-cert-decoder.html">SSL Certificate Decoder</a>.</p>
+
+          <h3>Custom Claims and Namespacing</h3>
+          <p>Beyond the standard IANA claims, you can add any custom claims to a JWT payload. To avoid collision with future standard claims, the JWT specification recommends namespacing custom claims using a URI prefix (e.g., <code>https://yourapp.com/roles</code>). Common custom claims include user roles (<code>roles: ["admin", "editor"]</code>), tenant identifiers, and permission scopes. Keep JWTs compact — every extra byte increases request overhead. For large amounts of data, store it server-side and reference it with a compact identifier claim in the token.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is a JWT?</button>
+            <div class="faq-answer">A JSON Web Token (JWT) is an open standard (RFC 7519) for securely transmitting information between parties as a JSON object. It consists of three Base64URL-encoded parts: a header, a payload (claims), and a signature. The signature is computed using a secret or private key to verify authenticity.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why doesn't this tool generate a signed JWT?</button>
+            <div class="faq-answer">Generating a valid JWT signature requires a secret key or private key. Exposing your secret to any online tool would be a serious security risk. This builder constructs the unsigned header and payload so you can inspect the structure and test claim values — you sign it in your backend where the secret remains private.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What are the standard JWT claims?</button>
+            <div class="faq-answer">The IANA registry defines: iss (issuer), sub (subject), aud (audience), exp (expiration time), nbf (not before), iat (issued at), and jti (JWT ID). All are optional, but exp, iat, and sub are most commonly used for authentication tokens.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is it safe to decode a JWT in the browser?</button>
+            <div class="faq-answer">Yes — decoding only reads the Base64URL-encoded header and payload; no secret key is needed. This tool never validates the signature. Avoid pasting production JWTs containing sensitive personal data into any online tool unless you fully trust it.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between exp and iat?</button>
+            <div class="faq-answer">iat (issued at) is the Unix timestamp when the token was created. exp (expiration time) is the Unix timestamp after which the token must be rejected. The difference gives the token lifetime. For example, iat + 3600 makes a token valid for exactly one hour.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Security Tools</h4>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/ssl-cert-decoder.html">SSL Cert Decoder</a>
+        <a href="/tools/csp-generator.html">CSP Generator</a>
+        <a href="/tools/cors-header-builder.html">CORS Builder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+
+      // --- Panel switching ---
+      var panels = { build: document.getElementById('panel-build'), decode: document.getElementById('panel-decode'), reference: document.getElementById('panel-reference') };
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var panel = chip.getAttribute('data-panel');
+          Object.keys(panels).forEach(function (k) { panels[k].classList.toggle('active', k === panel); });
+        });
+      });
+
+      // --- Helpers ---
+      function b64url(str) {
+        return btoa(unescape(encodeURIComponent(str)))
+          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      }
+      function b64urlDecode(str) {
+        str = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (str.length % 4) str += '=';
+        return decodeURIComponent(escape(atob(str)));
+      }
+      function dtToUnix(val) {
+        return val ? Math.floor(new Date(val).getTime() / 1000) : null;
+      }
+      function unixToLocal(ts) {
+        if (!ts) return '';
+        var d = new Date(ts * 1000);
+        return d.toISOString().slice(0, 16);
+      }
+      function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          var r = Math.random() * 16 | 0;
+          return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        });
+      }
+
+      // --- Set default iat/exp ---
+      var now = new Date();
+      var exp = new Date(now.getTime() + 3600000);
+      document.getElementById('claimIat').value = now.toISOString().slice(0, 16);
+      document.getElementById('claimExp').value = exp.toISOString().slice(0, 16);
+
+      // --- Custom claims ---
+      var customClaimsContainer = document.getElementById('customClaims');
+      function addClaimRow(key, value) {
+        var row = document.createElement('div');
+        row.className = 'claim-row';
+        row.innerHTML = '<input type="text" placeholder="claim name" value="' + (key || '') + '">' +
+          '<input type="text" placeholder="value" value="' + (value || '') + '">' +
+          '<button class="btn btn-sm btn-secondary btn-icon" title="Remove">&#x2715;</button>';
+        row.querySelector('.btn-icon').addEventListener('click', function () { row.remove(); });
+        customClaimsContainer.appendChild(row);
+      }
+      document.getElementById('addClaimBtn').addEventListener('click', function () { addClaimRow(); });
+
+      // --- Build JWT ---
+      function buildJWT() {
+        var alg = document.getElementById('hdrAlg').value;
+        var typ = document.getElementById('hdrTyp').value || 'JWT';
+        var header = { alg: alg, typ: typ };
+
+        var payload = {};
+        var iss = document.getElementById('claimIss').value.trim();
+        var sub = document.getElementById('claimSub').value.trim();
+        var aud = document.getElementById('claimAud').value.trim();
+        var jti = document.getElementById('claimJti').value.trim() || generateUUID();
+        var iat = dtToUnix(document.getElementById('claimIat').value);
+        var exp = dtToUnix(document.getElementById('claimExp').value);
+        var nbf = dtToUnix(document.getElementById('claimNbf').value);
+
+        if (iss) payload.iss = iss;
+        if (sub) payload.sub = sub;
+        if (aud) payload.aud = aud;
+        if (jti) payload.jti = jti;
+        if (iat) payload.iat = iat;
+        if (exp) payload.exp = exp;
+        if (nbf) payload.nbf = nbf;
+
+        // Custom claims
+        customClaimsContainer.querySelectorAll('.claim-row').forEach(function (row) {
+          var inputs = row.querySelectorAll('input');
+          var k = inputs[0].value.trim();
+          var v = inputs[1].value.trim();
+          if (k) {
+            var parsed;
+            try { parsed = JSON.parse(v); } catch (e) { parsed = v; }
+            payload[k] = parsed;
+          }
+        });
+
+        var headerEnc = b64url(JSON.stringify(header));
+        var payloadEnc = b64url(JSON.stringify(payload, null, 0));
+        var jwt = headerEnc + '.' + payloadEnc + '.UNSIGNED';
+
+        document.getElementById('jwtPreview').innerHTML =
+          '<span class="jwt-part-header">' + headerEnc + '</span>' +
+          '.<span class="jwt-part-payload">' + payloadEnc + '</span>' +
+          '.<span class="jwt-part-sig">UNSIGNED</span>';
+        document.getElementById('builtHeader').textContent = JSON.stringify(header, null, 2);
+        document.getElementById('builtPayload').textContent = JSON.stringify(payload, null, 2);
+        document.getElementById('jwtPreviewWrap').style.display = '';
+
+        var claimCount = Object.keys(payload).length;
+        var expDate = exp ? new Date(exp * 1000).toLocaleDateString() : 'no expiry';
+        var sb = document.getElementById('statusBar');
+        sb.className = 'status-bar valid';
+        sb.textContent = 'JWT with ' + claimCount + ' claim' + (claimCount !== 1 ? 's' : '') + ' — Expires: ' + expDate;
+        DT.trackTool('jwt-builder');
+
+        return headerEnc + '.' + payloadEnc + '.UNSIGNED';
+      }
+
+      document.getElementById('buildBtn').addEventListener('click', buildJWT);
+
+      document.getElementById('copyJwtBtn').addEventListener('click', function () {
+        var text = document.getElementById('jwtPreview').textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+      document.getElementById('downloadJwtBtn').addEventListener('click', function () {
+        var text = document.getElementById('jwtPreview').textContent;
+        if (text) DT.downloadText(text, 'token.jwt', 'text/plain');
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        document.getElementById('claimIss').value = 'https://auth.example.com';
+        document.getElementById('claimSub').value = 'user_abc123';
+        document.getElementById('claimAud').value = 'api.example.com';
+        customClaimsContainer.innerHTML = '';
+        addClaimRow('role', 'admin');
+        addClaimRow('email', 'alice@example.com');
+        buildJWT();
+      });
+
+      document.getElementById('clearBuildBtn').addEventListener('click', function () {
+        ['claimIss','claimSub','claimAud','claimJti','claimNbf'].forEach(function (id) {
+          document.getElementById(id).value = '';
+        });
+        var nowD = new Date();
+        var expD = new Date(nowD.getTime() + 3600000);
+        document.getElementById('claimIat').value = nowD.toISOString().slice(0, 16);
+        document.getElementById('claimExp').value = expD.toISOString().slice(0, 16);
+        customClaimsContainer.innerHTML = '';
+        document.getElementById('jwtPreviewWrap').style.display = 'none';
+        var sb = document.getElementById('statusBar');
+        sb.className = 'status-bar info';
+        sb.textContent = 'Fill in claims above and click Build JWT.';
+      });
+
+      // --- Decode panel ---
+      var jwtInput = document.getElementById('jwtInput');
+      var debouncedDecode = DT.debounce(decodeJWT, 150);
+      jwtInput.addEventListener('input', debouncedDecode);
+
+      function decodeJWT() {
+        var raw = jwtInput.value.trim();
+        var sb = document.getElementById('statusBar');
+        var out = document.getElementById('decodeOutput');
+        if (!raw) { out.style.display = 'none'; sb.className = 'status-bar info'; sb.textContent = 'Paste a JWT above to decode it.'; return; }
+        var parts = raw.split('.');
+        if (parts.length !== 3) {
+          out.style.display = 'none';
+          sb.className = 'status-bar invalid';
+          sb.textContent = 'Invalid JWT: must have exactly 3 parts separated by dots.';
+          return;
+        }
+        try {
+          var header = JSON.parse(b64urlDecode(parts[0]));
+          var payload = JSON.parse(b64urlDecode(parts[1]));
+          document.getElementById('decodedHeader').textContent = JSON.stringify(header, null, 2);
+          document.getElementById('decodedPayload').textContent = JSON.stringify(payload, null, 2);
+          document.getElementById('decodedSig').textContent = parts[2];
+          out.style.display = '';
+          var expTs = payload.exp;
+          var expInfo = expTs ? (expTs < Date.now()/1000 ? ' — EXPIRED' : ' — Expires: ' + new Date(expTs*1000).toLocaleDateString()) : '';
+          sb.className = 'status-bar valid';
+          sb.textContent = 'Decoded: alg=' + (header.alg || '?') + ', ' + Object.keys(payload).length + ' claims' + expInfo;
+          DT.trackTool('jwt-builder-decode');
+        } catch (e) {
+          out.style.display = 'none';
+          sb.className = 'status-bar invalid';
+          sb.textContent = 'Decode error: ' + e.message;
+        }
+      }
+
+      document.getElementById('decodeExampleBtn').addEventListener('click', function () {
+        jwtInput.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsImlzcyI6Imh0dHBzOi8vYXV0aC5leGFtcGxlLmNvbSIsImlhdCI6MTcxMTIzNDU2NywiZXhwIjoxNzExMjM4MTY3LCJyb2xlIjoiYWRtaW4ifQ.SIGNATURE';
+        decodeJWT();
+      });
+      document.getElementById('clearDecodeBtn').addEventListener('click', function () {
+        jwtInput.value = '';
+        document.getElementById('decodeOutput').style.display = 'none';
+        var sb = document.getElementById('statusBar');
+        sb.className = 'status-bar info';
+        sb.textContent = 'Paste a JWT above to decode it.';
+      });
+    })();
+  </script>
+</body>
+</html>

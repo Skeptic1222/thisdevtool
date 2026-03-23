@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>TOTP 2FA Code Generator — Free Online Tool | DevToolbox</title>
+  <meta name="description" content="Generate and verify TOTP two-factor authentication codes from a Base32 secret. Supports 6/8 digit codes, 30/60s periods, and QR code setup URI generation. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/totp-generator.html">
+  <meta property="og:title" content="TOTP 2FA Code Generator — DevToolbox">
+  <meta property="og:description" content="Generate TOTP 2FA codes from a Base32 secret key. Verify codes, generate QR setup URIs. Free and 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/totp-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <script src="/js/core.js?v=2"></script>
+  <script src="/js/ads.js?v=2"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "TOTP 2FA Code Generator",
+    "url": "https://thisdevtool.com/tools/totp-generator.html",
+    "description": "Generate and verify TOTP two-factor authentication codes. Supports QR setup URI generation. 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is TOTP?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TOTP (Time-based One-Time Password) is a two-factor authentication algorithm defined in RFC 6238. It generates a short numeric code (typically 6 digits) that changes every 30 seconds. The code is derived from the current Unix timestamp and a shared secret key using HMAC-SHA1. Apps like Google Authenticator, Authy, and Microsoft Authenticator all implement TOTP."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it safe to enter my 2FA secret here?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool runs entirely in your browser — no data is sent to any server. However, you should still treat your TOTP secret with care. Entering it on any website (even this one) means it briefly exists in browser memory. For production 2FA secrets, prefer a dedicated authenticator app. This tool is intended for developers testing their own 2FA implementations or recovering access."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What format is the TOTP secret in?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TOTP secrets are encoded in Base32 (uppercase letters A-Z and digits 2-7, with optional spaces for readability). When you scan a QR code with an authenticator app, that QR code encodes an otpauth:// URI that contains the Base32 secret. You can find your TOTP secret when you first enable 2FA on a service — it is usually shown as a QR code with a text backup option."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why does my TOTP code not match?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The most common cause of TOTP mismatch is clock skew — your device's time differs from the server's time. TOTP codes are time-sensitive and only valid for one 30-second window (some services accept one window before or after for clock drift tolerance). Ensure your device's time is synchronized via NTP. Other causes include wrong Base32 secret, wrong algorithm (SHA1 vs SHA256), or wrong digit count (6 vs 8)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is an otpauth:// URI?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An otpauth:// URI is the standard format for encoding TOTP configuration so it can be scanned as a QR code. The format is: otpauth://totp/ISSUER:ACCOUNT?secret=BASE32SECRET&issuer=ISSUER&algorithm=SHA1&digits=6&period=30. Most authenticator apps (Google Authenticator, Authy, Bitwarden) can scan this URI to add a 2FA account. The QR Setup tab in this tool generates the correct URI for your parameters."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .totp-display {
+      text-align: center;
+      padding: 1.5rem;
+      background: var(--bg-input);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .totp-code {
+      font-size: 3rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      color: var(--accent);
+      display: block;
+      line-height: 1;
+    }
+    .totp-countdown-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+    .countdown-ring { margin: 0.75rem auto 0; display: block; }
+    .countdown-track { fill: none; stroke: var(--border); stroke-width: 4; }
+    .countdown-arc { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 0.5s linear, stroke 0.5s; }
+    .prev-code { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
+    .qr-uri-box { font-family: var(--font-mono); font-size: 0.75rem; word-break: break-all; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">DevToolbox</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hmac-generator.html">HMAC Generator</a>
+        <a href="/tools/bcrypt-hash.html">Password Hasher</a>
+        <a href="/tools/base64.html">Base64</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <div class="tool-card-page">
+          <h1>TOTP 2FA Code Generator</h1>
+          <p class="tool-subtitle">Generate live TOTP codes from a Base32 secret key, verify existing codes, or create an otpauth:// URI for QR scanning. 100% client-side.</p>
+
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="generate">Generate</button>
+            <button class="option-chip" data-mode="verify">Verify</button>
+            <button class="option-chip" data-mode="qr">QR Setup</button>
+          </div>
+
+          <div style="margin-top:1rem;max-width:480px;">
+            <div class="pane-label">
+              <span>Base32 Secret</span>
+              <div class="btn-group" style="margin:0;">
+                <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+                <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+              </div>
+            </div>
+            <input type="text" id="secretInput" placeholder="e.g. JBSWY3DPEHPK3PXP" style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-family:var(--font-mono);font-size:1rem;box-sizing:border-box;text-transform:uppercase;letter-spacing:0.05em;">
+
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:0.75rem;">
+              <div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.3rem;">Digits</div>
+                <div class="option-chips" style="margin:0;">
+                  <button class="option-chip active" data-digits="6">6 digits</button>
+                  <button class="option-chip" data-digits="8">8 digits</button>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.3rem;">Period</div>
+                <div class="option-chips" style="margin:0;">
+                  <button class="option-chip active" data-period="30">30s</button>
+                  <button class="option-chip" data-period="60">60s</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generate mode -->
+          <div id="generateSection" style="margin-top:1.25rem;">
+            <div class="totp-display">
+              <span class="totp-code" id="totpCode">------</span>
+              <div class="totp-countdown-text" id="countdownText">Enter a secret key above</div>
+              <svg class="countdown-ring" width="60" height="60" viewBox="0 0 60 60">
+                <circle class="countdown-track" cx="30" cy="30" r="26"/>
+                <circle class="countdown-arc" id="countdownArc" cx="30" cy="30" r="26" transform="rotate(-90 30 30)"
+                  stroke-dasharray="163.4" stroke-dashoffset="0"/>
+              </svg>
+              <div class="prev-code" id="prevCode"></div>
+            </div>
+            <div class="btn-group" style="margin-top:0.75rem;">
+              <button class="btn btn-sm btn-primary" id="copyCodeBtn">Copy Code</button>
+            </div>
+          </div>
+
+          <!-- Verify mode -->
+          <div id="verifySection" style="display:none;margin-top:1.25rem;">
+            <div class="pane-label"><span>Code to Verify</span></div>
+            <input type="text" id="verifyCodeInput" maxlength="8" placeholder="Enter 6 or 8 digit code..." style="width:200px;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-family:var(--font-mono);font-size:1.5rem;letter-spacing:0.2em;text-align:center;">
+            <div style="margin-top:0.5rem;">
+              <button class="btn btn-primary" id="verifyBtn">Verify Code</button>
+            </div>
+            <div id="verifyResult" style="margin-top:0.75rem;font-size:1rem;min-height:1.5rem;font-weight:600;"></div>
+          </div>
+
+          <!-- QR Setup mode -->
+          <div id="qrSection" style="display:none;margin-top:1.25rem;">
+            <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+              <div style="flex:1;min-width:180px;">
+                <div class="pane-label"><span>Account / Email</span></div>
+                <input type="text" id="qrAccount" placeholder="user@example.com" style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-size:0.9rem;box-sizing:border-box;">
+              </div>
+              <div style="flex:1;min-width:160px;">
+                <div class="pane-label"><span>Issuer / App Name</span></div>
+                <input type="text" id="qrIssuer" placeholder="MyApp" style="width:100%;padding:0.6rem 0.75rem;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-input);color:var(--text);font-size:0.9rem;box-sizing:border-box;">
+              </div>
+            </div>
+            <div class="pane-label" style="margin-top:0.75rem;"><span>otpauth:// URI</span></div>
+            <div class="qr-uri-box" id="otpauthUri">Enter a secret and account details above.</div>
+            <div class="btn-group" style="margin-top:0.5rem;">
+              <button class="btn btn-sm btn-primary" id="copyUriBtn">Copy URI</button>
+            </div>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.75rem;">Paste this URI into a QR code generator tool, then scan it with Google Authenticator, Authy, or Bitwarden to add the account.</p>
+          </div>
+
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a Base32 secret key to generate a TOTP code.
+          </div>
+        </div>
+
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <div class="content-section">
+          <h2>How to Use the TOTP Generator</h2>
+          <ol>
+            <li><strong>Paste your Base32 secret</strong> — find it in your 2FA setup page, usually shown as a text code below the QR code.</li>
+            <li><strong>Watch the live code</strong> — a 6-digit code appears and updates automatically every 30 seconds. A countdown ring shows time remaining.</li>
+            <li><strong>Match settings</strong> — set digits (6 or 8) and period (30 or 60 seconds) to match your service's configuration. Most services use 6 digits and 30 seconds.</li>
+            <li><strong>Verify a code</strong> — switch to Verify mode to check if a specific code is valid for the current time window.</li>
+            <li><strong>Generate a QR URI</strong> — switch to QR Setup to generate an otpauth:// URI you can convert to a QR code for scanning.</li>
+          </ol>
+
+          <h2>How TOTP Works</h2>
+          <p>TOTP (Time-based One-Time Password) is defined in <a href="https://datatracker.ietf.org/doc/html/rfc6238" rel="noopener noreferrer" target="_blank">RFC 6238</a> and builds on HMAC-OTP (<a href="https://datatracker.ietf.org/doc/html/rfc4226" rel="noopener noreferrer" target="_blank">RFC 4226</a>). The algorithm works as follows:</p>
+          <ol>
+            <li>Divide the current Unix timestamp by the period (30 seconds) to get the time counter T.</li>
+            <li>Compute HMAC-SHA1 of T (as an 8-byte big-endian integer) using the shared Base32-decoded secret key.</li>
+            <li>Take the last nibble (4 bits) of the HMAC as an offset.</li>
+            <li>Extract a 31-bit integer from the HMAC starting at the offset.</li>
+            <li>Take that number modulo 10^digits to get the final code (padded with leading zeros if needed).</li>
+          </ol>
+          <p>Both your device and the server independently perform this computation at the same time, producing the same result without any network communication. This is what makes TOTP both secure and offline-capable.</p>
+
+          <h3>Base32 Format</h3>
+          <p>TOTP secrets are encoded in Base32 — an encoding that uses only uppercase letters A–Z and digits 2–7 (no 0, 1, 8, or 9 to avoid visual confusion). When you set up 2FA on a service, you typically see a QR code. Behind that QR code is an otpauth:// URI that contains your Base32 secret. Most services also show the raw Base32 text as a backup in case you cannot scan the QR code. Common secret lengths are 16 characters (80-bit) or 32 characters (160-bit).</p>
+
+          <h3>Why 30 Seconds?</h3>
+          <p>The 30-second window is a balance between security and usability. Shorter windows (like 10 seconds) would make clock drift a bigger problem. Longer windows (like 60 or 120 seconds) would give attackers more time to use a stolen code. Most TOTP implementations accept the current window plus one window on each side to account for clock drift — giving an effective validity of up to 90 seconds for a phished code. This is why it is important to combine TOTP with a strong password rather than relying on it alone.</p>
+
+          <h3>Common TOTP Issues</h3>
+          <ul>
+            <li><strong>Code not matching</strong> — most likely clock skew. Ensure your device's time is synchronized. On Windows, run <code>w32tm /resync</code>. On Linux/macOS, enable NTP.</li>
+            <li><strong>Invalid Base32</strong> — remove spaces and use only A–Z and 2–7 characters. Some services add spaces for readability; this tool strips them automatically.</li>
+            <li><strong>Wrong digits or period</strong> — check your service's documentation. Most use 6 digits / 30s, but some enterprise apps use 8 digits or 60s periods.</li>
+          </ul>
+
+          <p>For related security tools, see the <a href="/tools/hmac-generator.html">HMAC Generator</a> (TOTP uses HMAC internally), the <a href="/tools/bcrypt-hash.html">Password Hasher</a>, and the <a href="/tools/base64.html">Base64 Encoder</a>.</p>
+        </div>
+
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+          <div class="faq-item">
+            <button class="faq-question">What is TOTP?</button>
+            <div class="faq-answer">TOTP (Time-based One-Time Password) is a two-factor authentication algorithm defined in RFC 6238. It generates a short numeric code (typically 6 digits) that changes every 30 seconds, derived from the current Unix timestamp and a shared secret key using HMAC-SHA1. Apps like Google Authenticator, Authy, and Bitwarden all implement TOTP.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Is it safe to enter my 2FA secret here?</button>
+            <div class="faq-answer">This tool runs entirely in your browser — no data is sent to any server. However, treat your TOTP secret with care. This tool is intended for developers testing their own 2FA implementations or recovering access. For production 2FA, prefer a dedicated authenticator app stored in a secure password manager.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What format is the TOTP secret in?</button>
+            <div class="faq-answer">TOTP secrets are encoded in Base32 (uppercase letters A-Z and digits 2-7, with optional spaces for readability). You get the secret when you first enable 2FA on a service — it is usually shown as a QR code with a text backup option. Copy the text string and paste it here.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">Why does my TOTP code not match?</button>
+            <div class="faq-answer">The most common cause is clock skew — your device's time differs from the server. Ensure your device's time is synchronized via NTP. Other causes include wrong Base32 secret, wrong algorithm, or wrong digit count (6 vs 8). The verify mode checks current window plus one window on each side to account for minor clock drift.</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-question">What is an otpauth:// URI?</button>
+            <div class="faq-answer">An otpauth:// URI is the standard format for encoding TOTP configuration for QR scanning. Format: otpauth://totp/ISSUER:ACCOUNT?secret=BASE32SECRET&issuer=ISSUER&digits=6&period=30. Most authenticator apps can scan this URI to add a 2FA account. The QR Setup tab generates the correct URI for your parameters.</div>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Crypto / Auth</h4>
+        <a href="/tools/hmac-generator.html">HMAC Generator</a>
+        <a href="/tools/checksum-verifier.html">Checksum Verifier</a>
+        <a href="/tools/totp-generator.html">TOTP Generator</a>
+        <a href="/tools/bcrypt-hash.html">Bcrypt / PBKDF2</a>
+        <a href="/tools/data-url-creator.html">Data URL Creator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/hmac-generator.html">HMAC Generator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 DevToolbox. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var secretInput = document.getElementById('secretInput');
+      var totpCode = document.getElementById('totpCode');
+      var countdownText = document.getElementById('countdownText');
+      var countdownArc = document.getElementById('countdownArc');
+      var prevCode = document.getElementById('prevCode');
+      var statusBar = document.getElementById('statusBar');
+      var verifyCodeInput = document.getElementById('verifyCodeInput');
+      var verifyResult = document.getElementById('verifyResult');
+      var qrAccount = document.getElementById('qrAccount');
+      var qrIssuer = document.getElementById('qrIssuer');
+      var otpauthUri = document.getElementById('otpauthUri');
+      var currentMode = 'generate';
+      var digits = 6;
+      var period = 30;
+      var timerInterval = null;
+      var CIRCUMFERENCE = 2 * Math.PI * 26; // 163.4
+
+      // Base32 decode
+      function base32Decode(str) {
+        str = str.toUpperCase().replace(/\s/g, '').replace(/=/g, '');
+        var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        var bytes = [];
+        var bits = 0, value = 0;
+        for (var i = 0; i < str.length; i++) {
+          var idx = alphabet.indexOf(str[i]);
+          if (idx === -1) throw new Error('Invalid Base32 character: ' + str[i]);
+          value = (value << 5) | idx;
+          bits += 5;
+          if (bits >= 8) { bits -= 8; bytes.push((value >>> bits) & 0xFF); }
+        }
+        return new Uint8Array(bytes);
+      }
+
+      // TOTP generation
+      function generateTOTP(secret, timeOffset) {
+        timeOffset = timeOffset || 0;
+        var keyBytes = base32Decode(secret);
+        var counter = Math.floor(Date.now() / 1000 / period) + timeOffset;
+        // Pack counter as 8-byte big-endian
+        var counterBytes = new Uint8Array(8);
+        for (var i = 7; i >= 0; i--) { counterBytes[i] = counter & 0xFF; counter = Math.floor(counter / 256); }
+
+        return crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign'])
+          .then(function (key) { return crypto.subtle.sign('HMAC', key, counterBytes); })
+          .then(function (sig) {
+            var hmac = new Uint8Array(sig);
+            var offset = hmac[hmac.length - 1] & 0x0F;
+            var code = ((hmac[offset] & 0x7F) << 24) | ((hmac[offset+1] & 0xFF) << 16) | ((hmac[offset+2] & 0xFF) << 8) | (hmac[offset+3] & 0xFF);
+            var otp = code % Math.pow(10, digits);
+            return String(otp).padStart(digits, '0');
+          });
+      }
+
+      function updateCountdown() {
+        var now = Math.floor(Date.now() / 1000);
+        var elapsed = now % period;
+        var remaining = period - elapsed;
+        var fraction = remaining / period;
+        var dash = CIRCUMFERENCE * fraction;
+        countdownArc.style.strokeDashoffset = CIRCUMFERENCE - dash;
+        countdownArc.style.stroke = remaining <= 5 ? '#ef4444' : 'var(--accent)';
+        if (countdownText.textContent.indexOf('Expires') !== -1 || countdownText.textContent.indexOf('Enter') !== -1) {
+          // only update timing text if we're in live mode
+        }
+        return remaining;
+      }
+
+      function updateTOTP() {
+        var secret = secretInput.value.trim();
+        if (!secret) {
+          totpCode.textContent = '------'.substring(0, digits).padEnd(digits, '-');
+          countdownText.textContent = 'Enter a secret key above';
+          prevCode.textContent = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter a Base32 secret key to generate a TOTP code.';
+          return;
+        }
+        try {
+          var remaining = updateCountdown();
+          generateTOTP(secret).then(function (code) {
+            totpCode.textContent = code;
+            countdownText.textContent = 'Expires in ' + remaining + 's';
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'TOTP: ' + code + ' — Expires in ' + remaining + 's';
+            DT.trackTool('totp-generator');
+          }).catch(function (e) {
+            totpCode.textContent = 'ERROR';
+            statusBar.className = 'status-bar invalid';
+            statusBar.textContent = 'Error: ' + e.message;
+          });
+          // Show previous code
+          generateTOTP(secret, -1).then(function (prev) {
+            prevCode.textContent = 'Previous: ' + prev;
+          }).catch(function () {});
+        } catch (e) {
+          totpCode.textContent = 'ERR';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid Base32 secret: ' + e.message;
+        }
+      }
+
+      function startTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+        updateTOTP();
+        timerInterval = setInterval(function () {
+          updateCountdown();
+          var now = Math.floor(Date.now() / 1000);
+          if (now % period === 0) updateTOTP();
+          else {
+            var remaining = period - (now % period);
+            if (totpCode.textContent !== '------') {
+              countdownText.textContent = 'Expires in ' + remaining + 's';
+            }
+          }
+        }, 500);
+      }
+
+      function updateQRUri() {
+        var secret = secretInput.value.trim().replace(/\s/g, '').toUpperCase();
+        var account = qrAccount.value.trim() || 'user@example.com';
+        var issuer = qrIssuer.value.trim() || 'MyApp';
+        if (!secret) { otpauthUri.textContent = 'Enter a secret and account details above.'; return; }
+        var uri = 'otpauth://totp/' + encodeURIComponent(issuer) + ':' + encodeURIComponent(account) +
+          '?secret=' + secret + '&issuer=' + encodeURIComponent(issuer) +
+          '&algorithm=SHA1&digits=' + digits + '&period=' + period;
+        otpauthUri.textContent = uri;
+      }
+
+      secretInput.addEventListener('input', function () {
+        secretInput.value = secretInput.value.toUpperCase();
+        if (currentMode === 'generate') startTimer();
+        else if (currentMode === 'qr') updateQRUri();
+      });
+      qrAccount.addEventListener('input', updateQRUri);
+      qrIssuer.addEventListener('input', updateQRUri);
+
+      document.querySelectorAll('[data-mode]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('[data-mode]').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          document.getElementById('generateSection').style.display = currentMode === 'generate' ? 'block' : 'none';
+          document.getElementById('verifySection').style.display = currentMode === 'verify' ? 'block' : 'none';
+          document.getElementById('qrSection').style.display = currentMode === 'qr' ? 'block' : 'none';
+          if (currentMode === 'generate') startTimer();
+          else if (currentMode === 'qr') updateQRUri();
+        });
+      });
+
+      document.querySelectorAll('[data-digits]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('[data-digits]').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          digits = parseInt(chip.getAttribute('data-digits'));
+          if (currentMode === 'generate') updateTOTP();
+          else if (currentMode === 'qr') updateQRUri();
+        });
+      });
+
+      document.querySelectorAll('[data-period]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('[data-period]').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          period = parseInt(chip.getAttribute('data-period'));
+          if (currentMode === 'generate') updateTOTP();
+          else if (currentMode === 'qr') updateQRUri();
+        });
+      });
+
+      document.getElementById('verifyBtn').addEventListener('click', function () {
+        var secret = secretInput.value.trim();
+        var code = verifyCodeInput.value.trim();
+        if (!secret || !code) { verifyResult.textContent = 'Enter a secret and a code to verify.'; verifyResult.style.color = ''; return; }
+        var promises = [-1, 0, 1].map(function (offset) { return generateTOTP(secret, offset); });
+        Promise.all(promises).then(function (codes) {
+          if (codes.indexOf(code) !== -1) {
+            verifyResult.textContent = 'Valid — code matches the current or adjacent time window.';
+            verifyResult.style.color = 'var(--accent)';
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'TOTP code is valid.';
+          } else {
+            verifyResult.textContent = 'Invalid — code does not match. Check the secret, digits, period, and clock sync.';
+            verifyResult.style.color = '#ef4444';
+            statusBar.className = 'status-bar invalid';
+            statusBar.textContent = 'TOTP code is invalid.';
+          }
+        }).catch(function (e) {
+          verifyResult.textContent = 'Error: ' + e.message;
+          verifyResult.style.color = '#ef4444';
+        });
+      });
+
+      document.getElementById('copyCodeBtn').addEventListener('click', function () {
+        var code = totpCode.textContent;
+        if (code && code !== '------') DT.copyToClipboard(code, this);
+      });
+      document.getElementById('copyUriBtn').addEventListener('click', function () {
+        var uri = otpauthUri.textContent;
+        if (uri && uri !== 'Enter a secret and account details above.') DT.copyToClipboard(uri, this);
+      });
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        secretInput.value = 'JBSWY3DPEHPK3PXP';
+        startTimer();
+      });
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        secretInput.value = '';
+        totpCode.textContent = digits === 6 ? '------' : '--------';
+        countdownText.textContent = 'Enter a secret key above';
+        prevCode.textContent = '';
+        verifyCodeInput.value = '';
+        verifyResult.textContent = '';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter a Base32 secret key to generate a TOTP code.';
+      });
+
+      startTimer();
+    })();
+  </script>
+</body>
+</html>
