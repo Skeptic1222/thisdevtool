@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>SRI Hash Generator — Free Subresource Integrity Tool | ThisDevTool</title>
+  <meta name="description" content="Generate Subresource Integrity (SRI) hashes for scripts and stylesheets. SHA-256, SHA-384, and SHA-512. Get integrity attributes and full HTML tags. 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/sri-hash-generator.html">
+  <meta property="og:title" content="SRI Hash Generator — Subresource Integrity | ThisDevTool">
+  <meta property="og:description" content="Generate SHA-256, SHA-384, and SHA-512 SRI hashes for scripts and stylesheets. Get ready-to-use integrity attributes and HTML tags. Free, instant, client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/sri-hash-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="SRI Hash Generator — ThisDevTool">
+  <meta name="twitter:description" content="Generate SHA-256/384/512 SRI hashes. Get integrity attributes and HTML script/link tags instantly.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "SRI Hash Generator",
+    "url": "https://thisdevtool.com/tools/sri-hash-generator.html",
+    "description": "Generate Subresource Integrity (SRI) hashes (SHA-256, SHA-384, SHA-512) for scripts and stylesheets. Get integrity attributes and complete HTML tags.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Subresource Integrity (SRI)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Subresource Integrity (SRI) is a browser security feature that lets you verify that files fetched from a CDN or third-party host have not been tampered with. You add an integrity attribute containing a cryptographic hash to your <script> or <link> tags. Before executing or applying the resource, the browser computes the hash of the downloaded file and compares it to the value in the integrity attribute. If they don't match, the browser blocks the resource."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Which hash algorithm should I use for SRI?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "SHA-384 is the recommended algorithm for SRI. It provides a strong security margin and is well-supported in all modern browsers. SHA-256 is acceptable but offers less collision resistance. SHA-512 provides the highest security but produces the longest hash strings. You can include multiple hash values separated by spaces (e.g. integrity=\"sha256-... sha384-...\") and the browser will use the strongest supported algorithm."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where can I find the SRI hash for popular CDN libraries?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Most major CDNs publish SRI hashes alongside their hosted files. jsDelivr (jsdelivr.com) shows integrity attributes on every package page. cdnjs.cloudflare.com includes the hash next to download links. The official Bootstrap and jQuery download pages also list SRI hashes. You can also generate them yourself with this tool by pasting the file content or using the URL Check tab."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does SRI work with dynamically generated files?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. SRI requires the file content to be identical every time it is served. If a server generates slightly different output on each request (timestamps, random nonces, personalized content), the hash will never match and the browser will block the resource. SRI is designed for static, versioned assets such as npm packages served from a CDN. For dynamic resources, use Content Security Policy (CSP) nonces instead."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does the file content leave my browser when using this tool?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This SRI hash generator runs 100% in your browser using the Web Crypto API (SubtleCrypto). Pasted text and dropped files are processed entirely in memory. Nothing is uploaded to any server. There is no logging, no cloud processing, and no data retention of any kind."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .sri-textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 0.75rem;
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 8px;
+      background: var(--input-bg, #fff);
+      color: var(--text, #111827);
+      font-size: 0.85rem;
+      font-family: 'Fira Code', monospace;
+      resize: vertical;
+      box-sizing: border-box;
+      transition: border-color 0.15s;
+    }
+    .sri-textarea:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+    }
+    .drop-zone {
+      border: 2px dashed var(--border, #d1d5db);
+      border-radius: 10px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 1rem;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: #10b981;
+      background: rgba(16,185,129,0.04);
+    }
+    .drop-zone-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .drop-zone-label { color: var(--text-secondary, #6b7280); font-size: 0.95rem; }
+    .drop-zone-label strong { color: #10b981; }
+    .drop-zone input[type="file"] { display: none; }
+    .url-input-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .url-input-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 6px;
+      background: var(--input-bg, #fff);
+      color: var(--text, #111827);
+      font-size: 0.9rem;
+      font-family: 'Fira Code', monospace;
+    }
+    .url-input-row input:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+    }
+    .hash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 800px) {
+      .hash-grid { grid-template-columns: 1fr; }
+    }
+    .hash-card {
+      background: var(--code-bg, #f8fafc);
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .hash-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border, #e5e7eb);
+      background: var(--card-bg, #fff);
+    }
+    .hash-algo {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-secondary, #6b7280);
+    }
+    .hash-algo.sha256 { color: #f59e0b; }
+    .hash-algo.sha384 { color: #10b981; }
+    .hash-algo.sha512 { color: #6366f1; }
+    .hash-card pre {
+      margin: 0;
+      padding: 0.65rem 0.75rem;
+      font-size: 0.78rem;
+      font-family: 'Fira Code', monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text, #111827);
+      min-height: 3rem;
+    }
+    .tag-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 700px) {
+      .tag-grid { grid-template-columns: 1fr; }
+    }
+    .output-block {
+      background: var(--code-bg, #f8fafc);
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .output-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border, #e5e7eb);
+      background: var(--card-bg, #fff);
+    }
+    .output-block-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-secondary, #6b7280);
+    }
+    .output-block pre {
+      margin: 0;
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      font-family: 'Fira Code', monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text, #111827);
+      min-height: 2.5rem;
+    }
+    .algo-select-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .algo-select-row label {
+      font-size: 0.82rem;
+      color: var(--text-secondary, #6b7280);
+      font-weight: 600;
+    }
+    .algo-select-row select {
+      padding: 0.35rem 0.6rem;
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 6px;
+      background: var(--input-bg, #fff);
+      color: var(--text, #111827);
+      font-size: 0.85rem;
+    }
+    .resource-url-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .resource-url-row input {
+      flex: 1;
+      min-width: 0;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 6px;
+      background: var(--input-bg, #fff);
+      color: var(--text, #111827);
+      font-size: 0.85rem;
+      font-family: 'Fira Code', monospace;
+    }
+    .resource-url-row input:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+    }
+    .action-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/basic-auth-header.html">Basic Auth</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>SRI Hash Generator</h1>
+          <p class="tool-subtitle">Generate SHA-256, SHA-384, and SHA-512 Subresource Integrity hashes for scripts and stylesheets. Get ready-to-use <code>integrity</code> attributes and full HTML tags.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="text">Text / Paste</button>
+            <button class="option-chip" data-mode="file">File Upload</button>
+            <button class="option-chip" data-mode="url">URL Check</button>
+          </div>
+
+          <!-- Text Mode -->
+          <div id="textPane">
+            <div class="action-row">
+              <button class="btn btn-sm btn-secondary" id="textExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="textClearBtn">Clear</button>
+            </div>
+            <textarea id="textInput" class="sri-textarea" placeholder="Paste the content of your script or stylesheet here...&#10;&#10;Example: paste the minified jQuery, Bootstrap CSS, or any CDN-hosted file." spellcheck="false"></textarea>
+          </div>
+
+          <!-- File Mode -->
+          <div id="filePane" style="display:none;">
+            <label class="drop-zone" id="dropZone">
+              <div class="drop-zone-icon">📂</div>
+              <div class="drop-zone-label">
+                <strong>Click to browse</strong> or drag &amp; drop a file here<br>
+                <small>Supports .js, .css, and any text/binary file</small>
+              </div>
+              <input type="file" id="fileInput" accept="*/*">
+            </label>
+            <div id="fileInfo" style="margin-bottom:0.75rem;font-size:0.85rem;color:var(--text-secondary,#6b7280);"></div>
+          </div>
+
+          <!-- URL Check Mode -->
+          <div id="urlPane" style="display:none;">
+            <p style="font-size:0.85rem;color:var(--text-secondary,#6b7280);margin-bottom:0.75rem;">
+              Fetch a CDN-hosted file and compute its SRI hash. The file is fetched via your browser so CORS must allow it — most public CDNs support this.
+            </p>
+            <div class="url-input-row">
+              <input type="url" id="urlInput" placeholder="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" spellcheck="false">
+              <button class="btn btn-sm btn-primary" id="fetchUrlBtn">Fetch &amp; Hash</button>
+            </div>
+            <div class="action-row">
+              <button class="btn btn-sm btn-secondary" id="urlExampleBtn">Try jQuery 3.7.1</button>
+              <button class="btn btn-sm btn-secondary" id="urlClearBtn">Clear</button>
+            </div>
+            <div id="urlFetchStatus" style="font-size:0.85rem;margin-bottom:0.75rem;min-height:1.2rem;"></div>
+          </div>
+
+          <!-- Algo selector for HTML tags -->
+          <div class="algo-select-row" id="algoRow" style="display:none;">
+            <label for="algoSelect">Algorithm for HTML tags:</label>
+            <select id="algoSelect">
+              <option value="sha256">SHA-256</option>
+              <option value="sha384" selected>SHA-384 (recommended)</option>
+              <option value="sha512">SHA-512</option>
+            </select>
+            <label for="resourceUrl" style="margin-left:0.5rem;">Resource URL:</label>
+            <input type="url" id="resourceUrl" style="flex:1;min-width:140px;padding:0.35rem 0.6rem;border:1px solid var(--border,#e5e7eb);border-radius:6px;font-size:0.85rem;background:var(--input-bg,#fff);color:var(--text,#111827);" placeholder="https://cdn.example.com/lib.min.js">
+          </div>
+
+          <!-- Hash output: all 3 algorithms -->
+          <div class="hash-grid" id="hashGrid" style="display:none;">
+            <div class="hash-card">
+              <div class="hash-card-header">
+                <span class="hash-algo sha256">SHA-256</span>
+                <button class="btn btn-sm btn-primary" id="copy256Btn">Copy</button>
+              </div>
+              <pre id="hash256"></pre>
+            </div>
+            <div class="hash-card">
+              <div class="hash-card-header">
+                <span class="hash-algo sha384">SHA-384</span>
+                <button class="btn btn-sm btn-primary" id="copy384Btn">Copy</button>
+              </div>
+              <pre id="hash384"></pre>
+            </div>
+            <div class="hash-card">
+              <div class="hash-card-header">
+                <span class="hash-algo sha512">SHA-512</span>
+                <button class="btn btn-sm btn-primary" id="copy512Btn">Copy</button>
+              </div>
+              <pre id="hash512"></pre>
+            </div>
+          </div>
+
+          <!-- HTML tag outputs -->
+          <div class="tag-grid" id="tagGrid" style="display:none;">
+            <div class="output-block">
+              <div class="output-block-header">
+                <span class="output-block-label">&lt;script&gt; tag</span>
+                <button class="btn btn-sm btn-primary" id="copyScriptBtn">Copy</button>
+              </div>
+              <pre id="scriptTag"></pre>
+            </div>
+            <div class="output-block">
+              <div class="output-block-header">
+                <span class="output-block-label">&lt;link&gt; tag (CSS)</span>
+                <button class="btn btn-sm btn-primary" id="copyLinkBtn">Copy</button>
+              </div>
+              <pre id="linkTag"></pre>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Paste file content above to generate SRI hashes.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the SRI Hash Generator</h2>
+          <ol>
+            <li><strong>Text / Paste:</strong> Copy the content of a CDN-hosted JavaScript or CSS file and paste it into the text area. Hashes update in real time.</li>
+            <li><strong>File Upload:</strong> Drag and drop a .js or .css file, or click to browse. The file is read locally — nothing is uploaded.</li>
+            <li><strong>URL Check:</strong> Enter a CDN URL and click Fetch &amp; Hash. Your browser downloads the file directly and computes the hash client-side.</li>
+            <li><strong>Choose algorithm:</strong> Select SHA-256, SHA-384 (recommended), or SHA-512 from the dropdown. This affects the generated HTML tags.</li>
+            <li><strong>Enter resource URL:</strong> Add the CDN URL in the Resource URL field to get complete, ready-to-paste <code>&lt;script&gt;</code> and <code>&lt;link&gt;</code> tags.</li>
+            <li><strong>Copy:</strong> Use the Copy buttons on each block to grab individual values.</li>
+          </ol>
+
+          <h2>What is Subresource Integrity?</h2>
+          <p>Subresource Integrity (SRI) is a W3C security standard (supported in all modern browsers since 2016) that protects websites against supply chain attacks via CDN compromise. When you load a script or stylesheet from a third-party CDN, you are trusting that CDN not to modify the file. If the CDN is compromised — through a security breach, BGP hijack, or DNS poisoning — an attacker could serve malicious code to every website that uses that CDN resource. SRI eliminates this risk by allowing browsers to verify file integrity before executing or applying it.</p>
+
+          <h3>How SRI Works</h3>
+          <p>When a browser encounters a <code>&lt;script&gt;</code> or <code>&lt;link&gt;</code> tag with an <code>integrity</code> attribute, it:</p>
+          <ol>
+            <li>Downloads the resource from the CDN as normal</li>
+            <li>Computes the cryptographic hash of the downloaded bytes</li>
+            <li>Compares it to the hash in the <code>integrity</code> attribute (Base64-encoded)</li>
+            <li>Executes or applies the resource only if the hashes match</li>
+            <li>Blocks and logs a CSP violation if the hashes do not match</li>
+          </ol>
+          <p>The <code>integrity</code> attribute format is <code>algorithm-base64hash</code>, for example: <code>sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC</code>.</p>
+
+          <h3>Which Algorithm to Choose</h3>
+          <p>The SRI specification supports SHA-256, SHA-384, and SHA-512 — all from the SHA-2 family. SHA-1 and MD5 are explicitly disallowed because they are cryptographically broken.</p>
+          <ul>
+            <li><strong>SHA-384</strong> — the industry recommendation for SRI. Stronger than SHA-256 with a 384-bit output, producing a 64-character Base64 string.</li>
+            <li><strong>SHA-256</strong> — acceptable, produces a 44-character Base64 string. Still considered secure for this use case.</li>
+            <li><strong>SHA-512</strong> — highest security margin, 86-character Base64 string. Marginally slower on some hardware.</li>
+          </ul>
+          <p>You can include multiple integrity values separated by a space. The browser will use the strongest algorithm it supports: <code>integrity="sha256-... sha384-..."</code>. This is useful for progressive enhancement during a migration.</p>
+
+          <h3>SRI and the crossorigin Attribute</h3>
+          <p>When using SRI with resources on a different origin (i.e., any CDN URL), you must also add <code>crossorigin="anonymous"</code> to the tag. Without it, the browser cannot perform a CORS request, and the SRI check will fail even if the hash is correct. The generated tags in this tool include this attribute automatically. Same-origin resources (files on your own domain) do not need the crossorigin attribute for SRI to work, but it doesn't hurt to include it for consistency.</p>
+
+          <h3>SRI and Content Security Policy</h3>
+          <p>SRI pairs well with Content Security Policy (CSP). While CSP controls which origins can serve resources, SRI verifies the exact content of those resources. Together, they form a robust defense-in-depth strategy. Many security frameworks, including OWASP guidelines, recommend both CSP and SRI for any website that loads external scripts. When SRI blocks a resource, the browser fires a <code>securitypolicyviolation</code> event that you can capture with a CSP <code>report-uri</code> or <code>report-to</code> directive for monitoring.</p>
+
+          <h3>Practical CDN Workflow</h3>
+          <p>When updating a CDN library version, always regenerate the SRI hash. The hash is tied to exact byte content — even a single character difference produces a completely different hash. CDNs like jsDelivr publish pre-computed SRI hashes on their package pages, but generating the hash yourself gives you an independent verification that the CDN is serving what it claims. Use the URL Check tab in this tool to fetch and hash CDN resources directly. Pair this tool with our <a href="/tools/hash-generator.html">Hash Generator</a> for general file integrity verification or our <a href="/tools/basic-auth-header.html">Basic Auth Header Generator</a> for authenticating to private CDNs.</p>
+
+          <h3>Browser Support</h3>
+          <p>SRI is supported in Chrome 45+, Firefox 43+, Safari 11.1+, Edge 17+, and Opera 32+. Internet Explorer does not support SRI; the browser simply ignores the integrity attribute and loads the resource normally. For IE11 users, SRI provides no protection, but it also does not break anything. All other major browsers in use today fully support SRI for both scripts and stylesheets.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is Subresource Integrity (SRI)?</button>
+            <div class="faq-answer">Subresource Integrity (SRI) is a browser security feature that lets you verify that files fetched from a CDN or third-party host have not been tampered with. You add an <code>integrity</code> attribute containing a cryptographic hash to your <code>&lt;script&gt;</code> or <code>&lt;link&gt;</code> tags. Before executing or applying the resource, the browser computes the hash of the downloaded file and compares it to the value in the integrity attribute. If they don't match, the browser blocks the resource.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Which hash algorithm should I use for SRI?</button>
+            <div class="faq-answer">SHA-384 is the recommended algorithm for SRI. It provides a strong security margin and is well-supported in all modern browsers. SHA-256 is acceptable but offers less collision resistance. SHA-512 provides the highest security but produces the longest hash strings. You can include multiple hash values separated by spaces (e.g. <code>integrity="sha256-... sha384-..."</code>) and the browser will use the strongest supported algorithm.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Where can I find SRI hashes for popular CDN libraries?</button>
+            <div class="faq-answer">Most major CDNs publish SRI hashes alongside their hosted files. jsDelivr (jsdelivr.com) shows integrity attributes on every package page. cdnjs.cloudflare.com includes the hash next to download links. The official Bootstrap and jQuery download pages also list SRI hashes. You can also generate them yourself with this tool by pasting the file content or using the URL Check tab.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does SRI work with dynamically generated files?</button>
+            <div class="faq-answer">No. SRI requires the file content to be identical every time it is served. If a server generates slightly different output on each request (timestamps, random nonces, personalized content), the hash will never match and the browser will block the resource. SRI is designed for static, versioned assets such as npm packages served from a CDN. For dynamic resources, use Content Security Policy (CSP) nonces instead.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does the file content leave my browser when using this tool?</button>
+            <div class="faq-answer">No. This SRI hash generator runs 100% in your browser using the Web Crypto API (SubtleCrypto). Pasted text and dropped files are processed entirely in memory. Nothing is uploaded to any server. There is no logging, no cloud processing, and no data retention of any kind.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Security Tools</h4>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/basic-auth-header.html">Basic Auth Header</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related Tools</h4>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hex-ascii.html">Hex ↔ ASCII</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/bcrypt-hash.html">Bcrypt Hash</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var currentMode = 'text';
+
+      // Cached hashes: { sha256: 'sha256-xxx', sha384: 'sha384-xxx', sha512: 'sha512-xxx' }
+      var currentHashes = {};
+      var currentResourceUrl = '';
+
+      // ── crypto helpers ───────────────────────────────────────────────────────
+      function bufferToBase64(buf) {
+        var bytes = new Uint8Array(buf);
+        var binary = '';
+        for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        return btoa(binary);
+      }
+
+      function computeAllHashes(data) {
+        // data: ArrayBuffer
+        var algos = ['SHA-256', 'SHA-384', 'SHA-512'];
+        return Promise.all(algos.map(function (algo) {
+          return crypto.subtle.digest(algo, data).then(function (buf) {
+            return { algo: algo, b64: bufferToBase64(buf) };
+          });
+        }));
+      }
+
+      function strToBuffer(str) {
+        return new TextEncoder().encode(str).buffer;
+      }
+
+      // ── UI helpers ───────────────────────────────────────────────────────────
+      function setStatus(msg, type) {
+        var bar = document.getElementById('statusBar');
+        bar.className = 'status-bar ' + (type || 'info');
+        bar.textContent = msg;
+      }
+
+      function showResults(hashes, resourceUrl) {
+        currentHashes = {};
+        hashes.forEach(function (h) {
+          var key = h.algo.replace('-', '').toLowerCase(); // sha256 / sha384 / sha512
+          var sriVal = key + '-' + h.b64;
+          currentHashes[key] = sriVal;
+          document.getElementById('hash' + key.substring(3)).textContent = sriVal;
+        });
+
+        document.getElementById('hashGrid').style.display = '';
+        document.getElementById('algoRow').style.display = '';
+
+        if (resourceUrl) {
+          document.getElementById('resourceUrl').value = resourceUrl;
+          currentResourceUrl = resourceUrl;
+        }
+
+        buildTags();
+
+        // Status shows SHA-384
+        var h384 = currentHashes['sha384'] || '';
+        var charCount = h384.length;
+        setStatus('SHA-384 — integrity attribute ready — ' + charCount + ' chars', 'valid');
+        DT.trackTool('sri-hash-generator');
+      }
+
+      function buildTags() {
+        var algoSelect = document.getElementById('algoSelect').value; // sha256 / sha384 / sha512
+        var sriVal = currentHashes[algoSelect] || '';
+        var url = document.getElementById('resourceUrl').value || 'https://cdn.example.com/lib.min.js';
+        currentResourceUrl = url;
+
+        if (!sriVal) return;
+
+        document.getElementById('tagGrid').style.display = '';
+
+        var scriptTag =
+          '<script\n' +
+          '  src="' + url + '"\n' +
+          '  integrity="' + sriVal + '"\n' +
+          '  crossorigin="anonymous"\n' +
+          '><\/script>';
+
+        var linkTag =
+          '<link\n' +
+          '  rel="stylesheet"\n' +
+          '  href="' + url + '"\n' +
+          '  integrity="' + sriVal + '"\n' +
+          '  crossorigin="anonymous"\n' +
+          '>';
+
+        document.getElementById('scriptTag').textContent = scriptTag;
+        document.getElementById('linkTag').textContent = linkTag;
+      }
+
+      function clearResults() {
+        document.getElementById('hashGrid').style.display = 'none';
+        document.getElementById('tagGrid').style.display = 'none';
+        document.getElementById('algoRow').style.display = 'none';
+        ['hash256', 'hash384', 'hash512', 'scriptTag', 'linkTag'].forEach(function (id) {
+          document.getElementById(id).textContent = '';
+        });
+        currentHashes = {};
+      }
+
+      // ── text mode ────────────────────────────────────────────────────────────
+      var textInput = document.getElementById('textInput');
+
+      function processText() {
+        var raw = textInput.value;
+        if (!raw) {
+          clearResults();
+          setStatus('Paste file content above to generate SRI hashes.', 'info');
+          return;
+        }
+        setStatus('Computing hashes…', 'info');
+        computeAllHashes(strToBuffer(raw)).then(function (hashes) {
+          showResults(hashes, '');
+        }).catch(function (e) {
+          setStatus('Error: ' + e.message, 'invalid');
+        });
+      }
+
+      var debouncedText = DT.debounce(processText, 250);
+      textInput.addEventListener('input', debouncedText);
+
+      document.getElementById('textExampleBtn').addEventListener('click', function () {
+        // Minimal jQuery-like example
+        textInput.value = '/*! jQuery v3.7.1 | (c) OpenJS Foundation | jquery.org/license */\n!function(e,t){"use strict";"object"==typeof module&&"object"==typeof module.exports?module.exports=e.document?t(e,!0):function(e){if(!e.document)throw new Error("jQuery requires a window with a document");return t(e)}:t(e)}("undefined"!=typeof window?window:this,function(e,t){"use strict";});';
+        processText();
+      });
+      document.getElementById('textClearBtn').addEventListener('click', function () {
+        textInput.value = '';
+        processText();
+        textInput.focus();
+      });
+
+      // ── file mode ────────────────────────────────────────────────────────────
+      var fileInput = document.getElementById('fileInput');
+      var dropZone = document.getElementById('dropZone');
+
+      function processFile(file) {
+        if (!file) return;
+        document.getElementById('fileInfo').textContent =
+          'File: ' + file.name + ' (' + DT.formatBytes(file.size) + ')';
+        setStatus('Computing hashes for ' + file.name + '…', 'info');
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          computeAllHashes(e.target.result).then(function (hashes) {
+            showResults(hashes, '');
+          }).catch(function (err) {
+            setStatus('Error: ' + err.message, 'invalid');
+          });
+        };
+        reader.onerror = function () {
+          setStatus('Error reading file.', 'invalid');
+        };
+        reader.readAsArrayBuffer(file);
+      }
+
+      fileInput.addEventListener('change', function () {
+        if (this.files[0]) processFile(this.files[0]);
+      });
+
+      dropZone.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      });
+      dropZone.addEventListener('dragleave', function () {
+        dropZone.classList.remove('drag-over');
+      });
+      dropZone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+      });
+
+      // ── url mode ─────────────────────────────────────────────────────────────
+      var urlInput = document.getElementById('urlInput');
+
+      function fetchAndHash() {
+        var url = urlInput.value.trim();
+        if (!url) {
+          setStatus('Enter a URL to fetch.', 'info');
+          return;
+        }
+        var fetchStatus = document.getElementById('urlFetchStatus');
+        fetchStatus.innerHTML = '<span class="spinner"></span> Fetching ' + url + '…';
+        setStatus('Fetching…', 'info');
+
+        fetch(url, { cache: 'no-cache' })
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+            return res.arrayBuffer();
+          })
+          .then(function (buf) {
+            fetchStatus.textContent = 'Fetched ' + DT.formatBytes(buf.byteLength) + ' — computing hashes…';
+            return computeAllHashes(buf).then(function (hashes) {
+              fetchStatus.textContent = 'Done — ' + DT.formatBytes(buf.byteLength) + ' hashed.';
+              showResults(hashes, url);
+            });
+          })
+          .catch(function (e) {
+            fetchStatus.textContent = '';
+            setStatus('Fetch error: ' + e.message + '. Check the URL and that the CDN allows CORS.', 'invalid');
+          });
+      }
+
+      document.getElementById('fetchUrlBtn').addEventListener('click', fetchAndHash);
+      urlInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') fetchAndHash();
+      });
+
+      document.getElementById('urlExampleBtn').addEventListener('click', function () {
+        urlInput.value = 'https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js';
+        fetchAndHash();
+      });
+      document.getElementById('urlClearBtn').addEventListener('click', function () {
+        urlInput.value = '';
+        document.getElementById('urlFetchStatus').textContent = '';
+        clearResults();
+        setStatus('Enter a URL and click Fetch & Hash.', 'info');
+      });
+
+      // ── copy buttons ─────────────────────────────────────────────────────────
+      document.getElementById('copy256Btn').addEventListener('click', function () {
+        if (currentHashes.sha256) DT.copyToClipboard(currentHashes.sha256, this);
+      });
+      document.getElementById('copy384Btn').addEventListener('click', function () {
+        if (currentHashes.sha384) DT.copyToClipboard(currentHashes.sha384, this);
+      });
+      document.getElementById('copy512Btn').addEventListener('click', function () {
+        if (currentHashes.sha512) DT.copyToClipboard(currentHashes.sha512, this);
+      });
+      document.getElementById('copyScriptBtn').addEventListener('click', function () {
+        var t = document.getElementById('scriptTag').textContent;
+        if (t) DT.copyToClipboard(t, this);
+      });
+      document.getElementById('copyLinkBtn').addEventListener('click', function () {
+        var t = document.getElementById('linkTag').textContent;
+        if (t) DT.copyToClipboard(t, this);
+      });
+
+      // ── algo / url change → rebuild tags ────────────────────────────────────
+      document.getElementById('algoSelect').addEventListener('change', buildTags);
+      document.getElementById('resourceUrl').addEventListener('input', DT.debounce(buildTags, 150));
+
+      // ── mode switching ───────────────────────────────────────────────────────
+      var panes = {
+        text: document.getElementById('textPane'),
+        file: document.getElementById('filePane'),
+        url: document.getElementById('urlPane')
+      };
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          Object.keys(panes).forEach(function (k) {
+            panes[k].style.display = k === currentMode ? '' : 'none';
+          });
+          clearResults();
+          if (currentMode === 'text') {
+            processText();
+          } else if (currentMode === 'file') {
+            setStatus('Drop or select a file to compute its SRI hashes.', 'info');
+          } else {
+            setStatus('Enter a CDN URL and click Fetch & Hash.', 'info');
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

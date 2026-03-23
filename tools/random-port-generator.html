@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Random Port Generator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Generate random ephemeral ports (1024-65535) instantly. Bulk generate up to 50 ports, set custom ranges, and browse a reference table of well-known ports. 100% free, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/random-port-generator.html">
+  <meta property="og:title" content="Random Port Generator — ThisDevTool">
+  <meta property="og:description" content="Generate random safe ephemeral ports, bulk generate up to 50 ports, and browse a well-known port reference table. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/random-port-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Random Port Generator",
+    "url": "https://thisdevtool.com/tools/random-port-generator.html",
+    "description": "Generate random ephemeral TCP/UDP ports (1024-65535), bulk generate up to 50 ports, set custom ranges, and browse a reference table of well-known ports. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is an ephemeral port?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An ephemeral port is a short-lived transport-layer port automatically allocated from a predefined range by the OS kernel when a client needs to connect to a service. The IANA recommends the range 49152-65535 for ephemeral ports, though Linux defaults to 32768-60999 and Windows uses 49152-65535. Ephemeral ports exist only for the duration of a connection."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why should I avoid well-known ports for development?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Well-known ports (0-1023) are reserved by IANA and require root/administrator privileges on most operating systems. Common development ports like 3000, 8080, and 8443 are frequently already occupied by other services. Using a random port in the 1024-65535 range reduces the chance of a port conflict and avoids the need for elevated privileges."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does this tool generate ports?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "This tool uses the browser's crypto.getRandomValues() API to generate cryptographically random bytes, which are then mapped to the requested port range. The generated values are checked against a built-in blocklist of commonly used service ports so you receive a port that is less likely to conflict with running services."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between TCP and UDP ports?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "TCP (Transmission Control Protocol) ports are used for connection-oriented, reliable communication — for example, HTTP (80), HTTPS (443), and SSH (22). UDP (User Datagram Protocol) ports are used for connectionless, low-latency communication — for example, DNS (53) and DHCP (67/68). Port numbers themselves are identical for both protocols; the protocol is determined by how the socket is opened."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I check if a port is already in use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "On Linux and macOS, run: ss -tuln | grep PORT or lsof -i :PORT. On Windows, run: netstat -ano | findstr :PORT in Command Prompt or Get-NetTCPConnection -LocalPort PORT in PowerShell. These commands show whether any process is listening on the specified port number."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .reference-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .reference-table th,
+    .reference-table td { padding: 8px 12px; border: 1px solid var(--border); text-align: left; }
+    .reference-table th { background: var(--surface2); font-weight: 600; }
+    .reference-table tr:nth-child(even) td { background: var(--surface2); }
+    .reference-table tr:hover td { background: var(--surface3); }
+    .port-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 6px; }
+    .port-tag.system { background: #ef4444; color: #fff; }
+    .port-tag.common-dev { background: #f59e0b; color: #000; }
+    .range-inputs { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+    .range-inputs label { font-size: 0.875rem; white-space: nowrap; }
+    .range-inputs input[type=number] { width: 90px; }
+    #portOutput { font-family: var(--font-mono); font-size: 1.1rem; min-height: 80px; padding: 12px 16px; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Random Port Generator</h1>
+          <p class="tool-subtitle">Generate random safe ephemeral ports (1024-65535) with conflict-avoidance. Bulk mode, custom ranges, and well-known port reference.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips" id="modeChips">
+            <button class="option-chip active" data-mode="single">Single</button>
+            <button class="option-chip" data-mode="bulk">Bulk</button>
+            <button class="option-chip" data-mode="range">Range</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <!-- Single / Bulk Controls -->
+          <div id="singlePanel">
+            <div class="input-row" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+              <button class="btn btn-primary" id="generateBtn" style="font-size:1.05em;padding:10px 28px;">Generate Port</button>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
+                <input type="checkbox" id="excludeCommonChk" checked>
+                Skip common dev ports (3000, 8080…)
+              </label>
+            </div>
+          </div>
+
+          <!-- Bulk Controls -->
+          <div id="bulkPanel" style="display:none;">
+            <div class="input-row" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+              <button class="btn btn-primary" id="bulkBtn" style="font-size:1.05em;padding:10px 28px;">Generate Ports</button>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <label for="bulkCount" style="font-size:0.9rem;white-space:nowrap;">Count:</label>
+                <input type="number" id="bulkCount" value="10" min="1" max="50" style="width:70px;">
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
+                <input type="checkbox" id="bulkExcludeChk" checked>
+                Skip common ports
+              </label>
+            </div>
+          </div>
+
+          <!-- Range Controls -->
+          <div id="rangePanel" style="display:none;">
+            <div class="range-inputs">
+              <label>Min port: <input type="number" id="rangeMin" value="1024" min="1" max="65534"></label>
+              <label>Max port: <input type="number" id="rangeMax" value="65535" min="2" max="65535"></label>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <label for="rangeCount" style="font-size:0.9rem;white-space:nowrap;">Count:</label>
+                <input type="number" id="rangeCount" value="5" min="1" max="50" style="width:70px;">
+              </div>
+              <button class="btn btn-primary" id="rangeBtn">Generate</button>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;margin-bottom:12px;">
+              <input type="checkbox" id="rangeExcludeChk" checked>
+              Skip common ports
+            </label>
+          </div>
+
+          <!-- Output Area -->
+          <div id="outputArea">
+            <div class="form-group">
+              <div class="pane-label">
+                <span>Generated Port(s)</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="portOutput"></div>
+            </div>
+          </div>
+
+          <!-- Reference Table -->
+          <div id="referencePanel" style="display:none;">
+            <h2 style="font-size:1.1rem;margin:0 0 12px;">Well-Known Port Reference</h2>
+            <div style="overflow-x:auto;">
+              <table class="reference-table" id="refTable">
+                <thead>
+                  <tr>
+                    <th>Port</th>
+                    <th>Protocol</th>
+                    <th>Service</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody id="refTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Click Generate to create a random port.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Random Port Generator</h2>
+          <ol>
+            <li><strong>Single mode</strong> — click Generate Port to instantly get one cryptographically random port in the ephemeral range (1024-65535), with well-known service ports excluded by default.</li>
+            <li><strong>Bulk mode</strong> — set a count between 1 and 50 and generate a unique list of ports in one click.</li>
+            <li><strong>Range mode</strong> — specify a custom minimum and maximum to restrict generation to a specific sub-range of your choice.</li>
+            <li><strong>Reference mode</strong> — browse the built-in table of hundreds of well-known ports used by popular services, databases, and protocols.</li>
+            <li><strong>Copy or Download</strong> — copy generated ports to your clipboard or save them as a plain-text file.</li>
+          </ol>
+
+          <h2>What Is a Port Number?</h2>
+          <p>A port number is a 16-bit unsigned integer (0-65535) used by the TCP/IP and UDP protocols to distinguish between different services running on the same host. When a client connects to a server, it specifies both an IP address and a port number. The combination of IP address, protocol, and port number uniquely identifies a communication endpoint, known as a socket. Port numbers are defined by IANA (Internet Assigned Numbers Authority) and fall into three categories.</p>
+
+          <h3>Port Number Ranges</h3>
+          <ul>
+            <li><strong>Well-Known Ports (0-1023)</strong> — Reserved for core internet services. These require root or administrator privileges to bind on Linux and macOS. Examples include HTTP (80), HTTPS (443), SSH (22), FTP (21), SMTP (25), and DNS (53).</li>
+            <li><strong>Registered Ports (1024-49151)</strong> — Assigned by IANA to specific applications upon request. Many popular development tools and databases use ports in this range — for example, MySQL (3306), PostgreSQL (5432), MongoDB (27017), Redis (6379), and Elasticsearch (9200).</li>
+            <li><strong>Dynamic / Ephemeral Ports (49152-65535)</strong> — Freely available for temporary use. The OS automatically assigns ports from this range when an outbound connection is made. Applications can also manually bind to ports in this range for development without IANA registration.</li>
+          </ul>
+
+          <h3>Why Use a Random Port for Development?</h3>
+          <p>When you run a local development server, choosing the same port every time (such as 3000 or 8080) inevitably leads to "address already in use" errors. If you are running multiple microservices, Docker containers, or test servers simultaneously, each needs its own unique port. A random port generator eliminates guesswork: you get a port that is statistically unlikely to conflict with system services or commonly running applications. Our tool adds an extra layer by filtering out a blocklist of ports known to be used by popular services, databases, and protocols.</p>
+
+          <h3>Randomness and Security</h3>
+          <p>This tool uses the browser's <code>crypto.getRandomValues()</code> API, which provides cryptographically strong random numbers. While port numbers themselves do not need to be secret, using a truly random selection (rather than a predictable sequential counter) helps avoid predictable patterns when scripting service provisioning or CI/CD pipelines. For security-sensitive random values, see our <a href="/tools/uuid-generator.html">UUID Generator</a> and <a href="/tools/password-generator.html">Password Generator</a>.</p>
+
+          <h3>Common Developer Ports to Avoid</h3>
+          <p>The following ports are so frequently used in development stacks that they should generally be avoided to prevent conflicts: <strong>3000</strong> (Node.js/React dev server), <strong>3001</strong> (React alternate), <strong>4200</strong> (Angular CLI), <strong>5000</strong> (Flask/Python), <strong>5173</strong> (Vite), <strong>8000</strong> (Django), <strong>8080</strong> (common HTTP alternate), <strong>8443</strong> (common HTTPS alternate), <strong>9000</strong> (PHP-FPM), <strong>27017</strong> (MongoDB). The "Skip common dev ports" option in this tool excludes all of these automatically. For network-related lookups, also see our <a href="/tools/ipv6-ula-generator.html">IPv6 ULA Generator</a>.</p>
+
+          <h3>How to Assign a Port Programmatically</h3>
+          <p>In shell scripts you can pick a random free port with: <code>shuf -i 1024-65535 -n 1</code> on Linux, or use <code>python3 -c "import socket,random; s=socket.socket(); s.bind(('',0)); print(s.getsockname()[1]); s.close()"</code> to get an OS-assigned free port. In Node.js, pass port 0 to <code>server.listen(0)</code> and then read <code>server.address().port</code>. These approaches ask the OS to assign a free port rather than guessing — useful for automated test runners that start multiple servers.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is an ephemeral port?</button>
+            <div class="faq-answer">An ephemeral port is a short-lived transport-layer port automatically allocated from a predefined range by the OS kernel when a client needs to connect to a service. The IANA recommends the range 49152-65535 for ephemeral ports, though Linux defaults to 32768-60999 and Windows uses 49152-65535. Ephemeral ports exist only for the duration of a connection.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why should I avoid well-known ports for development?</button>
+            <div class="faq-answer">Well-known ports (0-1023) are reserved by IANA and require root/administrator privileges on most operating systems. Common development ports like 3000, 8080, and 8443 are frequently already occupied by other services. Using a random port in the 1024-65535 range reduces the chance of a port conflict and avoids the need for elevated privileges.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does this tool generate ports?</button>
+            <div class="faq-answer">This tool uses the browser's crypto.getRandomValues() API to generate cryptographically random bytes, which are then mapped to the requested port range. The generated values are checked against a built-in blocklist of commonly used service ports so you receive a port that is less likely to conflict with running services.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between TCP and UDP ports?</button>
+            <div class="faq-answer">TCP (Transmission Control Protocol) ports are used for connection-oriented, reliable communication — for example, HTTP (80), HTTPS (443), and SSH (22). UDP (User Datagram Protocol) ports are used for connectionless, low-latency communication — for example, DNS (53) and DHCP (67/68). Port numbers themselves are identical for both protocols; the protocol is determined by how the socket is opened.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How do I check if a port is already in use?</button>
+            <div class="faq-answer">On Linux and macOS, run: ss -tuln | grep PORT or lsof -i :PORT. On Windows, run: netstat -ano | findstr :PORT in Command Prompt or Get-NetTCPConnection -LocalPort PORT in PowerShell. These commands show whether any process is listening on the specified port number.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/ipv6-ula-generator.html">IPv6 ULA Generator</a>
+        <a href="/tools/chmod-calculator.html">Chmod Calculator</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+
+      // ---------------------------------------------------------------
+      // Data
+      // ---------------------------------------------------------------
+      var COMMON_PORTS = new Set([
+        20, 21, 22, 23, 25, 53, 67, 68, 69, 80, 110, 119, 123, 135, 137,
+        138, 139, 143, 161, 162, 179, 194, 389, 443, 445, 465, 514, 515,
+        587, 631, 636, 993, 995, 1080, 1194, 1433, 1521, 1723, 2049,
+        2181, 2375, 2376, 3000, 3001, 3306, 3389, 4200, 4443, 4567,
+        5000, 5001, 5173, 5432, 5900, 5984, 6379, 6443, 7000, 7001,
+        7474, 8000, 8001, 8008, 8080, 8081, 8082, 8083, 8086, 8088,
+        8443, 8444, 8888, 8983, 9000, 9001, 9090, 9092, 9200, 9300,
+        11211, 15672, 25565, 27017, 27018, 27019, 50070, 61616
+      ]);
+
+      var REFERENCE_DATA = [
+        { port: 20,    proto: 'TCP', service: 'FTP Data',        desc: 'File Transfer Protocol – data channel' },
+        { port: 21,    proto: 'TCP', service: 'FTP Control',     desc: 'File Transfer Protocol – control channel' },
+        { port: 22,    proto: 'TCP', service: 'SSH',             desc: 'Secure Shell remote login' },
+        { port: 23,    proto: 'TCP', service: 'Telnet',          desc: 'Unencrypted remote terminal (legacy)' },
+        { port: 25,    proto: 'TCP', service: 'SMTP',            desc: 'Simple Mail Transfer Protocol' },
+        { port: 53,    proto: 'TCP/UDP', service: 'DNS',         desc: 'Domain Name System' },
+        { port: 67,    proto: 'UDP', service: 'DHCP Server',     desc: 'Dynamic Host Configuration Protocol' },
+        { port: 80,    proto: 'TCP', service: 'HTTP',            desc: 'Hypertext Transfer Protocol' },
+        { port: 110,   proto: 'TCP', service: 'POP3',            desc: 'Post Office Protocol v3' },
+        { port: 123,   proto: 'UDP', service: 'NTP',             desc: 'Network Time Protocol' },
+        { port: 143,   proto: 'TCP', service: 'IMAP',            desc: 'Internet Message Access Protocol' },
+        { port: 179,   proto: 'TCP', service: 'BGP',             desc: 'Border Gateway Protocol' },
+        { port: 389,   proto: 'TCP', service: 'LDAP',            desc: 'Lightweight Directory Access Protocol' },
+        { port: 443,   proto: 'TCP', service: 'HTTPS',           desc: 'HTTP over TLS/SSL' },
+        { port: 445,   proto: 'TCP', service: 'SMB',             desc: 'Windows file sharing / Samba' },
+        { port: 465,   proto: 'TCP', service: 'SMTPS',           desc: 'SMTP over TLS' },
+        { port: 587,   proto: 'TCP', service: 'SMTP Submit',     desc: 'Mail submission (STARTTLS)' },
+        { port: 636,   proto: 'TCP', service: 'LDAPS',           desc: 'LDAP over SSL' },
+        { port: 993,   proto: 'TCP', service: 'IMAPS',           desc: 'IMAP over SSL' },
+        { port: 995,   proto: 'TCP', service: 'POP3S',           desc: 'POP3 over SSL' },
+        { port: 1080,  proto: 'TCP', service: 'SOCKS5',          desc: 'SOCKS proxy' },
+        { port: 1194,  proto: 'UDP', service: 'OpenVPN',         desc: 'OpenVPN default port' },
+        { port: 1433,  proto: 'TCP', service: 'MS SQL Server',   desc: 'Microsoft SQL Server' },
+        { port: 1521,  proto: 'TCP', service: 'Oracle DB',       desc: 'Oracle Database listener' },
+        { port: 1723,  proto: 'TCP', service: 'PPTP',            desc: 'Point-to-Point Tunneling Protocol' },
+        { port: 2049,  proto: 'TCP', service: 'NFS',             desc: 'Network File System' },
+        { port: 2181,  proto: 'TCP', service: 'ZooKeeper',       desc: 'Apache ZooKeeper' },
+        { port: 2375,  proto: 'TCP', service: 'Docker',          desc: 'Docker daemon (unencrypted)' },
+        { port: 2376,  proto: 'TCP', service: 'Docker TLS',      desc: 'Docker daemon (TLS)' },
+        { port: 3000,  proto: 'TCP', service: 'Node.js/React',   desc: 'Common Node.js / React dev server' },
+        { port: 3306,  proto: 'TCP', service: 'MySQL',           desc: 'MySQL / MariaDB database' },
+        { port: 3389,  proto: 'TCP', service: 'RDP',             desc: 'Windows Remote Desktop Protocol' },
+        { port: 4200,  proto: 'TCP', service: 'Angular CLI',     desc: 'Angular development server' },
+        { port: 5000,  proto: 'TCP', service: 'Flask',           desc: 'Python Flask default dev server' },
+        { port: 5173,  proto: 'TCP', service: 'Vite',            desc: 'Vite dev server (frontend build tool)' },
+        { port: 5432,  proto: 'TCP', service: 'PostgreSQL',      desc: 'PostgreSQL database' },
+        { port: 5900,  proto: 'TCP', service: 'VNC',             desc: 'Virtual Network Computing' },
+        { port: 5984,  proto: 'TCP', service: 'CouchDB',         desc: 'Apache CouchDB HTTP API' },
+        { port: 6379,  proto: 'TCP', service: 'Redis',           desc: 'Redis in-memory data store' },
+        { port: 6443,  proto: 'TCP', service: 'Kubernetes API',  desc: 'Kubernetes API server' },
+        { port: 7474,  proto: 'TCP', service: 'Neo4j',           desc: 'Neo4j graph database HTTP' },
+        { port: 8000,  proto: 'TCP', service: 'Django',          desc: 'Django / Python dev server' },
+        { port: 8080,  proto: 'TCP', service: 'HTTP Alt',        desc: 'Common HTTP alternate / proxy' },
+        { port: 8443,  proto: 'TCP', service: 'HTTPS Alt',       desc: 'Common HTTPS alternate' },
+        { port: 8888,  proto: 'TCP', service: 'Jupyter',         desc: 'Jupyter Notebook / Lab' },
+        { port: 8983,  proto: 'TCP', service: 'Solr',            desc: 'Apache Solr search platform' },
+        { port: 9000,  proto: 'TCP', service: 'PHP-FPM',         desc: 'PHP FastCGI Process Manager' },
+        { port: 9090,  proto: 'TCP', service: 'Prometheus',      desc: 'Prometheus monitoring' },
+        { port: 9092,  proto: 'TCP', service: 'Kafka',           desc: 'Apache Kafka broker' },
+        { port: 9200,  proto: 'TCP', service: 'Elasticsearch',   desc: 'Elasticsearch HTTP API' },
+        { port: 9300,  proto: 'TCP', service: 'Elasticsearch T', desc: 'Elasticsearch transport layer' },
+        { port: 11211, proto: 'TCP', service: 'Memcached',       desc: 'Memcached distributed cache' },
+        { port: 15672, proto: 'TCP', service: 'RabbitMQ UI',     desc: 'RabbitMQ management console' },
+        { port: 25565, proto: 'TCP', service: 'Minecraft',       desc: 'Minecraft game server' },
+        { port: 27017, proto: 'TCP', service: 'MongoDB',         desc: 'MongoDB primary port' },
+        { port: 27018, proto: 'TCP', service: 'MongoDB shard',   desc: 'MongoDB shard server' },
+        { port: 50070, proto: 'TCP', service: 'Hadoop NameNode', desc: 'Hadoop NameNode web UI' }
+      ];
+
+      // ---------------------------------------------------------------
+      // DOM refs
+      // ---------------------------------------------------------------
+      var statusBar   = document.getElementById('statusBar');
+      var portOutput  = document.getElementById('portOutput');
+      var outputArea  = document.getElementById('outputArea');
+      var singlePanel = document.getElementById('singlePanel');
+      var bulkPanel   = document.getElementById('bulkPanel');
+      var rangePanel  = document.getElementById('rangePanel');
+      var refPanel    = document.getElementById('referencePanel');
+      var currentMode = 'single';
+
+      // ---------------------------------------------------------------
+      // Mode switching
+      // ---------------------------------------------------------------
+      document.querySelectorAll('#modeChips .option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('#modeChips .option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          singlePanel.style.display = currentMode === 'single' ? '' : 'none';
+          bulkPanel.style.display   = currentMode === 'bulk'   ? '' : 'none';
+          rangePanel.style.display  = currentMode === 'range'  ? '' : 'none';
+          refPanel.style.display    = currentMode === 'reference' ? '' : 'none';
+          outputArea.style.display  = currentMode === 'reference' ? 'none' : '';
+          if (currentMode === 'reference') {
+            renderReferenceTable();
+            statusBar.className = 'status-bar info';
+            statusBar.textContent = REFERENCE_DATA.length + ' well-known ports listed.';
+          } else {
+            statusBar.className = 'status-bar info';
+            statusBar.textContent = 'Click Generate to create port(s).';
+          }
+        });
+      });
+
+      // ---------------------------------------------------------------
+      // Crypto random in range [min, max] (inclusive)
+      // ---------------------------------------------------------------
+      function randomPort(min, max) {
+        var range = max - min + 1;
+        var buf = new Uint32Array(1);
+        var limit = Math.floor(0x100000000 / range) * range;
+        var val;
+        do {
+          crypto.getRandomValues(buf);
+          val = buf[0];
+        } while (val >= limit);
+        return min + (val % range);
+      }
+
+      // ---------------------------------------------------------------
+      // Port service name lookup
+      // ---------------------------------------------------------------
+      function portServiceName(port) {
+        for (var i = 0; i < REFERENCE_DATA.length; i++) {
+          if (REFERENCE_DATA[i].port === port) return REFERENCE_DATA[i].service;
+        }
+        return null;
+      }
+
+      // ---------------------------------------------------------------
+      // Generate unique ports
+      // ---------------------------------------------------------------
+      function generatePorts(min, max, count, exclude) {
+        var results = [];
+        var seen = new Set();
+        var attempts = 0;
+        var maxAttempts = count * 200;
+        while (results.length < count && attempts < maxAttempts) {
+          attempts++;
+          var p = randomPort(min, max);
+          if (seen.has(p)) continue;
+          if (exclude && COMMON_PORTS.has(p)) continue;
+          seen.add(p);
+          results.push(p);
+        }
+        return results;
+      }
+
+      // ---------------------------------------------------------------
+      // Render output
+      // ---------------------------------------------------------------
+      function renderPorts(ports) {
+        if (ports.length === 0) {
+          portOutput.textContent = '(No ports could be generated with the current constraints — try widening the range or disabling the exclusion filter.)';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Could not generate ports. Widen range or uncheck exclusion.';
+          return;
+        }
+        portOutput.textContent = ports.join('\n');
+        if (ports.length === 1) {
+          var svc = portServiceName(ports[0]);
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Port ' + ports[0] + (svc ? ' — Used by ' + svc : ' — Not in common services list');
+        } else {
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = 'Generated ' + ports.length + ' unique port' + (ports.length !== 1 ? 's' : '') + '.';
+        }
+        DT.trackTool('random-port-generator');
+      }
+
+      // ---------------------------------------------------------------
+      // Single
+      // ---------------------------------------------------------------
+      document.getElementById('generateBtn').addEventListener('click', function () {
+        var exclude = document.getElementById('excludeCommonChk').checked;
+        var ports = generatePorts(1024, 65535, 1, exclude);
+        renderPorts(ports);
+      });
+
+      // ---------------------------------------------------------------
+      // Bulk
+      // ---------------------------------------------------------------
+      document.getElementById('bulkBtn').addEventListener('click', function () {
+        var count = parseInt(document.getElementById('bulkCount').value, 10) || 10;
+        if (count < 1) count = 1;
+        if (count > 50) count = 50;
+        document.getElementById('bulkCount').value = count;
+        var exclude = document.getElementById('bulkExcludeChk').checked;
+        var ports = generatePorts(1024, 65535, count, exclude);
+        renderPorts(ports);
+      });
+
+      // ---------------------------------------------------------------
+      // Range
+      // ---------------------------------------------------------------
+      document.getElementById('rangeBtn').addEventListener('click', function () {
+        var min = parseInt(document.getElementById('rangeMin').value, 10);
+        var max = parseInt(document.getElementById('rangeMax').value, 10);
+        var count = parseInt(document.getElementById('rangeCount').value, 10) || 5;
+        if (isNaN(min) || min < 1) min = 1;
+        if (isNaN(max) || max > 65535) max = 65535;
+        if (min >= max) {
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Min must be less than Max.';
+          return;
+        }
+        if (count < 1) count = 1;
+        if (count > 50) count = 50;
+        var exclude = document.getElementById('rangeExcludeChk').checked;
+        var ports = generatePorts(min, max, count, exclude);
+        renderPorts(ports);
+      });
+
+      // ---------------------------------------------------------------
+      // Reference table
+      // ---------------------------------------------------------------
+      function renderReferenceTable() {
+        var tbody = document.getElementById('refTableBody');
+        if (tbody.children.length > 0) return; // already rendered
+        var html = '';
+        REFERENCE_DATA.forEach(function (row) {
+          var tag = '';
+          if (row.port <= 1023) tag = '<span class="port-tag system">system</span>';
+          else if (COMMON_PORTS.has(row.port)) tag = '<span class="port-tag common-dev">dev</span>';
+          html += '<tr><td><strong>' + row.port + '</strong>' + tag + '</td><td>' + row.proto + '</td><td>' + row.service + '</td><td>' + row.desc + '</td></tr>';
+        });
+        tbody.innerHTML = html;
+      }
+
+      // ---------------------------------------------------------------
+      // Copy / Download
+      // ---------------------------------------------------------------
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        var text = portOutput.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        var text = portOutput.textContent;
+        if (text) DT.downloadText(text, 'ports.txt', 'text/plain');
+      });
+
+      // Generate one on load
+      var ports = generatePorts(1024, 65535, 1, true);
+      renderPorts(ports);
+    })();
+  </script>
+</body>
+</html>

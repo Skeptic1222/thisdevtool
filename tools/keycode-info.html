@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>JavaScript Keycode Info — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Press any key to instantly see its JavaScript event properties: event.key, event.code, keyCode, which, location, and modifier keys. Free, no signup, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/keycode-info.html">
+  <meta property="og:title" content="JavaScript Keycode Info — ThisDevTool">
+  <meta property="og:description" content="Press any key to see its JavaScript event properties: key, code, keyCode, which, location, and modifier states. Free online keyboard event inspector.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/keycode-info.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <style>
+    .key-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      min-height: 140px;
+      border: 3px solid var(--border);
+      border-radius: 16px;
+      background: var(--surface);
+      padding: 1.25rem 1rem;
+      margin-bottom: 1.25rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      cursor: default;
+      user-select: none;
+    }
+    .key-display.active {
+      border-color: #10b981;
+      box-shadow: 0 0 0 4px rgba(16,185,129,0.15);
+    }
+    .key-display.waiting {
+      border-style: dashed;
+      opacity: 0.6;
+    }
+    .key-glyph {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+      min-height: 3.25rem;
+      text-align: center;
+      letter-spacing: -0.02em;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .key-code-label {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .key-props-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.6rem;
+      margin-bottom: 1.25rem;
+    }
+    .key-prop-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+    }
+    .key-prop-name {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    .key-prop-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      word-break: break-all;
+    }
+    .key-prop-value.deprecated {
+      color: #f59e0b;
+    }
+    .key-prop-value.true-val { color: #10b981; }
+    .key-prop-value.false-val { color: var(--text-muted); }
+    .modifier-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+    .mod-chip {
+      padding: 0.3rem 0.7rem;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      transition: all 0.1s;
+    }
+    .mod-chip.active {
+      border-color: #10b981;
+      background: rgba(16,185,129,0.12);
+      color: #10b981;
+    }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.82rem;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .history-idx {
+      width: 1.4rem;
+      text-align: right;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+    .history-key-glyph {
+      min-width: 2.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+    .history-code {
+      color: var(--text-muted);
+      flex: 1;
+    }
+    .history-keycode {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+    }
+    .ref-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .ref-table th {
+      text-align: left;
+      padding: 0.45rem 0.7rem;
+      background: var(--surface);
+      border-bottom: 2px solid var(--border);
+      font-weight: 700;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .ref-table td {
+      padding: 0.42rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Courier New', Courier, monospace;
+      color: var(--text);
+    }
+    .ref-table tr:last-child td { border-bottom: none; }
+    .ref-table tr:hover td { background: var(--surface); }
+    .key-capture-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.25rem;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .key-capture-zone:focus,
+    .key-capture-zone.listening {
+      outline: none;
+      border-color: #10b981;
+      background: rgba(16,185,129,0.05);
+      color: var(--text);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JavaScript Keycode Info",
+    "url": "https://thisdevtool.com/tools/keycode-info.html",
+    "description": "Press any key to instantly inspect JavaScript keyboard event properties: key, code, keyCode, which, location, repeat, and all modifier key states.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is the difference between event.key and event.code?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "event.key returns the logical value of the key pressed, accounting for modifier keys and keyboard layout (e.g., 'A' when Shift is held, 'a' otherwise). event.code returns the physical key's identifier regardless of layout or modifiers (e.g., 'KeyA' whether the keyboard is QWERTY or AZERTY). For most app shortcuts, event.code is more reliable."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is event.keyCode deprecated?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. event.keyCode (and event.which) are deprecated Web APIs. They were the original way to detect keypresses in older browsers. Modern JavaScript should use event.key for the character value and event.code for the physical key position. Browsers still support keyCode for backwards compatibility, but new code should avoid it."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does event.location mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "event.location distinguishes keys that appear multiple times on the keyboard. Location 0 is the standard position, 1 is the left side (e.g., left Shift), 2 is the right side (e.g., right Alt), and 3 is the numeric keypad. This lets you tell left Ctrl from right Ctrl, for example."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is event.repeat?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "event.repeat is a boolean that becomes true when a key is held down long enough to trigger the browser's key-repeat behavior. The first keydown event has repeat = false; subsequent keydown events from holding the key have repeat = true. Use this to ignore held-key repetitions in game loops or keyboard shortcuts."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Why can't I detect some keys like PrintScreen or some function keys?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Some keys are intercepted by the operating system or the browser before the page sees them. PrintScreen, Win/Super key combos, and some Fn key combinations are handled at the OS level. Additionally, some browsers block certain combinations (like Ctrl+W or Ctrl+T) from being detected by pages. The keys you can reliably detect depend on browser and OS."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>JavaScript Keycode Info</h1>
+          <p class="tool-subtitle">Press any key to inspect its JavaScript <code>KeyboardEvent</code> properties in real time.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-view="live">Live</button>
+            <button class="option-chip" data-view="history">History</button>
+            <button class="option-chip" data-view="reference">Reference</button>
+          </div>
+
+          <!-- Live View -->
+          <div id="view-live" class="view-panel active">
+            <!-- Capture zone -->
+            <div class="key-capture-zone" id="captureZone" tabindex="0" role="button" aria-label="Key capture area — press any key">
+              Click here or press any key
+            </div>
+
+            <!-- Big key display -->
+            <div class="key-display waiting" id="keyDisplay">
+              <div class="key-glyph" id="keyGlyph">—</div>
+              <div class="key-code-label" id="keyCodeLabel">waiting for key&hellip;</div>
+            </div>
+
+            <!-- Modifier row -->
+            <div class="modifier-chips" id="modChips">
+              <span class="mod-chip" id="mod-ctrl">Ctrl</span>
+              <span class="mod-chip" id="mod-alt">Alt</span>
+              <span class="mod-chip" id="mod-shift">Shift</span>
+              <span class="mod-chip" id="mod-meta">Meta ⌘</span>
+              <span class="mod-chip" id="mod-repeat">Repeat</span>
+            </div>
+
+            <!-- Properties grid -->
+            <div class="key-props-grid" id="propsGrid">
+              <div class="key-prop-row">
+                <span class="key-prop-name">event.key</span>
+                <span class="key-prop-value" id="prop-key">—</span>
+              </div>
+              <div class="key-prop-row">
+                <span class="key-prop-name">event.code</span>
+                <span class="key-prop-value" id="prop-code">—</span>
+              </div>
+              <div class="key-prop-row">
+                <span class="key-prop-name">event.keyCode <small style="font-size:0.65em;font-weight:400;">(deprecated)</small></span>
+                <span class="key-prop-value deprecated" id="prop-keyCode">—</span>
+              </div>
+              <div class="key-prop-row">
+                <span class="key-prop-name">event.which <small style="font-size:0.65em;font-weight:400;">(deprecated)</small></span>
+                <span class="key-prop-value deprecated" id="prop-which">—</span>
+              </div>
+              <div class="key-prop-row">
+                <span class="key-prop-name">event.location</span>
+                <span class="key-prop-value" id="prop-location">—</span>
+              </div>
+              <div class="key-prop-row">
+                <span class="key-prop-name">event.charCode <small style="font-size:0.65em;font-weight:400;">(deprecated)</small></span>
+                <span class="key-prop-value deprecated" id="prop-charCode">—</span>
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="btn-group">
+              <button class="btn btn-sm btn-primary" id="copyBtn">Copy JSON</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+          </div>
+
+          <!-- History View -->
+          <div id="view-history" class="view-panel">
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.75rem;">Last 10 key presses. Switch to Live tab and press keys to populate.</p>
+            <div class="history-list" id="historyList">
+              <div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">No keys pressed yet.</div>
+            </div>
+            <div class="btn-group" style="margin-top:0.85rem;">
+              <button class="btn btn-sm btn-secondary" id="clearHistoryBtn">Clear History</button>
+              <button class="btn btn-sm btn-secondary" id="copyHistoryBtn">Copy History</button>
+            </div>
+          </div>
+
+          <!-- Reference View -->
+          <div id="view-reference" class="view-panel">
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.75rem;">Common keyboard codes for quick reference.</p>
+            <div style="overflow-x:auto;">
+              <table class="ref-table" id="refTable">
+                <thead>
+                  <tr>
+                    <th>Key Name</th>
+                    <th>event.key</th>
+                    <th>event.code</th>
+                    <th>keyCode</th>
+                    <th>Category</th>
+                  </tr>
+                </thead>
+                <tbody id="refBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Press any key to see its event properties.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the JavaScript Keycode Info Tool</h2>
+          <ol>
+            <li><strong>Click the capture zone</strong> or simply focus the page, then press any key on your keyboard.</li>
+            <li><strong>Read the properties</strong> — the large display shows the key character, and the grid shows every <code>KeyboardEvent</code> property.</li>
+            <li><strong>Switch to History</strong> to see your last 10 key presses side by side, useful for comparing similar keys.</li>
+            <li><strong>Use Reference</strong> to browse a quick lookup table of common key codes without pressing keys.</li>
+            <li><strong>Copy JSON</strong> to export the full event object for pasting into documentation or code.</li>
+          </ol>
+
+          <h2>Understanding JavaScript Keyboard Events</h2>
+          <p>When a user presses a key in the browser, JavaScript fires three events in sequence: <code>keydown</code>, <code>keypress</code> (deprecated), and <code>keyup</code>. Each event carries a <code>KeyboardEvent</code> object containing a wealth of information about which key was pressed and what modifier keys were active at that moment. Understanding these properties is essential for building keyboard-driven applications, games, accessibility tools, and custom shortcuts.</p>
+
+          <h3>event.key vs event.code</h3>
+          <p>The most important distinction in modern keyboard handling is between <code>event.key</code> and <code>event.code</code>. The <code>key</code> property returns the logical, layout-aware value: pressing the "A" key on a QWERTY keyboard while holding Shift gives <code>key = "A"</code>, while without Shift it gives <code>key = "a"</code>. On an AZERTY keyboard, the same physical key returns <code>key = "Q"</code>. The <code>code</code> property, by contrast, always returns the physical key identifier: <code>code = "KeyA"</code> regardless of layout or modifier keys. Use <code>key</code> for text input and <code>code</code> for hotkeys and game controls where physical position matters.</p>
+
+          <h3>The Deprecated keyCode and which Properties</h3>
+          <p>Before <code>key</code> and <code>code</code> were standardized, developers used <code>event.keyCode</code> and <code>event.which</code> to detect keypresses. These numeric properties still work in all browsers for backward compatibility, but they are deprecated in the Web Platform specification and should not be used in new code. They have browser inconsistencies (especially for non-alphanumeric keys), no concept of layout, and no way to distinguish left from right modifier keys. This tool displays them with a yellow warning to remind you they are legacy APIs.</p>
+
+          <h3>event.location: Left, Right, and Numpad</h3>
+          <p>Some keys appear in multiple positions on a keyboard — Shift, Ctrl, Alt appear on both sides, and digits appear both on the top row and the numeric keypad. The <code>event.location</code> property disambiguates these: <strong>0</strong> = standard (single position), <strong>1</strong> = left side, <strong>2</strong> = right side, <strong>3</strong> = numeric keypad. This lets you detect, for example, whether the user pressed the numpad Enter (location 3) or the main Enter (location 0), or whether they are using the left Ctrl versus the right Ctrl.</p>
+
+          <h3>Modifier Keys: ctrlKey, altKey, shiftKey, metaKey</h3>
+          <p>Every <code>KeyboardEvent</code> includes four boolean properties indicating whether modifier keys were held when the event fired. <code>ctrlKey</code> corresponds to the Ctrl key on Windows/Linux and the Control key on macOS. <code>altKey</code> is Alt on Windows/Linux and Option (⌥) on macOS. <code>shiftKey</code> is Shift on all platforms. <code>metaKey</code> is the Windows key on Windows/Linux and the Command key (⌘) on macOS. These are commonly combined in shortcut detection: <code>if (e.ctrlKey && e.key === 's') { save(); }</code>.</p>
+
+          <h3>event.repeat: Handling Key Hold</h3>
+          <p>When a key is held down, the browser fires repeated <code>keydown</code> events after an initial delay. The first event has <code>repeat = false</code>; all subsequent events from holding that key have <code>repeat = true</code>. This is important for keyboard shortcuts where you want to respond only once per keypress, not once per keyboard-repeat cycle. Simply check <code>if (e.repeat) return;</code> at the top of your handler to ignore hold-repeats.</p>
+
+          <h3>Keys That Cannot Be Detected</h3>
+          <p>Some keys are intercepted before JavaScript ever sees them. The OS captures Print Screen, most Windows key combinations (Win+D, Win+L), and hardware function keys on laptops. Browsers also block certain combos to protect users: Ctrl+W (close tab), Ctrl+T (new tab), Ctrl+N (new window), and the browser's built-in keyboard shortcuts. In fullscreen mode (via the Fullscreen API), slightly more keys become accessible, but OS-level keys remain unreachable.</p>
+
+          <h3>Practical Use Cases</h3>
+          <ul>
+            <li><strong>Keyboard shortcuts</strong> — detect Ctrl+S, Ctrl+Z, Escape, and arrow keys for rich text editors and applications</li>
+            <li><strong>Games</strong> — use <code>event.code</code> (layout-independent) for WASD movement controls</li>
+            <li><strong>Accessibility</strong> — ensure interactive widgets respond to Enter, Space, and arrow keys per ARIA patterns</li>
+            <li><strong>Custom inputs</strong> — prevent default behavior for specific keys (e.g., blocking Enter in a single-line field)</li>
+            <li><strong>Debug hotkeys</strong> — understand exactly what key values a user's browser reports for unusual characters</li>
+          </ul>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between event.key and event.code?</button>
+            <div class="faq-answer">event.key returns the logical value of the key, accounting for your keyboard layout and modifier keys — so Shift+A gives "A" and A alone gives "a". event.code returns the physical key position identifier regardless of layout — "KeyA" no matter what. Use event.key for text input and event.code for layout-independent shortcuts and game controls.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is event.keyCode deprecated?</button>
+            <div class="faq-answer">Yes. event.keyCode and event.which are deprecated in the web platform specification. They still work in all browsers for backward compatibility, but new code should use event.key (for the character value) and event.code (for the physical key). The deprecated properties have inconsistencies across browsers and no way to tell left from right modifier keys.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does event.location mean?</button>
+            <div class="faq-answer">event.location distinguishes keys that appear in multiple places on the keyboard. Location 0 = standard position, 1 = left side (e.g., left Shift), 2 = right side (e.g., right Alt), 3 = numeric keypad. This lets you tell left Ctrl from right Ctrl, or tell numpad Enter from the main Enter key.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is event.repeat?</button>
+            <div class="faq-answer">event.repeat is a boolean that is true when a key is held down and the browser's key-repeat fires subsequent keydown events. The first keydown has repeat = false; all following auto-repeat events have repeat = true. Add "if (e.repeat) return;" to ignore held-key repetitions in shortcuts and game loops.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Why can't I detect some keys like PrintScreen?</button>
+            <div class="faq-answer">Some keys are intercepted by the operating system or the browser before the page ever sees them. PrintScreen, Win key combinations (Win+D, Win+L), and hardware Fn shortcuts are handled at the OS level. Browsers also block common combos (Ctrl+W, Ctrl+T) to prevent pages from trapping navigation keys. What you can detect depends on the browser, OS, and whether the page is in fullscreen mode.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related Tools</h4>
+        <a href="/tools/device-fingerprint.html">Browser Fingerprint</a>
+        <a href="/tools/browser-feature-detector.html">Feature Detector</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+
+      /* ── State ── */
+      var currentView = 'live';
+      var lastEvent = null;
+      var history = [];
+      var MAX_HISTORY = 10;
+      var isListening = false;
+
+      /* ── Location labels ── */
+      var LOCATION_LABELS = {
+        0: '0 (Standard)',
+        1: '1 (Left)',
+        2: '2 (Right)',
+        3: '3 (Numpad)'
+      };
+
+      /* ── Reference data ── */
+      var REF_KEYS = [
+        { name: 'Enter',        key: 'Enter',       code: 'Enter',        kc: 13,  cat: 'Control' },
+        { name: 'Escape',       key: 'Escape',       code: 'Escape',       kc: 27,  cat: 'Control' },
+        { name: 'Backspace',    key: 'Backspace',    code: 'Backspace',    kc: 8,   cat: 'Control' },
+        { name: 'Tab',          key: 'Tab',          code: 'Tab',          kc: 9,   cat: 'Control' },
+        { name: 'Delete',       key: 'Delete',       code: 'Delete',       kc: 46,  cat: 'Control' },
+        { name: 'Insert',       key: 'Insert',       code: 'Insert',       kc: 45,  cat: 'Control' },
+        { name: 'Home',         key: 'Home',         code: 'Home',         kc: 36,  cat: 'Navigation' },
+        { name: 'End',          key: 'End',          code: 'End',          kc: 35,  cat: 'Navigation' },
+        { name: 'Page Up',      key: 'PageUp',       code: 'PageUp',       kc: 33,  cat: 'Navigation' },
+        { name: 'Page Down',    key: 'PageDown',     code: 'PageDown',     kc: 34,  cat: 'Navigation' },
+        { name: 'Arrow Up',     key: 'ArrowUp',      code: 'ArrowUp',      kc: 38,  cat: 'Navigation' },
+        { name: 'Arrow Down',   key: 'ArrowDown',    code: 'ArrowDown',    kc: 40,  cat: 'Navigation' },
+        { name: 'Arrow Left',   key: 'ArrowLeft',    code: 'ArrowLeft',    kc: 37,  cat: 'Navigation' },
+        { name: 'Arrow Right',  key: 'ArrowRight',   code: 'ArrowRight',   kc: 39,  cat: 'Navigation' },
+        { name: 'Space',        key: ' ',            code: 'Space',        kc: 32,  cat: 'Whitespace' },
+        { name: 'Shift (L)',    key: 'Shift',        code: 'ShiftLeft',    kc: 16,  cat: 'Modifier' },
+        { name: 'Shift (R)',    key: 'Shift',        code: 'ShiftRight',   kc: 16,  cat: 'Modifier' },
+        { name: 'Ctrl (L)',     key: 'Control',      code: 'ControlLeft',  kc: 17,  cat: 'Modifier' },
+        { name: 'Ctrl (R)',     key: 'Control',      code: 'ControlRight', kc: 17,  cat: 'Modifier' },
+        { name: 'Alt (L)',      key: 'Alt',          code: 'AltLeft',      kc: 18,  cat: 'Modifier' },
+        { name: 'Alt (R)',      key: 'Alt',          code: 'AltRight',     kc: 18,  cat: 'Modifier' },
+        { name: 'Caps Lock',    key: 'CapsLock',     code: 'CapsLock',     kc: 20,  cat: 'Modifier' },
+        { name: 'A',            key: 'a',            code: 'KeyA',         kc: 65,  cat: 'Alpha' },
+        { name: 'Z',            key: 'z',            code: 'KeyZ',         kc: 90,  cat: 'Alpha' },
+        { name: '0',            key: '0',            code: 'Digit0',       kc: 48,  cat: 'Digit' },
+        { name: '9',            key: '9',            code: 'Digit9',       kc: 57,  cat: 'Digit' },
+        { name: 'Numpad 0',     key: '0',            code: 'Numpad0',      kc: 96,  cat: 'Numpad' },
+        { name: 'Numpad 9',     key: '9',            code: 'Numpad9',      kc: 105, cat: 'Numpad' },
+        { name: 'Numpad +',     key: '+',            code: 'NumpadAdd',    kc: 107, cat: 'Numpad' },
+        { name: 'Numpad Enter', key: 'Enter',        code: 'NumpadEnter',  kc: 13,  cat: 'Numpad' },
+        { name: 'F1',           key: 'F1',           code: 'F1',           kc: 112, cat: 'Function' },
+        { name: 'F5',           key: 'F5',           code: 'F5',           kc: 116, cat: 'Function' },
+        { name: 'F10',          key: 'F10',          code: 'F10',          kc: 121, cat: 'Function' },
+        { name: 'F12',          key: 'F12',          code: 'F12',          kc: 123, cat: 'Function' },
+        { name: '. (period)',   key: '.',            code: 'Period',       kc: 190, cat: 'Punctuation' },
+        { name: ', (comma)',    key: ',',            code: 'Comma',        kc: 188, cat: 'Punctuation' },
+        { name: '/ (slash)',    key: '/',            code: 'Slash',        kc: 191, cat: 'Punctuation' },
+        { name: '\\ (backsl.)', key: '\\',           code: 'Backslash',    kc: 220, cat: 'Punctuation' },
+        { name: '[ (bracket)',  key: '[',            code: 'BracketLeft',  kc: 219, cat: 'Punctuation' },
+        { name: '] (bracket)',  key: ']',            code: 'BracketRight', kc: 221, cat: 'Punctuation' }
+      ];
+
+      /* ── DOM refs ── */
+      var captureZone = document.getElementById('captureZone');
+      var keyDisplay  = document.getElementById('keyDisplay');
+      var keyGlyph    = document.getElementById('keyGlyph');
+      var keyCodeLabel = document.getElementById('keyCodeLabel');
+      var statusBar   = document.getElementById('statusBar');
+      var historyList = document.getElementById('historyList');
+
+      /* ── Render props ── */
+      function renderProps(e) {
+        document.getElementById('prop-key').textContent      = JSON.stringify(e.key);
+        document.getElementById('prop-code').textContent     = e.code;
+        document.getElementById('prop-keyCode').textContent  = e.keyCode;
+        document.getElementById('prop-which').textContent    = e.which;
+        document.getElementById('prop-location').textContent = LOCATION_LABELS[e.location] || e.location;
+        document.getElementById('prop-charCode').textContent = e.charCode;
+
+        /* Modifiers */
+        document.getElementById('mod-ctrl').classList.toggle('active',   e.ctrlKey);
+        document.getElementById('mod-alt').classList.toggle('active',    e.altKey);
+        document.getElementById('mod-shift').classList.toggle('active',  e.shiftKey);
+        document.getElementById('mod-meta').classList.toggle('active',   e.metaKey);
+        document.getElementById('mod-repeat').classList.toggle('active', e.repeat);
+
+        /* Big display */
+        var displayKey = e.key.length === 1 ? e.key : e.key;
+        keyGlyph.textContent = displayKey;
+        keyCodeLabel.textContent = 'code: ' + e.code;
+        keyDisplay.classList.remove('waiting');
+        keyDisplay.classList.add('active');
+        setTimeout(function () { keyDisplay.classList.remove('active'); }, 200);
+
+        /* Status */
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Key: ' + JSON.stringify(e.key) + ' — code: ' + e.code + ' — keyCode: ' + e.keyCode;
+      }
+
+      /* ── Add to history ── */
+      function addHistory(e) {
+        history.unshift({
+          key:     e.key,
+          code:    e.code,
+          keyCode: e.keyCode,
+          shift:   e.shiftKey,
+          ctrl:    e.ctrlKey,
+          alt:     e.altKey,
+          meta:    e.metaKey,
+          repeat:  e.repeat
+        });
+        if (history.length > MAX_HISTORY) history.pop();
+        renderHistory();
+      }
+
+      function renderHistory() {
+        if (!history.length) {
+          historyList.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem 0;">No keys pressed yet.</div>';
+          return;
+        }
+        historyList.innerHTML = history.map(function (h, i) {
+          var mods = [];
+          if (h.ctrl)  mods.push('Ctrl');
+          if (h.alt)   mods.push('Alt');
+          if (h.shift) mods.push('Shift');
+          if (h.meta)  mods.push('Meta');
+          return '<div class="history-item">' +
+            '<span class="history-idx">' + (i + 1) + '</span>' +
+            '<span class="history-key-glyph">' + escHtml(h.key) + '</span>' +
+            '<span class="history-code">' + escHtml(h.code) + (mods.length ? ' &nbsp;<small style="color:#f59e0b">' + mods.join('+') + '</small>' : '') + (h.repeat ? ' &nbsp;<small style="color:var(--text-muted)">[repeat]</small>' : '') + '</span>' +
+            '<span class="history-keycode">kc:' + h.keyCode + '</span>' +
+            '</div>';
+        }).join('');
+      }
+
+      /* ── Render reference table ── */
+      function renderReference() {
+        var tbody = document.getElementById('refBody');
+        tbody.innerHTML = REF_KEYS.map(function (r) {
+          return '<tr><td>' + escHtml(r.name) + '</td><td>' + escHtml(r.key === ' ' ? 'Space ( )' : r.key) + '</td><td>' + r.code + '</td><td>' + r.kc + '</td><td>' + r.cat + '</td></tr>';
+        }).join('');
+      }
+
+      /* ── Escape HTML ── */
+      function escHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      /* ── keydown handler ── */
+      function handleKeyDown(e) {
+        // Don't block F5, Ctrl+R, browser navigation in general
+        // Only prevent default for Tab to avoid focus change
+        if (e.key === 'Tab') e.preventDefault();
+
+        lastEvent = e;
+        renderProps(e);
+        addHistory(e);
+        DT.trackTool('keycode-info');
+      }
+
+      /* ── Global listener ── */
+      document.addEventListener('keydown', handleKeyDown);
+
+      /* ── Capture zone click ── */
+      captureZone.addEventListener('click', function () {
+        captureZone.classList.add('listening');
+        captureZone.textContent = 'Listening — press any key';
+      });
+      captureZone.addEventListener('blur', function () {
+        captureZone.classList.remove('listening');
+        captureZone.textContent = 'Click here or press any key';
+      });
+
+      /* ── View switching ── */
+      document.querySelectorAll('.option-chip[data-view]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip[data-view]').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentView = chip.getAttribute('data-view');
+          document.querySelectorAll('.view-panel').forEach(function (p) { p.classList.remove('active'); });
+          document.getElementById('view-' + currentView).classList.add('active');
+          if (currentView === 'reference') renderReference();
+          if (currentView === 'history')   renderHistory();
+        });
+      });
+
+      /* ── Copy JSON ── */
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (!lastEvent) return;
+        var obj = {
+          key:      lastEvent.key,
+          code:     lastEvent.code,
+          keyCode:  lastEvent.keyCode,
+          which:    lastEvent.which,
+          charCode: lastEvent.charCode,
+          location: lastEvent.location,
+          ctrlKey:  lastEvent.ctrlKey,
+          altKey:   lastEvent.altKey,
+          shiftKey: lastEvent.shiftKey,
+          metaKey:  lastEvent.metaKey,
+          repeat:   lastEvent.repeat
+        };
+        DT.copyToClipboard(JSON.stringify(obj, null, 2), this);
+      });
+
+      /* ── Clear ── */
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        lastEvent = null;
+        keyGlyph.textContent = '—';
+        keyCodeLabel.textContent = 'waiting for key\u2026';
+        keyDisplay.classList.add('waiting');
+        keyDisplay.classList.remove('active');
+        ['prop-key','prop-code','prop-keyCode','prop-which','prop-location','prop-charCode'].forEach(function (id) {
+          document.getElementById(id).textContent = '—';
+        });
+        ['mod-ctrl','mod-alt','mod-shift','mod-meta','mod-repeat'].forEach(function (id) {
+          document.getElementById(id).classList.remove('active');
+        });
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Press any key to see its event properties.';
+      });
+
+      /* ── History controls ── */
+      document.getElementById('clearHistoryBtn').addEventListener('click', function () {
+        history = [];
+        renderHistory();
+      });
+      document.getElementById('copyHistoryBtn').addEventListener('click', function () {
+        if (!history.length) return;
+        DT.copyToClipboard(JSON.stringify(history, null, 2), this);
+      });
+
+      /* Init reference table eagerly so it is ready when tab is switched */
+      renderReference();
+    })();
+  </script>
+</body>
+</html>

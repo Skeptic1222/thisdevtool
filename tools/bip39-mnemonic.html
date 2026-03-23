@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>BIP39 Mnemonic Generator — Free Online Recovery Phrase Tool | ThisDevTool</title>
+  <meta name="description" content="Generate BIP39 mnemonic seed phrases (12, 15, 18, 21, or 24 words) using cryptographically secure entropy. Verify existing mnemonics. 100% client-side — nothing leaves your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/bip39-mnemonic.html">
+  <meta property="og:title" content="BIP39 Mnemonic Generator — ThisDevTool">
+  <meta property="og:description" content="Generate or verify BIP39 mnemonic seed phrases. 12–24 words, cryptographically secure, 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/bip39-mnemonic.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="BIP39 Mnemonic Generator — ThisDevTool">
+  <meta name="twitter:description" content="Generate BIP39 mnemonic seed phrases online. 12–24 words, verify checksum. Free and 100% browser-based.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "BIP39 Mnemonic Generator",
+    "url": "https://thisdevtool.com/tools/bip39-mnemonic.html",
+    "description": "Generate BIP39 mnemonic recovery phrases (12, 15, 18, 21, or 24 words) with cryptographically secure entropy. Verify existing mnemonics. 100% client-side, nothing leaves your browser.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a BIP39 mnemonic phrase?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A BIP39 mnemonic phrase (also called a seed phrase or recovery phrase) is a human-readable sequence of 12 to 24 common English words that encodes a cryptographic seed for a hierarchical deterministic (HD) wallet. The phrase is derived from a random entropy value combined with a SHA-256 checksum, then mapped to a standardized 2048-word English wordlist. Knowing the phrase is equivalent to knowing the private keys for all addresses in the wallet."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does BIP39 entropy work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "BIP39 generates entropy of 128–256 bits using a cryptographically secure random number generator. A SHA-256 hash is computed over the entropy, and the first (entropy_bits / 32) bits of the hash are appended as a checksum. The combined bit string is split into 11-bit groups, each group mapping to one of 2048 words in the BIP39 wordlist. A 12-word phrase uses 128-bit entropy + 4-bit checksum = 132 bits total / 11 = 12 words."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is it safe to generate a BIP39 mnemonic online?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "For educational or testing purposes, this tool is safe — it runs entirely in your browser using the Web Crypto API and no data leaves your device. However, for real cryptocurrency wallets holding actual funds, you should generate mnemonics on an air-gapped, offline computer or use a hardware wallet. Any mnemonic generated on an internet-connected device could theoretically be compromised if the device has malware."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between 12-word and 24-word mnemonics?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A 12-word mnemonic encodes 128 bits of entropy, while a 24-word mnemonic encodes 256 bits of entropy. Both are computationally infeasible to brute-force — the 12-word version has 2^128 possible values, and the 24-word version has 2^256. Most hardware wallets default to 24 words for the maximum security margin. Trezor and Ledger both use 24 words; MetaMask defaults to 12 words."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use this tool to check if my mnemonic is valid?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Switch to Verify mode and enter your mnemonic phrase. The tool checks that every word exists in the BIP39 English wordlist and that the embedded checksum matches the entropy bits. A valid checksum means the phrase is structurally correct. Note that a valid checksum does not mean the phrase controls any funds — it only confirms the phrase is a properly formatted BIP39 mnemonic."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .mnemonic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+      padding: 16px;
+      background: var(--bg-2, #f8fafc);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 8px;
+    }
+    .mnemonic-word {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: var(--bg-card, #fff);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+    .mnemonic-word .word-num {
+      color: var(--text-muted, #94a3b8);
+      font-size: 0.75em;
+      min-width: 18px;
+    }
+    .entropy-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 10px 14px;
+      background: var(--bg-2, #f8fafc);
+      border: 1px solid var(--border, #e2e8f0);
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85em;
+      margin-bottom: 12px;
+    }
+    .entropy-bar span { color: var(--text-muted, #64748b); }
+    .entropy-bar strong { color: var(--accent, #10b981); }
+    .disclaimer-box {
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.9em;
+      color: #92400e;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+    .disclaimer-box::before { content: '⚠'; font-size: 1.1em; flex-shrink: 0; margin-top: 1px; }
+    .word-invalid { border-color: #ef4444 !important; background: #fef2f2 !important; }
+    .word-valid { border-color: #10b981 !important; background: #f0fdf4 !important; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>BIP39 Mnemonic Generator</h1>
+          <p class="tool-subtitle">Generate cryptographically secure BIP39 seed phrases for educational and development use.</p>
+
+          <!-- Disclaimer -->
+          <div class="disclaimer-box">
+            <div><strong>For educational purposes only.</strong> Never use an internet-connected tool to generate mnemonics for real funds. Use a hardware wallet (Trezor, Ledger) or an air-gapped device for actual cryptocurrency recovery phrases.</div>
+          </div>
+
+          <!-- Mode Chips -->
+          <div class="option-chips" id="modeChips">
+            <button class="option-chip active" data-mode="generate">Generate</button>
+            <button class="option-chip" data-mode="verify">Verify</button>
+          </div>
+
+          <!-- Generate Panel -->
+          <div id="panel-generate">
+            <!-- Word Count Chips -->
+            <div class="option-chips" id="wordCountChips" style="margin-top:0;">
+              <button class="option-chip active" data-words="12">12 words</button>
+              <button class="option-chip" data-words="15">15 words</button>
+              <button class="option-chip" data-words="18">18 words</button>
+              <button class="option-chip" data-words="21">21 words</button>
+              <button class="option-chip" data-words="24">24 words</button>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+              <button class="btn btn-primary" id="generateBtn" style="font-size:1.05em;padding:10px 28px;">Generate Phrase</button>
+              <button class="btn btn-secondary" id="clearGenBtn">Clear</button>
+            </div>
+
+            <!-- Entropy Info -->
+            <div class="entropy-bar" id="entropyBar" style="display:none;">
+              <div><span>Entropy bits: </span><strong id="infoEntropy">—</strong></div>
+              <div><span>Checksum bits: </span><strong id="infoChecksum">—</strong></div>
+              <div><span>Total bits: </span><strong id="infoTotal">—</strong></div>
+              <div><span>Word count: </span><strong id="infoWords">—</strong></div>
+              <div><span>Security: </span><strong id="infoSecurity">—</strong></div>
+            </div>
+
+            <!-- Mnemonic Output Grid -->
+            <div class="form-group">
+              <div class="pane-label">
+                <span>Generated Phrase</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyPhraseBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadPhraseBtn">Download</button>
+                </div>
+              </div>
+              <div id="mnemonicGrid" class="mnemonic-grid" style="display:none;"></div>
+              <div id="mnemonicPlaceholder" class="code-output" style="min-height:80px;color:var(--text-muted,#94a3b8);display:flex;align-items:center;justify-content:center;">
+                Click "Generate Phrase" to create a mnemonic
+              </div>
+            </div>
+
+            <!-- Raw Text Output -->
+            <div class="form-group" style="margin-top:8px;">
+              <div class="pane-label"><span>Plain text (space-separated)</span></div>
+              <div class="code-output" id="rawPhraseOutput" style="min-height:50px;font-family:monospace;word-break:break-all;"></div>
+            </div>
+          </div>
+
+          <!-- Verify Panel -->
+          <div id="panel-verify" style="display:none;">
+            <div class="form-group">
+              <label for="verifyInput">Paste your mnemonic phrase (12–24 words, space-separated)</label>
+              <textarea id="verifyInput" rows="4" placeholder="abandon ability able about above absent absorb abstract absurd abuse access accident"
+                style="font-family:monospace;font-size:0.95em;resize:vertical;text-transform:lowercase;"></textarea>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+              <button class="btn btn-primary" id="verifyBtn">Verify Phrase</button>
+              <button class="btn btn-secondary" id="verifyTryExample">Try Example</button>
+              <button class="btn btn-secondary" id="clearVerifyBtn">Clear</button>
+            </div>
+
+            <!-- Verify Output -->
+            <div id="verifyWordGrid" class="mnemonic-grid" style="display:none;margin-bottom:12px;"></div>
+            <div class="form-group">
+              <div class="pane-label"><span>Verification Result</span></div>
+              <div class="code-output" id="verifyOutput" style="min-height:80px;"></div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Select a word count and click Generate Phrase.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the BIP39 Mnemonic Generator</h2>
+          <ol>
+            <li><strong>Choose word count</strong> — select 12, 15, 18, 21, or 24 words. More words means more entropy bits and a higher security margin.</li>
+            <li><strong>Click Generate Phrase</strong> — the tool generates cryptographically secure random entropy using <code>crypto.getRandomValues()</code>, computes the SHA-256 checksum, maps 11-bit groups to the BIP39 wordlist, and displays the resulting phrase as numbered word cards.</li>
+            <li><strong>Review entropy details</strong> — the entropy bar shows how many bits of randomness were used, how many checksum bits were appended, and the effective security level.</li>
+            <li><strong>Copy or download</strong> — copy the space-separated phrase to your clipboard or download as a text file for offline storage.</li>
+            <li><strong>Verify mode</strong> — paste any BIP39 mnemonic to validate every word against the wordlist and confirm the checksum is correct. Words highlighted green are valid; red indicates an unrecognized word.</li>
+          </ol>
+
+          <h2>What Is BIP39?</h2>
+          <p>BIP39 (Bitcoin Improvement Proposal 39) defines a standard for generating human-readable mnemonic sentences that encode the seed for a hierarchical deterministic (HD) wallet. Introduced in 2013, BIP39 has become the universal standard for crypto wallet backup phrases — used by Bitcoin, Ethereum, and virtually every major blockchain wallet including Trezor, Ledger, MetaMask, and Coinbase Wallet.</p>
+
+          <h3>The BIP39 Algorithm Step by Step</h3>
+          <p>The generation process follows a precise algorithm:</p>
+          <ol>
+            <li><strong>Generate entropy</strong> — produce N bits of cryptographically secure random data, where N is 128, 160, 192, 224, or 256 bits depending on the desired word count.</li>
+            <li><strong>Compute checksum</strong> — take the SHA-256 hash of the entropy bytes, then take the first (N/32) bits of the hash as the checksum.</li>
+            <li><strong>Append checksum</strong> — concatenate the entropy bits and checksum bits into a single bit string of length N + N/32.</li>
+            <li><strong>Split into 11-bit groups</strong> — divide the combined bit string into groups of 11 bits each. The total length is always divisible by 11, yielding exactly the desired word count.</li>
+            <li><strong>Map to wordlist</strong> — each 11-bit group represents an integer from 0 to 2047. Look up the corresponding word in the BIP39 English wordlist to produce the mnemonic phrase.</li>
+          </ol>
+
+          <h3>Word Count and Security Levels</h3>
+          <ul>
+            <li><strong>12 words</strong> — 128-bit entropy + 4-bit checksum. 2^128 ≈ 3.4 × 10^38 possible phrases. Sufficient for most uses.</li>
+            <li><strong>15 words</strong> — 160-bit entropy + 5-bit checksum. 2^160 ≈ 1.5 × 10^48 possible phrases.</li>
+            <li><strong>18 words</strong> — 192-bit entropy + 6-bit checksum. 2^192 ≈ 6.3 × 10^57 possible phrases.</li>
+            <li><strong>21 words</strong> — 224-bit entropy + 7-bit checksum. 2^224 ≈ 2.7 × 10^67 possible phrases.</li>
+            <li><strong>24 words</strong> — 256-bit entropy + 8-bit checksum. 2^256 ≈ 1.2 × 10^77 possible phrases. Maximum security.</li>
+          </ul>
+
+          <h3>The BIP39 Wordlist</h3>
+          <p>The BIP39 English wordlist contains exactly 2048 words carefully chosen to be: at least 4 characters long (except three 3-letter words), uniquely identifiable by the first 4 characters (no two words share the same 4-letter prefix), common enough to be memorable, and unlikely to be confused with each other when handwritten. Each word maps to an 11-bit index (0–2047). The full wordlist is embedded directly in this tool — no external requests needed.</p>
+
+          <h3>Wallet Derivation (Beyond BIP39)</h3>
+          <p>The mnemonic phrase itself is just the first step. BIP39 specifies a PBKDF2 function (with HMAC-SHA512, 2048 iterations) to derive a 512-bit binary seed from the mnemonic and an optional passphrase. This 512-bit seed is then used by BIP32 (Hierarchical Deterministic Wallets) to derive an unlimited number of private/public key pairs organized in a tree structure. BIP44 then specifies standard derivation paths (e.g., m/44'/0'/0'/0/0 for the first Bitcoin address). This tool generates only the mnemonic phrase, not the derived keys.</p>
+
+          <h3>Security Best Practices</h3>
+          <ul>
+            <li><strong>Never store digitally</strong> — write your phrase on paper (not a photo, screenshot, or cloud document) and store in a safe location</li>
+            <li><strong>Never share</strong> — anyone with your mnemonic has full access to all wallet funds — there are no recovery options</li>
+            <li><strong>Use hardware wallets for real funds</strong> — Trezor and Ledger generate mnemonics in isolated secure chips, never exposed to a network</li>
+            <li><strong>Verify offline</strong> — for real wallets, use an air-gapped computer or hardware wallet to generate and verify phrases</li>
+            <li><strong>Test restores</strong> — after securing your phrase, test restoring a wallet on a different device to confirm accuracy before depositing funds</li>
+          </ul>
+
+          <p>For related cryptographic tools, see our <a href="/tools/hash-generator.html">Hash Generator</a>, <a href="/tools/password-generator.html">Password Generator</a>, and <a href="/tools/uuid-generator.html">UUID Generator</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is a BIP39 mnemonic phrase?</button>
+            <div class="faq-answer">A BIP39 mnemonic phrase (also called a seed phrase or recovery phrase) is a human-readable sequence of 12 to 24 common English words that encodes a cryptographic seed for a hierarchical deterministic (HD) wallet. The phrase is derived from a random entropy value combined with a SHA-256 checksum, then mapped to a standardized 2048-word English wordlist. Knowing the phrase is equivalent to knowing the private keys for all addresses in the wallet.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does BIP39 entropy work?</button>
+            <div class="faq-answer">BIP39 generates entropy of 128–256 bits using a cryptographically secure random number generator. A SHA-256 hash is computed over the entropy, and the first (entropy_bits / 32) bits of the hash are appended as a checksum. The combined bit string is split into 11-bit groups, each mapping to one of 2048 BIP39 words. A 12-word phrase uses 128-bit entropy + 4-bit checksum = 132 bits total / 11 = 12 words.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is it safe to generate a BIP39 mnemonic online?</button>
+            <div class="faq-answer">For educational or testing purposes, this tool is safe — it runs entirely in your browser using the Web Crypto API and no data leaves your device. However, for real cryptocurrency wallets holding actual funds, you should generate mnemonics on an air-gapped, offline computer or use a hardware wallet. Any mnemonic generated on an internet-connected device could theoretically be compromised if the device has malware.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between 12-word and 24-word mnemonics?</button>
+            <div class="faq-answer">A 12-word mnemonic encodes 128 bits of entropy, while a 24-word mnemonic encodes 256 bits. Both are computationally infeasible to brute-force — the 12-word version has 2^128 possible values. Most hardware wallets default to 24 words for the maximum security margin. MetaMask defaults to 12 words; Trezor and Ledger use 24 words.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use this tool to check if my mnemonic is valid?</button>
+            <div class="faq-answer">Yes. Switch to Verify mode and enter your mnemonic. The tool checks every word against the BIP39 English wordlist and confirms the embedded checksum matches the entropy bits. A valid checksum means the phrase is structurally correct. Note that a valid checksum does not mean the phrase controls any funds — it only confirms proper BIP39 formatting.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Crypto Tools</h4>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/ulid-generator.html">ULID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+  (function () {
+    var DT = DevToolbox;
+
+    // =====================================================================
+    // BIP39 English Wordlist (2048 words — BIP-0039 specification)
+    // =====================================================================
+    var WORDLIST = [
+      'abandon','ability','able','about','above','absent','absorb','abstract','absurd','abuse',
+      'access','accident','account','accuse','achieve','acid','acoustic','acquire','across','act',
+      'action','actor','actress','actual','adapt','add','addict','address','adjust','admit',
+      'adult','advance','advice','aerobic','afford','afraid','again','age','agent','agree',
+      'ahead','aim','air','airport','aisle','alarm','album','alcohol','alert','alien',
+      'all','alley','allow','almost','alone','alpha','already','also','alter','always',
+      'amateur','amazing','among','amount','amused','analyst','anchor','ancient','anger','angle',
+      'angry','animal','ankle','announce','annual','another','answer','antenna','antique','anxiety',
+      'any','apart','apology','appear','apple','approve','april','arch','arctic','area',
+      'arena','argue','arm','armed','armor','army','around','arrange','arrest','arrive',
+      'arrow','art','artefact','artist','artwork','ask','aspect','assault','asset','assist',
+      'assume','asthma','athlete','atom','attack','attend','attitude','attract','auction','audit',
+      'august','aunt','author','auto','autumn','average','avocado','avoid','awake','aware',
+      'away','awesome','awful','awkward','axis','baby','balance','bamboo','banana','banner',
+      'bar','barely','bargain','barrel','base','basic','basket','battle','beach','bean',
+      'beauty','because','become','beef','before','begin','behave','behind','believe','below',
+      'belt','bench','benefit','best','betray','better','between','beyond','bicycle','bid',
+      'bike','bind','biology','bird','birth','bitter','black','blade','blame','blanket',
+      'blast','bleak','bless','blind','blood','blossom','blouse','blue','blur','blush',
+      'board','boat','body','boil','bomb','bone','book','boost','border','boring',
+      'borrow','boss','bottom','bounce','box','boy','bracket','brain','brand','brave',
+      'bread','breeze','brick','bridge','brief','bright','bring','brisk','broccoli','broken',
+      'bronze','broom','brother','brown','brush','bubble','buddy','budget','buffalo','build',
+      'bulb','bulk','bullet','bundle','bunker','burden','burger','burst','bus','business',
+      'busy','butter','buyer','buzz','cabbage','cabin','cable','cactus','cage','cake',
+      'call','calm','camera','camp','can','canal','cancel','candy','cannon','canvas',
+      'canyon','capable','capital','captain','car','carbon','card','cargo','carpet','carry',
+      'cart','case','cash','casino','castle','casual','cat','catalog','catch','category',
+      'cattle','caught','cause','caution','cave','ceiling','celery','cement','census','century',
+      'cereal','certain','chair','chalk','champion','change','chaos','chapter','charge','chase',
+      'chat','cheap','check','cheese','chef','cherry','chest','chicken','chief','child',
+      'chimney','choice','choose','chronic','chuckle','chunk','churn','cigar','cinnamon','circle',
+      'citizen','city','civil','claim','clap','clarify','claw','clay','clean','clerk',
+      'clever','click','client','cliff','climb','clinic','clip','clock','clog','close',
+      'cloth','cloud','clown','club','clump','cluster','clutch','coach','coast','coconut',
+      'code','coffee','coil','coin','collect','color','column','combine','come','comfort',
+      'comic','common','company','concert','conduct','confirm','congress','connect','consider','control',
+      'convince','cook','cool','copper','copy','coral','core','corn','correct','cost',
+      'cotton','couch','country','couple','course','cousin','cover','coyote','crack','cradle',
+      'craft','cram','crane','crash','crater','crawl','crazy','cream','credit','creek',
+      'crew','cricket','crime','crisp','critic','cross','crouch','crowd','crucial','cruel',
+      'cruise','crumble','crunch','crush','cry','crystal','cube','culture','cup','cupboard',
+      'curious','current','curtain','curve','cushion','custom','cute','cycle','dad','damage',
+      'damp','dance','danger','daring','dash','daughter','dawn','day','deal','debate',
+      'debris','decade','december','decide','decline','decorate','decrease','deer','defense','define',
+      'defy','degree','delay','deliver','demand','demise','denial','dentist','deny','depart',
+      'depend','deposit','depth','deputy','derive','describe','desert','design','desk','despair',
+      'destroy','detail','detect','develop','device','devote','diagram','dial','diamond','diary',
+      'dice','diesel','diet','differ','digital','dignity','dilemma','dinner','dinosaur','direct',
+      'dirt','disagree','discover','disease','dish','dismiss','disorder','display','distance','divert',
+      'divide','divorce','dizzy','doctor','document','dog','doll','dolphin','domain','donate',
+      'donkey','donor','door','dose','double','dove','draft','dragon','drama','drastic',
+      'draw','dream','dress','drift','drill','drink','drip','drive','drop','drum',
+      'dry','duck','dumb','dune','during','dust','dutch','duty','dwarf','dynamic',
+      'eager','eagle','early','earn','earth','easily','east','easy','echo','ecology',
+      'edge','edit','educate','effort','egg','eight','either','elbow','elder','electric',
+      'elegant','element','elephant','elevator','elite','else','embark','embody','embrace','emerge',
+      'emotion','employ','empower','empty','enable','enact','endless','endorse','enemy','energy',
+      'enforce','engage','engine','enhance','enjoy','enlist','enough','enrich','enroll','ensure',
+      'enter','entire','entry','envelope','episode','equal','equip','erase','erode','erosion',
+      'error','erupt','escape','essay','essence','estate','eternal','ethics','evidence','evil',
+      'evoke','evolve','exact','example','excess','exchange','excite','exclude','exercise','exhaust',
+      'exhibit','exile','exist','exit','exotic','expand','expire','explain','expose','express',
+      'extend','extra','eye','fable','face','faculty','faint','faith','fall','false',
+      'fame','family','famous','fan','fancy','fantasy','far','fashion','fat','fatal',
+      'father','fatigue','fault','favorite','feature','february','federal','fee','feed','feel',
+      'feet','fellow','felt','fence','festival','fetch','fever','few','fiber','fiction',
+      'field','figure','file','film','filter','final','find','fine','finger','finish',
+      'fire','firm','first','fiscal','fish','fit','fitness','fix','flag','flame',
+      'flash','flat','flavor','flee','flight','flip','float','flock','floor','flower',
+      'fluid','flush','fly','foam','focus','fog','foil','follow','food','foot',
+      'force','forest','forget','fork','fortune','forum','forward','fossil','foster','found',
+      'fox','fragile','frame','frequent','fresh','friend','fringe','frog','front','frown',
+      'frozen','fruit','fuel','fun','funny','furnace','fury','future','gadget','gain',
+      'galaxy','gallery','game','gap','garbage','garden','garlic','garment','gas','gasp',
+      'gate','gather','gauge','gaze','general','genius','genre','gentle','genuine','gesture',
+      'ghost','giant','gift','giggle','ginger','giraffe','girl','give','glad','glance',
+      'glare','glass','glide','glimpse','globe','gloom','glory','glove','glow','glue',
+      'goat','goddess','gold','good','goose','gorilla','gospel','gossip','govern','gown',
+      'grab','grace','grain','grant','grape','grasp','grass','gravity','great','green',
+      'grid','grief','grit','grocery','group','grow','grunt','guard','guide','guilt',
+      'guitar','gun','gym','habit','hair','half','hammer','hamster','hand','happy',
+      'harsh','harvest','hat','have','hawk','hazard','head','health','heart','heavy',
+      'hedgehog','height','hello','helmet','help','hero','hidden','high','hill','hint',
+      'hip','hire','history','hobby','hockey','hold','hole','holiday','hollow','home',
+      'honey','hood','hope','horn','hospital','host','hour','hover','hub','huge',
+      'human','humble','humor','hundred','hungry','hunt','hurdle','hurry','hurt','husband',
+      'hybrid','ice','icon','ignore','ill','illegal','image','imitate','immense','immune',
+      'impact','impose','improve','impulse','inbox','income','increase','index','indicate','indoor',
+      'industry','infant','inflict','inform','inhale','inject','inner','innocent','input','inquiry',
+      'insane','insect','inside','inspire','install','intact','interest','into','invest','invite',
+      'involve','iron','island','isolate','issue','item','ivory','jacket','jaguar','jar',
+      'jazz','jealous','jeans','jelly','jewel','job','join','joke','journey','joy',
+      'judge','juice','jump','jungle','junior','junk','just','kangaroo','keen','keep',
+      'ketchup','key','kick','kid','kingdom','kiss','kit','kitchen','kite','kitten',
+      'kiwi','knee','knife','knock','know','lab','lamp','language','laptop','large',
+      'later','laugh','laundry','lava','law','lawn','lawsuit','layer','lazy','leader',
+      'learn','leave','lecture','left','leg','legal','legend','lemon','lend','length',
+      'lens','leopard','lesson','letter','level','liar','liberty','library','license','life',
+      'lift','like','limb','limit','link','lion','liquid','list','little','live',
+      'lizard','load','loan','lobster','local','lock','logic','lonely','long','loop',
+      'lottery','loud','lounge','love','loyal','lucky','luggage','lumber','lunar','lunch',
+      'luxury','mad','magic','magnet','maid','main','mammal','mango','mansion','manual',
+      'maple','marble','march','margin','marine','market','marriage','mask','master','match',
+      'material','math','matter','maximum','maze','meadow','mean','medal','media','melody',
+      'melt','member','memory','mention','menu','mercy','mesh','message','metal','method',
+      'middle','midnight','milk','million','mimic','mind','minimum','minor','minute','miracle',
+      'miss','mitten','model','modify','mom','monitor','monkey','monster','month','moon',
+      'moral','more','morning','mosquito','mother','motion','motor','mountain','mouse','move',
+      'movie','much','muffin','mule','multiply','muscle','museum','mushroom','music','must',
+      'mutual','myself','mystery','naive','name','napkin','narrow','nasty','natural','nature',
+      'near','neck','need','negative','neglect','neither','nephew','nerve','nest','never',
+      'news','next','nice','night','noble','noise','nominee','noodle','normal','north',
+      'notable','note','nothing','notice','novel','now','nuclear','number','nurse','nut',
+      'oak','obey','object','oblige','obscure','obtain','ocean','october','odor','off',
+      'offer','office','often','oil','okay','old','olive','olympic','omit','once',
+      'onion','open','opera','oppose','option','orange','orbit','orchard','order','ordinary',
+      'organ','orient','original','orphan','ostrich','other','outdoor','outside','oval','over',
+      'own','oyster','ozone','pact','paddle','page','pair','palace','palm','panda',
+      'panel','panic','panther','paper','parade','parent','park','parrot','party','pass',
+      'patch','path','patrol','pause','pave','payment','peace','peanut','pear','peasant',
+      'pelican','pen','penalty','pencil','people','pepper','perfect','permit','person','pet',
+      'phone','photo','phrase','physical','piano','picnic','picture','piece','pig','pigeon',
+      'pill','pilot','pink','pioneer','pipe','pistol','pitch','pizza','place','planet',
+      'plastic','plate','play','please','pledge','pluck','plug','plunge','poem','poet',
+      'point','polar','pole','police','pond','pony','pool','popular','portion','position',
+      'possible','post','potato','pottery','poverty','powder','power','practice','praise','predict',
+      'prefer','prepare','present','pretty','prevent','price','pride','primary','print','priority',
+      'prison','private','prize','problem','process','produce','profit','program','project','promote',
+      'proof','property','prosper','protect','proud','provide','public','pudding','pull','pulp',
+      'pulse','pumpkin','punish','pupil','purchase','purity','purpose','push','put','puzzle',
+      'pyramid','quality','quantum','quarter','question','quick','quit','quiz','quote','rabbit',
+      'raccoon','race','rack','radar','radio','rage','rail','rain','raise','rally',
+      'ramp','ranch','random','range','rapid','rare','rate','rather','raven','reach',
+      'ready','real','reason','rebel','rebuild','recall','receive','recipe','record','recycle',
+      'reduce','reflect','reform','refuse','region','regret','regular','reject','relax','release',
+      'relief','rely','remain','remember','remind','remove','render','renew','rent','reopen',
+      'repair','repeat','replace','report','require','rescue','resemble','resist','resource','response',
+      'result','retire','retreat','return','reunion','reveal','review','reward','rhythm','ribbon',
+      'rice','rich','ride','ridge','rifle','right','rigid','ring','riot','ripple',
+      'risk','ritual','rival','river','road','roast','robot','robust','rocket','romance',
+      'roof','rookie','rose','rotate','rough','royal','rubber','rude','rug','rule',
+      'run','runway','rural','sad','saddle','sadness','safe','sail','salad','salmon',
+      'salon','salt','salute','same','sample','sand','satisfy','satoshi','sauce','sausage',
+      'save','scale','scan','scatter','scene','scheme','science','scissors','scorpion','scout',
+      'scrap','screen','script','scrub','sea','search','season','seat','second','secret',
+      'section','security','seek','segment','select','sell','seminar','senior','sense','sentence',
+      'series','service','session','settle','setup','seven','shadow','shaft','shallow','share',
+      'shed','shell','sheriff','shield','shift','shine','ship','shiver','shock','shoe',
+      'shoot','shop','short','shoulder','shove','shrimp','shrug','shuffle','shy','sibling',
+      'siege','sight','sign','silent','silk','silly','silver','similar','simple','since',
+      'sing','siren','sister','situate','six','size','sketch','ski','skill','skin',
+      'skirt','skull','slab','slam','sleep','slender','slice','slide','slight','slim',
+      'slogan','slot','slow','slush','small','smart','smile','smoke','smooth','snack',
+      'snake','snap','sniff','snow','soap','soccer','social','sock','solar','soldier',
+      'solid','solution','solve','someone','song','soon','sorry','soul','sound','soup',
+      'source','south','space','spare','spatial','spawn','speak','special','speed','sphere',
+      'spice','spider','spike','spin','spirit','split','spoil','sponsor','spoon','spray',
+      'spread','spring','spy','square','squeeze','squirrel','stable','stadium','staff','stage',
+      'stairs','stamp','stand','start','state','stay','steak','steel','stem','step',
+      'stereo','stick','still','sting','stock','stomach','stone','stop','store','stream',
+      'street','strike','strong','struggle','student','stuff','stumble','subject','submit','subway',
+      'success','such','sudden','suffer','sugar','suggest','suit','summer','sun','sunny',
+      'sunset','super','supply','supreme','sure','surface','surge','surprise','sustain','swallow',
+      'swamp','swap','swear','sweet','swift','swim','swing','switch','sword','symbol',
+      'symptom','syrup','table','tackle','tag','tail','talent','tank','tape','target',
+      'task','tattoo','taxi','teach','team','tell','ten','tenant','term','test',
+      'text','thank','that','theme','then','theory','there','they','thing','this',
+      'thought','three','thrive','throw','thumb','thunder','ticket','tilt','timber','time',
+      'tiny','tip','tired','title','toast','tobacco','today','together','toilet','token',
+      'tomato','tomorrow','tone','tongue','tonight','tool','tooth','top','topic','topple',
+      'torch','tornado','tortoise','toss','total','tourist','toward','tower','town','toy',
+      'track','trade','traffic','tragic','train','transfer','trap','trash','travel','tray',
+      'treat','tree','trend','trial','tribe','trick','trigger','trim','trip','trophy',
+      'trouble','truck','truly','trumpet','trust','truth','try','tube','tuition','tumble',
+      'tuna','tunnel','turkey','turn','turtle','twelve','twenty','twice','twin','twist',
+      'two','type','typical','ugly','umbrella','unable','unaware','uncle','uncover','under',
+      'undo','unfair','unfold','unhappy','uniform','unique','universe','unknown','unlock','until',
+      'unusual','unveil','update','upgrade','uphold','upon','upper','upset','urban','useful',
+      'useless','usual','utility','vacant','vacuum','vague','valid','valley','valve','van',
+      'vanish','vapor','various','vast','vault','vehicle','velvet','vendor','venture','venue',
+      'verb','verify','version','very','veteran','viable','vibrant','vicious','victory','video',
+      'view','village','vintage','violin','virtual','virus','visa','visit','visual','vital',
+      'vivid','vocal','voice','void','volcano','volume','vote','voyage','wage','wagon',
+      'wait','walk','wall','walnut','want','warfare','warm','warrior','waste','water',
+      'wave','way','wealth','weapon','wear','weasel','weather','web','wedding','weekend',
+      'weird','welcome','well','west','wet','whale','wheat','wheel','when','where',
+      'whip','whisper','wide','width','wife','wild','will','win','window','wine',
+      'wing','wink','winner','winter','wire','wisdom','wise','wish','witness','wolf',
+      'woman','wonder','wood','wool','word','world','worry','worth','wrap','wreck',
+      'wrestle','wrist','write','wrong','yard','year','yellow','you','young','youth',
+      'zebra','zero','zone','zoo'
+    ];
+    // Verify wordlist has exactly 2048 entries
+    // (WORDLIST.length === 2048)
+
+    // =====================================================================
+    // SHA-256 via Web Crypto API (async)
+    // =====================================================================
+    async function sha256(bytes) {
+      var buf = await crypto.subtle.digest('SHA-256', bytes.buffer);
+      return new Uint8Array(buf);
+    }
+
+    // =====================================================================
+    // BIP39 Generation
+    // =====================================================================
+    var WORD_COUNTS = { 12: 128, 15: 160, 18: 192, 21: 224, 24: 256 };
+
+    async function generateMnemonic(wordCount) {
+      var entropyBits = WORD_COUNTS[wordCount];
+      var entropyBytes = entropyBits / 8;
+
+      // 1. Generate entropy
+      var entropy = new Uint8Array(entropyBytes);
+      crypto.getRandomValues(entropy);
+
+      // 2. SHA-256 hash of entropy
+      var hash = await sha256(entropy);
+
+      // 3. Append checksum bits
+      var checksumBits = entropyBits / 32;
+      var checksumByte = hash[0];
+      // Build bit string
+      var bits = [];
+      for (var i = 0; i < entropy.length; i++) {
+        for (var b = 7; b >= 0; b--) {
+          bits.push((entropy[i] >> b) & 1);
+        }
+      }
+      // Append first checksumBits bits from hash[0]
+      for (var b = 7; b >= 7 - checksumBits + 1; b--) {
+        bits.push((checksumByte >> b) & 1);
+      }
+
+      // 4. Split into 11-bit groups
+      var words = [];
+      for (var i = 0; i < wordCount; i++) {
+        var index = 0;
+        for (var j = 0; j < 11; j++) {
+          index = (index << 1) | bits[i * 11 + j];
+        }
+        words.push(WORDLIST[index]);
+      }
+
+      return {
+        words: words,
+        entropyBits: entropyBits,
+        checksumBits: checksumBits,
+        totalBits: entropyBits + checksumBits
+      };
+    }
+
+    // =====================================================================
+    // BIP39 Verification
+    // =====================================================================
+    async function verifyMnemonic(phrase) {
+      var words = phrase.trim().toLowerCase().split(/\s+/);
+      var wordCount = words.length;
+
+      if (![12, 15, 18, 21, 24].indexOf(wordCount) !== -1 && !WORD_COUNTS[wordCount]) {
+        return { valid: false, error: 'Invalid word count: ' + wordCount + '. BIP39 requires 12, 15, 18, 21, or 24 words.', words: words };
+      }
+
+      var entropyBits = WORD_COUNTS[wordCount];
+      if (!entropyBits) {
+        return { valid: false, error: 'Invalid word count: ' + wordCount + '. BIP39 requires 12, 15, 18, 21, or 24 words.', words: words };
+      }
+
+      // Validate each word
+      var indices = [];
+      var invalidWords = [];
+      for (var i = 0; i < words.length; i++) {
+        var idx = WORDLIST.indexOf(words[i]);
+        if (idx === -1) invalidWords.push({ index: i, word: words[i] });
+        indices.push(idx);
+      }
+
+      if (invalidWords.length > 0) {
+        return {
+          valid: false,
+          error: 'Unknown word(s): ' + invalidWords.map(function (w) { return '"' + w.word + '" (position ' + (w.index + 1) + ')'; }).join(', '),
+          words: words,
+          invalidPositions: invalidWords.map(function (w) { return w.index; })
+        };
+      }
+
+      // Reconstruct bit string from indices
+      var bits = [];
+      for (var i = 0; i < indices.length; i++) {
+        for (var b = 10; b >= 0; b--) {
+          bits.push((indices[i] >> b) & 1);
+        }
+      }
+
+      // Split into entropy bits and checksum bits
+      var checksumBits = entropyBits / 32;
+      var entropyBitArr = bits.slice(0, entropyBits);
+      var givenChecksum = bits.slice(entropyBits, entropyBits + checksumBits);
+
+      // Reconstruct entropy bytes
+      var entropyBytes = new Uint8Array(entropyBits / 8);
+      for (var i = 0; i < entropyBytes.length; i++) {
+        var val = 0;
+        for (var b = 0; b < 8; b++) {
+          val = (val << 1) | entropyBitArr[i * 8 + b];
+        }
+        entropyBytes[i] = val;
+      }
+
+      // Compute expected checksum
+      var hash = await sha256(entropyBytes);
+      var expectedChecksumByte = hash[0];
+      var expectedChecksum = [];
+      for (var b = 7; b >= 7 - checksumBits + 1; b--) {
+        expectedChecksum.push((expectedChecksumByte >> b) & 1);
+      }
+
+      // Compare
+      var checksumMatch = givenChecksum.join('') === expectedChecksum.join('');
+
+      return {
+        valid: checksumMatch,
+        words: words,
+        entropyBits: entropyBits,
+        checksumBits: checksumBits,
+        givenChecksum: givenChecksum.join(''),
+        expectedChecksum: expectedChecksum.join(''),
+        error: checksumMatch ? null : 'Checksum mismatch. Given: ' + givenChecksum.join('') + ', Expected: ' + expectedChecksum.join('') + '. The phrase may contain a typo.'
+      };
+    }
+
+    // =====================================================================
+    // UI State
+    // =====================================================================
+    var currentWordCount = 12;
+    var currentMode = 'generate';
+    var lastMnemonic = null;
+
+    function setStatus(cls, text) {
+      var sb = document.getElementById('statusBar');
+      sb.className = 'status-bar ' + cls;
+      sb.textContent = text;
+    }
+
+    // Mode switching
+    document.querySelectorAll('#modeChips .option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('#modeChips .option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentMode = chip.getAttribute('data-mode');
+        document.getElementById('panel-generate').style.display = currentMode === 'generate' ? '' : 'none';
+        document.getElementById('panel-verify').style.display = currentMode === 'verify' ? '' : 'none';
+        setStatus('info', 'Switched to ' + chip.textContent + ' mode.');
+      });
+    });
+
+    // Word count chips
+    document.querySelectorAll('#wordCountChips .option-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('#wordCountChips .option-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        currentWordCount = parseInt(chip.getAttribute('data-words'), 10);
+        setStatus('info', currentWordCount + '-word phrase selected (' + WORD_COUNTS[currentWordCount] + ' bits entropy).');
+      });
+    });
+
+    // Render word grid
+    function renderWordGrid(containerId, words, invalidPositions) {
+      var container = document.getElementById(containerId);
+      container.innerHTML = '';
+      container.style.display = 'grid';
+      invalidPositions = invalidPositions || [];
+      words.forEach(function (word, i) {
+        var div = document.createElement('div');
+        div.className = 'mnemonic-word';
+        if (invalidPositions.indexOf(i) !== -1) div.classList.add('word-invalid');
+        else if (containerId === 'verifyWordGrid') div.classList.add('word-valid');
+        var numSpan = document.createElement('span');
+        numSpan.className = 'word-num';
+        numSpan.textContent = (i + 1) + '.';
+        var wordSpan = document.createElement('span');
+        wordSpan.textContent = word;
+        div.appendChild(numSpan);
+        div.appendChild(wordSpan);
+        container.appendChild(div);
+      });
+    }
+
+    // =====================================================================
+    // Generate Mode
+    // =====================================================================
+    document.getElementById('generateBtn').addEventListener('click', function () {
+      var btn = this;
+      btn.disabled = true;
+      btn.textContent = 'Generating…';
+      generateMnemonic(currentWordCount).then(function (result) {
+        lastMnemonic = result;
+        var phrase = result.words.join(' ');
+
+        // Show grid
+        document.getElementById('mnemonicPlaceholder').style.display = 'none';
+        renderWordGrid('mnemonicGrid', result.words, []);
+        document.getElementById('rawPhraseOutput').textContent = phrase;
+
+        // Show entropy bar
+        var eb = document.getElementById('entropyBar');
+        eb.style.display = 'flex';
+        document.getElementById('infoEntropy').textContent = result.entropyBits + ' bits';
+        document.getElementById('infoChecksum').textContent = result.checksumBits + ' bits';
+        document.getElementById('infoTotal').textContent = result.totalBits + ' bits';
+        document.getElementById('infoWords').textContent = result.words.length;
+        document.getElementById('infoSecurity').textContent = result.entropyBits + '-bit (' + (result.entropyBits === 128 ? 'High' : result.entropyBits === 256 ? 'Maximum' : 'Very High') + ')';
+
+        setStatus('valid', result.words.length + '-word mnemonic — ' + result.entropyBits + ' bits entropy — Valid checksum');
+        DT.trackTool('bip39-mnemonic');
+      }).catch(function (e) {
+        setStatus('invalid', 'Generation failed: ' + e.message);
+      }).finally(function () {
+        btn.disabled = false;
+        btn.textContent = 'Generate Phrase';
+      });
+    });
+
+    document.getElementById('clearGenBtn').addEventListener('click', function () {
+      document.getElementById('mnemonicGrid').style.display = 'none';
+      document.getElementById('mnemonicGrid').innerHTML = '';
+      document.getElementById('mnemonicPlaceholder').style.display = '';
+      document.getElementById('rawPhraseOutput').textContent = '';
+      document.getElementById('entropyBar').style.display = 'none';
+      lastMnemonic = null;
+      setStatus('info', 'Cleared.');
+    });
+
+    document.getElementById('copyPhraseBtn').addEventListener('click', function () {
+      var t = document.getElementById('rawPhraseOutput').textContent;
+      if (t) DT.copyToClipboard(t, this);
+    });
+
+    document.getElementById('downloadPhraseBtn').addEventListener('click', function () {
+      var t = document.getElementById('rawPhraseOutput').textContent;
+      if (t) {
+        var info = lastMnemonic ? ('BIP39 Mnemonic — ' + lastMnemonic.words.length + ' words — ' + lastMnemonic.entropyBits + '-bit entropy\n' +
+          'Generated: ' + new Date().toISOString() + '\n\n' +
+          'KEEP THIS FILE SECURE. DO NOT SHARE.\n\n') : '';
+        DT.downloadText(info + t, 'mnemonic.txt', 'text/plain');
+      }
+    });
+
+    // =====================================================================
+    // Verify Mode
+    // =====================================================================
+    function doVerify() {
+      var phrase = document.getElementById('verifyInput').value;
+      if (!phrase.trim()) { setStatus('invalid', 'Enter a mnemonic phrase to verify.'); return; }
+
+      document.getElementById('verifyBtn').disabled = true;
+      document.getElementById('verifyBtn').textContent = 'Verifying…';
+
+      verifyMnemonic(phrase).then(function (result) {
+        renderWordGrid('verifyWordGrid', result.words, result.invalidPositions || []);
+
+        var out = document.getElementById('verifyOutput');
+        if (result.valid) {
+          out.textContent =
+            'Status        : VALID\n' +
+            'Word count    : ' + result.words.length + '\n' +
+            'Entropy bits  : ' + result.entropyBits + '\n' +
+            'Checksum bits : ' + result.checksumBits + '\n' +
+            'Checksum      : ' + result.givenChecksum + ' (matches)\n' +
+            'All words     : Present in BIP39 English wordlist\n\n' +
+            'This is a structurally valid BIP39 mnemonic phrase.';
+          setStatus('valid', result.words.length + '-word mnemonic — ' + result.entropyBits + ' bits entropy — Valid checksum');
+        } else {
+          out.textContent = 'Status : INVALID\n\nReason: ' + result.error;
+          setStatus('invalid', 'Invalid mnemonic — ' + result.error);
+        }
+      }).catch(function (e) {
+        setStatus('invalid', 'Verification failed: ' + e.message);
+      }).finally(function () {
+        document.getElementById('verifyBtn').disabled = false;
+        document.getElementById('verifyBtn').textContent = 'Verify Phrase';
+      });
+
+      DT.trackTool('bip39-mnemonic');
+    }
+
+    document.getElementById('verifyBtn').addEventListener('click', doVerify);
+
+    document.getElementById('verifyTryExample').addEventListener('click', function () {
+      // Well-known BIP39 test vector (all "abandon" except last word "about")
+      document.getElementById('verifyInput').value = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+      doVerify();
+    });
+
+    document.getElementById('clearVerifyBtn').addEventListener('click', function () {
+      document.getElementById('verifyInput').value = '';
+      document.getElementById('verifyOutput').textContent = '';
+      document.getElementById('verifyWordGrid').style.display = 'none';
+      document.getElementById('verifyWordGrid').innerHTML = '';
+      setStatus('info', 'Cleared.');
+    });
+
+    document.getElementById('verifyInput').addEventListener('input', DT.debounce(function () {
+      var words = document.getElementById('verifyInput').value.trim().split(/\s+/);
+      if (WORD_COUNTS[words.length]) doVerify();
+    }, 600));
+
+  })();
+  </script>
+</body>
+</html>

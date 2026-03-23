@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>IBAN Validator & Formatter — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Validate IBANs using the ISO 13616 mod-97 checksum algorithm. Format IBANs with spaces, extract BBAN, bank code, and account number. Country-length reference table. Free, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/iban-validator.html">
+  <meta property="og:title" content="IBAN Validator & Formatter — ThisDevTool">
+  <meta property="og:description" content="Validate and format IBANs (ISO 13616 mod-97). Extract country, check digits, BBAN, and bank code. Country-length reference table. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/iban-validator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "IBAN Validator & Formatter",
+    "url": "https://thisdevtool.com/tools/iban-validator.html",
+    "description": "Validate IBANs using the ISO 13616 mod-97 checksum algorithm. Format IBANs with spaces every 4 characters. Extract BBAN, bank code, account number, and country. Country-length reference table included. Free, instant, 100% client-side.",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is an IBAN?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An IBAN (International Bank Account Number) is a standardized international numbering system developed by the ISO (ISO 13616) and SWIFT to uniquely identify bank accounts across national borders. An IBAN begins with a 2-letter country code (ISO 3166-1 alpha-2), followed by 2 check digits calculated using the mod-97 algorithm, and then the BBAN (Basic Bank Account Number) — a country-specific string of letters and digits encoding the bank, branch, and account number."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does IBAN validation work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "IBAN validation uses the mod-97 algorithm specified in ISO 13616. The process is: (1) Move the first 4 characters (country code + check digits) to the end of the string. (2) Replace each letter with its numeric equivalent (A=10, B=11, ..., Z=35). (3) Interpret the resulting string as a large integer and compute its remainder when divided by 97. A valid IBAN produces a remainder of exactly 1. This tool uses JavaScript's BigInt to handle the large integers without floating-point precision errors."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the BBAN in an IBAN?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The BBAN (Basic Bank Account Number) is the country-specific part of an IBAN that follows the 4-character prefix (country code + check digits). The BBAN format and length varies by country. For example, a German BBAN is 18 digits (8-digit bank code + 10-digit account number), while a UK BBAN is 18 alphanumeric characters (4-letter bank code + 6-digit sort code + 8-digit account number). The BBAN length determines the total IBAN length for each country."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are IBANs used worldwide?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "IBANs are mandatory within the Single Euro Payments Area (SEPA), which includes all EU member states, EEA countries (Iceland, Liechtenstein, Norway), Switzerland, and the United Kingdom. Outside SEPA, many countries in the Middle East, North Africa, and the Caribbean have adopted IBANs voluntarily. The United States, Canada, Australia, and most of Asia still use different account number formats (routing numbers + account numbers for the US). Always check whether a specific country uses IBANs before making an international transfer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between IBAN and SWIFT/BIC?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "An IBAN identifies a specific bank account at a specific institution in a specific country. A SWIFT code (also called a BIC — Bank Identifier Code) identifies the bank institution itself, not the account. For international wire transfers you typically need both: the IBAN to specify the account and the SWIFT/BIC to route the payment to the correct bank. The IBAN standard is maintained by SWIFT and the ISO, but the two identifiers serve different purposes and have different formats."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .iban-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 16px; }
+    .iban-table th, .iban-table td { padding: 6px 10px; border: 1px solid var(--border); text-align: left; }
+    .iban-table th { background: var(--surface-2, #f3f4f6); font-weight: 600; }
+    .iban-table tr:nth-child(even) td { background: var(--surface-1, #fafafa); }
+    .iban-result-grid { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; font-size: 0.9rem; margin-top: 8px; }
+    .iban-result-grid dt { font-weight: 600; color: var(--text-muted, #6b7280); }
+    .iban-result-grid dd { font-family: monospace; margin: 0; }
+    .badge-valid   { display:inline-block; padding:2px 10px; border-radius:12px; background:#d1fae5; color:#065f46; font-weight:700; font-size:0.85rem; }
+    .badge-invalid { display:inline-block; padding:2px 10px; border-radius:12px; background:#fee2e2; color:#991b1b; font-weight:700; font-size:0.85rem; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/mac-address-generator.html">MAC Generator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>IBAN Validator &amp; Formatter</h1>
+          <p class="tool-subtitle">Validate IBANs with the ISO 13616 mod-97 algorithm. Format, decode, and look up country lengths.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips" id="modeChips">
+            <button class="option-chip active" data-mode="validate">Validate</button>
+            <button class="option-chip" data-mode="format">Format</button>
+            <button class="option-chip" data-mode="reference">Reference</button>
+          </div>
+
+          <!-- Validate / Format Panel -->
+          <div id="mainPanel">
+            <div class="form-group" style="margin-top:12px;">
+              <label for="ibanInput">IBAN</label>
+              <input type="text" id="ibanInput"
+                placeholder="e.g. GB82WEST12345698765432"
+                style="font-family:monospace;max-width:480px;text-transform:uppercase;"
+                autocomplete="off" autocorrect="off" spellcheck="false">
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;align-items:center;">
+              <button class="btn btn-primary" id="runBtn">Validate / Format</button>
+              <button class="btn btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            </div>
+
+            <!-- Result area -->
+            <div id="resultArea" style="display:none;margin-top:20px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <span id="validBadge"></span>
+                <span id="formattedDisplay" style="font-family:monospace;font-size:1.1rem;letter-spacing:0.05em;"></span>
+                <button class="btn btn-sm btn-secondary" id="copyIbanBtn" style="margin-left:auto;">Copy</button>
+              </div>
+              <dl class="iban-result-grid" id="resultGrid"></dl>
+            </div>
+          </div>
+
+          <!-- Reference Panel -->
+          <div id="referencePanel" style="display:none;margin-top:16px;">
+            <p style="margin-bottom:8px;color:var(--text-muted,#6b7280);">IBAN lengths by country (ISO 13616). Total length includes country code (2) + check digits (2) + BBAN.</p>
+            <div style="overflow-x:auto;">
+              <table class="iban-table" id="refTable">
+                <thead>
+                  <tr><th>Country</th><th>Code</th><th>Length</th><th>BBAN Format</th></tr>
+                </thead>
+                <tbody id="refBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter an IBAN and click Validate / Format.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the IBAN Validator</h2>
+          <ol>
+            <li><strong>Validate mode</strong> — paste any IBAN (with or without spaces) and click Validate / Format. The tool checks the mod-97 checksum and reports the country, check digits, BBAN, and bank code.</li>
+            <li><strong>Format mode</strong> — same input; the tool also displays the IBAN in paper/print format with spaces every 4 characters (e.g., <code>GB82 WEST 1234 5698 7654 32</code>).</li>
+            <li><strong>Reference tab</strong> — a complete table of IBAN lengths and BBAN formats for every country that has adopted the standard.</li>
+            <li><strong>Try Example</strong> — loads the canonical test IBAN <code>GB82WEST12345698765432</code> from the ISO 13616 specification.</li>
+          </ol>
+
+          <h2>What Is an IBAN?</h2>
+          <p>The International Bank Account Number (IBAN) is a globally standardized format for identifying bank accounts, defined by ISO 13616 and maintained by SWIFT. It was introduced to simplify international wire transfers within Europe and is now mandatory across the 36-country SEPA zone. An IBAN is not a new account number — it is a way to express your existing account number in a format that can be processed automatically by any bank in the world.</p>
+
+          <h3>IBAN Structure</h3>
+          <p>An IBAN consists of three components:</p>
+          <ul>
+            <li><strong>Country Code (2 letters)</strong> — the ISO 3166-1 alpha-2 country code of the country where the account is held (e.g., <code>GB</code> for United Kingdom, <code>DE</code> for Germany).</li>
+            <li><strong>Check Digits (2 digits)</strong> — a mod-97 checksum that allows the recipient bank's system to verify the IBAN has not been mistyped or corrupted in transit.</li>
+            <li><strong>BBAN (variable length)</strong> — the Basic Bank Account Number, which is country-specific. In Germany the BBAN is 18 digits; in the UK it is 18 alphanumeric characters encoding a 4-character bank identifier, a 6-digit sort code, and an 8-digit account number.</li>
+          </ul>
+
+          <h3>The Mod-97 Validation Algorithm</h3>
+          <p>IBAN validation uses a modular arithmetic check defined in ISO 7064:</p>
+          <ol>
+            <li>Remove any spaces from the IBAN string and convert all letters to uppercase.</li>
+            <li>Move the first four characters (country code + check digits) to the end: <code>WEST12345698765432GB82</code>.</li>
+            <li>Replace each letter with its integer value: A=10, B=11, …, Z=35. This produces a long numeric string.</li>
+            <li>Interpret the entire string as a large integer and compute <code>number mod 97</code>.</li>
+            <li>If the remainder equals exactly 1, the IBAN is valid. Any other result means the IBAN contains an error.</li>
+          </ol>
+          <p>This tool performs the mod-97 calculation using JavaScript's <code>BigInt</code> type to avoid floating-point precision loss on the large integers that arise from long IBANs (up to 34 digits after letter substitution).</p>
+
+          <h3>IBAN vs. Account Number</h3>
+          <p>Your IBAN does not replace your domestic account number — it extends it with the country code and check digits. When transferring money domestically, you typically use your sort code and account number as before. When receiving an international transfer, you provide your IBAN and your bank's SWIFT/BIC code. The IBAN uniquely identifies your account globally without the recipient needing to know local routing formats.</p>
+
+          <h3>SEPA and Global Adoption</h3>
+          <p>Within the Single Euro Payments Area (SEPA), IBANs are mandatory for all credit transfers and direct debits. SEPA covers all 27 EU member states, plus Iceland, Liechtenstein, Norway, Switzerland, and the United Kingdom (post-Brexit). Outside SEPA, over 80 countries have adopted IBANs voluntarily, including Jordan, Saudi Arabia, Brazil, and most of the Caribbean. The United States, Canada, Australia, China, Japan, and India do not use IBANs for domestic transfers; international payments to these countries still require SWIFT routing numbers or equivalent local identifiers.</p>
+
+          <h3>Common IBAN Errors</h3>
+          <ul>
+            <li><strong>Transposed digits</strong> — swapping two adjacent digits is the most common data-entry error. The mod-97 check catches this reliably.</li>
+            <li><strong>Wrong country length</strong> — German IBANs are always 22 characters; UK IBANs are always 22 characters; French IBANs are 27 characters. If the length does not match the country's specification, the IBAN is wrong.</li>
+            <li><strong>Missing check digits</strong> — some systems strip leading zeros or special characters from the check digit field. Always transmit IBANs as a complete, unmodified string.</li>
+            <li><strong>Mixed up IBAN and account number</strong> — a German account number is 10 digits; the IBAN is 22 characters. Confusing them is surprisingly common when migrating legacy payment systems.</li>
+          </ul>
+
+          <p>For other financial calculation tools, see our <a href="/tools/timestamp-converter.html">Timestamp Converter</a> and <a href="/tools/base64.html">Base64 Encoder</a>.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is an IBAN?</button>
+            <div class="faq-answer">An IBAN (International Bank Account Number) is a standardized international numbering system developed by the ISO (ISO 13616) and SWIFT to uniquely identify bank accounts across national borders. An IBAN begins with a 2-letter country code (ISO 3166-1 alpha-2), followed by 2 check digits calculated using the mod-97 algorithm, and then the BBAN (Basic Bank Account Number) — a country-specific string of letters and digits encoding the bank, branch, and account number.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How does IBAN validation work?</button>
+            <div class="faq-answer">IBAN validation uses the mod-97 algorithm specified in ISO 13616. The process is: (1) Move the first 4 characters (country code + check digits) to the end of the string. (2) Replace each letter with its numeric equivalent (A=10, B=11, ..., Z=35). (3) Interpret the resulting string as a large integer and compute its remainder when divided by 97. A valid IBAN produces a remainder of exactly 1. This tool uses JavaScript's BigInt to handle the large integers without floating-point precision errors.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the BBAN in an IBAN?</button>
+            <div class="faq-answer">The BBAN (Basic Bank Account Number) is the country-specific part of an IBAN that follows the 4-character prefix (country code + check digits). The BBAN format and length varies by country. For example, a German BBAN is 18 digits (8-digit bank code + 10-digit account number), while a UK BBAN is 18 alphanumeric characters (4-letter bank code + 6-digit sort code + 8-digit account number). The BBAN length determines the total IBAN length for each country.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Are IBANs used worldwide?</button>
+            <div class="faq-answer">IBANs are mandatory within the Single Euro Payments Area (SEPA), which includes all EU member states, EEA countries (Iceland, Liechtenstein, Norway), Switzerland, and the United Kingdom. Outside SEPA, many countries in the Middle East, North Africa, and the Caribbean have adopted IBANs voluntarily. The United States, Canada, Australia, and most of Asia still use different account number formats.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between IBAN and SWIFT/BIC?</button>
+            <div class="faq-answer">An IBAN identifies a specific bank account at a specific institution in a specific country. A SWIFT code (also called a BIC — Bank Identifier Code) identifies the bank institution itself, not the account. For international wire transfers you typically need both: the IBAN to specify the account and the SWIFT/BIC to route the payment to the correct bank.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related Tools</h4>
+        <a href="/tools/mac-address-generator.html">MAC Address Generator</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/regex-tester.html">Regex Tester</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+
+      // ── Country data: [name, total_length, bban_description] ──────────────
+      var COUNTRIES = [
+        ['Albania',          'AL', 28, 'Bank(3) Branch(4) Account(16)'],
+        ['Andorra',          'AD', 24, 'Bank(4) Branch(4) Account(12) CkDig(4)'],
+        ['Austria',          'AT', 20, 'BLZ(5) Account(11)'],
+        ['Azerbaijan',       'AZ', 28, 'Bank(4) Account(20)'],
+        ['Bahrain',          'BH', 22, 'Bank(4) Account(14)'],
+        ['Belgium',          'BE', 16, 'Bank(3) Account(7) CkDig(2)'],
+        ['Bosnia',           'BA', 20, 'Bank(3) Branch(3) Account(8) CkDig(2)'],
+        ['Brazil',           'BR', 29, 'Bank(8) Branch(5) Account(10) Type(1)'],
+        ['Bulgaria',         'BG', 22, 'Bank(4) Branch(4) Type(2) Account(8)'],
+        ['Costa Rica',       'CR', 22, 'Spare(1) Bank(4) Account(14)'],
+        ['Croatia',          'HR', 21, 'Bank(7) Account(10)'],
+        ['Cyprus',           'CY', 28, 'Bank(3) Branch(5) Account(16)'],
+        ['Czech Republic',   'CZ', 24, 'Bank(4) Account(16)'],
+        ['Denmark',          'DK', 18, 'Bank(4) Account(10)'],
+        ['Dominican Rep.',   'DO', 28, 'Bank(4) Account(20)'],
+        ['El Salvador',      'SV', 28, 'Bank(4) Account(20)'],
+        ['Estonia',          'EE', 20, 'Bank(2) Branch(2) Account(11) CkDig(1)'],
+        ['Faroe Islands',    'FO', 18, 'Bank(4) Account(10)'],
+        ['Finland',          'FI', 18, 'Bank(6) Account(8)'],
+        ['France',           'FR', 27, 'Bank(5) Branch(5) Account(11) CkDig(2)'],
+        ['Georgia',          'GE', 22, 'Bank(2) Account(16)'],
+        ['Germany',          'DE', 22, 'BLZ(8) Account(10)'],
+        ['Gibraltar',        'GI', 23, 'Bank(4) Account(15)'],
+        ['Greece',           'GR', 27, 'Bank(3) Branch(4) Account(16)'],
+        ['Greenland',        'GL', 18, 'Bank(4) Account(10)'],
+        ['Guatemala',        'GT', 28, 'Bank(4) Account(20)'],
+        ['Hungary',          'HU', 28, 'Bank(3) Branch(4) Account(16) CkDig(1)'],
+        ['Iceland',          'IS', 26, 'Bank(4) Type(2) Account(6) ID(10)'],
+        ['Iraq',             'IQ', 23, 'Bank(4) Branch(3) Account(12)'],
+        ['Ireland',          'IE', 22, 'Bank(4) Branch(6) Account(8)'],
+        ['Israel',           'IL', 23, 'Bank(3) Branch(3) Account(13)'],
+        ['Italy',            'IT', 27, 'CkDig(1) Bank(5) Branch(5) Account(12)'],
+        ['Jordan',           'JO', 30, 'Bank(4) Branch(4) Account(18)'],
+        ['Kazakhstan',       'KZ', 20, 'Bank(3) Account(13)'],
+        ['Kosovo',           'XK', 20, 'Bank(2) Branch(2) Account(10) CkDig(2)'],
+        ['Kuwait',           'KW', 30, 'Bank(4) Account(22)'],
+        ['Latvia',           'LV', 21, 'Bank(4) Account(13)'],
+        ['Lebanon',          'LB', 28, 'Bank(4) Account(20)'],
+        ['Libya',            'LY', 25, 'Bank(3) Branch(3) Account(15)'],
+        ['Liechtenstein',    'LI', 21, 'Bank(5) Account(12)'],
+        ['Lithuania',        'LT', 20, 'Bank(5) Account(11)'],
+        ['Luxembourg',       'LU', 20, 'Bank(3) Account(13)'],
+        ['Malta',            'MT', 31, 'Bank(4) Branch(5) Account(18)'],
+        ['Mauritania',       'MR', 27, 'Bank(5) Branch(5) Account(11) CkDig(2)'],
+        ['Mauritius',        'MU', 30, 'Bank(4) Branch(2) Account(15) Currency(3)'],
+        ['Moldova',          'MD', 24, 'Bank(2) Account(18)'],
+        ['Monaco',           'MC', 27, 'Bank(5) Branch(5) Account(11) CkDig(2)'],
+        ['Montenegro',       'ME', 22, 'Bank(3) Account(13) CkDig(2)'],
+        ['Netherlands',      'NL', 18, 'Bank(4) Account(10)'],
+        ['North Macedonia',  'MK', 19, 'Bank(3) Account(10) CkDig(2)'],
+        ['Norway',           'NO', 15, 'Bank(4) Account(7)'],
+        ['Pakistan',         'PK', 24, 'Bank(4) Account(16)'],
+        ['Palestine',        'PS', 29, 'Bank(4) Account(21)'],
+        ['Poland',           'PL', 28, 'Bank(8) Account(16)'],
+        ['Portugal',         'PT', 25, 'Bank(4) Branch(4) Account(11) CkDig(2)'],
+        ['Qatar',            'QA', 29, 'Bank(4) Account(21)'],
+        ['Romania',          'RO', 24, 'Bank(4) Account(16)'],
+        ['Russia',           'RU', 33, 'Bank(9) BIK(5) Account(15)'],
+        ['San Marino',       'SM', 27, 'CkDig(1) Bank(5) Branch(5) Account(12)'],
+        ['Saudi Arabia',     'SA', 24, 'Bank(2) Account(18)'],
+        ['Serbia',           'RS', 22, 'Bank(3) Account(13) CkDig(2)'],
+        ['Slovak Republic',  'SK', 24, 'Bank(4) Account(16)'],
+        ['Slovenia',         'SI', 19, 'Bank(5) Account(8) CkDig(2)'],
+        ['Spain',            'ES', 24, 'Bank(4) Branch(4) CkDig(2) Account(10)'],
+        ['Sudan',            'SD', 18, 'Bank(2) Account(12)'],
+        ['Sweden',           'SE', 24, 'Bank(3) Account(17)'],
+        ['Switzerland',      'CH', 21, 'Bank(5) Account(12)'],
+        ['Timor-Leste',      'TL', 23, 'Bank(3) Account(14) CkDig(2)'],
+        ['Tunisia',          'TN', 24, 'Bank(2) Branch(3) Account(13) CkDig(2)'],
+        ['Turkey',           'TR', 26, 'Bank(5) Spare(1) Account(16)'],
+        ['Ukraine',          'UA', 29, 'Bank(6) Account(19)'],
+        ['United Kingdom',   'GB', 22, 'Bank(4) SortCode(6) Account(8)'],
+        ['Vatican City',     'VA', 22, 'Bank(3) Account(15)']
+      ];
+
+      // Build lookup by country code
+      var COUNTRY_MAP = {};
+      COUNTRIES.forEach(function (c) { COUNTRY_MAP[c[1]] = c; });
+
+      // ── DOM refs ──────────────────────────────────────────────────────────
+      var statusBar     = document.getElementById('statusBar');
+      var ibanInput     = document.getElementById('ibanInput');
+      var resultArea    = document.getElementById('resultArea');
+      var resultGrid    = document.getElementById('resultGrid');
+      var validBadge    = document.getElementById('validBadge');
+      var fmtDisplay    = document.getElementById('formattedDisplay');
+      var mainPanel     = document.getElementById('mainPanel');
+      var referencePanel= document.getElementById('referencePanel');
+
+      var currentMode   = 'validate';
+
+      // ── IBAN core logic ───────────────────────────────────────────────────
+      function clean(str) {
+        return str.replace(/\s+/g, '').toUpperCase();
+      }
+
+      function formatPaper(iban) {
+        // Space every 4 chars
+        return iban.match(/.{1,4}/g).join(' ');
+      }
+
+      function lettersToNumbers(str) {
+        return str.replace(/[A-Z]/g, function (ch) {
+          return (ch.charCodeAt(0) - 55).toString(); // A=10, B=11 ... Z=35
+        });
+      }
+
+      function mod97(numStr) {
+        // Process in chunks to avoid BigInt for environments that lack it,
+        // but use BigInt if available (all modern browsers).
+        if (typeof BigInt !== 'undefined') {
+          return Number(BigInt(numStr) % BigInt(97));
+        }
+        // Fallback: chunk division
+        var remainder = 0;
+        for (var i = 0; i < numStr.length; i++) {
+          remainder = (remainder * 10 + parseInt(numStr[i], 10)) % 97;
+        }
+        return remainder;
+      }
+
+      function validateIBAN(raw) {
+        var iban = clean(raw);
+        if (iban.length < 4) return { valid: false, error: 'Too short to be a valid IBAN.' };
+
+        var countryCode = iban.substring(0, 2);
+        if (!/^[A-Z]{2}$/.test(countryCode)) return { valid: false, error: 'Country code must be 2 letters.' };
+
+        var checkDigits = iban.substring(2, 4);
+        if (!/^[0-9]{2}$/.test(checkDigits)) return { valid: false, error: 'Check digits must be 2 numeric characters.' };
+
+        var countryInfo = COUNTRY_MAP[countryCode];
+        if (countryInfo && iban.length !== countryInfo[2]) {
+          return {
+            valid: false,
+            error: countryCode + ' IBANs must be exactly ' + countryInfo[2] + ' characters (got ' + iban.length + ').',
+            countryInfo: countryInfo
+          };
+        }
+
+        // Move first 4 chars to end
+        var rearranged = iban.substring(4) + iban.substring(0, 4);
+        var numeric = lettersToNumbers(rearranged);
+
+        var remainder = mod97(numeric);
+        var isValid = (remainder === 1);
+
+        return {
+          valid: isValid,
+          iban: iban,
+          countryCode: countryCode,
+          checkDigits: checkDigits,
+          bban: iban.substring(4),
+          countryInfo: countryInfo || null,
+          remainder: remainder
+        };
+      }
+
+      // ── Display ───────────────────────────────────────────────────────────
+      function showResult(result) {
+        resultArea.style.display = '';
+
+        if (!result.valid) {
+          validBadge.innerHTML = '<span class="badge-invalid">Invalid</span>';
+          fmtDisplay.textContent = '';
+          resultGrid.innerHTML = '<dt>Error</dt><dd>' + result.error + '</dd>';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = (ibanInput.value.trim() || 'IBAN') + ' — Invalid';
+
+          if (result.countryInfo) {
+            resultGrid.innerHTML += '<dt>Country</dt><dd>' + result.countryInfo[0] + ' (' + result.countryInfo[1] + ')</dd>';
+            resultGrid.innerHTML += '<dt>Expected Length</dt><dd>' + result.countryInfo[2] + ' characters</dd>';
+          }
+          return;
+        }
+
+        var paper = formatPaper(result.iban);
+        validBadge.innerHTML = '<span class="badge-valid">Valid</span>';
+        fmtDisplay.textContent = paper;
+
+        var rows = [];
+        rows.push(['Formatted', paper]);
+        rows.push(['Country Code', result.countryCode + (result.countryInfo ? ' (' + result.countryInfo[0] + ')' : '')]);
+        rows.push(['Check Digits', result.checkDigits]);
+        rows.push(['BBAN', result.bban]);
+
+        if (result.countryInfo) {
+          rows.push(['Expected Length', result.countryInfo[2] + ' characters']);
+          rows.push(['BBAN Format', result.countryInfo[3]]);
+        }
+
+        rows.push(['Mod-97 Result', result.remainder + ' (must be 1)']);
+
+        resultGrid.innerHTML = rows.map(function (r) {
+          return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>';
+        }).join('');
+
+        statusBar.className = 'status-bar valid';
+        var parts = [paper, 'Valid'];
+        if (result.countryInfo) parts.push(result.countryInfo[0]);
+        statusBar.textContent = parts.join(' — ');
+      }
+
+      function doRun() {
+        var raw = ibanInput.value.trim();
+        if (!raw) {
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter an IBAN and click Validate / Format.';
+          resultArea.style.display = 'none';
+          return;
+        }
+        var result = validateIBAN(raw);
+        showResult(result);
+        DT.trackTool('iban-validator');
+      }
+
+      // ── Reference table ───────────────────────────────────────────────────
+      function buildRefTable() {
+        var tbody = document.getElementById('refBody');
+        var rows = COUNTRIES.map(function (c) {
+          return '<tr><td>' + c[0] + '</td><td>' + c[1] + '</td><td>' + c[2] + '</td><td>' + c[3] + '</td></tr>';
+        });
+        tbody.innerHTML = rows.join('');
+      }
+
+      // ── Mode switching ────────────────────────────────────────────────────
+      function setMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('#modeChips .option-chip').forEach(function (c) {
+          c.classList.toggle('active', c.getAttribute('data-mode') === mode);
+        });
+        var isRef = (mode === 'reference');
+        mainPanel.style.display      = isRef ? 'none' : '';
+        referencePanel.style.display = isRef ? '' : 'none';
+        if (isRef) {
+          buildRefTable();
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'IBAN country-length reference table.';
+        }
+      }
+
+      // ── Event listeners ───────────────────────────────────────────────────
+      document.querySelectorAll('#modeChips .option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          setMode(chip.getAttribute('data-mode'));
+        });
+      });
+
+      document.getElementById('runBtn').addEventListener('click', doRun);
+
+      ibanInput.addEventListener('input', function () {
+        // Auto-uppercase
+        var pos = this.selectionStart;
+        this.value = this.value.toUpperCase();
+        this.setSelectionRange(pos, pos);
+      });
+
+      ibanInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); doRun(); }
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        ibanInput.value = 'GB82WEST12345698765432';
+        doRun();
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        ibanInput.value = '';
+        resultArea.style.display = 'none';
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Enter an IBAN and click Validate / Format.';
+      });
+
+      document.getElementById('copyIbanBtn').addEventListener('click', function () {
+        var text = fmtDisplay.textContent;
+        if (text) DT.copyToClipboard(text, this);
+      });
+    })();
+  </script>
+</body>
+</html>

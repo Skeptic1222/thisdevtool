@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>Browser Fingerprint Viewer — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Inspect your browser fingerprint: user agent, screen, hardware, WebGL, canvas hash, timezone, plugins, and entropy estimate. Educational privacy tool, 100% client-side.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/device-fingerprint.html">
+  <meta property="og:title" content="Browser Fingerprint Viewer — ThisDevTool">
+  <meta property="og:description" content="See exactly what signals your browser exposes for fingerprinting. Canvas hash, WebGL renderer, entropy estimate, and privacy tips. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/device-fingerprint.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <style>
+    .fp-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.7rem;
+      margin-bottom: 1.5rem;
+    }
+    .fp-summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      text-align: center;
+    }
+    .fp-summary-card .fp-num {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .fp-summary-card .fp-lbl {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+    }
+    .entropy-bar-wrap {
+      background: var(--border);
+      border-radius: 99px;
+      height: 12px;
+      margin: 0.5rem 0 1rem;
+      overflow: hidden;
+    }
+    .entropy-bar-fill {
+      height: 12px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #10b981, #06b6d4);
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+    .signal-group {
+      margin-bottom: 1.5rem;
+    }
+    .signal-group-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.35rem;
+      margin-bottom: 0.6rem;
+    }
+    .signal-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.45rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .signal-row:last-child { border-bottom: none; }
+    .signal-name {
+      min-width: 180px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+    .signal-value {
+      color: var(--text);
+      font-family: 'Courier New', Courier, monospace;
+      word-break: break-all;
+      flex: 1;
+      font-size: 0.82rem;
+    }
+    .signal-value.unavailable { color: var(--text-muted); font-style: italic; }
+    .entropy-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      border-radius: 99px;
+      padding: 1px 7px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .ep-high   { background: #ef4444; color: #fff; }
+    .ep-medium { background: #f59e0b; color: #fff; }
+    .ep-low    { background: #10b981; color: #fff; }
+    .canvas-preview-wrap {
+      margin-top: 0.75rem;
+    }
+    .canvas-preview-wrap canvas {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      max-width: 100%;
+      display: block;
+    }
+    .hash-display {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.78rem;
+      word-break: break-all;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      margin-top: 0.5rem;
+      color: var(--accent);
+    }
+    .privacy-tip {
+      background: rgba(16,185,129,0.07);
+      border-left: 3px solid #10b981;
+      border-radius: 0 8px 8px 0;
+      padding: 0.65rem 1rem;
+      font-size: 0.82rem;
+      color: var(--text);
+      margin: 0.5rem 0;
+    }
+    .privacy-tip strong { color: #10b981; }
+    .disclaimer-box {
+      background: rgba(245,158,11,0.07);
+      border-left: 3px solid #f59e0b;
+      border-radius: 0 8px 8px 0;
+      padding: 0.65rem 1rem;
+      font-size: 0.82rem;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+    .webgl-canvas { display: none; }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Browser Fingerprint Viewer",
+    "url": "https://thisdevtool.com/tools/device-fingerprint.html",
+    "description": "Inspect your browser fingerprint signals: user agent, hardware, screen, WebGL, canvas hash, timezone, plugins, touch support, Do Not Track, and entropy estimate.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is browser fingerprinting?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Browser fingerprinting is a technique for identifying users without cookies by combining many browser and hardware attributes into a unique signature. Attributes like screen resolution, installed fonts, WebGL renderer, and language combine to produce a fingerprint that can be 90-99% unique across users. Tracking companies use this to follow users across sites even after clearing cookies."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is canvas fingerprinting?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Canvas fingerprinting draws text and shapes onto an HTML canvas element and reads back the pixel data. Subtle differences in GPU rendering, anti-aliasing, font rasterization, and driver behavior cause different devices to produce slightly different pixel values for identical drawing instructions. Hashing the pixel data produces a near-unique fingerprint for the GPU and driver combination."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does entropy mean in fingerprinting?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Entropy measures how uniquely identifying a signal is, in bits. One bit of entropy halves the remaining pool of candidates. A signal with 4 bits of entropy is unique in 1 in 16 users; a signal with 18 bits is unique in 1 in 262,144 users. By summing the entropy of all signals, you can estimate how uniquely identifiable a browser is. The EFF's Panopticlick research found most browsers have 15-25 bits of identifying information."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this tool send my fingerprint data anywhere?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool runs entirely in your browser. No data is sent to any server. Your fingerprint is collected and displayed locally in the page for educational purposes only. There is no logging, no database, and no tracking. You can verify this by running the page offline or inspecting the network tab in browser DevTools."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How can I reduce my browser fingerprint?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use the Tor Browser (which standardizes most signals), enable Firefox's Resist Fingerprinting mode (privacy.resistFingerprinting = true), or use Brave Browser with its built-in fingerprint randomization. Browser extensions like CanvasBlocker add noise to canvas reads. Using a common OS, common resolution, and not installing unusual fonts also helps. VPNs do not help with fingerprinting — they only change your IP address."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/browser-feature-detector.html">Feature Detector</a>
+        <a href="/tools/keycode-info.html">Keycode Info</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>Browser Fingerprint Viewer</h1>
+          <p class="tool-subtitle">See the signals your browser exposes for fingerprinting. Educational privacy tool — nothing is sent to any server.</p>
+
+          <!-- Disclaimer -->
+          <div class="disclaimer-box">
+            <strong>Educational tool only.</strong> This page collects and displays your browser's fingerprint signals locally for learning purposes. No data leaves your browser. Fingerprinting is used by ad networks and trackers to identify users without cookies.
+          </div>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-view="overview">Overview</button>
+            <button class="option-chip" data-view="canvas">Canvas</button>
+            <button class="option-chip" data-view="webgl">WebGL</button>
+            <button class="option-chip" data-view="privacy">Privacy</button>
+          </div>
+
+          <!-- Overview View -->
+          <div id="view-overview" class="view-panel active">
+            <!-- Summary cards -->
+            <div class="fp-summary">
+              <div class="fp-summary-card">
+                <div class="fp-num" id="sumSignals">—</div>
+                <div class="fp-lbl">Signals Collected</div>
+              </div>
+              <div class="fp-summary-card">
+                <div class="fp-num" id="sumEntropy">—</div>
+                <div class="fp-lbl">Entropy (bits)</div>
+              </div>
+              <div class="fp-summary-card">
+                <div class="fp-num" id="sumUniqueness">—</div>
+                <div class="fp-lbl">Uniqueness (1 in N)</div>
+              </div>
+            </div>
+            <div class="entropy-bar-wrap">
+              <div class="entropy-bar-fill" id="entropyBarFill"></div>
+            </div>
+
+            <!-- Navigator group -->
+            <div class="signal-group" id="grp-navigator"></div>
+            <!-- Screen group -->
+            <div class="signal-group" id="grp-screen"></div>
+            <!-- Misc group -->
+            <div class="signal-group" id="grp-misc"></div>
+          </div>
+
+          <!-- Canvas View -->
+          <div id="view-canvas" class="view-panel">
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.75rem;">A fingerprint canvas draws standardized text and shapes; the resulting pixel data is hashed to produce a near-unique device identifier. The hash below is unique to your GPU, driver, and rendering stack.</p>
+            <div class="canvas-preview-wrap" id="canvasPreviewWrap"></div>
+            <p style="font-size:0.8rem;color:var(--text-muted);margin:0.5rem 0 0.25rem;">SHA-256 hash of canvas pixel data:</p>
+            <div class="hash-display" id="canvasHash">Computing&hellip;</div>
+            <div class="btn-group" style="margin-top:0.85rem;">
+              <button class="btn btn-sm btn-primary" id="copyCanvasHashBtn">Copy Hash</button>
+            </div>
+          </div>
+
+          <!-- WebGL View -->
+          <div id="view-webgl" class="view-panel">
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0.75rem;">WebGL exposes the GPU vendor and renderer strings, which are highly unique across device models. These are read via <code>WEBGL_debug_renderer_info</code> extension.</p>
+            <div class="signal-group" id="grp-webgl"></div>
+          </div>
+
+          <!-- Privacy View -->
+          <div id="view-privacy" class="view-panel">
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">How to reduce your browser fingerprint and protect your privacy online.</p>
+            <div id="privacyContent"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Collecting browser signals&hellip;
+          </div>
+
+          <!-- Action buttons -->
+          <div class="btn-group" style="margin-top:0.85rem;">
+            <button class="btn btn-sm btn-primary" id="copyAllBtn">Copy Report JSON</button>
+            <button class="btn btn-sm btn-secondary" id="downloadBtn">Download Report</button>
+            <button class="btn btn-sm btn-secondary" id="refreshBtn">Refresh</button>
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>What Is Browser Fingerprinting?</h2>
+          <p>Browser fingerprinting is a tracking technique that identifies users without storing any data on their device. Instead of a cookie, it reads dozens of browser and hardware attributes — screen resolution, installed fonts, GPU model, language, timezone, and more — and combines them into a unique hash called a fingerprint. Because most people have different combinations of these attributes, the resulting fingerprint can be 90-99% unique across the global user population.</p>
+
+          <p>Unlike cookies, fingerprints cannot be cleared by deleting browsing history. They persist across private browsing windows. They even survive VPNs, because a VPN only changes your IP address, not your hardware or browser configuration. This makes browser fingerprinting a powerful — and controversial — tracking technique.</p>
+
+          <h2>How This Viewer Works</h2>
+          <p>This tool collects the same signals that commercial fingerprinting libraries (like FingerprintJS, Amplitude, or Amplitude) use, then displays them to you in a readable format. Everything happens locally in your browser's JavaScript engine — no data is sent anywhere. You can verify this by opening browser DevTools (F12), going to the Network tab, and confirming there are no outbound requests while the tool runs.</p>
+
+          <h3>Signal Categories</h3>
+          <ul>
+            <li><strong>Navigator signals</strong> — user agent string, browser language, platform, hardware concurrency (CPU core count), device memory, cookie enabled, Do Not Track preference, installed plugins.</li>
+            <li><strong>Screen signals</strong> — screen width/height, color depth (bits per pixel), device pixel ratio (detects HiDPI/Retina displays), available screen dimensions.</li>
+            <li><strong>Environment signals</strong> — timezone (Intl API), system language list, touch support (max touch points), session storage and local storage availability, IndexedDB support.</li>
+            <li><strong>Canvas fingerprint</strong> — draws text and geometric shapes on a hidden canvas, reads the resulting pixel data, and computes a SHA-256 hash. GPU rendering differences produce slightly different pixels across devices.</li>
+            <li><strong>WebGL fingerprint</strong> — reads the GPU vendor and renderer strings via the WEBGL_debug_renderer_info extension. Highly unique: a specific laptop model with a specific GPU driver produces a specific renderer string.</li>
+          </ul>
+
+          <h3>Understanding Entropy</h3>
+          <p>Entropy, measured in bits, quantifies how identifying each signal is. A signal with 1 bit of entropy divides users into two equal groups (like a coin flip). A signal with 8 bits divides users into 256 groups. A screen resolution of 1920x1080 is very common, so it has low entropy. A GPU renderer string like "ANGLE (NVIDIA GeForce RTX 4090 Direct3D11 vs_5_0 ps_5_0)" is relatively rare, giving it high entropy. Summing entropy across all signals gives an estimate of how uniquely identifiable a browser is overall. A typical modern browser scores 15-20 bits, meaning it is unique among tens of thousands of users.</p>
+
+          <h3>Canvas Fingerprinting Explained</h3>
+          <p>Canvas fingerprinting exploits the fact that different hardware and software configurations render the same drawing instructions differently. The differences are in sub-pixel anti-aliasing, font hinting, color blending, and GPU rasterization. This tool draws a standardized set of text (including emoji and special characters), rectangles, arcs, and gradients on a hidden 200×50 canvas, then reads the full pixel data with <code>getImageData()</code> and hashes it with the Web Crypto API's SHA-256. The resulting 64-character hex string is your canvas fingerprint.</p>
+
+          <h3>WebGL Fingerprinting</h3>
+          <p>WebGL exposes two strings that identify the GPU: the <strong>renderer</strong> (the GPU model and driver version, e.g., "ANGLE (Intel Iris Plus Graphics 655 Direct3D11 vs_5_0 ps_5_0)") and the <strong>vendor</strong> (e.g., "Google Inc. (Intel)"). These are read via the <code>WEBGL_debug_renderer_info</code> extension. Some privacy-conscious browsers (Firefox with Resist Fingerprinting enabled, Tor Browser) return generic strings here to reduce uniqueness.</p>
+
+          <h3>How to Protect Your Privacy</h3>
+          <p>Complete fingerprint prevention is difficult without degrading browser usability, but several approaches help significantly. The <strong>Tor Browser</strong> standardizes most fingerprint signals so all Tor users look identical. <strong>Firefox</strong> with <code>privacy.resistFingerprinting</code> enabled rounds screen dimensions, randomizes canvas reads, and hides GPU info. <strong>Brave Browser</strong> adds random noise to canvas and WebGL reads each session. <strong>Browser extensions</strong> like CanvasBlocker intercept canvas reads and return slightly randomized data. None of these are perfect — a determined tracker can still narrow down users using timing, behavioral, and network signals — but they raise the cost significantly.</p>
+
+          <h3>Legitimate Uses of Fingerprinting</h3>
+          <p>Not all fingerprinting is malicious. Banks and payment processors use it as an additional signal for fraud detection — a login from an unusual device combination is more suspicious than one from a familiar fingerprint. Security products use fingerprinting for passwordless device recognition. Game anti-cheat systems use it to identify ban-evading accounts. CDNs like Cloudflare use bot signals (including fingerprint-like attributes) to distinguish real users from automated scrapers. The same technology that enables invasive ad tracking also powers legitimate fraud prevention.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is browser fingerprinting?</button>
+            <div class="faq-answer">Browser fingerprinting identifies users without cookies by combining many browser and hardware attributes — screen resolution, GPU, language, fonts, and more — into a unique signature. It is 90-99% unique across users and persists through clearing cookies, private browsing, and VPN use. Ad networks and trackers use it to follow users across sites.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is canvas fingerprinting?</button>
+            <div class="faq-answer">Canvas fingerprinting draws text and shapes onto a hidden HTML canvas and reads back the pixel data. Subtle differences in GPU rendering, anti-aliasing, font rasterization, and driver versions cause different devices to produce slightly different pixel values. Hashing the pixels produces a near-unique fingerprint for your GPU and rendering stack.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What does entropy mean in fingerprinting?</button>
+            <div class="faq-answer">Entropy (in bits) measures how uniquely identifying a signal is. One bit halves the candidate pool. A signal with 18 bits identifies you among 1 in 262,144 users. Summing signal entropy estimates your browser's total uniqueness. Research shows most browsers score 15-20 bits — unique among tens of thousands of users.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does this tool send my fingerprint data anywhere?</button>
+            <div class="faq-answer">No. This tool runs 100% in your browser. No data is sent to any server. Your fingerprint is collected and displayed locally for educational purposes only. You can verify this by opening the browser DevTools Network tab and confirming there are no outbound requests while the tool runs.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How can I reduce my browser fingerprint?</button>
+            <div class="faq-answer">Use the Tor Browser (standardizes most signals so all users look the same), Firefox with privacy.resistFingerprinting enabled, or Brave with fingerprint randomization. Extensions like CanvasBlocker add noise to canvas reads. Common OS, common screen resolution, and fewer installed fonts also help. VPNs do not help — they only change your IP address.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/browser-feature-detector.html">Feature Detector</a>
+        <a href="/tools/keycode-info.html">Keycode Info</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Privacy &amp; Security</h4>
+        <a href="/tools/aes-encryption.html">AES Encryption</a>
+        <a href="/tools/bcrypt-hash.html">Bcrypt Hash</a>
+        <a href="/tools/hmac-generator.html">HMAC Generator</a>
+        <a href="/tools/env-redactor.html">.env Redactor</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+
+      /* ── Collected data store ── */
+      var report = {};
+      var canvasHashValue = '';
+
+      /* ── Entropy weights (approximate bits per signal) ── */
+      var ENTROPY = {
+        userAgent:          8.0,
+        language:           3.0,
+        languages:          2.5,
+        platform:           3.0,
+        hardwareConcurrency:2.5,
+        deviceMemory:       2.0,
+        cookieEnabled:      0.1,
+        doNotTrack:         0.5,
+        plugins:            3.5,
+        screenWidth:        3.0,
+        screenHeight:       3.0,
+        colorDepth:         1.5,
+        devicePixelRatio:   2.0,
+        availWidth:         1.0,
+        availHeight:        1.0,
+        timezone:           3.5,
+        touchPoints:        1.5,
+        localStorage:       0.1,
+        sessionStorage:     0.1,
+        indexedDB:          0.1,
+        webglVendor:        3.0,
+        webglRenderer:      7.0,
+        canvasHash:         8.0
+      };
+
+      /* ── Helpers ── */
+      function escHtml(s) {
+        return String(s == null ? 'N/A' : s)
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      function epClass(bits) {
+        if (bits >= 5) return 'ep-high';
+        if (bits >= 2) return 'ep-medium';
+        return 'ep-low';
+      }
+
+      function makeGroup(title, rows) {
+        if (!rows.length) return '';
+        var html = '<div class="signal-group-title">' + escHtml(title) + '</div>';
+        rows.forEach(function (r) {
+          var ep = ENTROPY[r.key] || 0;
+          html += '<div class="signal-row">' +
+            '<span class="signal-name">' + escHtml(r.label) + '</span>' +
+            '<span class="signal-value' + (r.unavail ? ' unavailable' : '') + '">' + escHtml(r.value) + '</span>' +
+            (ep > 0 ? '<span class="entropy-pill ' + epClass(ep) + '">' + ep.toFixed(1) + ' bits</span>' : '') +
+            '</div>';
+        });
+        return html;
+      }
+
+      function makeSignalRows(signals) {
+        var el = document.createElement('div');
+        el.innerHTML = signals;
+        return el;
+      }
+
+      /* ── Collect navigator signals ── */
+      function collectNavigator() {
+        var nav = navigator;
+        var plugins = [];
+        if (nav.plugins) {
+          for (var i = 0; i < Math.min(nav.plugins.length, 10); i++) {
+            plugins.push(nav.plugins[i].name);
+          }
+        }
+        report.userAgent           = nav.userAgent;
+        report.language            = nav.language;
+        report.languages           = (nav.languages || [nav.language]).join(', ');
+        report.platform            = nav.platform;
+        report.hardwareConcurrency = nav.hardwareConcurrency || 'N/A';
+        report.deviceMemory        = nav.deviceMemory != null ? nav.deviceMemory + ' GB' : 'N/A (Firefox/Safari hide this)';
+        report.cookieEnabled       = nav.cookieEnabled;
+        report.doNotTrack          = nav.doNotTrack || window.doNotTrack || 'N/A';
+        report.plugins             = plugins.length ? plugins.join('; ') : 'None / hidden';
+        return [
+          { key: 'userAgent',           label: 'User Agent',            value: report.userAgent },
+          { key: 'language',            label: 'Language',              value: report.language },
+          { key: 'languages',           label: 'Language List',         value: report.languages },
+          { key: 'platform',            label: 'Platform',              value: report.platform },
+          { key: 'hardwareConcurrency', label: 'CPU Cores',             value: report.hardwareConcurrency },
+          { key: 'deviceMemory',        label: 'Device Memory',         value: report.deviceMemory },
+          { key: 'cookieEnabled',       label: 'Cookies Enabled',       value: String(report.cookieEnabled) },
+          { key: 'doNotTrack',          label: 'Do Not Track',          value: String(report.doNotTrack) },
+          { key: 'plugins',             label: 'Plugins (up to 10)',    value: report.plugins }
+        ];
+      }
+
+      /* ── Collect screen signals ── */
+      function collectScreen() {
+        report.screenWidth     = screen.width;
+        report.screenHeight    = screen.height;
+        report.colorDepth      = screen.colorDepth + ' bpp';
+        report.devicePixelRatio = window.devicePixelRatio || 1;
+        report.availWidth      = screen.availWidth;
+        report.availHeight     = screen.availHeight;
+        return [
+          { key: 'screenWidth',      label: 'Screen Width',       value: report.screenWidth + ' px' },
+          { key: 'screenHeight',     label: 'Screen Height',      value: report.screenHeight + ' px' },
+          { key: 'colorDepth',       label: 'Color Depth',        value: report.colorDepth },
+          { key: 'devicePixelRatio', label: 'Device Pixel Ratio', value: report.devicePixelRatio },
+          { key: 'availWidth',       label: 'Avail Width',        value: report.availWidth + ' px' },
+          { key: 'availHeight',      label: 'Avail Height',       value: report.availHeight + ' px' }
+        ];
+      }
+
+      /* ── Collect misc signals ── */
+      function collectMisc() {
+        var tz = '';
+        try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e) {}
+        var touch = navigator.maxTouchPoints || 0;
+        var ls = false, ss = false, idb = false;
+        try { localStorage.setItem('_fp','1'); localStorage.removeItem('_fp'); ls = true; } catch(e) {}
+        try { sessionStorage.setItem('_fp','1'); sessionStorage.removeItem('_fp'); ss = true; } catch(e) {}
+        try { idb = !!window.indexedDB; } catch(e) {}
+
+        report.timezone        = tz || 'N/A';
+        report.touchPoints     = touch;
+        report.localStorage    = ls;
+        report.sessionStorage  = ss;
+        report.indexedDB       = idb;
+
+        return [
+          { key: 'timezone',       label: 'Timezone',             value: report.timezone },
+          { key: 'touchPoints',    label: 'Max Touch Points',     value: touch + (touch > 0 ? ' (touch device)' : ' (no touch)') },
+          { key: 'localStorage',   label: 'localStorage',         value: ls ? 'Available' : 'Blocked' },
+          { key: 'sessionStorage', label: 'sessionStorage',       value: ss ? 'Available' : 'Blocked' },
+          { key: 'indexedDB',      label: 'IndexedDB',            value: idb ? 'Available' : 'Unavailable' }
+        ];
+      }
+
+      /* ── Canvas fingerprint ── */
+      function buildCanvasFingerprint() {
+        var canvas = document.createElement('canvas');
+        canvas.width  = 400;
+        canvas.height = 80;
+        var ctx = canvas.getContext('2d');
+
+        /* Text rendering */
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle    = '#f60';
+        ctx.fillRect(0, 0, 400, 80);
+
+        ctx.fillStyle    = '#069';
+        ctx.font         = '18px "Arial"';
+        ctx.fillText('ThisDevTool \u2764 Fingerprint \ud83d\udd25', 4, 30);
+
+        ctx.fillStyle    = 'rgba(102,204,0,0.7)';
+        ctx.font         = '14px "Times New Roman"';
+        ctx.fillText('AaBbCcDd 0123456789 !@#$%^&*()', 4, 55);
+
+        /* Shapes */
+        ctx.fillStyle    = 'rgba(255,0,0,0.5)';
+        ctx.beginPath();
+        ctx.arc(330, 40, 30, 0, Math.PI * 2, true);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle    = 'rgba(0,0,255,0.5)';
+        ctx.fillRect(300, 10, 60, 25);
+
+        /* Gradient */
+        var grd = ctx.createLinearGradient(0, 60, 400, 80);
+        grd.addColorStop(0, '#10b981');
+        grd.addColorStop(1, '#06b6d4');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 62, 400, 18);
+
+        /* Display preview */
+        var previewCanvas = canvas.cloneNode();
+        var previewCtx = previewCanvas.getContext('2d');
+        previewCtx.drawImage(canvas, 0, 0);
+        previewCanvas.style.maxWidth = '100%';
+        document.getElementById('canvasPreviewWrap').appendChild(previewCanvas);
+
+        /* Hash pixels */
+        var imgData = ctx.getImageData(0, 0, 400, 80).data;
+        var str = Array.from(imgData).join(',');
+        var buf = new TextEncoder().encode(str);
+
+        return crypto.subtle.digest('SHA-256', buf).then(function (hashBuf) {
+          var hex = Array.from(new Uint8Array(hashBuf)).map(function (b) {
+            return b.toString(16).padStart(2, '0');
+          }).join('');
+          canvasHashValue = hex;
+          report.canvasHash = hex;
+          document.getElementById('canvasHash').textContent = hex;
+          return hex;
+        }).catch(function () {
+          /* Fallback: simple numeric hash */
+          var h = 0;
+          for (var i = 0; i < imgData.length; i++) {
+            h = (Math.imul(31, h) + imgData[i]) | 0;
+          }
+          var fallback = 'simple:' + Math.abs(h).toString(16);
+          canvasHashValue = fallback;
+          report.canvasHash = fallback;
+          document.getElementById('canvasHash').textContent = fallback;
+          return fallback;
+        });
+      }
+
+      /* ── WebGL signals ── */
+      function collectWebGL() {
+        var canvas = document.createElement('canvas');
+        var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) {
+          report.webglVendor   = 'WebGL not supported';
+          report.webglRenderer = 'WebGL not supported';
+          report.webglVersion  = 'N/A';
+          report.glslVersion   = 'N/A';
+          return [
+            { key: 'webglVendor',   label: 'WebGL Vendor',   value: 'WebGL not supported', unavail: true },
+            { key: 'webglRenderer', label: 'WebGL Renderer',  value: 'WebGL not supported', unavail: true }
+          ];
+        }
+
+        var ext = gl.getExtension('WEBGL_debug_renderer_info');
+        var vendor   = ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL)   : gl.getParameter(gl.VENDOR);
+        var renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+        var version  = gl.getParameter(gl.VERSION);
+        var glsl     = gl.getParameter(gl.SHADING_LANGUAGE_VERSION);
+        var maxTex   = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        var maxVaryings = gl.getParameter(gl.MAX_VARYING_VECTORS);
+
+        report.webglVendor   = vendor;
+        report.webglRenderer = renderer;
+        report.webglVersion  = version;
+        report.glslVersion   = glsl;
+
+        return [
+          { key: 'webglVendor',   label: 'GPU Vendor (unmasked)',   value: vendor },
+          { key: 'webglRenderer', label: 'GPU Renderer (unmasked)', value: renderer },
+          { key: '',              label: 'WebGL Version',            value: version },
+          { key: '',              label: 'GLSL Version',             value: glsl },
+          { key: '',              label: 'Max Texture Size',         value: maxTex + ' px' },
+          { key: '',              label: 'Max Varying Vectors',      value: maxVaryings }
+        ];
+      }
+
+      /* ── Privacy tips content ── */
+      function buildPrivacyContent() {
+        var tips = [
+          {
+            title: 'Use Tor Browser',
+            text: 'Tor Browser standardizes almost all fingerprint signals so every Tor user looks identical. It also routes traffic through the Tor anonymity network to hide your IP. Best for high-privacy needs, though it is slower than regular browsing.',
+            level: 'High'
+          },
+          {
+            title: 'Enable Firefox Resist Fingerprinting',
+            text: 'Set privacy.resistFingerprinting = true in about:config. This rounds screen dimensions, randomizes canvas reads, hides GPU info, and standardizes several other signals. Good balance of protection and usability for everyday browsing.',
+            level: 'High'
+          },
+          {
+            title: 'Use Brave Browser',
+            text: 'Brave adds per-session random noise to canvas, WebGL, AudioContext, and font enumeration results. The noise changes each session so cross-site fingerprints cannot be linked. Built-in, no configuration needed.',
+            level: 'Medium'
+          },
+          {
+            title: 'Install CanvasBlocker Extension',
+            text: 'CanvasBlocker (Firefox) intercepts canvas and WebGL reads and returns slightly randomized values. Works on top of any browser. Configurable: you can block entirely or add noise.',
+            level: 'Medium'
+          },
+          {
+            title: 'Use a Common Screen Resolution',
+            text: '1920×1080 and 1366×768 are the most common screen resolutions. Using a non-standard resolution or a very high DPI display increases your fingerprint entropy significantly.',
+            level: 'Low'
+          },
+          {
+            title: 'Minimize Installed Fonts',
+            text: 'Font enumeration (via Canvas text metrics) is a major fingerprinting signal. Avoid installing unusual fonts. Privacy browsers block or restrict font enumeration.',
+            level: 'Low'
+          },
+          {
+            title: 'VPNs Do Not Help with Fingerprinting',
+            text: 'A VPN changes your IP address but does nothing for your browser fingerprint. Your GPU, screen, language, and timezone remain the same. For fingerprint protection, you need browser-level tools, not network-level tools.',
+            level: 'Info'
+          }
+        ];
+        var levelColor = { High: '#10b981', Medium: '#f59e0b', Low: '#06b6d4', Info: '#8b5cf6' };
+        return tips.map(function (t) {
+          return '<div class="privacy-tip" style="border-color:' + levelColor[t.level] + ';margin-bottom:0.65rem;">' +
+            '<strong style="color:' + levelColor[t.level] + '">[' + t.level + '] ' + escHtml(t.title) + '</strong><br>' +
+            escHtml(t.text) +
+            '</div>';
+        }).join('');
+      }
+
+      /* ── Calculate total entropy ── */
+      function calcTotalEntropy() {
+        var total = 0;
+        Object.keys(ENTROPY).forEach(function (k) { total += ENTROPY[k]; });
+        return total;
+      }
+
+      /* ── Render all groups ── */
+      function renderAll(navRows, screenRows, miscRows, webglRows) {
+        document.getElementById('grp-navigator').innerHTML = makeGroup('Navigator / Browser', navRows);
+        document.getElementById('grp-screen').innerHTML    = makeGroup('Screen & Display', screenRows);
+        document.getElementById('grp-misc').innerHTML      = makeGroup('Environment', miscRows);
+        document.getElementById('grp-webgl').innerHTML     = makeGroup('WebGL / GPU', webglRows);
+        document.getElementById('privacyContent').innerHTML = buildPrivacyContent();
+      }
+
+      /* ── Update summary cards ── */
+      function updateSummary(totalEntropy) {
+        var signalCount = Object.keys(report).length;
+        var uniqueness = Math.round(Math.pow(2, totalEntropy));
+        document.getElementById('sumSignals').textContent   = signalCount;
+        document.getElementById('sumEntropy').textContent   = totalEntropy.toFixed(1);
+        document.getElementById('sumUniqueness').textContent = uniqueness > 1000000
+          ? '>' + (uniqueness / 1000000).toFixed(0) + 'M'
+          : uniqueness > 1000
+            ? (uniqueness / 1000).toFixed(0) + 'K'
+            : uniqueness;
+
+        /* Entropy bar — scale to 30 bits max */
+        var pct = Math.min(100, (totalEntropy / 30) * 100);
+        document.getElementById('entropyBarFill').style.width = pct + '%';
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = signalCount + ' signals collected — Entropy: ~' + totalEntropy.toFixed(1) + ' bits';
+      }
+
+      var statusBar = document.getElementById('statusBar');
+
+      /* ── Main run ── */
+      function run() {
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Collecting browser signals\u2026';
+
+        var navRows    = collectNavigator();
+        var screenRows = collectScreen();
+        var miscRows   = collectMisc();
+        var webglRows  = collectWebGL();
+
+        renderAll(navRows, screenRows, miscRows, webglRows);
+
+        buildCanvasFingerprint().then(function () {
+          var totalEntropy = calcTotalEntropy();
+          updateSummary(totalEntropy);
+          DT.trackTool('device-fingerprint');
+        });
+      }
+
+      /* ── View switching ── */
+      document.querySelectorAll('.option-chip[data-view]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip[data-view]').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          var view = chip.getAttribute('data-view');
+          document.querySelectorAll('.view-panel').forEach(function (p) { p.classList.remove('active'); });
+          document.getElementById('view-' + view).classList.add('active');
+        });
+      });
+
+      /* ── Copy all ── */
+      document.getElementById('copyAllBtn').addEventListener('click', function () {
+        DT.copyToClipboard(JSON.stringify(report, null, 2), this);
+      });
+
+      /* ── Download ── */
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        DT.downloadText(JSON.stringify(report, null, 2), 'browser-fingerprint.json', 'application/json');
+      });
+
+      /* ── Refresh ── */
+      document.getElementById('refreshBtn').addEventListener('click', function () {
+        report = {};
+        canvasHashValue = '';
+        document.getElementById('canvasPreviewWrap').innerHTML = '';
+        document.getElementById('canvasHash').textContent = 'Computing\u2026';
+        run();
+      });
+
+      /* ── Copy canvas hash ── */
+      document.getElementById('copyCanvasHashBtn').addEventListener('click', function () {
+        if (canvasHashValue) DT.copyToClipboard(canvasHashValue, this);
+      });
+
+      /* ── Boot ── */
+      run();
+    })();
+  </script>
+</body>
+</html>

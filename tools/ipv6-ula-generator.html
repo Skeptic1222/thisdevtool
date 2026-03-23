@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>IPv6 ULA Generator — Free Online RFC 4193 Tool | ThisDevTool</title>
+  <meta name="description" content="Generate RFC 4193 IPv6 Unique Local Addresses (fd00::/8). Create /48 prefixes, enumerate /64 subnets, validate ULA addresses. 100% free, runs in your browser.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/ipv6-ula-generator.html">
+  <meta property="og:title" content="IPv6 ULA Generator — ThisDevTool">
+  <meta property="og:description" content="Generate RFC 4193 Unique Local IPv6 Addresses (fd00::/8). Create prefixes, list subnets, validate ULA. 100% client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/ipv6-ula-generator.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "IPv6 ULA Generator",
+    "url": "https://thisdevtool.com/tools/ipv6-ula-generator.html",
+    "description": "Generate RFC 4193 IPv6 Unique Local Addresses (fd00::/8). Construct /48 prefixes from 40 random bits, enumerate /64 subnets, and validate ULA addresses. Free, instant, 100% client-side.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is an IPv6 ULA address?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A ULA (Unique Local Address) is an IPv6 address in the fc00::/7 block defined by RFC 4193. ULAs are the IPv6 equivalent of IPv4 private addresses (192.168.x.x, 10.x.x.x). They are not routable on the public internet and are intended for local network communication within a site or organization. The 'fd' prefix variant uses a locally assigned random Global ID, making collisions between different networks extremely unlikely."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the structure of an IPv6 ULA address?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A ULA address has the structure: 8 bits prefix (fd = 11111101) + 40 bits Global ID (random) + 16 bits Subnet ID + 64 bits Interface ID. The /48 prefix (prefix + global ID) identifies the network. The /64 subnet breaks that prefix into up to 65,536 individual subnets. The last 64 bits are the interface (host) identifier, often derived from a MAC address via EUI-64 or generated randomly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the difference between fc00::/8 and fd00::/8?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Both are part of the fc00::/7 ULA block. The fc00::/8 range is reserved for centrally assigned Global IDs (not yet allocated by any authority), while the fd00::/8 range is for locally assigned Global IDs — meaning you generate the 40-bit Global ID yourself using a random number generator. For all practical purposes, every site generating its own ULA prefix should use the fd prefix."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are ULA addresses the same as IPv6 link-local addresses?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Link-local addresses (fe80::/10) are automatically configured on every IPv6 interface and are only valid on a single network link — packets with link-local source or destination addresses are never forwarded by routers. ULA addresses are routable within a private network (site or organization) but not on the public internet. ULAs need manual or DHCPv6 configuration, while link-local addresses are automatic."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How many /64 subnets can a /48 ULA prefix provide?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A /48 prefix leaves 16 bits for the Subnet ID, which gives 2^16 = 65,536 individual /64 subnets. Each /64 subnet can hold 2^64 (about 18.4 quintillion) host addresses. This means a single ULA /48 allocation is enough for virtually any organization — even large enterprises rarely need more than a few hundred subnets."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .address-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+    }
+    .address-card h3 {
+      margin: 0 0 10px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text2);
+    }
+    .address-value {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      word-break: break-all;
+      color: var(--accent);
+      cursor: pointer;
+    }
+    .address-value:hover { text-decoration: underline; }
+    .address-label {
+      font-size: 0.78rem;
+      color: var(--text2);
+      margin-top: 4px;
+    }
+    .bit-breakdown {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+    }
+    .bit-seg {
+      padding: 2px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    .bit-seg.prefix  { background: #10b981; color: #fff; }
+    .bit-seg.globalid{ background: #6366f1; color: #fff; }
+    .bit-seg.subnet  { background: #f59e0b; color: #000; }
+    .bit-seg.iface   { background: #64748b; color: #fff; }
+    .bit-legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+      font-size: 0.75rem;
+    }
+    .bit-legend span { display: flex; align-items: center; gap: 4px; }
+    .bit-legend i { display:inline-block; width:10px; height:10px; border-radius:2px; }
+    .subnet-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 8px; }
+    .subnet-table th, .subnet-table td { padding: 7px 10px; border: 1px solid var(--border); }
+    .subnet-table th { background: var(--surface2); font-weight: 600; }
+    .subnet-table tr:nth-child(even) td { background: var(--surface2); }
+    .validate-input { width: 100%; font-family: var(--font-mono); }
+    .validate-result { margin-top: 12px; padding: 12px 16px; border-radius: 6px; font-size: 0.9rem; }
+    .validate-result.ok  { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+    .validate-result.err { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .validate-result.warn{ background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    @media (prefers-color-scheme: dark) {
+      .validate-result.ok  { background: #064e3b; color: #a7f3d0; border-color: #059669; }
+      .validate-result.err { background: #7f1d1d; color: #fecaca; border-color: #dc2626; }
+      .validate-result.warn{ background: #78350f; color: #fde68a; border-color: #d97706; }
+    }
+    body.dark .validate-result.ok  { background: #064e3b; color: #a7f3d0; border-color: #059669; }
+    body.dark .validate-result.err { background: #7f1d1d; color: #fecaca; border-color: #dc2626; }
+    body.dark .validate-result.warn{ background: #78350f; color: #fde68a; border-color: #d97706; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/random-port-generator.html">Port Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>IPv6 ULA Generator</h1>
+          <p class="tool-subtitle">Generate RFC 4193 Unique Local Addresses. Create /48 prefixes, enumerate /64 subnets, and validate ULA addresses. 100% client-side.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips" id="modeChips">
+            <button class="option-chip active" data-mode="generate">Generate</button>
+            <button class="option-chip" data-mode="subnet">Subnet</button>
+            <button class="option-chip" data-mode="validate">Validate</button>
+          </div>
+
+          <!-- ======================================================= -->
+          <!-- GENERATE PANEL                                          -->
+          <!-- ======================================================= -->
+          <div id="generatePanel">
+            <div class="input-row" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+              <button class="btn btn-primary" id="generateBtn" style="font-size:1.05em;padding:10px 28px;">Generate Prefix</button>
+              <label style="display:flex;align-items:center;gap:8px;font-size:0.9rem;">
+                <input type="checkbox" id="showInterfaceChk" checked>
+                Include example interface address
+              </label>
+            </div>
+
+            <div id="generateOutput"></div>
+
+            <div class="form-group" style="margin-top:12px;">
+              <div class="pane-label">
+                <span>Raw Output</span>
+                <div class="btn-group" style="margin:0;">
+                  <button class="btn btn-sm btn-primary" id="copyBtn">Copy</button>
+                  <button class="btn btn-sm btn-secondary" id="downloadBtn">Download</button>
+                </div>
+              </div>
+              <div class="code-output" id="rawOutput" style="min-height:80px;font-size:0.9rem;"></div>
+            </div>
+          </div>
+
+          <!-- ======================================================= -->
+          <!-- SUBNET PANEL                                            -->
+          <!-- ======================================================= -->
+          <div id="subnetPanel" style="display:none;">
+            <div class="form-group">
+              <label for="subnetPrefix">Enter /48 ULA Prefix (e.g. fd12:3456:7890::/48)</label>
+              <input type="text" id="subnetPrefix" class="validate-input" placeholder="fd12:3456:7890::/48" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="range-inputs" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+              <label style="font-size:0.875rem;">Subnets to list:
+                <input type="number" id="subnetCount" value="16" min="1" max="256" style="width:80px;margin-left:6px;">
+              </label>
+              <label style="font-size:0.875rem;">Start at subnet ID:
+                <input type="number" id="subnetStart" value="0" min="0" max="65535" style="width:90px;margin-left:6px;">
+              </label>
+              <button class="btn btn-primary" id="subnetBtn">List Subnets</button>
+              <button class="btn btn-secondary" id="subnetExampleBtn">Try Example</button>
+            </div>
+            <div id="subnetOutput"></div>
+          </div>
+
+          <!-- ======================================================= -->
+          <!-- VALIDATE PANEL                                          -->
+          <!-- ======================================================= -->
+          <div id="validatePanel" style="display:none;">
+            <div class="form-group">
+              <label for="validateInput">Enter IPv6 address or prefix to validate</label>
+              <input type="text" id="validateInput" class="validate-input" placeholder="fd12:3456:7890::1 or fd12:3456:7890::/48" autocomplete="off" spellcheck="false">
+            </div>
+            <button class="btn btn-primary" id="validateBtn">Validate</button>
+            <button class="btn btn-secondary" id="validateExampleBtn" style="margin-left:8px;">Try Example</button>
+            <div id="validateOutput"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Click Generate Prefix to create a new RFC 4193 ULA prefix.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the IPv6 ULA Generator</h2>
+          <ol>
+            <li><strong>Generate mode</strong> — click Generate Prefix to create a new cryptographically random /48 ULA prefix compliant with RFC 4193. The tool displays the compressed and expanded address forms, a bit-level breakdown, and an optional example host address within the prefix.</li>
+            <li><strong>Subnet mode</strong> — paste a /48 prefix and choose how many /64 subnets to enumerate, with a configurable start offset. This is useful for documenting your subnet allocation or planning VLAN assignments.</li>
+            <li><strong>Validate mode</strong> — enter any IPv6 address or prefix to check whether it is a valid ULA, determine which sub-range it belongs to, and see its expanded and compressed canonical forms.</li>
+          </ol>
+
+          <h2>What Is an IPv6 ULA?</h2>
+          <p>An IPv6 Unique Local Address (ULA) is the IPv6 equivalent of IPv4 private address space (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16). Defined in RFC 4193, ULAs occupy the <code>fc00::/7</code> block and are not routable on the global internet. They are designed for use within private networks — home labs, corporate LANs, container networks, and virtual machines — where global reachability is not needed. Their key property is that the 40-bit Global ID is generated randomly, making the probability of two independent sites choosing the same prefix negligibly small (approximately 1 in 10^12).</p>
+
+          <h3>ULA Address Structure</h3>
+          <p>A ULA address has four parts:</p>
+          <ul>
+            <li><strong>Prefix (8 bits)</strong> — always <code>fd</code> for locally generated addresses. This marks the address as a ULA within the <code>fc00::/7</code> block with the Local (L) bit set to 1.</li>
+            <li><strong>Global ID (40 bits)</strong> — five random bytes generated using a cryptographically strong RNG. These 40 bits are the key to uniqueness across different networks.</li>
+            <li><strong>Subnet ID (16 bits)</strong> — 16 bits that identify individual /64 subnets within your /48 prefix. With 16 bits you have 65,536 subnets to allocate.</li>
+            <li><strong>Interface ID (64 bits)</strong> — identifies a specific host within a /64 subnet. Commonly set using EUI-64 (derived from a MAC address) or generated randomly per RFC 7217.</li>
+          </ul>
+
+          <h3>ULA vs. Link-Local vs. Global Unicast</h3>
+          <p>IPv6 defines several address scopes. <strong>Link-local addresses</strong> (<code>fe80::/10</code>) are auto-configured on every interface but cannot cross routers — they are strictly for on-link communication. <strong>ULA addresses</strong> (<code>fc00::/7</code>) can be routed within a private network, making them suitable for multi-site VPN topologies or internal service meshes. <strong>Global unicast addresses</strong> (<code>2000::/3</code>) are publicly routable and allocated by IANA through RIRs. For private infrastructure that should never reach the internet, ULAs are the correct choice.</p>
+
+          <h3>Why Not Use fc00::/8?</h3>
+          <p>The <code>fc00::/8</code> block is reserved for centrally assigned Global IDs — an assignment mechanism that has never been implemented by any authority. In practice, every ULA deployment uses the <code>fd00::/8</code> block with a locally generated Global ID. The IETF has discussed deprecating <code>fc00::/8</code> in favor of expanding the locally assigned range, but for now simply always use <code>fd</code> as your prefix byte. This tool generates only <code>fd</code>-prefixed ULAs, in line with all current guidance.</p>
+
+          <h3>RFC 4193 Generation Algorithm</h3>
+          <p>The RFC recommends generating the 40-bit Global ID from a SHA-1 hash of the current time and MAC address. In practice, a cryptographically secure random number generator (such as <code>crypto.getRandomValues()</code> in the browser or <code>/dev/urandom</code> on Linux) is equally valid and simpler. This tool uses <code>crypto.getRandomValues()</code> to generate 5 random bytes, which are then formatted as the five groups after the <code>fd</code> prefix byte. For other random generation tools, see our <a href="/tools/uuid-generator.html">UUID Generator</a> and <a href="/tools/random-port-generator.html">Random Port Generator</a>.</p>
+
+          <h3>Practical Uses of ULA Addresses</h3>
+          <ul>
+            <li><strong>Home lab networks</strong> — assign stable internal addresses to servers and VMs without depending on a router's prefix delegation.</li>
+            <li><strong>Docker and Kubernetes</strong> — use ULA prefixes for pod and service networks in IPv6-enabled container environments.</li>
+            <li><strong>VPN meshes</strong> — connect multiple sites with WireGuard or OpenVPN using ULA addresses that do not collide with any public space.</li>
+            <li><strong>Testing and CI/CD</strong> — generate deterministic or random ULA prefixes for isolated test network namespaces.</li>
+            <li><strong>IoT networks</strong> — give each device a stable ULA address that persists regardless of ISP prefix changes (ISPs may renumber your global prefix; your ULA never changes).</li>
+          </ul>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is an IPv6 ULA address?</button>
+            <div class="faq-answer">A ULA (Unique Local Address) is an IPv6 address in the fc00::/7 block defined by RFC 4193. ULAs are the IPv6 equivalent of IPv4 private addresses (192.168.x.x, 10.x.x.x). They are not routable on the public internet and are intended for local network communication within a site or organization. The 'fd' prefix variant uses a locally assigned random Global ID, making collisions between different networks extremely unlikely.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the structure of an IPv6 ULA address?</button>
+            <div class="faq-answer">A ULA address has the structure: 8 bits prefix (fd = 11111101) + 40 bits Global ID (random) + 16 bits Subnet ID + 64 bits Interface ID. The /48 prefix (prefix + global ID) identifies the network. The /64 subnet breaks that prefix into up to 65,536 individual subnets. The last 64 bits are the interface (host) identifier, often derived from a MAC address via EUI-64 or generated randomly.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">What is the difference between fc00::/8 and fd00::/8?</button>
+            <div class="faq-answer">Both are part of the fc00::/7 ULA block. The fc00::/8 range is reserved for centrally assigned Global IDs (not yet allocated by any authority), while the fd00::/8 range is for locally assigned Global IDs — meaning you generate the 40-bit Global ID yourself using a random number generator. For all practical purposes, every site generating its own ULA prefix should use the fd prefix.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Are ULA addresses the same as IPv6 link-local addresses?</button>
+            <div class="faq-answer">No. Link-local addresses (fe80::/10) are automatically configured on every IPv6 interface and are only valid on a single network link — packets with link-local source or destination addresses are never forwarded by routers. ULA addresses are routable within a private network (site or organization) but not on the public internet. ULAs need manual or DHCPv6 configuration, while link-local addresses are automatic.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How many /64 subnets can a /48 ULA prefix provide?</button>
+            <div class="faq-answer">A /48 prefix leaves 16 bits for the Subnet ID, which gives 2^16 = 65,536 individual /64 subnets. Each /64 subnet can hold 2^64 (about 18.4 quintillion) host addresses. This means a single ULA /48 allocation is enough for virtually any organization — even large enterprises rarely need more than a few hundred subnets.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Developer</h4>
+        <a href="/tools/random-port-generator.html">Port Generator</a>
+        <a href="/tools/uuid-generator.html">UUID Generator</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/chmod-calculator.html">Chmod Calculator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related</h4>
+        <a href="/tools/password-generator.html">Password Generator</a>
+        <a href="/tools/timestamp-converter.html">Timestamp Converter</a>
+        <a href="/tools/json-formatter.html">JSON Formatter</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+
+      // ---------------------------------------------------------------
+      // DOM refs
+      // ---------------------------------------------------------------
+      var statusBar      = document.getElementById('statusBar');
+      var generateOutput = document.getElementById('generateOutput');
+      var rawOutput      = document.getElementById('rawOutput');
+      var subnetOutput   = document.getElementById('subnetOutput');
+      var validateOutput = document.getElementById('validateOutput');
+      var genPanel       = document.getElementById('generatePanel');
+      var subPanel       = document.getElementById('subnetPanel');
+      var valPanel       = document.getElementById('validatePanel');
+      var currentMode    = 'generate';
+
+      // Last generated state for copy/download
+      var lastRaw = '';
+
+      // ---------------------------------------------------------------
+      // Mode switching
+      // ---------------------------------------------------------------
+      document.querySelectorAll('#modeChips .option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('#modeChips .option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          genPanel.style.display = currentMode === 'generate' ? '' : 'none';
+          subPanel.style.display = currentMode === 'subnet'   ? '' : 'none';
+          valPanel.style.display = currentMode === 'validate' ? '' : 'none';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = currentMode === 'generate'
+            ? 'Click Generate Prefix to create a new RFC 4193 ULA prefix.'
+            : currentMode === 'subnet'
+            ? 'Enter a /48 prefix and click List Subnets.'
+            : 'Enter an IPv6 address or prefix and click Validate.';
+        });
+      });
+
+      // ---------------------------------------------------------------
+      // IPv6 helpers
+      // ---------------------------------------------------------------
+
+      // Parse a 128-bit IPv6 address (no prefix) into 8 x Uint16 groups
+      // Returns null on failure
+      function parseIPv6(str) {
+        str = str.trim();
+        // Handle :: expansion
+        var halves = str.split('::');
+        if (halves.length > 2) return null;
+        var left  = halves[0] ? halves[0].split(':') : [];
+        var right = halves.length === 2 && halves[1] ? halves[1].split(':') : [];
+        var missing = 8 - left.length - right.length;
+        if (missing < 0) return null;
+        var groups = left.concat(new Array(missing).fill('0')).concat(right);
+        if (groups.length !== 8) return null;
+        var result = new Uint16Array(8);
+        for (var i = 0; i < 8; i++) {
+          if (!/^[0-9a-fA-F]{1,4}$/.test(groups[i])) return null;
+          result[i] = parseInt(groups[i], 16);
+        }
+        return result;
+      }
+
+      // Expand to full form (no compression)
+      function expandIPv6(groups) {
+        return Array.from(groups).map(function (g) { return g.toString(16).padStart(4, '0'); }).join(':');
+      }
+
+      // RFC 5952 compress
+      function compressIPv6(groups) {
+        var parts = Array.from(groups).map(function (g) { return g.toString(16); });
+        // Find longest run of zeros
+        var bestStart = -1, bestLen = 0, curStart = -1, curLen = 0;
+        for (var i = 0; i < 8; i++) {
+          if (parts[i] === '0') {
+            if (curStart === -1) { curStart = i; curLen = 1; }
+            else curLen++;
+            if (curLen > bestLen) { bestLen = curLen; bestStart = curStart; }
+          } else {
+            curStart = -1; curLen = 0;
+          }
+        }
+        if (bestLen < 2) return parts.join(':');
+        var left  = parts.slice(0, bestStart).join(':');
+        var right = parts.slice(bestStart + bestLen).join(':');
+        return (left ? left + '::' : '::') + right;
+      }
+
+      // ---------------------------------------------------------------
+      // Generate ULA
+      // ---------------------------------------------------------------
+      function generateULA() {
+        // 5 random bytes = 40-bit Global ID
+        var globalIdBytes = new Uint8Array(5);
+        crypto.getRandomValues(globalIdBytes);
+
+        // Groups 1-3: fd + first byte of global ID, then 2 bytes each
+        // Structure: fd[g0][g1]:[g2][g3]:[g4][00]::[subnet]::[iface]
+        // fd + first byte → group[0] = 0xfd00 | globalIdBytes[0]
+        var g0 = (0xfd00 | globalIdBytes[0]);
+        var g1 = (globalIdBytes[1] << 8) | globalIdBytes[2];
+        var g2 = (globalIdBytes[3] << 8) | globalIdBytes[4];
+
+        var prefix48Groups = new Uint16Array([g0, g1, g2, 0, 0, 0, 0, 0]);
+
+        // Example: subnet 0001, interface ::1
+        var exampleGroups  = new Uint16Array([g0, g1, g2, 0x0001, 0, 0, 0, 1]);
+
+        var expanded48 = expandIPv6(prefix48Groups).split(':').slice(0, 3).join(':') + '::/48';
+        var compressed48 = compressIPv6(prefix48Groups).replace(/::.*/, '') || expandIPv6(prefix48Groups).split(':').slice(0, 3).join(':');
+        compressed48 += '::/48';
+
+        var expandedEx = expandIPv6(exampleGroups);
+        var compressedEx = compressIPv6(exampleGroups);
+
+        // Bit breakdown display
+        var fdHex = g0.toString(16).padStart(4, '0');
+        var g1Hex = g1.toString(16).padStart(4, '0');
+        var g2Hex = g2.toString(16).padStart(4, '0');
+
+        var showIface = document.getElementById('showInterfaceChk').checked;
+
+        var html = '';
+
+        // /48 Prefix card
+        html += '<div class="address-card">';
+        html += '<h3>/48 ULA Prefix (RFC 4193 Compliant)</h3>';
+        html += '<div class="address-value" title="Click to copy" id="copyPrefix">' + compressed48 + '</div>';
+        html += '<div class="address-label">Compressed form</div>';
+        html += '<div class="address-value" style="font-size:0.9rem;color:var(--text2);margin-top:6px;">' + expanded48 + '</div>';
+        html += '<div class="address-label">Expanded form</div>';
+        html += '<div class="bit-breakdown">';
+        html += '<span class="bit-seg prefix" title="Prefix: fd (11111101) — ULA locally assigned">' + fdHex.substring(0,2) + '</span>';
+        html += '<span class="bit-seg globalid" title="Global ID byte 1 (of 5)">' + fdHex.substring(2) + '</span>';
+        html += '<span class="bit-seg globalid" title="Global ID bytes 2-3">' + g1Hex + '</span>';
+        html += '<span class="bit-seg globalid" title="Global ID bytes 4-5">' + g2Hex + '</span>';
+        html += '<span class="bit-seg subnet" title="Subnet ID (16 bits, here 0000)">0000</span>';
+        html += '<span class="bit-seg iface" title="Interface ID (64 bits, here 0)">0000</span>';
+        html += '<span class="bit-seg iface">0000</span>';
+        html += '<span class="bit-seg iface">0000</span>';
+        html += '</div>';
+        html += '<div class="bit-legend">';
+        html += '<span><i style="background:#10b981"></i> fd prefix (8 bits)</span>';
+        html += '<span><i style="background:#6366f1"></i> Global ID (40 bits)</span>';
+        html += '<span><i style="background:#f59e0b"></i> Subnet ID (16 bits)</span>';
+        html += '<span><i style="background:#64748b"></i> Interface ID (64 bits)</span>';
+        html += '</div>';
+        html += '</div>';
+
+        // Subnet 0 card
+        html += '<div class="address-card">';
+        html += '<h3>First /64 Subnet — Subnet ID 0000</h3>';
+        var sub0c = compressIPv6(new Uint16Array([g0,g1,g2,0,0,0,0,0])).replace(/::.*$/,'') + '::/64';
+        var sub0e = expandIPv6(new Uint16Array([g0,g1,g2,0,0,0,0,0])).split(':').slice(0,4).join(':') + '::/64';
+        html += '<div class="address-value">' + sub0c + '</div>';
+        html += '<div class="address-label">Compressed · ' + sub0e + ' expanded</div>';
+        html += '</div>';
+
+        if (showIface) {
+          html += '<div class="address-card">';
+          html += '<h3>Example Host Address (Subnet 0001, Interface ::1)</h3>';
+          html += '<div class="address-value" id="copyIface">' + compressedEx + '</div>';
+          html += '<div class="address-label">Compressed · ' + expandedEx + ' expanded</div>';
+          html += '</div>';
+        }
+
+        generateOutput.innerHTML = html;
+
+        // Build raw text
+        lastRaw = [
+          'ULA /48 Prefix (compressed): ' + compressed48,
+          'ULA /48 Prefix (expanded):   ' + expanded48,
+          'Global ID: ' + fdHex.substring(2) + ':' + g1Hex + ':' + g2Hex,
+          'Subnet 0 /64: ' + sub0c,
+          showIface ? 'Example host: ' + compressedEx : ''
+        ].filter(Boolean).join('\n');
+        rawOutput.textContent = lastRaw;
+
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = compressed48.replace('::/48','') + '::/48 — RFC 4193 compliant';
+
+        // Click-to-copy on address values
+        document.getElementById('copyPrefix').addEventListener('click', function () {
+          DT.copyToClipboard(compressed48, this);
+        });
+        if (showIface && document.getElementById('copyIface')) {
+          document.getElementById('copyIface').addEventListener('click', function () {
+            DT.copyToClipboard(compressedEx, this);
+          });
+        }
+
+        DT.trackTool('ipv6-ula-generator');
+      }
+
+      document.getElementById('generateBtn').addEventListener('click', generateULA);
+
+      // ---------------------------------------------------------------
+      // Subnet enumeration
+      // ---------------------------------------------------------------
+      function listSubnets() {
+        var raw = document.getElementById('subnetPrefix').value.trim();
+        var count = parseInt(document.getElementById('subnetCount').value, 10) || 16;
+        var start = parseInt(document.getElementById('subnetStart').value, 10) || 0;
+        if (count < 1) count = 1;
+        if (count > 256) count = 256;
+        if (start < 0) start = 0;
+        if (start > 65535) start = 65535;
+
+        // Strip prefix length
+        var addrPart = raw.replace(/\/\d+$/, '').trim();
+        if (!addrPart) {
+          subnetOutput.innerHTML = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Please enter a /48 ULA prefix.';
+          return;
+        }
+        // Ensure it is a full address parse
+        // Pad to full address if only 3 groups given
+        if ((addrPart.match(/:/g) || []).length < 7) {
+          // It may be short like fd12:3456:7890 — expand to full
+          addrPart = addrPart.replace(/:+$/, '') + '::';
+        }
+        var groups = parseIPv6(addrPart);
+        if (!groups) {
+          subnetOutput.innerHTML = '';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid IPv6 address — could not parse.';
+          return;
+        }
+        if ((groups[0] & 0xff00) !== 0xfd00 && (groups[0] & 0xfe00) !== 0xfc00) {
+          subnetOutput.innerHTML = '<div class="validate-result warn">Warning: This does not appear to be a ULA address (expected fd prefix). Proceeding anyway.</div>';
+        } else {
+          subnetOutput.innerHTML = '';
+        }
+
+        var html = subnetOutput.innerHTML;
+        html += '<div style="overflow-x:auto;"><table class="subnet-table"><thead><tr>';
+        html += '<th>Subnet ID</th><th>Prefix</th><th>Expanded Prefix</th><th>Address Range</th></tr></thead><tbody>';
+        for (var i = 0; i < count; i++) {
+          var subnetId = start + i;
+          if (subnetId > 65535) break;
+          var sg = new Uint16Array([groups[0], groups[1], groups[2], subnetId, 0, 0, 0, 0]);
+          var prefixHex = subnetId.toString(16).padStart(4, '0');
+          var compressed = compressIPv6(sg).replace(/::$/, '') + '::/64';
+          if (compressed.indexOf('::') === -1) compressed = compressed.replace(':0:0:0:0:0:0', '::') + '';
+          // rebuild properly
+          var subComp = compressIPv6(sg);
+          // Remove the :: suffix if it's just trailing zeros
+          var sub64 = expandIPv6(sg).split(':').slice(0,4).join(':') + '::/64';
+          var compSub = compressIPv6(sg).replace(/(:0)+$/, '') || ':';
+          // Simple: use expanded first 4 groups + ::/64
+          var fullPrefix = expandIPv6(sg).split(':').slice(0,4).join(':') + '::/64';
+          var shortPrefix = compressIPv6(sg);
+          // Ensure /64
+          if (shortPrefix.indexOf('::') !== -1) {
+            shortPrefix = shortPrefix.replace(/::[^/]*$/, '::/64');
+          } else {
+            shortPrefix += '::/64';
+          }
+          var rangeStart = expandIPv6(sg).split(':').slice(0,4).join(':') + ':0000:0000:0000:0001';
+          var rangeEnd   = expandIPv6(sg).split(':').slice(0,4).join(':') + ':ffff:ffff:ffff:ffff';
+
+          html += '<tr>';
+          html += '<td><code>' + prefixHex.toUpperCase() + '</code></td>';
+          html += '<td><code>' + shortPrefix + '</code></td>';
+          html += '<td><code>' + fullPrefix + '</code></td>';
+          html += '<td style="font-size:0.78rem;"><code>…:' + rangeStart.split(':').slice(4).join(':') + '</code> –<br><code>…:' + rangeEnd.split(':').slice(4).join(':') + '</code></td>';
+          html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+        subnetOutput.innerHTML = html;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Showing ' + Math.min(count, 65536 - start) + ' subnets starting at ID ' + start + '.';
+        DT.trackTool('ipv6-ula-generator');
+      }
+
+      document.getElementById('subnetBtn').addEventListener('click', listSubnets);
+      document.getElementById('subnetExampleBtn').addEventListener('click', function () {
+        document.getElementById('subnetPrefix').value = 'fdab:1234:5678::/48';
+        listSubnets();
+      });
+
+      // ---------------------------------------------------------------
+      // Validate
+      // ---------------------------------------------------------------
+      function validateAddress() {
+        var raw = document.getElementById('validateInput').value.trim();
+        if (!raw) {
+          validateOutput.innerHTML = '';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Enter an IPv6 address or prefix to validate.';
+          return;
+        }
+
+        var prefixLen = null;
+        var addrStr = raw;
+        var slashIdx = raw.indexOf('/');
+        if (slashIdx !== -1) {
+          prefixLen = parseInt(raw.substring(slashIdx + 1), 10);
+          addrStr = raw.substring(0, slashIdx);
+        }
+        // Normalize short prefixes like fd12:3456:7890
+        var colonCount = (addrStr.match(/:/g) || []).length;
+        if (colonCount < 7 && addrStr.indexOf('::') === -1) {
+          addrStr = addrStr + '::';
+        }
+
+        var groups = parseIPv6(addrStr);
+        if (!groups) {
+          validateOutput.innerHTML = '<div class="validate-result err">Invalid IPv6 address — could not parse. Check for typos, extra colons, or invalid hex characters.</div>';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Invalid IPv6 address.';
+          return;
+        }
+
+        var expanded = expandIPv6(groups);
+        var compressed = compressIPv6(groups);
+        var firstByte = (groups[0] >> 8) & 0xff;
+        var isFC = firstByte === 0xfc;
+        var isFD = firstByte === 0xfd;
+        var isULA = (groups[0] & 0xfe00) === 0xfc00; // fc00::/7
+        var isLinkLocal = (groups[0] & 0xffc0) === 0xfe80;
+        var isLoopback = groups[0]===0 && groups[1]===0 && groups[2]===0 && groups[3]===0 && groups[4]===0 && groups[5]===0 && groups[6]===0 && groups[7]===1;
+        var isMulticast = (groups[0] & 0xff00) === 0xff00;
+        var isGlobal = (groups[0] & 0xe000) === 0x2000;
+        var isUnspecified = expanded === '0000:0000:0000:0000:0000:0000:0000:0000';
+
+        var html = '';
+        if (isULA) {
+          var globalIdHex = [
+            (groups[0] & 0x00ff).toString(16).padStart(2,'0'),
+            ((groups[1] >> 8) & 0xff).toString(16).padStart(2,'0'),
+            (groups[1] & 0xff).toString(16).padStart(2,'0'),
+            ((groups[2] >> 8) & 0xff).toString(16).padStart(2,'0'),
+            (groups[2] & 0xff).toString(16).padStart(2,'0')
+          ].join(':');
+          var subnetIdHex = groups[3].toString(16).padStart(4,'0').toUpperCase();
+          html += '<div class="validate-result ok">';
+          html += '<strong>Valid RFC 4193 Unique Local Address</strong><br>';
+          if (isFD) html += 'Type: <strong>fd — Locally assigned</strong> (correct for self-generated ULA)<br>';
+          if (isFC) html += 'Type: <strong>fc — Centrally assigned</strong> (reserved, not in use)<br>';
+          html += 'Global ID: <code>' + globalIdHex + '</code><br>';
+          html += 'Subnet ID: <code>' + subnetIdHex + '</code><br>';
+          if (prefixLen !== null) html += 'Prefix length: <code>/' + prefixLen + '</code><br>';
+          html += 'Compressed: <code>' + compressed + (prefixLen !== null ? '/' + prefixLen : '') + '</code><br>';
+          html += 'Expanded: <code>' + expanded + (prefixLen !== null ? '/' + prefixLen : '') + '</code>';
+          html += '</div>';
+          statusBar.className = 'status-bar valid';
+          statusBar.textContent = compressIPv6(groups).split(':').slice(0,3).join(':') + '::/48 — RFC 4193 compliant';
+        } else if (isLinkLocal) {
+          html += '<div class="validate-result warn"><strong>Link-Local Address (fe80::/10)</strong> — Not a ULA. Link-local addresses are auto-configured and not routable beyond a single link.<br>Compressed: <code>' + compressed + '</code><br>Expanded: <code>' + expanded + '</code></div>';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Link-local address — not a ULA.';
+        } else if (isLoopback) {
+          html += '<div class="validate-result warn"><strong>Loopback Address (::1)</strong> — Not a ULA.</div>';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Loopback address.';
+        } else if (isMulticast) {
+          html += '<div class="validate-result warn"><strong>Multicast Address (ff00::/8)</strong> — Not a ULA.<br>Compressed: <code>' + compressed + '</code></div>';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Multicast address — not a ULA.';
+        } else if (isGlobal) {
+          html += '<div class="validate-result err"><strong>Global Unicast Address (2000::/3)</strong> — Not a ULA. This is a publicly routable address.<br>Compressed: <code>' + compressed + '</code><br>Expanded: <code>' + expanded + '</code></div>';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Global unicast address — not a ULA.';
+        } else if (isUnspecified) {
+          html += '<div class="validate-result warn"><strong>Unspecified Address (::)</strong> — Not a valid ULA.</div>';
+          statusBar.className = 'status-bar info';
+          statusBar.textContent = 'Unspecified address.';
+        } else {
+          html += '<div class="validate-result err"><strong>Not a ULA Address</strong> — This address does not fall in the fc00::/7 block.<br>Compressed: <code>' + compressed + '</code><br>Expanded: <code>' + expanded + '</code></div>';
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Not a ULA address.';
+        }
+        validateOutput.innerHTML = html;
+        DT.trackTool('ipv6-ula-generator');
+      }
+
+      document.getElementById('validateBtn').addEventListener('click', validateAddress);
+      document.getElementById('validateInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); validateAddress(); }
+      });
+      document.getElementById('validateInput').addEventListener('input', DT.debounce(validateAddress, 400));
+      document.getElementById('validateExampleBtn').addEventListener('click', function () {
+        document.getElementById('validateInput').value = 'fdab:1234:5678::1';
+        validateAddress();
+      });
+
+      // ---------------------------------------------------------------
+      // Copy / Download (generate panel)
+      // ---------------------------------------------------------------
+      document.getElementById('copyBtn').addEventListener('click', function () {
+        if (lastRaw) DT.copyToClipboard(lastRaw, this);
+      });
+      document.getElementById('downloadBtn').addEventListener('click', function () {
+        if (lastRaw) DT.downloadText(lastRaw, 'ula-prefix.txt', 'text/plain');
+      });
+
+      // Auto-generate on load
+      generateULA();
+    })();
+  </script>
+</body>
+</html>

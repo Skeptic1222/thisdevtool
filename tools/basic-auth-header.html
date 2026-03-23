@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10b981">
+  <title>HTTP Basic Auth Header Generator — Free Online Tool | ThisDevTool</title>
+  <meta name="description" content="Generate and decode HTTP Basic Authentication headers instantly. Get the Authorization header value, cURL command, and fetch/Python code snippets. 100% client-side, no signup.">
+  <link rel="canonical" href="https://thisdevtool.com/tools/basic-auth-header.html">
+  <meta property="og:title" content="HTTP Basic Auth Header Generator — ThisDevTool">
+  <meta property="og:description" content="Generate HTTP Basic Auth headers, decode existing ones, and get ready-to-use cURL, fetch, and Python code snippets. Free, instant, runs in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thisdevtool.com/tools/basic-auth-header.html">
+  <meta property="og:image" content="https://thisdevtool.com/images/og-default.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="HTTP Basic Auth Header Generator — ThisDevTool">
+  <meta name="twitter:description" content="Generate and decode HTTP Basic Auth headers plus cURL, fetch, and Python snippets.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/style.css?v=3">
+  <script src="/js/core.js?v=3"></script>
+  <script src="/js/ads.js?v=3"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "HTTP Basic Auth Header Generator",
+    "url": "https://thisdevtool.com/tools/basic-auth-header.html",
+    "description": "Generate and decode HTTP Basic Authentication headers. Get Authorization header values, cURL commands, and code snippets for fetch and Python requests.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is HTTP Basic Authentication?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "HTTP Basic Authentication is a simple authentication scheme built into the HTTP protocol. The client sends credentials (username and password) encoded in Base64 in the Authorization request header. The header looks like: Authorization: Basic dXNlcjpwYXNz. Because the credentials are only Base64-encoded (not encrypted), Basic Auth should always be used over HTTPS."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Basic Auth secure?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Basic Auth is only as secure as the transport layer. The credentials are Base64-encoded, which is trivially reversible — it is NOT encryption. Always use Basic Auth exclusively over HTTPS/TLS. For modern APIs, consider token-based schemes like Bearer tokens or OAuth 2.0 instead. Basic Auth is still widely used for internal APIs, CI/CD pipelines, and legacy system integrations where HTTPS is enforced."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is the Basic Auth header constructed?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The header value is constructed by joining the username and password with a colon (username:password), then Base64-encoding the result. For example, user:pass becomes dXNlcjpwYXNz. The final header is: Authorization: Basic dXNlcjpwYXNz. In JavaScript, this is btoa(username + ':' + password)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does my password leave my browser?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. This tool runs 100% in your browser using JavaScript. Your username and password are never sent to any server. The Base64 encoding and decoding happens entirely client-side. There is no logging, no analytics on input values, and no server-side processing of any kind."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use Basic Auth in a cURL command?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. cURL supports Basic Auth with the -u flag: curl -u username:password https://api.example.com. Alternatively, you can pass the Authorization header manually: curl -H 'Authorization: Basic dXNlcjpwYXNz' https://api.example.com. This tool generates both forms for you automatically."
+        }
+      }
+    ]
+  }
+  </script>
+  <style>
+    .auth-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 600px) {
+      .auth-inputs { grid-template-columns: 1fr; }
+    }
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .input-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary, #6b7280);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .input-with-toggle {
+      position: relative;
+      display: flex;
+    }
+    .input-with-toggle input {
+      flex: 1;
+      padding: 0.6rem 2.5rem 0.6rem 0.75rem;
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 6px;
+      background: var(--input-bg, #fff);
+      color: var(--text, #111827);
+      font-size: 0.95rem;
+      font-family: 'Fira Code', monospace;
+    }
+    .input-with-toggle input:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+    }
+    .toggle-pw {
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-secondary, #6b7280);
+      font-size: 1rem;
+      padding: 0.2rem;
+      line-height: 1;
+    }
+    .toggle-pw:hover { color: #10b981; }
+    .decode-input {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 6px;
+      background: var(--input-bg, #fff);
+      color: var(--text, #111827);
+      font-size: 0.9rem;
+      font-family: 'Fira Code', monospace;
+      margin-bottom: 1rem;
+      box-sizing: border-box;
+    }
+    .decode-input:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
+    }
+    .output-block {
+      background: var(--code-bg, #f8fafc);
+      border: 1px solid var(--border, #e5e7eb);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .output-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border, #e5e7eb);
+      background: var(--card-bg, #fff);
+    }
+    .output-block-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-secondary, #6b7280);
+    }
+    .output-block pre {
+      margin: 0;
+      padding: 0.75rem;
+      font-size: 0.85rem;
+      font-family: 'Fira Code', monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text, #111827);
+      min-height: 2.5rem;
+    }
+    .snippets-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 700px) {
+      .snippets-grid { grid-template-columns: 1fr; }
+    }
+    .generate-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/" class="site-logo">ThisDevTool</a>
+      <nav class="header-nav">
+        <a href="/">All Tools</a>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/base64.html">Base64</a>
+        <button class="theme-toggle" aria-label="Toggle dark mode"></button>
+      </nav>
+    </div>
+  </header>
+
+  <div class="page-wrapper">
+    <!-- Top Ad -->
+    <div class="ad-slot ad-slot-banner" data-ad="top-banner">Ad</div>
+
+    <div class="content-grid">
+      <div class="main-content">
+        <!-- Tool -->
+        <div class="tool-card-page">
+          <h1>HTTP Basic Auth Header Generator</h1>
+          <p class="tool-subtitle">Generate or decode HTTP Basic Authentication headers. Get the Authorization header, cURL command, and ready-to-use code snippets.</p>
+
+          <!-- Mode Chips -->
+          <div class="option-chips">
+            <button class="option-chip active" data-mode="generate">Generate</button>
+            <button class="option-chip" data-mode="decode">Decode</button>
+            <button class="option-chip" data-mode="snippets">Code Snippets</button>
+          </div>
+
+          <!-- Generate Mode -->
+          <div id="generatePane">
+            <div class="auth-inputs">
+              <div class="input-group">
+                <label for="usernameInput">Username</label>
+                <input type="text" id="usernameInput" placeholder="e.g. admin" autocomplete="off" spellcheck="false">
+              </div>
+              <div class="input-group">
+                <label for="passwordInput">Password</label>
+                <div class="input-with-toggle">
+                  <input type="password" id="passwordInput" placeholder="e.g. s3cr3t!" autocomplete="off" spellcheck="false">
+                  <button class="toggle-pw" id="togglePwBtn" title="Show/hide password" aria-label="Toggle password visibility">👁</button>
+                </div>
+              </div>
+            </div>
+            <div class="generate-row">
+              <button class="btn btn-sm btn-secondary" id="exampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="clearBtn">Clear</button>
+            </div>
+
+            <div class="output-block" id="headerBlock">
+              <div class="output-block-header">
+                <span class="output-block-label">Authorization Header</span>
+                <button class="btn btn-sm btn-primary" id="copyHeaderBtn">Copy</button>
+              </div>
+              <pre id="headerOutput"></pre>
+            </div>
+
+            <div class="output-block" id="curlBlock">
+              <div class="output-block-header">
+                <span class="output-block-label">cURL Command</span>
+                <button class="btn btn-sm btn-primary" id="copyCurlBtn">Copy</button>
+              </div>
+              <pre id="curlOutput"></pre>
+            </div>
+          </div>
+
+          <!-- Decode Mode -->
+          <div id="decodePane" style="display:none;">
+            <div class="input-group" style="margin-bottom:1rem;">
+              <label for="decodeInput">Paste Basic Auth header value to decode</label>
+              <input type="text" id="decodeInput" class="decode-input" placeholder="Basic dXNlcjpwYXNz  or just  dXNlcjpwYXNz" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="generate-row">
+              <button class="btn btn-sm btn-secondary" id="decodeExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="decodeClearBtn">Clear</button>
+            </div>
+            <div class="output-block">
+              <div class="output-block-header">
+                <span class="output-block-label">Decoded Credentials</span>
+                <button class="btn btn-sm btn-primary" id="copyDecodedBtn">Copy</button>
+              </div>
+              <pre id="decodedOutput"></pre>
+            </div>
+          </div>
+
+          <!-- Snippets Mode -->
+          <div id="snippetsPane" style="display:none;">
+            <div class="auth-inputs" style="margin-bottom:1rem;">
+              <div class="input-group">
+                <label for="snipUser">Username</label>
+                <input type="text" id="snipUser" placeholder="e.g. admin" autocomplete="off" spellcheck="false">
+              </div>
+              <div class="input-group">
+                <label for="snipPass">Password</label>
+                <div class="input-with-toggle">
+                  <input type="password" id="snipPass" placeholder="e.g. s3cr3t!" autocomplete="off" spellcheck="false">
+                  <button class="toggle-pw" id="toggleSnipPwBtn" title="Show/hide password" aria-label="Toggle password visibility">👁</button>
+                </div>
+              </div>
+            </div>
+            <div class="generate-row">
+              <button class="btn btn-sm btn-secondary" id="snipExampleBtn">Try Example</button>
+              <button class="btn btn-sm btn-secondary" id="snipClearBtn">Clear</button>
+            </div>
+            <div class="snippets-grid">
+              <div class="output-block">
+                <div class="output-block-header">
+                  <span class="output-block-label">JavaScript (fetch)</span>
+                  <button class="btn btn-sm btn-primary" id="copyFetchBtn">Copy</button>
+                </div>
+                <pre id="fetchOutput"></pre>
+              </div>
+              <div class="output-block">
+                <div class="output-block-header">
+                  <span class="output-block-label">Python (requests)</span>
+                  <button class="btn btn-sm btn-primary" id="copyPythonBtn">Copy</button>
+                </div>
+                <pre id="pythonOutput"></pre>
+              </div>
+              <div class="output-block">
+                <div class="output-block-header">
+                  <span class="output-block-label">cURL (-u flag)</span>
+                  <button class="btn btn-sm btn-primary" id="copyCurlUBtn">Copy</button>
+                </div>
+                <pre id="curlUOutput"></pre>
+              </div>
+              <div class="output-block">
+                <div class="output-block-header">
+                  <span class="output-block-label">cURL (-H header)</span>
+                  <button class="btn btn-sm btn-primary" id="copyCurlHBtn">Copy</button>
+                </div>
+                <pre id="curlHOutput"></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar info" id="statusBar" role="status" aria-live="polite">
+            Enter a username and password to generate the Authorization header.
+          </div>
+        </div>
+
+        <!-- Inline Ad -->
+        <div class="ad-slot ad-slot-inline" data-ad="mid-content">Ad</div>
+
+        <!-- SEO Content -->
+        <div class="content-section">
+          <h2>How to Use the Basic Auth Header Generator</h2>
+          <ol>
+            <li><strong>Generate mode:</strong> Enter your username and password. The Authorization header, cURL command, and encoded value are generated instantly.</li>
+            <li><strong>Decode mode:</strong> Paste a <code>Basic dXNlcjpwYXNz</code> header value to extract the original username and password.</li>
+            <li><strong>Code Snippets mode:</strong> Get ready-to-use code for JavaScript fetch, Python requests, and cURL in both forms.</li>
+            <li><strong>Show/hide password:</strong> Use the eye icon to reveal or mask the password field while typing.</li>
+            <li><strong>Copy buttons:</strong> Each output block has its own Copy button for quick clipboard access.</li>
+          </ol>
+
+          <h2>What is HTTP Basic Authentication?</h2>
+          <p>HTTP Basic Authentication is the simplest and oldest authentication mechanism defined in the HTTP specification (RFC 7617). When a server requires Basic Auth, it sends a <code>WWW-Authenticate: Basic realm="..."</code> response header. The client then encodes the username and password as <code>username:password</code>, Base64-encodes the result, and sends it in the <code>Authorization: Basic &lt;token&gt;</code> request header on every subsequent request.</p>
+
+          <p>Basic Auth is still in widespread use today, particularly for:</p>
+          <ul>
+            <li>Internal APIs and microservices within trusted networks</li>
+            <li>CI/CD pipelines authenticating to artifact registries (npm, Maven, Docker Hub)</li>
+            <li>Legacy SOAP and REST APIs from the pre-OAuth era</li>
+            <li>HTTP proxy authentication (<code>Proxy-Authorization</code> header)</li>
+            <li>Static site access control (Netlify, Cloudflare Pages password protection)</li>
+          </ul>
+
+          <h3>How the Header is Constructed</h3>
+          <p>The algorithm is deliberately simple:</p>
+          <ol>
+            <li>Concatenate username, a colon, and password: <code>username:password</code></li>
+            <li>Base64-encode the result using the standard alphabet (RFC 4648)</li>
+            <li>Prefix with <code>Basic </code> (note the space): <code>Basic dXNlcjpwYXNz</code></li>
+            <li>Set this as the value of the <code>Authorization</code> HTTP request header</li>
+          </ol>
+          <p>In JavaScript this is simply <code>btoa(username + ':' + password)</code>. In Python, <code>base64.b64encode(f"{user}:{pwd}".encode()).decode()</code>.</p>
+
+          <h3>Security Considerations</h3>
+          <p>Base64 is an encoding scheme, not an encryption scheme. Anyone who intercepts a Basic Auth header can decode the credentials in seconds. This means Basic Auth is only safe when used exclusively over HTTPS/TLS. Never use Basic Auth over plain HTTP in production — the credentials will be visible to any network observer. For public-facing APIs with external users, prefer Bearer tokens (JWT), API keys, or OAuth 2.0. For machine-to-machine authentication inside a private network over TLS, Basic Auth is a pragmatic and simple choice.</p>
+
+          <h3>Colons in Passwords</h3>
+          <p>The HTTP spec states that only the first colon in the decoded string separates the username from the password. This means usernames cannot contain colons, but passwords can. A password like <code>p:a:s:s</code> with username <code>user</code> encodes to <code>user:p:a:s:s</code>, and when decoded the username is everything before the first colon and the password is everything after it.</p>
+
+          <h3>Unicode and Non-ASCII Characters</h3>
+          <p>The original HTTP Basic Auth spec (RFC 2617) assumed ASCII-only credentials. RFC 7617 (2015) updated the spec to support UTF-8 encoded credentials, but not all servers implement this. If you use non-ASCII characters (accented letters, CJK characters, emoji) in credentials, use the <code>charset=UTF-8</code> parameter and verify your server supports it. JavaScript's <code>btoa()</code> throws for non-ASCII characters — you need to encode to UTF-8 bytes first using <code>encodeURIComponent</code> and <code>unescape</code>.</p>
+
+          <h3>Using Basic Auth with cURL</h3>
+          <p>cURL offers two ways to send Basic Auth. The <code>-u username:password</code> flag lets cURL handle the encoding automatically. Alternatively, you can construct the header manually with <code>-H "Authorization: Basic &lt;token&gt;"</code>. The <code>-u</code> form is more readable; the <code>-H</code> form is useful when you already have the encoded token and want to avoid exposing the raw credentials in shell history. Both approaches are shown in the Code Snippets tab above.</p>
+
+          <h3>Comparing Auth Schemes</h3>
+          <p>Basic Auth versus alternatives:</p>
+          <ul>
+            <li><strong>Basic Auth</strong> — credentials on every request, stateless, simple, requires HTTPS, no expiry</li>
+            <li><strong>Bearer Token / JWT</strong> — signed token, can encode claims and expiry, no credential exposure after login</li>
+            <li><strong>API Key</strong> — single opaque string, usually in header or query param, easy to rotate</li>
+            <li><strong>OAuth 2.0</strong> — delegation, scopes, refresh tokens, complex but powerful for third-party access</li>
+            <li><strong>Digest Auth</strong> — like Basic but sends a hash instead of raw credentials; mostly obsolete</li>
+          </ul>
+          <p>For developer tooling, automation scripts, and internal services, Basic Auth remains the lowest-friction option when HTTPS is enforced. Combine it with our <a href="/tools/jwt-decoder.html">JWT Decoder</a> if you need to work with both schemes on the same project.</p>
+        </div>
+
+        <!-- FAQ -->
+        <div class="content-section faq-section">
+          <h2>Frequently Asked Questions</h2>
+
+          <div class="faq-item">
+            <button class="faq-question">What is HTTP Basic Authentication?</button>
+            <div class="faq-answer">HTTP Basic Authentication is a simple authentication scheme built into the HTTP protocol. The client sends credentials (username and password) encoded in Base64 in the Authorization request header. The header looks like: <code>Authorization: Basic dXNlcjpwYXNz</code>. Because the credentials are only Base64-encoded (not encrypted), Basic Auth should always be used over HTTPS.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Is Basic Auth secure?</button>
+            <div class="faq-answer">Basic Auth is only as secure as the transport layer. The credentials are Base64-encoded, which is trivially reversible — it is NOT encryption. Always use Basic Auth exclusively over HTTPS/TLS. For modern APIs, consider token-based schemes like Bearer tokens or OAuth 2.0 instead. Basic Auth is still widely used for internal APIs, CI/CD pipelines, and legacy system integrations where HTTPS is enforced.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">How is the Basic Auth header constructed?</button>
+            <div class="faq-answer">Join the username and password with a colon (<code>username:password</code>), then Base64-encode the result. For example, <code>user:pass</code> becomes <code>dXNlcjpwYXNz</code>. The final header is: <code>Authorization: Basic dXNlcjpwYXNz</code>. In JavaScript this is <code>btoa(username + ':' + password)</code>.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Does my password leave my browser?</button>
+            <div class="faq-answer">No. This tool runs 100% in your browser using JavaScript. Your username and password are never sent to any server. The Base64 encoding and decoding happens entirely client-side. There is no logging, no analytics on input values, and no server-side processing of any kind.</div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question">Can I use Basic Auth in a cURL command?</button>
+            <div class="faq-answer">Yes. cURL supports Basic Auth with the -u flag: <code>curl -u username:password https://api.example.com</code>. Alternatively, pass the header manually: <code>curl -H "Authorization: Basic dXNlcjpwYXNz" https://api.example.com</code>. This tool generates both forms in the Code Snippets tab.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h4>Security Tools</h4>
+        <a href="/tools/jwt-decoder.html">JWT Decoder</a>
+        <a href="/tools/base64.html">Base64 Encoder</a>
+        <a href="/tools/hash-generator.html">Hash Generator</a>
+        <a href="/tools/password-generator.html">Password Generator</a>
+      </div>
+      <div class="footer-col">
+        <h4>Related Tools</h4>
+        <a href="/tools/sri-hash-generator.html">SRI Hash Generator</a>
+        <a href="/tools/url-encoder.html">URL Encoder</a>
+        <a href="/tools/hex-ascii.html">Hex ↔ ASCII</a>
+        <a href="/tools/curl-to-code.html">cURL to Code</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="/legal/privacy.html">Privacy Policy</a>
+        <a href="/legal/terms.html">Terms of Service</a>
+        <a href="/legal/dmca.html">DMCA</a>
+      </div>
+    </div>
+    <div class="footer-bottom">&copy; 2026 ThisDevTool. All tools run 100% in your browser.</div>
+  </footer>
+
+  <script>
+    (function () {
+      var DT = DevToolbox;
+      var currentMode = 'generate';
+
+      // ── helpers ──────────────────────────────────────────────────────────────
+      function safeB64Encode(str) {
+        try {
+          // Handle non-ASCII via UTF-8 byte encoding
+          var bytes = new TextEncoder().encode(str);
+          var binary = String.fromCharCode.apply(null, bytes);
+          return btoa(binary);
+        } catch (e) {
+          return btoa(unescape(encodeURIComponent(str)));
+        }
+      }
+
+      function safeB64Decode(token) {
+        try {
+          var binary = atob(token);
+          var bytes = new Uint8Array(binary.length);
+          for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          return new TextDecoder().decode(bytes);
+        } catch (e) {
+          return atob(token);
+        }
+      }
+
+      function setStatus(msg, type) {
+        var bar = document.getElementById('statusBar');
+        bar.className = 'status-bar ' + (type || 'info');
+        bar.textContent = msg;
+      }
+
+      // ── generate mode ────────────────────────────────────────────────────────
+      var userIn = document.getElementById('usernameInput');
+      var passIn = document.getElementById('passwordInput');
+
+      function generateHeader() {
+        var user = userIn.value;
+        var pass = passIn.value;
+        if (!user && !pass) {
+          document.getElementById('headerOutput').textContent = '';
+          document.getElementById('curlOutput').textContent = '';
+          setStatus('Enter a username and password to generate the Authorization header.', 'info');
+          return;
+        }
+        var token = safeB64Encode(user + ':' + pass);
+        var header = 'Authorization: Basic ' + token;
+        document.getElementById('headerOutput').textContent = header;
+        document.getElementById('curlOutput').textContent =
+          'curl -H "' + header + '" \\\n     https://api.example.com/endpoint';
+        setStatus(header, 'valid');
+        DT.trackTool('basic-auth-header');
+      }
+
+      var debouncedGenerate = DT.debounce(generateHeader, 150);
+      userIn.addEventListener('input', debouncedGenerate);
+      passIn.addEventListener('input', debouncedGenerate);
+
+      document.getElementById('togglePwBtn').addEventListener('click', function () {
+        var t = passIn.type === 'password' ? 'text' : 'password';
+        passIn.type = t;
+        this.textContent = t === 'password' ? '👁' : '🙈';
+      });
+
+      document.getElementById('copyHeaderBtn').addEventListener('click', function () {
+        var t = document.getElementById('headerOutput').textContent;
+        if (t) DT.copyToClipboard(t, this);
+      });
+      document.getElementById('copyCurlBtn').addEventListener('click', function () {
+        var t = document.getElementById('curlOutput').textContent;
+        if (t) DT.copyToClipboard(t, this);
+      });
+
+      document.getElementById('exampleBtn').addEventListener('click', function () {
+        userIn.value = 'admin';
+        passIn.value = 'Sup3rS3cr3t!';
+        generateHeader();
+      });
+      document.getElementById('clearBtn').addEventListener('click', function () {
+        userIn.value = '';
+        passIn.value = '';
+        generateHeader();
+        userIn.focus();
+      });
+
+      // ── decode mode ──────────────────────────────────────────────────────────
+      var decodeIn = document.getElementById('decodeInput');
+
+      function doDecode() {
+        var raw = decodeIn.value.trim();
+        var out = document.getElementById('decodedOutput');
+        if (!raw) {
+          out.textContent = '';
+          setStatus('Paste a Basic Auth header value to decode it.', 'info');
+          return;
+        }
+        // Strip "Basic " prefix if present (case-insensitive)
+        var token = raw.replace(/^[Bb]asic\s+/, '');
+        try {
+          var decoded = safeB64Decode(token);
+          var colonIdx = decoded.indexOf(':');
+          if (colonIdx === -1) {
+            out.textContent = 'Decoded: ' + decoded + '\n(no colon found — may not be valid Basic Auth)';
+            setStatus('Decoded but no colon separator found.', 'invalid');
+          } else {
+            var extractedUser = decoded.substring(0, colonIdx);
+            var extractedPass = decoded.substring(colonIdx + 1);
+            out.textContent =
+              'Username: ' + extractedUser + '\nPassword: ' + extractedPass +
+              '\n\nDecoded string: ' + decoded;
+            setStatus('Decoded — Username: ' + extractedUser, 'valid');
+          }
+        } catch (e) {
+          out.textContent = 'Error: ' + e.message + '\n\nMake sure you are pasting a valid Base64 token.';
+          setStatus('Invalid Base64 token.', 'invalid');
+        }
+        DT.trackTool('basic-auth-header');
+      }
+
+      var debouncedDecode = DT.debounce(doDecode, 150);
+      decodeIn.addEventListener('input', debouncedDecode);
+
+      document.getElementById('copyDecodedBtn').addEventListener('click', function () {
+        var t = document.getElementById('decodedOutput').textContent;
+        if (t) DT.copyToClipboard(t, this);
+      });
+      document.getElementById('decodeExampleBtn').addEventListener('click', function () {
+        decodeIn.value = 'Basic YWRtaW46U3VwM3JTM2NyM3Qh';
+        doDecode();
+      });
+      document.getElementById('decodeClearBtn').addEventListener('click', function () {
+        decodeIn.value = '';
+        doDecode();
+        decodeIn.focus();
+      });
+
+      // ── snippets mode ────────────────────────────────────────────────────────
+      var snipUser = document.getElementById('snipUser');
+      var snipPass = document.getElementById('snipPass');
+
+      function buildSnippets() {
+        var user = snipUser.value || 'username';
+        var pass = snipPass.value || 'password';
+        var token = safeB64Encode(user + ':' + pass);
+        var headerVal = 'Basic ' + token;
+
+        document.getElementById('fetchOutput').textContent =
+          "const credentials = btoa('" + user.replace(/'/g, "\\'") + ":" + pass.replace(/'/g, "\\'") + "');\n\n" +
+          "fetch('https://api.example.com/endpoint', {\n" +
+          "  headers: {\n" +
+          "    'Authorization': 'Basic ' + credentials\n" +
+          "  }\n" +
+          "})\n" +
+          "  .then(res => res.json())\n" +
+          "  .then(data => console.log(data));";
+
+        document.getElementById('pythonOutput').textContent =
+          "import requests\n\n" +
+          "response = requests.get(\n" +
+          "    'https://api.example.com/endpoint',\n" +
+          "    auth=('" + user.replace(/'/g, "\\'") + "', '" + pass.replace(/'/g, "\\'") + "')\n" +
+          ")\nprint(response.json())";
+
+        document.getElementById('curlUOutput').textContent =
+          "curl -u '" + user.replace(/'/g, "'\\''") + ":" + pass.replace(/'/g, "'\\''") + "' \\\n" +
+          "     https://api.example.com/endpoint";
+
+        document.getElementById('curlHOutput').textContent =
+          'curl -H "Authorization: ' + headerVal + '" \\\n' +
+          '     https://api.example.com/endpoint';
+
+        if (snipUser.value || snipPass.value) {
+          setStatus('Code snippets generated for ' + user + ' — token: ' + token.substring(0, 20) + '...', 'valid');
+        } else {
+          setStatus('Enter credentials to customise the snippets, or use the placeholders.', 'info');
+        }
+        DT.trackTool('basic-auth-header');
+      }
+
+      var debouncedSnippets = DT.debounce(buildSnippets, 150);
+      snipUser.addEventListener('input', debouncedSnippets);
+      snipPass.addEventListener('input', debouncedSnippets);
+
+      document.getElementById('toggleSnipPwBtn').addEventListener('click', function () {
+        var t = snipPass.type === 'password' ? 'text' : 'password';
+        snipPass.type = t;
+        this.textContent = t === 'password' ? '👁' : '🙈';
+      });
+
+      document.getElementById('copyFetchBtn').addEventListener('click', function () {
+        var t = document.getElementById('fetchOutput').textContent;
+        if (t) DT.copyToClipboard(t, this);
+      });
+      document.getElementById('copyPythonBtn').addEventListener('click', function () {
+        var t = document.getElementById('pythonOutput').textContent;
+        if (t) DT.copyToClipboard(t, this);
+      });
+      document.getElementById('copyCurlUBtn').addEventListener('click', function () {
+        var t = document.getElementById('curlUOutput').textContent;
+        if (t) DT.copyToClipboard(t, this);
+      });
+      document.getElementById('copyCurlHBtn').addEventListener('click', function () {
+        var t = document.getElementById('curlHOutput').textContent;
+        if (t) DT.copyToClipboard(t, this);
+      });
+      document.getElementById('snipExampleBtn').addEventListener('click', function () {
+        snipUser.value = 'admin';
+        snipPass.value = 'Sup3rS3cr3t!';
+        buildSnippets();
+      });
+      document.getElementById('snipClearBtn').addEventListener('click', function () {
+        snipUser.value = '';
+        snipPass.value = '';
+        buildSnippets();
+        snipUser.focus();
+      });
+
+      // ── mode switching ───────────────────────────────────────────────────────
+      var panes = {
+        generate: document.getElementById('generatePane'),
+        decode: document.getElementById('decodePane'),
+        snippets: document.getElementById('snippetsPane')
+      };
+
+      document.querySelectorAll('.option-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          currentMode = chip.getAttribute('data-mode');
+          Object.keys(panes).forEach(function (k) {
+            panes[k].style.display = k === currentMode ? '' : 'none';
+          });
+          if (currentMode === 'generate') generateHeader();
+          else if (currentMode === 'decode') doDecode();
+          else if (currentMode === 'snippets') buildSnippets();
+        });
+      });
+
+      // Initial render
+      generateHeader();
+      buildSnippets();
+    })();
+  </script>
+</body>
+</html>
