@@ -2,7 +2,7 @@
  * DevToolbox — Service Worker
  * Cache-first for static assets, network-first for HTML navigation
  */
-var CACHE_NAME = 'devtoolbox-v1';
+var CACHE_NAME = 'devtoolbox-v2';
 var STATIC_ASSETS = [
   '/css/style.css',
   '/js/core.js',
@@ -51,17 +51,15 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // Static assets: cache-first with network fallback
+  // Static assets: stale-while-revalidate (serve cached, update in background)
   event.respondWith(
-    caches.match(event.request).then(function (cached) {
-      return cached || fetch(event.request).then(function (response) {
-        if (response.ok) {
-          var clone = response.clone();
-          caches.open(CACHE_NAME).then(function (cache) {
-            cache.put(event.request, clone);
-          });
-        }
-        return response;
+    caches.open(CACHE_NAME).then(function (cache) {
+      return cache.match(event.request).then(function (cached) {
+        var fetchPromise = fetch(event.request).then(function (response) {
+          if (response.ok) cache.put(event.request, response.clone());
+          return response;
+        });
+        return cached || fetchPromise;
       });
     })
   );
