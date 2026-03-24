@@ -2,7 +2,7 @@
  * DevToolbox — Service Worker
  * Cache-first for static assets, network-first for HTML navigation
  */
-var CACHE_NAME = 'thisdevtool-v7';
+var CACHE_NAME = 'thisdevtool-v8';
 var STATIC_ASSETS = [
   '/css/style.css',
   '/js/core.js',
@@ -10,7 +10,9 @@ var STATIC_ASSETS = [
   '/js/feedback.js',
   '/manifest.json',
   '/favicon.svg',
-  '/favicon.ico'
+  '/favicon.ico',
+  '/images/logo-light.svg',
+  '/images/logo-dark.svg'
 ];
 
 self.addEventListener('install', function (event) {
