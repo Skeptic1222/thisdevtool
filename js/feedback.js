@@ -7,16 +7,6 @@
 (function () {
   'use strict';
 
-  // --- Guards: only run on tool pages ---
-  var hasToolContainer = document.querySelector('.tool-container') || document.querySelector('.split-pane') || document.querySelector('.tool-card-page');
-  var hasFeedbackDiv = document.querySelector('.feedback-widget');
-  var hasAdSlot = document.querySelector('.ad-slot-inline');
-
-  // Skip if no tool container (homepage, legal pages, etc.)
-  if (!hasToolContainer) return;
-  // Skip if no insertion point and no pre-existing widget
-  if (!hasFeedbackDiv && !hasAdSlot) return;
-
   // --- Detect tool name ---
   function getToolName() {
     var widget = document.querySelector('.feedback-widget');
@@ -363,6 +353,10 @@
 
   // --- Bootstrap ---
   function init() {
+    // Guards: only run on tool pages (deferred to init so DOM is ready)
+    var hasToolContainer = document.querySelector('.tool-container') || document.querySelector('.split-pane') || document.querySelector('.tool-card-page');
+    if (!hasToolContainer) return;
+
     var existingWidget = document.querySelector('.feedback-widget');
 
     if (existingWidget) {
