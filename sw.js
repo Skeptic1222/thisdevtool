@@ -2,11 +2,12 @@
  * DevToolbox — Service Worker
  * Cache-first for static assets, network-first for HTML navigation
  */
-var CACHE_NAME = 'thisdevtool-v4';
+var CACHE_NAME = 'thisdevtool-v6';
 var STATIC_ASSETS = [
   '/css/style.css',
   '/js/core.js',
   '/js/ads.js',
+  '/js/feedback.js',
   '/manifest.json'
 ];
 
