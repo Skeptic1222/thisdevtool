@@ -200,6 +200,32 @@
       devops: 'DevOps', project: 'Project', network: 'Network'
     };
 
+    // Consolidate Developer subcategories from 20 into 8 display groups
+    var subcategoryGroups = {
+      dev: {
+        'Data & Formats': ['data-formats', 'conversion'],
+        'Encoding & Crypto': ['encoding', 'crypto', 'cipher'],
+        'Code Tools': ['code-formatting', 'code-generation', 'code-tools', 'esoteric'],
+        'Security': ['security'],
+        'Network & DevOps': ['network', 'devops'],
+        'Testing & Debug': ['testing', 'comparison'],
+        'Math & Time': ['math', 'time'],
+        'Generators': ['generators', 'project', 'database', 'tools']
+      },
+      design: {
+        'CSS Effects': ['css-effects', 'css-generators', 'css-tools'],
+        'CSS Layout': ['css-layout', 'css-analysis', 'css'],
+        'Color': ['color'],
+        'SVG & Images': ['svg', 'generators', 'dimensions'],
+        'Typography': ['typography', 'layout', 'testing']
+      },
+      text: {
+        'Analysis': ['analysis', 'audio'],
+        'Formatting': ['formatting', 'processing'],
+        'Generation': ['generation', 'tables', 'utility']
+      }
+    };
+
     function esc(str) {
       var d = document.createElement('div');
       d.textContent = str;
@@ -216,7 +242,8 @@
     function filterTools() {
       return allTools.filter(function (t) {
         var catOk = currentCategory === 'all' || t.category === currentCategory;
-        var subOk = currentSubcategory === 'all' || t.subcategory === currentSubcategory;
+        var subOk = currentSubcategory === 'all' ||
+          currentSubcategory.split(',').indexOf(t.subcategory) !== -1;
         var searchOk = !searchQuery ||
           fuzzy(t.name, searchQuery) ||
           fuzzy(t.desc, searchQuery) ||
@@ -291,7 +318,7 @@
       var nav = document.getElementById('subcategoryNav');
       if (!nav) return;
 
-      // Hide subcategory pills when "All" is selected — too many to show at once
+      // Hide subcategory pills when "All" is selected
       if (currentCategory === 'all') {
         nav.innerHTML = '';
         nav.style.display = 'none';
@@ -299,18 +326,40 @@
       }
 
       nav.style.display = '';
-      var subs = {};
-      allTools.forEach(function (t) {
-        if (t.category === currentCategory) {
-          subs[t.subcategory] = (subs[t.subcategory] || 0) + 1;
-        }
-      });
-      var h = '<button class="subcategory-pill' + (currentSubcategory === 'all' ? ' active' : '') + '" data-sub="all">All</button>';
-      Object.keys(subs).sort().forEach(function (sub) {
-        h += '<button class="subcategory-pill' + (currentSubcategory === sub ? ' active' : '') + '" data-sub="' + sub + '">' +
-          (subcategoryLabels[sub] || sub) + ' (' + subs[sub] + ')</button>';
-      });
-      nav.innerHTML = h;
+      var groups = subcategoryGroups[currentCategory];
+
+      // If this category has consolidated groups, use them
+      if (groups) {
+        var h = '<button class="subcategory-pill' + (currentSubcategory === 'all' ? ' active' : '') + '" data-sub="all">All</button>';
+        Object.keys(groups).forEach(function (groupLabel) {
+          var groupSubs = groups[groupLabel];
+          var count = 0;
+          allTools.forEach(function (t) {
+            if (t.category === currentCategory && groupSubs.indexOf(t.subcategory) !== -1) count++;
+          });
+          if (count === 0) return;
+          var groupKey = groupSubs.join(',');
+          var isActive = currentSubcategory === groupKey;
+          h += '<button class="subcategory-pill' + (isActive ? ' active' : '') + '" data-sub="' + groupKey + '">' +
+            groupLabel + ' (' + count + ')</button>';
+        });
+        nav.innerHTML = h;
+      } else {
+        // Ungrouped categories (seo, generator, a11y, math, fun) — show raw subcategories
+        var subs = {};
+        allTools.forEach(function (t) {
+          if (t.category === currentCategory) {
+            subs[t.subcategory] = (subs[t.subcategory] || 0) + 1;
+          }
+        });
+        var h = '<button class="subcategory-pill' + (currentSubcategory === 'all' ? ' active' : '') + '" data-sub="all">All</button>';
+        Object.keys(subs).sort().forEach(function (sub) {
+          h += '<button class="subcategory-pill' + (currentSubcategory === sub ? ' active' : '') + '" data-sub="' + sub + '">' +
+            (subcategoryLabels[sub] || sub) + ' (' + subs[sub] + ')</button>';
+        });
+        nav.innerHTML = h;
+      }
+
       nav.querySelectorAll('.subcategory-pill').forEach(function (pill) {
         pill.addEventListener('click', function () {
           currentSubcategory = pill.getAttribute('data-sub');
