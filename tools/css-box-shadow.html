@@ -89,12 +89,17 @@
     .shadow-preview-box { display: flex; align-items: center; justify-content: center; min-height: 220px; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border); }
     .preview-target { width: 140px; height: 90px; background: #fff; border-radius: 8px; transition: box-shadow 0.15s; }
     .shadow-layers { margin-bottom: 0.75rem; }
-    .layer-row { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; border-radius: 6px; cursor: pointer; border: 1px solid transparent; margin-bottom: 0.3rem; font-size: 0.82rem; background: var(--bg-secondary); }
-    .layer-row.active { border-color: #10b981; background: var(--bg-input, #f0fdf4); }
-    .layer-row .layer-swatch { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; border: 1px solid var(--border); }
-    .layer-row .layer-label { flex: 1; font-family: monospace; font-size: 0.78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .layer-row .del-btn { font-size: 0.8rem; color: var(--text-muted); cursor: pointer; flex-shrink: 0; }
-    .layer-row .del-btn:hover { color: #ef4444; }
+    .layer-tabs { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.65rem; }
+    .layer-tab { display: flex; align-items: center; gap: 0.3rem; padding: 0.28rem 0.65rem; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); font-size: 0.8rem; font-weight: 600; background: var(--bg-secondary); color: var(--text-muted); transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .layer-tab.active { border-color: #10b981; background: rgba(16,185,129,0.08); color: var(--text); }
+    .layer-tab .tab-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(0,0,0,0.15); }
+    .layer-tab .tab-del { margin-left: 0.2rem; font-size: 0.72rem; color: var(--text-muted); line-height: 1; padding: 0 0.1rem; }
+    .layer-tab .tab-del:hover { color: #ef4444; }
+    .layer-detail { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.65rem 0.75rem 0.5rem; }
+    .layer-detail-label { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.4rem; }
+    .layer-detail-label .inset-toggle { display: flex; align-items: center; gap: 0.25rem; cursor: pointer; font-size: 0.72rem; color: var(--text-muted); }
+    .layer-detail-label .inset-toggle input { cursor: pointer; accent-color: #10b981; }
+    .layer-detail-label .inset-toggle.checked { color: #10b981; }
     .preset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }
     .preset-btn { padding: 0.4rem 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); cursor: pointer; font-size: 0.78rem; font-weight: 600; color: var(--text); transition: border-color 0.15s; text-align: center; }
     .preset-btn:hover { border-color: #10b981; }
@@ -180,11 +185,21 @@
           </div>
 
           <div id="layersSection">
-            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;">
-              <strong style="font-size:0.85rem;">Layers</strong>
-              <button class="btn btn-sm btn-secondary" id="addLayerBtn">+ Add Layer</button>
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+              <strong style="font-size:0.85rem;">Shadow Layers</strong>
+              <button class="btn btn-sm btn-primary" id="addLayerBtn">+ Add Shadow</button>
             </div>
-            <div class="shadow-layers" id="layerList"></div>
+            <div class="shadow-layers">
+              <div class="layer-tabs" id="layerTabs"></div>
+              <div class="layer-detail" id="layerDetail">
+                <div class="layer-detail-label">
+                  <span id="layerDetailTitle">Layer 1</span>
+                  <label class="inset-toggle" id="insetToggleWrap">
+                    <input type="checkbox" id="insetCheck"> Inset
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div id="presetsSection" style="display:none;">
@@ -371,7 +386,9 @@
       var previewTarget = document.getElementById('previewTarget');
       var cssOutput = document.getElementById('cssOutput');
       var statusBar = document.getElementById('statusBar');
-      var layerList = document.getElementById('layerList');
+      var insetCheck = document.getElementById('insetCheck');
+      var insetToggleWrap = document.getElementById('insetToggleWrap');
+      var layerDetailTitle = document.getElementById('layerDetailTitle');
 
       function hexToRgb(hex) {
         var r = parseInt(hex.slice(1,3),16);
@@ -395,40 +412,57 @@
         previewTarget.style.boxShadow = layers.map(layerToCSS).join(', ');
       }
 
-      function renderLayerList() {
-        layerList.innerHTML = '';
+      function renderLayerTabs() {
+        var tabsEl = document.getElementById('layerTabs');
+        tabsEl.innerHTML = '';
         layers.forEach(function (l, i) {
-          var row = document.createElement('div');
-          row.className = 'layer-row' + (i === activeLayer ? ' active' : '');
+          var tab = document.createElement('div');
+          tab.className = 'layer-tab' + (i === activeLayer ? ' active' : '');
+          tab.setAttribute('role', 'button');
+          tab.setAttribute('aria-label', 'Shadow layer ' + (i + 1));
+
           var swatch = document.createElement('span');
-          swatch.className = 'layer-swatch';
+          swatch.className = 'tab-swatch';
           swatch.style.background = l.c;
-          var label = document.createElement('span');
-          label.className = 'layer-label';
-          label.textContent = layerToCSS(l);
-          var del = document.createElement('span');
-          del.className = 'del-btn';
-          del.textContent = '✕';
+
+          var num = document.createElement('span');
+          num.textContent = 'Layer ' + (i + 1);
+
+          tab.appendChild(swatch);
+          tab.appendChild(num);
+
+          if (layers.length > 1) {
+            var del = document.createElement('span');
+            del.className = 'tab-del';
+            del.textContent = '\u2715';
+            del.setAttribute('title', 'Remove layer ' + (i + 1));
+            (function (idx) {
+              del.addEventListener('click', function (e) {
+                e.stopPropagation();
+                layers.splice(idx, 1);
+                if (activeLayer >= layers.length) activeLayer = layers.length - 1;
+                loadLayer();
+                update();
+              });
+            })(i);
+            tab.appendChild(del);
+          }
+
           (function (idx) {
-            del.addEventListener('click', function (e) {
-              e.stopPropagation();
-              if (layers.length === 1) return;
-              layers.splice(idx, 1);
-              if (activeLayer >= layers.length) activeLayer = layers.length - 1;
-              loadLayer();
-              update();
-            });
-            row.addEventListener('click', function () {
+            tab.addEventListener('click', function (e) {
+              if (e.target.classList.contains('tab-del')) return;
               activeLayer = idx;
               loadLayer();
-              renderLayerList();
+              renderLayerTabs();
             });
           })(i);
-          row.appendChild(swatch);
-          row.appendChild(label);
-          row.appendChild(del);
-          layerList.appendChild(row);
+
+          tabsEl.appendChild(tab);
         });
+
+        var addBtn = document.getElementById('addLayerBtn');
+        addBtn.disabled = layers.length >= 5;
+        addBtn.title = layers.length >= 5 ? 'Maximum 5 shadow layers' : '';
       }
 
       function loadLayer() {
@@ -439,6 +473,9 @@
         spreadRadius.value = l.s; document.getElementById('spreadRadiusVal').textContent = l.s + 'px';
         shadowColor.value = l.c;
         shadowOpacity.value = l.a; document.getElementById('shadowOpacityVal').textContent = l.a + '%';
+        insetCheck.checked = l.inset;
+        insetToggleWrap.className = 'inset-toggle' + (l.inset ? ' checked' : '');
+        layerDetailTitle.textContent = 'Layer ' + (activeLayer + 1) + (l.inset ? ' — inset' : '');
       }
 
       function saveLayer() {
@@ -449,8 +486,22 @@
         l.s = parseInt(spreadRadius.value);
         l.c = shadowColor.value;
         l.a = parseInt(shadowOpacity.value);
-        l.inset = mode === 'inset';
+        if (mode === 'inset') {
+          l.inset = true;
+        } else if (mode === 'outer') {
+          l.inset = false;
+        } else {
+          l.inset = insetCheck.checked;
+        }
       }
+
+      insetCheck.addEventListener('change', function () {
+        var l = layers[activeLayer];
+        l.inset = insetCheck.checked;
+        insetToggleWrap.className = 'inset-toggle' + (l.inset ? ' checked' : '');
+        layerDetailTitle.textContent = 'Layer ' + (activeLayer + 1) + (l.inset ? ' — inset' : '');
+        update();
+      });
 
       var sliders = [offsetX, offsetY, blurRadius, spreadRadius, shadowColor, shadowOpacity];
       sliders.forEach(function (s) {
@@ -465,6 +516,11 @@
           update();
         });
       });
+
+      function syncInsetVisibility() {
+        var perLayerMode = (mode === 'layered' || mode === 'presets');
+        insetToggleWrap.style.display = perLayerMode ? '' : 'none';
+      }
 
       document.querySelectorAll('.option-chip').forEach(function (chip) {
         chip.addEventListener('click', function () {
@@ -485,13 +541,14 @@
           } else if (mode === 'outer') {
             layers.forEach(function (l) { l.inset = false; });
           }
+          syncInsetVisibility();
           loadLayer();
           update();
         });
       });
 
       document.getElementById('addLayerBtn').addEventListener('click', function () {
-        if (layers.length >= 6) return;
+        if (layers.length >= 5) return;
         layers.push({ x:0, y:4, b:6, s:-1, c:'#000000', a:10, inset: mode === 'inset' });
         activeLayer = layers.length - 1;
         loadLayer();
@@ -511,6 +568,12 @@
           btn.addEventListener('click', function () {
             layers = JSON.parse(JSON.stringify(p.layers));
             activeLayer = 0;
+            mode = 'layered';
+            document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
+            document.querySelector('[data-mode="layered"]').classList.add('active');
+            document.getElementById('layersSection').style.display = '';
+            document.getElementById('presetsSection').style.display = 'none';
+            syncInsetVisibility();
             loadLayer();
             update();
           });
@@ -521,11 +584,11 @@
       function update() {
         saveLayer();
         renderPreview();
-        renderLayerList();
+        renderLayerTabs();
         var css = buildCSS();
         cssOutput.textContent = css;
         statusBar.className = 'status-bar valid';
-        statusBar.textContent = layers.length + ' shadow layer' + (layers.length !== 1 ? 's' : '') + ' — active: layer ' + (activeLayer + 1);
+        statusBar.textContent = layers.length + ' shadow layer' + (layers.length !== 1 ? 's' : '') + ' — editing: Layer ' + (activeLayer + 1) + (layers.length >= 5 ? ' (max reached)' : '');
         DT.trackTool('css-box-shadow');
       }
 
@@ -564,6 +627,7 @@
       });
 
       buildPresets();
+      syncInsetVisibility();
       loadLayer();
       update();
     })();

@@ -21,6 +21,35 @@
   <link rel="stylesheet" href="/css/style.css?v=5">
   <script src="/js/core.js?v=5"></script>
   <script src="/js/ads.js?v=5"></script>
+  <style>
+    .swatch-lock-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0,0,0,0.35);
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      font-size: 0.8rem;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.55;
+      transition: opacity 0.15s, background 0.15s;
+      color: #fff;
+    }
+    .swatch-lock-btn:hover,
+    .swatch-lock-btn.locked {
+      opacity: 1;
+      background: rgba(0,0,0,0.55);
+    }
+    .palette-card-locked {
+      box-shadow: 0 0 0 3px var(--accent, #10b981) !important;
+    }
+  </style>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -120,6 +149,7 @@
             <button class="option-chip" data-harmony="monochromatic">Monochromatic</button>
             <button class="option-chip" data-harmony="shades">Shades</button>
             <button class="option-chip" data-harmony="tints">Tints</button>
+            <button class="option-chip" id="randomizeBtn" style="margin-left:auto;">&#x1F3B2; Randomize Unlocked</button>
           </div>
 
           <!-- Palette Display -->
@@ -263,6 +293,8 @@
       var currentHarmony = 'complementary';
       var currentExport = 'css';
       var palette = [];
+      // lockedColors[index] = hex string when locked, undefined when unlocked
+      var lockedColors = {};
 
       var baseColorPicker = document.getElementById('baseColor');
       var hexInput = document.getElementById('hexInput');
@@ -380,16 +412,21 @@
 
       function renderPalette() {
         paletteGrid.innerHTML = '';
-        palette.forEach(function (color) {
+        palette.forEach(function (color, idx) {
           var rgb = hexToRGB(color.hex);
           var hsl = hexToHSL(color.hex);
           var textColor = hsl.l > 55 ? '#111' : '#fff';
+          var isLocked = !!lockedColors[idx];
 
           var card = document.createElement('div');
-          card.style.cssText = 'border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);cursor:pointer;';
+          card.className = isLocked ? 'palette-card-locked' : '';
+          card.style.cssText = 'border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);cursor:pointer;position:relative;';
+
+          var lockIcon = isLocked ? '\uD83D\uDD12' : '\uD83D\uDD13';
           card.innerHTML =
-            '<div style="background:' + color.hex + ';padding:2rem 1rem;text-align:center;">' +
+            '<div style="background:' + color.hex + ';padding:2rem 1rem;text-align:center;position:relative;">' +
             '<div style="font-size:0.75rem;font-weight:600;color:' + textColor + ';">' + color.name + '</div>' +
+            '<button class="swatch-lock-btn' + (isLocked ? ' locked' : '') + '" data-idx="' + idx + '" title="' + (isLocked ? 'Unlock color' : 'Lock color') + '" aria-label="' + (isLocked ? 'Unlock' : 'Lock') + ' ' + color.name + '">' + lockIcon + '</button>' +
             '</div>' +
             '<div style="padding:0.5rem;font-size:0.6875rem;font-family:var(--font-mono);background:var(--bg-card);line-height:1.6;">' +
             '<div class="color-val" data-val="' + color.hex + '" style="cursor:pointer;">' + color.hex + '</div>' +
@@ -397,6 +434,20 @@
             '<div class="color-val" data-val="hsl(' + hsl.h + ', ' + hsl.s + '%, ' + hsl.l + '%)" style="cursor:pointer;color:var(--text-secondary);">hsl(' + hsl.h + ', ' + hsl.s + '%, ' + hsl.l + '%)</div>' +
             '</div>';
           paletteGrid.appendChild(card);
+        });
+
+        // Lock button toggle
+        paletteGrid.querySelectorAll('.swatch-lock-btn').forEach(function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var idx = parseInt(btn.getAttribute('data-idx'), 10);
+            if (lockedColors[idx]) {
+              delete lockedColors[idx];
+            } else {
+              lockedColors[idx] = palette[idx].hex;
+            }
+            renderPalette();
+          });
         });
 
         // Click-to-copy on any value
@@ -438,12 +489,41 @@
 
       function update() {
         var hex = baseColorPicker.value;
-        palette = generatePalette(hex, currentHarmony);
+        var newPalette = generatePalette(hex, currentHarmony);
+        // Restore locked colors and prune out-of-range locks
+        var validLocked = {};
+        newPalette.forEach(function (color, idx) {
+          if (lockedColors[idx] !== undefined) {
+            newPalette[idx] = { hex: lockedColors[idx], name: color.name };
+            validLocked[idx] = lockedColors[idx];
+          }
+        });
+        lockedColors = validLocked;
+        palette = newPalette;
         renderPalette();
         renderExport();
+        var lockedCount = Object.keys(lockedColors).length;
+        var lockedNote = lockedCount > 0 ? ' (' + lockedCount + ' locked)' : '';
         statusBar.className = 'status-bar valid';
-        statusBar.textContent = 'Generated ' + palette.length + ' colors \u2014 ' + currentHarmony + ' harmony';
+        statusBar.textContent = 'Generated ' + palette.length + ' colors \u2014 ' + currentHarmony + ' harmony' + lockedNote;
         DT.trackTool('color-palette');
+      }
+
+      function randomizeUnlocked() {
+        if (!palette.length) return;
+        palette.forEach(function (color, idx) {
+          if (!lockedColors[idx]) {
+            var h = Math.floor(Math.random() * 360);
+            var s = 40 + Math.floor(Math.random() * 50);
+            var l = 30 + Math.floor(Math.random() * 45);
+            palette[idx] = { hex: hslToHex(h, s, l), name: color.name };
+          }
+        });
+        renderPalette();
+        renderExport();
+        var lockedCount = Object.keys(lockedColors).length;
+        statusBar.className = 'status-bar valid';
+        statusBar.textContent = 'Randomized ' + (palette.length - lockedCount) + ' unlocked color' + (palette.length - lockedCount !== 1 ? 's' : '');
       }
 
       // Sync inputs
@@ -483,6 +563,11 @@
       document.getElementById('copyExportBtn').addEventListener('click', function () {
         var text = exportOutput.textContent;
         if (text) DT.copyToClipboard(text, this);
+      });
+
+      // Randomize unlocked
+      document.getElementById('randomizeBtn').addEventListener('click', function () {
+        randomizeUnlocked();
       });
 
       // Initial render

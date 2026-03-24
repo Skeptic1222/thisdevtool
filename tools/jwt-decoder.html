@@ -51,7 +51,7 @@
         "name": "Does this tool validate JWT signatures?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "No. This tool only decodes and displays the contents of a JWT. It does NOT validate the signature. Anyone can create a JWT with any payload, so you should never trust a JWT's contents without verifying its signature on your server using the appropriate secret or public key."
+          "text": "Yes. Enter your HMAC secret string or RSA public key in the Secret / Key field and click Verify Signature. The tool uses the Web Crypto API in your browser to verify HS256, HS384, HS512, and RS256 signatures entirely client-side — your secret and token never leave your machine."
         }
       },
       {
@@ -109,7 +109,7 @@
 
           <!-- Warning Banner -->
           <div style="background:var(--warning-bg, #fef3cd);border:1px solid var(--warning-border, #ffc107);border-radius:8px;padding:12px 16px;margin-bottom:16px;color:var(--warning-text, #856404);font-size:0.95em;">
-            <strong>Warning:</strong> This tool decodes JWTs but does <strong>NOT</strong> validate signatures. Never trust a JWT without server-side signature verification.
+            <strong>Security note:</strong> Signature verification runs entirely in your browser. Your secret and token never leave your machine. Never paste production secrets into untrusted tools.
           </div>
 
           <!-- Mode Chips -->
@@ -128,6 +128,22 @@
             <textarea id="toolInput" rows="6" placeholder="Paste your JWT token here...
 
 Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" spellcheck="false"></textarea>
+          </div>
+
+          <!-- Signature Verification -->
+          <div class="form-group" style="margin-top:12px;">
+            <div class="pane-label">
+              <span>Secret / Key</span>
+              <span style="font-size:0.8em;color:var(--text-secondary,#6b7280);margin-left:8px;">HMAC secret string or PEM RSA public key</span>
+            </div>
+            <textarea id="secretInput" rows="3" placeholder="Enter HMAC secret (e.g. mysecret) or paste RSA public key in PEM format..." spellcheck="false" style="font-family:var(--font-mono,'Fira Code',monospace);font-size:0.9em;resize:vertical;"></textarea>
+            <div style="margin-top:8px;">
+              <button class="btn btn-primary" id="verifyBtn">Verify Signature</button>
+            </div>
+          </div>
+
+          <!-- Verification Status -->
+          <div class="status-bar info" id="verifyBar" role="status" aria-live="polite" style="display:none;">
           </div>
 
           <!-- Output Sections -->
@@ -223,7 +239,7 @@ Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZS
 
           <div class="faq-item">
             <button class="faq-question">Does this tool validate JWT signatures?</button>
-            <div class="faq-answer">No. This tool only decodes and displays the contents of a JWT. It does NOT validate the signature. Anyone can create a JWT with any payload, so you should never trust a JWT's contents without verifying its signature on your server using the appropriate secret or public key.</div>
+            <div class="faq-answer">Yes. Enter your HMAC secret string or RSA public key in the Secret / Key field and click Verify Signature. The tool uses the Web Crypto API in your browser to verify HS256, HS384, HS512, and RS256 signatures entirely client-side — your secret and token never leave your machine.</div>
           </div>
 
           <div class="faq-item">
@@ -488,6 +504,141 @@ Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZS
         input.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MjYyMzkwMjIsInJvbGUiOiJhZG1pbiJ9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
         process();
       });
+
+      // Signature verification
+      var secretInput = document.getElementById('secretInput');
+      var verifyBar = document.getElementById('verifyBar');
+
+      function base64UrlToUint8Array(b64url) {
+        var b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+        while (b64.length % 4 !== 0) b64 += '=';
+        var binary = atob(b64);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+      }
+
+      function pemToArrayBuffer(pem) {
+        var b64 = pem
+          .replace(/-----BEGIN [^-]+-----/g, '')
+          .replace(/-----END [^-]+-----/g, '')
+          .replace(/\s+/g, '');
+        var binary = atob(b64);
+        var bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes.buffer;
+      }
+
+      function showVerifyResult(valid, message) {
+        verifyBar.style.display = 'block';
+        if (valid === true) {
+          verifyBar.className = 'status-bar valid';
+          verifyBar.textContent = 'Signature Valid \u2713 \u2014 ' + message;
+        } else if (valid === false) {
+          verifyBar.className = 'status-bar invalid';
+          verifyBar.textContent = 'Signature Invalid \u2717 \u2014 ' + message;
+        } else {
+          verifyBar.className = 'status-bar info';
+          verifyBar.textContent = message;
+        }
+      }
+
+      function verifySignature() {
+        var raw = input.value.trim();
+        var secret = secretInput.value;
+
+        if (!raw) {
+          showVerifyResult(null, 'Paste a JWT token first.');
+          return;
+        }
+        if (!secret) {
+          showVerifyResult(null, 'Enter a secret or public key to verify.');
+          return;
+        }
+
+        var parts = raw.split('.');
+        if (parts.length !== 3) {
+          showVerifyResult(false, 'Invalid JWT format.');
+          return;
+        }
+
+        try {
+          var headerObj = JSON.parse(base64UrlDecode(parts[0]));
+          var alg = headerObj.alg || '';
+        } catch (e) {
+          showVerifyResult(false, 'Could not read JWT header: ' + e.message);
+          return;
+        }
+
+        var signingInput = new TextEncoder().encode(parts[0] + '.' + parts[1]);
+        var sigBytes = base64UrlToUint8Array(parts[2]);
+
+        if (alg === 'HS256' || alg === 'HS384' || alg === 'HS512') {
+          var shaMap = { HS256: 'SHA-256', HS384: 'SHA-384', HS512: 'SHA-512' };
+          var hashName = shaMap[alg];
+          var keyBytes = new TextEncoder().encode(secret);
+
+          crypto.subtle.importKey(
+            'raw',
+            keyBytes,
+            { name: 'HMAC', hash: { name: hashName } },
+            false,
+            ['sign']
+          ).then(function (cryptoKey) {
+            return crypto.subtle.sign('HMAC', cryptoKey, signingInput);
+          }).then(function (signedBuffer) {
+            var signedBytes = new Uint8Array(signedBuffer);
+            var match = signedBytes.length === sigBytes.length && signedBytes.every(function (b, i) { return b === sigBytes[i]; });
+            if (match) {
+              showVerifyResult(true, alg + ' signature verified with the provided secret.');
+            } else {
+              showVerifyResult(false, alg + ' signature does not match the provided secret.');
+            }
+          }).catch(function (e) {
+            showVerifyResult(false, 'Crypto error: ' + e.message);
+          });
+
+        } else if (alg === 'RS256' || alg === 'RS384' || alg === 'RS512') {
+          var rsaHashMap = { RS256: 'SHA-256', RS384: 'SHA-384', RS512: 'SHA-512' };
+          var rsaHash = rsaHashMap[alg];
+          var keyBuffer;
+          try {
+            keyBuffer = pemToArrayBuffer(secret);
+          } catch (e) {
+            showVerifyResult(false, 'Failed to parse PEM key: ' + e.message);
+            return;
+          }
+
+          crypto.subtle.importKey(
+            'spki',
+            keyBuffer,
+            { name: 'RSASSA-PKCS1-v1_5', hash: { name: rsaHash } },
+            false,
+            ['verify']
+          ).then(function (cryptoKey) {
+            return crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, sigBytes, signingInput);
+          }).then(function (valid) {
+            if (valid) {
+              showVerifyResult(true, alg + ' signature verified with the provided public key.');
+            } else {
+              showVerifyResult(false, alg + ' signature does not match the provided public key.');
+            }
+          }).catch(function (e) {
+            showVerifyResult(false, 'Key import or verify error: ' + e.message + '. Ensure the key is a PEM-encoded SPKI RSA public key.');
+          });
+
+        } else if (alg === 'none') {
+          showVerifyResult(null, 'Algorithm is "none" — this JWT has no signature to verify. Accepting unsigned tokens is a security risk.');
+        } else {
+          showVerifyResult(null, 'Verification not supported for ' + (alg || 'unknown algorithm') + '.');
+        }
+      }
+
+      document.getElementById('verifyBtn').addEventListener('click', verifySignature);
 
       // Allow tab key in textarea
       input.addEventListener('keydown', function (e) {

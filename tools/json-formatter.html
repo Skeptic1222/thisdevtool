@@ -81,6 +81,82 @@
     ]
   }
   </script>
+  <style>
+    /* JSON Tree View — scoped styles */
+    .json-tree {
+      font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      padding: 0.75rem;
+      overflow-x: hidden;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .tree-node {
+      margin: 0;
+      padding: 0;
+    }
+    .tree-row {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: nowrap;
+      gap: 0.25rem;
+      padding: 0.05rem 0;
+    }
+    .tree-children {
+      padding-left: 1.25rem;
+      border-left: 1px solid var(--bg-secondary, #2a2a2a);
+      margin-left: 0.35rem;
+    }
+    .tree-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.7rem;
+      color: var(--text-secondary, #888);
+      width: 1rem;
+      flex-shrink: 0;
+      user-select: none;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tree-toggle:hover { color: var(--accent, #10b981); }
+    .tree-toggle-spacer {
+      display: inline-block;
+      width: 1rem;
+      flex-shrink: 0;
+    }
+    .tree-key {
+      color: var(--text, #e2e2e2);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tree-key:hover { text-decoration: underline; color: var(--accent, #10b981); }
+    .tree-colon {
+      color: var(--text-secondary, #888);
+      flex-shrink: 0;
+    }
+    .tree-value-string  { color: #4ade80; }
+    .tree-value-number  { color: #60a5fa; }
+    .tree-value-boolean { color: #fb923c; }
+    .tree-value-null    { color: #9ca3af; font-style: italic; }
+    .tree-bracket {
+      color: var(--text-secondary, #888);
+      flex-shrink: 0;
+    }
+    .tree-summary {
+      color: var(--text-secondary, #888);
+      font-size: 0.78rem;
+      margin-left: 0.25rem;
+      user-select: none;
+    }
+    .tree-index {
+      color: var(--text-secondary, #888);
+    }
+  </style>
 </head>
 <body>
   <!-- Header -->
@@ -113,6 +189,7 @@
             <button class="option-chip" data-mode="format4">Format (4 spaces)</button>
             <button class="option-chip" data-mode="formattab">Format (tabs)</button>
             <button class="option-chip" data-mode="minify">Minify</button>
+            <button class="option-chip" data-mode="tree">Tree View</button>
           </div>
 
           <!-- Split Pane -->
@@ -305,6 +382,180 @@ Example:
         }
       }
 
+      // ---- Tree View rendering ----
+
+      function renderTree(data, path) {
+        var node = document.createElement('div');
+        node.className = 'tree-node';
+
+        var type = data === null ? 'null' : Array.isArray(data) ? 'array' : typeof data;
+
+        if (type === 'object' || type === 'array') {
+          var isArray = type === 'array';
+          var keys = isArray ? null : Object.keys(data);
+          var count = isArray ? data.length : keys.length;
+          var openBracket  = isArray ? '[' : '{';
+          var closeBracket = isArray ? ']' : '}';
+          var emptySummary = isArray
+            ? (count === 1 ? '1 item' : count + ' items')
+            : (count === 1 ? '1 key' : count + ' keys');
+
+          var isExpanded = true;
+
+          // Header row: toggle + key (if any) + open bracket
+          var headerRow = document.createElement('div');
+          headerRow.className = 'tree-row';
+
+          var toggleBtn = document.createElement('button');
+          toggleBtn.className = 'tree-toggle';
+          toggleBtn.setAttribute('aria-label', 'Collapse node');
+          toggleBtn.textContent = '\u25BC'; // ▼
+
+          var bracketOpen = document.createElement('span');
+          bracketOpen.className = 'tree-bracket';
+          bracketOpen.textContent = openBracket;
+
+          headerRow.appendChild(toggleBtn);
+          headerRow.appendChild(bracketOpen);
+          node.appendChild(headerRow);
+
+          // Children container
+          var childrenEl = document.createElement('div');
+          childrenEl.className = 'tree-children';
+
+          var entries = isArray ? data : keys;
+          for (var i = 0; i < (isArray ? data.length : keys.length); i++) {
+            var entryKey = isArray ? i : keys[i];
+            var entryVal = isArray ? data[i] : data[keys[i]];
+            var childPath = path ? (isArray ? path + '[' + entryKey + ']' : path + '.' + entryKey) : (isArray ? '[' + entryKey + ']' : entryKey);
+
+            var childRow = document.createElement('div');
+            childRow.className = 'tree-row';
+
+            // Key/index label
+            var keyLabel = document.createElement('span');
+            if (isArray) {
+              keyLabel.className = 'tree-index';
+              keyLabel.textContent = entryKey + ':';
+            } else {
+              keyLabel.className = 'tree-key';
+              keyLabel.textContent = '"' + entryKey + '":';
+              keyLabel.title = 'Copy path: ' + childPath;
+              (function (kPath, kEl) {
+                kEl.addEventListener('click', function (e) {
+                  e.stopPropagation();
+                  DT.copyToClipboard(kPath, kEl);
+                });
+              })(childPath, keyLabel);
+            }
+
+            var childType = entryVal === null ? 'null' : Array.isArray(entryVal) ? 'array' : typeof entryVal;
+
+            if (childType === 'object' || childType === 'array') {
+              // Recurse: build child tree node and prepend the key label into its first row
+              var childTree = renderTree(entryVal, childPath);
+              var firstRow = childTree.querySelector('.tree-row');
+              if (firstRow) {
+                // Insert key label after the toggle button (first child)
+                var toggleEl = firstRow.querySelector('.tree-toggle') || firstRow.querySelector('.tree-toggle-spacer');
+                if (toggleEl && toggleEl.nextSibling) {
+                  firstRow.insertBefore(keyLabel, toggleEl.nextSibling);
+                  var colon = document.createElement('span');
+                  colon.className = 'tree-colon';
+                  firstRow.insertBefore(colon, keyLabel.nextSibling);
+                } else {
+                  firstRow.insertBefore(keyLabel, firstRow.firstChild);
+                }
+              }
+              childrenEl.appendChild(childTree);
+            } else {
+              // Leaf value row
+              var spacer = document.createElement('span');
+              spacer.className = 'tree-toggle-spacer';
+
+              var valSpan = document.createElement('span');
+              if (childType === 'string') {
+                valSpan.className = 'tree-value-string';
+                valSpan.textContent = '"' + entryVal + '"';
+              } else if (childType === 'number') {
+                valSpan.className = 'tree-value-number';
+                valSpan.textContent = entryVal;
+              } else if (childType === 'boolean') {
+                valSpan.className = 'tree-value-boolean';
+                valSpan.textContent = entryVal;
+              } else {
+                valSpan.className = 'tree-value-null';
+                valSpan.textContent = 'null';
+              }
+
+              childRow.appendChild(spacer);
+              childRow.appendChild(keyLabel);
+              childRow.appendChild(valSpan);
+              childrenEl.appendChild(childRow);
+            }
+          }
+
+          node.appendChild(childrenEl);
+
+          // Footer row: close bracket
+          var footerRow = document.createElement('div');
+          footerRow.className = 'tree-row';
+          var spacerFooter = document.createElement('span');
+          spacerFooter.className = 'tree-toggle-spacer';
+          var bracketClose = document.createElement('span');
+          bracketClose.className = 'tree-bracket';
+          bracketClose.textContent = closeBracket;
+          footerRow.appendChild(spacerFooter);
+          footerRow.appendChild(bracketClose);
+          node.appendChild(footerRow);
+
+          // Collapsed summary span (hidden by default)
+          var summarySpan = document.createElement('span');
+          summarySpan.className = 'tree-summary';
+          summarySpan.textContent = openBracket + '...' + closeBracket + ' ' + emptySummary;
+          summarySpan.style.display = 'none';
+          headerRow.appendChild(summarySpan);
+
+          // Toggle expand/collapse
+          toggleBtn.addEventListener('click', function () {
+            isExpanded = !isExpanded;
+            toggleBtn.textContent = isExpanded ? '\u25BC' : '\u25B6'; // ▼ / ▶
+            toggleBtn.setAttribute('aria-label', isExpanded ? 'Collapse node' : 'Expand node');
+            childrenEl.style.display = isExpanded ? '' : 'none';
+            footerRow.style.display = isExpanded ? '' : 'none';
+            summarySpan.style.display = isExpanded ? 'none' : 'inline';
+          });
+
+        } else {
+          // Primitive root (rare but valid JSON)
+          var leafRow = document.createElement('div');
+          leafRow.className = 'tree-row';
+          var spacerLeaf = document.createElement('span');
+          spacerLeaf.className = 'tree-toggle-spacer';
+          var leafVal = document.createElement('span');
+          if (type === 'string') {
+            leafVal.className = 'tree-value-string';
+            leafVal.textContent = '"' + data + '"';
+          } else if (type === 'number') {
+            leafVal.className = 'tree-value-number';
+            leafVal.textContent = data;
+          } else if (type === 'boolean') {
+            leafVal.className = 'tree-value-boolean';
+            leafVal.textContent = data;
+          } else {
+            leafVal.className = 'tree-value-null';
+            leafVal.textContent = 'null';
+          }
+          leafRow.appendChild(spacerLeaf);
+          leafRow.appendChild(leafVal);
+          node.appendChild(leafRow);
+        }
+
+        return node;
+      }
+
+      // ---- End Tree View ----
+
       function process() {
         var raw = input.value.trim();
         if (!raw) {
@@ -316,17 +567,28 @@ Example:
 
         try {
           var parsed = JSON.parse(raw);
-          var indent = getIndent();
-          var formatted = indent === 0
-            ? JSON.stringify(parsed)
-            : JSON.stringify(parsed, null, indent);
-          output.textContent = formatted;
 
-          // Stats
-          var keys = JSON.stringify(parsed).length;
-          var lines = formatted.split('\n').length;
-          statusBar.className = 'status-bar valid';
-          statusBar.textContent = 'Valid JSON — ' + lines + ' lines, ' + DT.formatBytes(new Blob([formatted]).size);
+          if (currentMode === 'tree') {
+            output.innerHTML = '';
+            var treeContainer = document.createElement('div');
+            treeContainer.className = 'json-tree';
+            treeContainer.appendChild(renderTree(parsed, ''));
+            output.appendChild(treeContainer);
+
+            var minified = JSON.stringify(parsed);
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Valid JSON — Tree View. Click a key to copy its JSONPath.';
+          } else {
+            var indent = getIndent();
+            var formatted = indent === 0
+              ? JSON.stringify(parsed)
+              : JSON.stringify(parsed, null, indent);
+            output.textContent = formatted;
+
+            var lines = formatted.split('\n').length;
+            statusBar.className = 'status-bar valid';
+            statusBar.textContent = 'Valid JSON — ' + lines + ' lines, ' + DT.formatBytes(new Blob([formatted]).size);
+          }
         } catch (e) {
           output.textContent = '';
           statusBar.className = 'status-bar invalid';
@@ -352,14 +614,33 @@ Example:
 
       // Copy
       document.getElementById('copyBtn').addEventListener('click', function () {
-        var text = output.textContent;
-        if (text) DT.copyToClipboard(text, this);
+        var raw = input.value.trim();
+        if (!raw) return;
+        if (currentMode === 'tree') {
+          // In tree mode, copy formatted JSON (2-space)
+          try {
+            var parsed = JSON.parse(raw);
+            DT.copyToClipboard(JSON.stringify(parsed, null, 2), this);
+          } catch (e) {}
+        } else {
+          var text = output.textContent;
+          if (text) DT.copyToClipboard(text, this);
+        }
       });
 
       // Download
       document.getElementById('downloadBtn').addEventListener('click', function () {
-        var text = output.textContent;
-        if (text) DT.downloadText(text, 'formatted.json', 'application/json');
+        var raw = input.value.trim();
+        if (!raw) return;
+        if (currentMode === 'tree') {
+          try {
+            var parsed = JSON.parse(raw);
+            DT.downloadText(JSON.stringify(parsed, null, 2), 'formatted.json', 'application/json');
+          } catch (e) {}
+        } else {
+          var text = output.textContent;
+          if (text) DT.downloadText(text, 'formatted.json', 'application/json');
+        }
       });
 
       // Clear
