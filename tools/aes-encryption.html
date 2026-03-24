@@ -51,7 +51,7 @@
         "name": "What is PBKDF2 and why is it used?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "PBKDF2 (Password-Based Key Derivation Function 2) converts a human-readable password into a cryptographic key. Raw passwords are not suitable as encryption keys because they have uneven entropy and predictable patterns. PBKDF2 applies HMAC-SHA256 thousands of times (iterations) to slow down brute-force attacks. This tool uses 100,000 iterations with a random salt, which is the NIST-recommended minimum as of 2023."
+          "text": "PBKDF2 (Password-Based Key Derivation Function 2) converts a human-readable password into a cryptographic key. Raw passwords are not suitable as encryption keys because they have uneven entropy and predictable patterns. PBKDF2 applies HMAC-SHA256 thousands of times (iterations) to slow down brute-force attacks. This tool uses 600,000 iterations with a random salt, which is the NIST-recommended minimum as of 2023."
         }
       },
       {
@@ -183,7 +183,7 @@
           <p>When you click Encrypt, this tool performs the following steps using the browser's native <code>window.crypto.subtle</code> API:</p>
           <ol>
             <li>Generate a cryptographically random 16-byte salt</li>
-            <li>Derive a 256-bit AES key from your password using PBKDF2 with HMAC-SHA256, 100,000 iterations, and the salt</li>
+            <li>Derive a 256-bit AES key from your password using PBKDF2 with HMAC-SHA256, 600,000 iterations, and the salt</li>
             <li>Generate a cryptographically random 12-byte IV (nonce)</li>
             <li>Encrypt the plaintext using AES-256-GCM with the derived key and IV</li>
             <li>Concatenate salt + IV + ciphertext and encode as Base64</li>
@@ -191,7 +191,7 @@
           <p>Decryption extracts the salt and IV from the Base64 payload, re-derives the key from your password, and decrypts. The GCM authentication tag is verified automatically — if the password or ciphertext is wrong, decryption fails.</p>
 
           <h3>Password Strength Matters</h3>
-          <p>AES-256 is theoretically unbreakable, but weak passwords are still vulnerable to dictionary attacks even with PBKDF2 stretching. A password like "password123" can be cracked in seconds even with 100,000 PBKDF2 iterations. Use a random passphrase of 4+ words (e.g., "correct horse battery staple") or a 20+ character random string. A password manager can generate and store strong passwords for you. See also our <a href="/tools/rsa-key-generator.html">RSA Key Generator</a> for asymmetric encryption needs.</p>
+          <p>AES-256 is theoretically unbreakable, but weak passwords are still vulnerable to dictionary attacks even with PBKDF2 stretching. A password like "password123" can be cracked in seconds even with 600,000 PBKDF2 iterations. Use a random passphrase of 4+ words (e.g., "correct horse battery staple") or a 20+ character random string. A password manager can generate and store strong passwords for you. See also our <a href="/tools/rsa-key-generator.html">RSA Key Generator</a> for asymmetric encryption needs.</p>
 
           <h3>When to Use AES vs. RSA</h3>
           <p>AES (symmetric) uses the same key to encrypt and decrypt — both parties must know the secret key. RSA (asymmetric) uses a public key to encrypt and a private key to decrypt, making it suitable for exchanging data with someone you haven't pre-shared a secret with. In practice, most secure systems use RSA or ECDH to establish a shared secret, then use AES to encrypt bulk data — this is exactly what TLS does. Use this AES tool when you need to encrypt personal data for your own use or share encrypted messages with someone you can securely share a password with.</p>
@@ -207,7 +207,7 @@
 
           <div class="faq-item">
             <button class="faq-question">What is PBKDF2 and why is it used?</button>
-            <div class="faq-answer">PBKDF2 converts a human password into a cryptographic key by applying HMAC-SHA256 thousands of times with a random salt. This slows brute-force attacks. This tool uses 100,000 iterations with a random salt — the NIST-recommended minimum as of 2023.</div>
+            <div class="faq-answer">PBKDF2 converts a human password into a cryptographic key by applying HMAC-SHA256 thousands of times with a random salt. This slows brute-force attacks. This tool uses 600,000 iterations with a random salt — the NIST-recommended minimum as of 2023.</div>
           </div>
 
           <div class="faq-item">
@@ -389,7 +389,7 @@
         var enc = strToBytes(password);
         return crypto.subtle.importKey('raw', enc, 'PBKDF2', false, ['deriveKey']).then(function (baseKey) {
           return crypto.subtle.deriveKey(
-            { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+            { name: 'PBKDF2', salt: salt, iterations: 600000, hash: 'SHA-256' },
             baseKey,
             { name: 'AES-GCM', length: 256 },
             false,
