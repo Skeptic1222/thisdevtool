@@ -372,10 +372,85 @@
 
       gradientAngle.addEventListener('input', function () {
         document.getElementById('gradientAngleVal').textContent = this.value + '°';
+        drawAnglePicker(parseInt(this.value, 10));
         update();
       });
       radialShape.addEventListener('change', update);
       radialPos.addEventListener('change', update);
+
+      // --- Circular angle picker ---
+      var anglePicker = document.getElementById('anglePicker');
+      var pickerLine = document.getElementById('anglePickerLine');
+      var pickerDot = document.getElementById('anglePickerDot');
+      var pickerDragging = false;
+
+      function drawAnglePicker(deg) {
+        // CSS gradient 0deg = up (north), clockwise positive.
+        // atan2 is measured from east, counter-clockwise positive.
+        // Convert: svgRad = (deg - 90) in degrees, then to radians.
+        var rad = (deg - 90) * Math.PI / 180;
+        var cx = 34, cy = 34, r = 26;
+        var x2 = cx + r * Math.cos(rad);
+        var y2 = cy + r * Math.sin(rad);
+        pickerLine.setAttribute('x1', cx);
+        pickerLine.setAttribute('y1', cy);
+        pickerLine.setAttribute('x2', x2.toFixed(2));
+        pickerLine.setAttribute('y2', y2.toFixed(2));
+        pickerDot.setAttribute('cx', x2.toFixed(2));
+        pickerDot.setAttribute('cy', y2.toFixed(2));
+      }
+
+      function angleFromEvent(e) {
+        var rect = anglePicker.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        var dx = clientX - cx;
+        var dy = clientY - cy;
+        // atan2 gives angle from east, CCW. Convert to CSS deg (from north, CW).
+        var rad = Math.atan2(dy, dx);
+        var deg = Math.round(rad * 180 / Math.PI + 90);
+        if (deg < 0) deg += 360;
+        if (deg > 360) deg -= 360;
+        return deg;
+      }
+
+      function applyPickerAngle(e) {
+        var deg = angleFromEvent(e);
+        gradientAngle.value = deg;
+        document.getElementById('gradientAngleVal').textContent = deg + '°';
+        drawAnglePicker(deg);
+        update();
+      }
+
+      anglePicker.addEventListener('mousedown', function (e) {
+        pickerDragging = true;
+        applyPickerAngle(e);
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', function (e) {
+        if (pickerDragging) applyPickerAngle(e);
+      });
+      document.addEventListener('mouseup', function () {
+        pickerDragging = false;
+      });
+
+      anglePicker.addEventListener('touchstart', function (e) {
+        pickerDragging = true;
+        applyPickerAngle(e);
+        e.preventDefault();
+      }, { passive: false });
+      document.addEventListener('touchmove', function (e) {
+        if (pickerDragging) applyPickerAngle(e);
+      }, { passive: true });
+      document.addEventListener('touchend', function () {
+        pickerDragging = false;
+      });
+
+      // Initial draw to match default value (135deg)
+      drawAnglePicker(135);
+      // ---
 
       document.querySelectorAll('.option-chip').forEach(function (chip) {
         chip.addEventListener('click', function () {
@@ -511,7 +586,7 @@
               if (preset.type === 'linear') gradType = 'linear';
               else if (preset.type === 'radial') gradType = 'radial';
               else if (preset.type === 'conic') gradType = 'conic';
-              if (preset.angle !== undefined) { gradientAngle.value = preset.angle; document.getElementById('gradientAngleVal').textContent = preset.angle + '°'; }
+              if (preset.angle !== undefined) { gradientAngle.value = preset.angle; document.getElementById('gradientAngleVal').textContent = preset.angle + '°'; drawAnglePicker(preset.angle); }
               if (preset.shape) radialShape.value = preset.shape;
               if (preset.pos) radialPos.value = preset.pos;
               document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
@@ -543,6 +618,7 @@
         gradType = 'linear';
         gradientAngle.value = p.angle;
         document.getElementById('gradientAngleVal').textContent = p.angle + '°';
+        drawAnglePicker(p.angle);
         document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
         document.querySelector('[data-type="linear"]').classList.add('active');
         updateControls();
@@ -554,6 +630,7 @@
         gradType = 'linear';
         gradientAngle.value = 135;
         document.getElementById('gradientAngleVal').textContent = '135°';
+        drawAnglePicker(135);
         document.querySelectorAll('.option-chip').forEach(function (c) { c.classList.remove('active'); });
         document.querySelector('[data-type="linear"]').classList.add('active');
         updateControls();

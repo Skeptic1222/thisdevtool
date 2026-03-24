@@ -329,6 +329,218 @@
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
 
+      // ── Regex Explanation ─────────────────────────────────────────────────────
+      var TOKEN_COLORS = {
+        anchor:      { bg: '#fef3c7', border: '#f59e0b', text: '#92400e' },
+        charclass:   { bg: '#dbeafe', border: '#3b82f6', text: '#1e3a8a' },
+        group:       { bg: '#ede9fe', border: '#8b5cf6', text: '#4c1d95' },
+        quantifier:  { bg: '#dcfce7', border: '#22c55e', text: '#14532d' },
+        escape:      { bg: '#fce7f3', border: '#ec4899', text: '#831843' },
+        alternation: { bg: '#ffedd5', border: '#f97316', text: '#7c2d12' },
+        literal:     { bg: 'transparent', border: 'transparent', text: 'var(--text-secondary,#64748b)' }
+      };
+
+      function tokenSpan(text, kind, meaning, depth) {
+        var c = TOKEN_COLORS[kind] || TOKEN_COLORS.literal;
+        var indent = depth ? 'margin-left:' + (depth * 16) + 'px;' : '';
+        return '<div style="display:flex;align-items:baseline;gap:8px;' + indent + 'margin-bottom:4px;">' +
+          '<code style="' +
+            'background:' + c.bg + ';' +
+            'border:1px solid ' + c.border + ';' +
+            'color:' + c.text + ';' +
+            'padding:1px 6px;border-radius:4px;font-size:0.9em;white-space:nowrap;' +
+          '">' + escapeHtml(text) + '</code>' +
+          '<span style="color:var(--text-secondary,#64748b);">' + meaning + '</span>' +
+          '</div>';
+      }
+
+      function explainRegex(pattern) {
+        var panel = document.getElementById('explanationPanel');
+        var list  = document.getElementById('explanationList');
+
+        if (!pattern) { panel.style.display = 'none'; list.innerHTML = ''; return; }
+
+        var tokens = [];
+        var i = 0;
+        var depth = 0;
+        var groupIndex = 0;
+
+        while (i < pattern.length) {
+          var ch = pattern[i];
+
+          // --- Anchors ---
+          if (ch === '^' && i === 0) {
+            tokens.push({ text: '^', kind: 'anchor', meaning: 'start of string (or start of line with m flag)', depth: depth });
+            i++; continue;
+          }
+          if (ch === '$' && i === pattern.length - 1) {
+            tokens.push({ text: '$', kind: 'anchor', meaning: 'end of string (or end of line with m flag)', depth: depth });
+            i++; continue;
+          }
+
+          // --- Escape sequences ---
+          if (ch === '\\' && i + 1 < pattern.length) {
+            var next = pattern[i + 1];
+            var escText = '\\' + next;
+            var escMeaning = '';
+            if (next === 'd') escMeaning = 'digit (0–9)';
+            else if (next === 'D') escMeaning = 'non-digit';
+            else if (next === 'w') escMeaning = 'word character (a-z, A-Z, 0-9, _)';
+            else if (next === 'W') escMeaning = 'non-word character';
+            else if (next === 's') escMeaning = 'whitespace (space, tab, newline)';
+            else if (next === 'S') escMeaning = 'non-whitespace';
+            else if (next === 'b') escMeaning = 'word boundary';
+            else if (next === 'B') escMeaning = 'non-word boundary';
+            else if (next === 'n') escMeaning = 'newline character';
+            else if (next === 't') escMeaning = 'tab character';
+            else if (next === 'r') escMeaning = 'carriage return';
+            else if (next === '0') escMeaning = 'null character';
+            else if (/\d/.test(next)) escMeaning = 'backreference to group ' + next;
+            else escMeaning = 'escaped literal "' + next + '"';
+            var escKind = /\d/.test(next) ? 'group' : (/[bB]/.test(next) ? 'anchor' : 'escape');
+            tokens.push({ text: escText, kind: escKind, meaning: escMeaning, depth: depth });
+            i += 2; continue;
+          }
+
+          // --- Character classes [...]  ---
+          if (ch === '[') {
+            var clStart = i;
+            var clNegated = pattern[i + 1] === '^';
+            var j = i + 1;
+            if (pattern[j] === '^') j++;
+            if (pattern[j] === ']') j++; // literal ] at start
+            while (j < pattern.length && pattern[j] !== ']') {
+              if (pattern[j] === '\\') j++;
+              j++;
+            }
+            var clText = pattern.substring(clStart, j + 1);
+            var inner  = clText.slice(clNegated ? 2 : 1, -1);
+            var clDesc = (clNegated ? 'any character NOT in ' : 'any character in ') + '"' + inner + '"';
+            // Friendlier common classes
+            if (clText === '[a-z]') clDesc = 'any lowercase letter a–z';
+            else if (clText === '[A-Z]') clDesc = 'any uppercase letter A–Z';
+            else if (clText === '[0-9]') clDesc = 'any digit 0–9';
+            else if (clText === '[a-zA-Z]') clDesc = 'any letter (upper or lower case)';
+            else if (clText === '[a-zA-Z0-9]') clDesc = 'any alphanumeric character';
+            else if (clText === '[a-zA-Z0-9_]') clDesc = 'any word character (letter, digit, or underscore)';
+            else if (clText === '[\\s\\S]') clDesc = 'any character including newline';
+            tokens.push({ text: clText, kind: 'charclass', meaning: clDesc, depth: depth });
+            i = j + 1; continue;
+          }
+
+          // --- Groups (...)  ---
+          if (ch === '(') {
+            var grpText = '(';
+            var grpMeaning = '';
+            var grpKind = 'group';
+            if (pattern.substring(i, i + 3) === '(?:') {
+              grpText = '(?:'; grpMeaning = 'non-capturing group — match but don\'t save'; i += 3;
+            } else if (pattern.substring(i, i + 4) === '(?<=') {
+              grpText = '(?<='; grpMeaning = 'positive lookbehind — preceded by this pattern'; i += 4;
+            } else if (pattern.substring(i, i + 4) === '(?<!') {
+              grpText = '(?<!'; grpMeaning = 'negative lookbehind — NOT preceded by this pattern'; i += 4;
+            } else if (pattern.substring(i, i + 3) === '(?=') {
+              grpText = '(?='; grpMeaning = 'positive lookahead — followed by this pattern'; i += 3;
+            } else if (pattern.substring(i, i + 3) === '(?!') {
+              grpText = '(?!'; grpMeaning = 'negative lookahead — NOT followed by this pattern'; i += 3;
+            } else if (pattern.substring(i, i + 3) === '(?<') {
+              // named group
+              var nameEnd = pattern.indexOf('>', i + 3);
+              var gname = nameEnd !== -1 ? pattern.substring(i + 3, nameEnd) : '?';
+              grpText = pattern.substring(i, nameEnd + 1);
+              grpMeaning = 'named capturing group "' + gname + '"';
+              i = nameEnd + 1;
+            } else {
+              groupIndex++;
+              grpMeaning = 'capturing group #' + groupIndex + ' — save this match for backreference';
+              i++;
+            }
+            tokens.push({ text: grpText, kind: grpKind, meaning: grpMeaning, depth: depth });
+            depth++;
+            continue;
+          }
+
+          if (ch === ')') {
+            if (depth > 0) depth--;
+            tokens.push({ text: ')', kind: 'group', meaning: 'end of group', depth: depth });
+            i++; continue;
+          }
+
+          // --- Quantifiers (attached to previous token) ---
+          if ('*+?{'.indexOf(ch) !== -1 && tokens.length > 0) {
+            var qText = ch;
+            var qMeaning = '';
+            if (ch === '*') {
+              if (pattern[i + 1] === '?') { qText = '*?'; qMeaning = 'zero or more times (lazy — as few as possible)'; i++; }
+              else qMeaning = 'zero or more times (greedy)';
+            } else if (ch === '+') {
+              if (pattern[i + 1] === '?') { qText = '+?'; qMeaning = 'one or more times (lazy — as few as possible)'; i++; }
+              else qMeaning = 'one or more times (greedy)';
+            } else if (ch === '?') {
+              if (pattern[i + 1] === '?') { qText = '??'; qMeaning = 'zero or one time (lazy)'; i++; }
+              else qMeaning = 'optional — zero or one time';
+            } else if (ch === '{') {
+              var qEnd = pattern.indexOf('}', i);
+              if (qEnd !== -1) {
+                qText = pattern.substring(i, qEnd + 1);
+                var qInner = qText.slice(1, -1);
+                var lazy = pattern[qEnd + 1] === '?';
+                if (lazy) { qText += '?'; i = qEnd + 2; } else i = qEnd + 1;
+                if (qInner.indexOf(',') === -1) {
+                  qMeaning = 'exactly ' + qInner + ' time' + (qInner !== '1' ? 's' : '');
+                } else {
+                  var parts = qInner.split(',');
+                  if (parts[1] === '') qMeaning = parts[0] + ' or more times';
+                  else qMeaning = parts[0] + ' to ' + parts[1] + ' times';
+                }
+                if (lazy) qMeaning += ' (lazy)';
+                tokens.push({ text: qText, kind: 'quantifier', meaning: qMeaning, depth: depth });
+                continue;
+              }
+            }
+            i++;
+            tokens.push({ text: qText, kind: 'quantifier', meaning: qMeaning, depth: depth });
+            continue;
+          }
+
+          // --- Alternation ---
+          if (ch === '|') {
+            tokens.push({ text: '|', kind: 'alternation', meaning: 'or — match the expression on either side', depth: depth });
+            i++; continue;
+          }
+
+          // --- Dot (any char) ---
+          if (ch === '.') {
+            tokens.push({ text: '.', kind: 'escape', meaning: 'any character except newline (or any char with s flag)', depth: depth });
+            i++; continue;
+          }
+
+          // --- Literal characters (group runs of them) ---
+          var litStart = i;
+          while (i < pattern.length && '\\[(){}*+?|^$.'.indexOf(pattern[i]) === -1) i++;
+          if (i > litStart) {
+            var litText = pattern.substring(litStart, i);
+            tokens.push({ text: litText, kind: 'literal', meaning: 'literal text "' + litText + '"', depth: depth });
+            continue;
+          }
+
+          // Fallback — skip unknown character
+          tokens.push({ text: ch, kind: 'literal', meaning: 'literal character "' + ch + '"', depth: depth });
+          i++;
+        }
+
+        if (tokens.length === 0) { panel.style.display = 'none'; list.innerHTML = ''; return; }
+
+        var html = '';
+        for (var ti = 0; ti < tokens.length; ti++) {
+          var tk = tokens[ti];
+          html += tokenSpan(tk.text, tk.kind, tk.meaning, tk.depth);
+        }
+        list.innerHTML = html;
+        panel.style.display = '';
+      }
+      // ─────────────────────────────────────────────────────────────────────────
+
       function process() {
         var pattern = regexInput.value;
         var testStr = testInput.value;
@@ -341,6 +553,7 @@
           statusBar.className = 'status-bar info';
           statusBar.textContent = 'Enter a regex pattern and test string to find matches.';
           allMatches = [];
+          explainRegex(pattern);
           return;
         }
 
@@ -423,6 +636,9 @@
         statusBar.textContent = allMatches.length + ' match' + (allMatches.length !== 1 ? 'es' : '') + ' found';
 
         DT.trackTool('regex-tester');
+
+        // Update explanation panel
+        explainRegex(pattern);
       }
 
       // Live processing with debounce
