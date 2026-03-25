@@ -1,6 +1,6 @@
-# DevToolbox — Deployment Playbook
+# ThisDevTool — Deployment Playbook
 
-Proven step-by-step process for taking DevToolbox from local development to live production. Based on the CalcHub (thiscalc.com) deployment completed 2026-03-22.
+Proven step-by-step process for taking ThisDevTool from local development to live production. Based on the ThisCalc (thiscalc.com) deployment completed 2026-03-22.
 
 ## Phase 1: Domain Registration
 
@@ -40,9 +40,9 @@ done
 ## Phase 2: GA4 Analytics
 
 1. Go to [analytics.google.com](https://analytics.google.com)
-2. Create property: name = "DevToolbox", timezone = Eastern, currency = USD
+2. Create property: name = "ThisDevTool", timezone = Eastern, currency = USD
 3. Business objectives: "Understand web/app traffic" + "View user engagement"
-4. Choose "Web" platform → enter your domain → stream name "DevToolbox Web"
+4. Choose "Web" platform → enter your domain → stream name "ThisDevTool Web"
 5. Copy the Measurement ID (G-XXXXXXXXXX)
 6. Update `js/core.js` — replace the GA_ID placeholder with your real ID
 
@@ -56,7 +56,7 @@ cd D:/Projects/businessideas/devtoolbox
 git init
 git branch -M main
 git add .
-git commit -m "Initial release: DevToolbox with [N] developer tools"
+git commit -m "Initial release: ThisDevTool with [N] developer tools"
 # Create repo via MCP tool: mcp__github__create_repository({ name: "devtoolbox-or-chosen-name" })
 git remote add origin https://github.com/Skeptic1222/REPO_NAME.git
 git push -u origin main
@@ -100,7 +100,7 @@ git push -u origin main
 4. **Mediavine** — requires $5K annual revenue
 5. **Raptive** — requires 25K pageviews/month
 
-## Common Pitfalls (Learned from CalcHub)
+## Common Pitfalls (Learned from ThisCalc)
 
 | Problem | Solution |
 |---------|----------|
