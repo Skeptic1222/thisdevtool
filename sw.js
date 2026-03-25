@@ -1,5 +1,5 @@
 /**
- * DevToolbox — Service Worker
+ * ThisDevTool — Service Worker
  * Cache-first for static assets, network-first for HTML navigation
  */
 var CACHE_NAME = 'thisdevtool-v8';

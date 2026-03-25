@@ -1,5 +1,5 @@
 /**
- * DevToolbox — Shared core utilities
+ * ThisDevTool — Shared core utilities
  * Theme, ad framework, FAQ toggle, clipboard, analytics events
  */
 

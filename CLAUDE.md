@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project: DevToolbox — Repeat-Use Workbench
+## Project: ThisDevTool — Repeat-Use Workbench
 
 Ad-revenue developer/SEO/design/text tool site. 100% client-side JavaScript, hosted on Cloudflare Pages ($0/month). Monetized via AdSense → Mediavine Journey → Mediavine/Raptive.
 
