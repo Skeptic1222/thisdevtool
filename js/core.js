@@ -321,18 +321,7 @@
     window.gtag('config', GA_ID);
   }
 
-  // --- Cookiebot Consent ---
-  // thisdevtool.com authorized in Cookiebot domain group on 2026-03-22
-  var COOKIEBOT_ID = '9362730c-1d81-419b-8f5f-21130b3ab7e5';
-  if (COOKIEBOT_ID !== 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX') {
-    var cbScript = document.createElement('script');
-    cbScript.id = 'Cookiebot';
-    cbScript.src = 'https://consent.cookiebot.com/uc.js';
-    cbScript.setAttribute('data-cbid', COOKIEBOT_ID);
-    cbScript.type = 'text/javascript';
-    cbScript.async = true;
-    document.head.insertBefore(cbScript, document.head.firstChild);
-  }
+  // Cookiebot loaded via static <script> tag in HTML <head> (must be first script for GDPR prior consent)
 
   // --- Init on DOM ready ---
   document.addEventListener('DOMContentLoaded', function () {
