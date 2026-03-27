@@ -2,9 +2,10 @@
  * ThisDevTool — Service Worker
  * Cache-first for static assets, network-first for HTML navigation
  */
-var CACHE_NAME = 'thisdevtool-v8';
+var CACHE_NAME = 'thisdevtool-v9';
 var STATIC_ASSETS = [
   '/css/style.css',
+  '/js/bootstrap.js',
   '/js/core.js',
   '/js/ads.js',
   '/js/feedback.js',
