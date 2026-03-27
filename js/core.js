@@ -10,14 +10,16 @@
   var THEME_KEY = 'devtoolbox-theme';
 
   function getPreferredTheme() {
-    var stored = localStorage.getItem(THEME_KEY);
-    if (stored) return stored;
+    try {
+      var stored = localStorage.getItem(THEME_KEY);
+      if (stored) return stored;
+    } catch (e) { /* localStorage unavailable */ }
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem(THEME_KEY, theme);
+    try { localStorage.setItem(THEME_KEY, theme); } catch (e) { /* localStorage unavailable */ }
     var btn = document.querySelector('.theme-toggle');
     if (btn) btn.textContent = theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19';
   }
@@ -33,6 +35,8 @@
   // --- FAQ Toggle ---
   function initFAQ() {
     document.querySelectorAll('.faq-question').forEach(function (btn) {
+      if (btn.dtBootstrapBound) return;
+      btn.dtBootstrapBound = true;
       btn.addEventListener('click', function () {
         var item = btn.closest('.faq-item');
         var wasOpen = item.classList.contains('open');
@@ -53,13 +57,38 @@
      * Shows "Copied!" feedback on the button if provided.
      */
     copyToClipboard: function (text, feedbackBtn) {
-      return navigator.clipboard.writeText(text).then(function () {
+      function showFeedback() {
         if (feedbackBtn) {
           var orig = feedbackBtn.textContent;
           feedbackBtn.textContent = 'Copied!';
           setTimeout(function () { feedbackBtn.textContent = orig; }, 1500);
         }
-      });
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text).then(showFeedback).catch(function () {
+          // Fallback for non-HTTPS or older browsers
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          showFeedback();
+        });
+      }
+      // No clipboard API available — use execCommand
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showFeedback();
+      return Promise.resolve();
     },
 
     /**

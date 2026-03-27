@@ -21,9 +21,9 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/css/style.css?v=8">
   <script id="Cookiebot" src="https://consent.cookiebot.com/uc.js" data-cbid="9362730c-1d81-419b-8f5f-21130b3ab7e5" data-blockingmode="auto" type="text/javascript"></script>
-  <script src="/js/core.js?v=8"></script>
+  <script src="/js/core.js?v=8" data-cookieconsent="ignore"></script>
   <script src="/js/feedback.js?v=3"></script>
-  <script src="/js/ads.js?v=8"></script>
+  <script src="/js/ads.js?v=8" data-cookieconsent="ignore"></script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -254,35 +254,34 @@
         <div class="ad-slot ad-slot-sidebar" data-ad="sidebar">Ad</div>
       </aside>
     </div>
-  </div>
 
-  
-        <!-- Related Tools -->
-        <div class="content-section related-tools">
-          <h2>Related Tools</h2>
-          <div class="related-tools-grid">
-            <a href="/tools/regex-to-english.html" class="related-tool-card">
-              <span class="related-tool-icon">📖</span>
-              <span class="related-tool-name">Regex to English</span>
-            </a>
-            <a href="/tools/diff-checker.html" class="related-tool-card">
-              <span class="related-tool-icon">✎</span>
-              <span class="related-tool-name">Diff Checker</span>
-            </a>
-            <a href="/tools/regex-library.html" class="related-tool-card">
-              <span class="related-tool-icon">📚</span>
-              <span class="related-tool-name">Regex Pattern Library</span>
-            </a>
-            <a href="/tools/screen-info.html" class="related-tool-card">
-              <span class="related-tool-icon">🖥</span>
-              <span class="related-tool-name">Screen Info Detector</span>
-            </a>
-            <a href="/tools/browser-feature-detector.html" class="related-tool-card">
-              <span class="related-tool-icon">✓</span>
-              <span class="related-tool-name">Browser Feature Detector</span>
-            </a>
-          </div>
-        </main>
+    <!-- Related Tools -->
+    <div class="content-section related-tools">
+      <h2>Related Tools</h2>
+      <div class="related-tools-grid">
+        <a href="/tools/regex-to-english.html" class="related-tool-card">
+          <span class="related-tool-icon">📖</span>
+          <span class="related-tool-name">Regex to English</span>
+        </a>
+        <a href="/tools/diff-checker.html" class="related-tool-card">
+          <span class="related-tool-icon">✎</span>
+          <span class="related-tool-name">Diff Checker</span>
+        </a>
+        <a href="/tools/regex-library.html" class="related-tool-card">
+          <span class="related-tool-icon">📚</span>
+          <span class="related-tool-name">Regex Pattern Library</span>
+        </a>
+        <a href="/tools/screen-info.html" class="related-tool-card">
+          <span class="related-tool-icon">🖥</span>
+          <span class="related-tool-name">Screen Info Detector</span>
+        </a>
+        <a href="/tools/browser-feature-detector.html" class="related-tool-card">
+          <span class="related-tool-icon">✓</span>
+          <span class="related-tool-name">Browser Feature Detector</span>
+        </a>
+      </div>
+    </div>
+  </main>
 
   <!-- Footer -->
   <footer class="site-footer">
@@ -573,21 +572,73 @@
           return;
         }
 
-        // Find all matches
-        allMatches = [];
-        var match;
-        if (flags.indexOf('g') !== -1) {
-          while ((match = regex.exec(testStr)) !== null) {
-            allMatches.push({ index: match.index, text: match[0], groups: Array.prototype.slice.call(match, 1), namedGroups: match.groups || null });
-            if (match[0].length === 0) { regex.lastIndex++; }
-          }
-        } else {
-          match = regex.exec(testStr);
-          if (match) {
-            allMatches.push({ index: match.index, text: match[0], groups: Array.prototype.slice.call(match, 1), namedGroups: match.groups || null });
-          }
-        }
+        // Find all matches via Web Worker (ReDoS protection with 3s timeout)
+        statusBar.className = 'status-bar info';
+        statusBar.textContent = 'Matching...';
 
+        var workerFn = function (d) {
+          var re = new RegExp(d.pattern, d.flags);
+          var matches = [];
+          var m;
+          if (d.flags.indexOf('g') !== -1) {
+            while ((m = re.exec(d.testStr)) !== null) {
+              matches.push({ index: m.index, text: m[0], groups: Array.prototype.slice.call(m, 1), namedGroups: m.groups || null });
+              if (m[0].length === 0) { re.lastIndex++; }
+              if (matches.length > 10000) break;
+            }
+          } else {
+            m = re.exec(d.testStr);
+            if (m) {
+              matches.push({ index: m.index, text: m[0], groups: Array.prototype.slice.call(m, 1), namedGroups: m.groups || null });
+            }
+          }
+          return matches;
+        };
+
+        var workerBlob = new Blob([
+          'self.onmessage=function(e){var r=(' + workerFn.toString() + ')(e.data);self.postMessage(r);}'
+        ], { type: 'application/javascript' });
+        var workerUrl = URL.createObjectURL(workerBlob);
+        var worker = new Worker(workerUrl);
+        var timedOut = false;
+        var workerTimer = setTimeout(function () {
+          timedOut = true;
+          worker.terminate();
+          URL.revokeObjectURL(workerUrl);
+          highlightOutput.innerHTML = escapeHtml(testStr);
+          matchTable.innerHTML = '';
+          allMatches = [];
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Pattern timed out (3s) \u2014 possible catastrophic backtracking. Simplify your regex.';
+        }, 3000);
+
+        worker.onmessage = function (e) {
+          if (timedOut) return;
+          clearTimeout(workerTimer);
+          worker.terminate();
+          URL.revokeObjectURL(workerUrl);
+          allMatches = e.data;
+          renderResults(testStr);
+        };
+        worker.onerror = function () {
+          if (timedOut) return;
+          clearTimeout(workerTimer);
+          worker.terminate();
+          URL.revokeObjectURL(workerUrl);
+          highlightOutput.innerHTML = escapeHtml(testStr);
+          matchTable.innerHTML = '';
+          allMatches = [];
+          statusBar.className = 'status-bar invalid';
+          statusBar.textContent = 'Error executing regex in worker.';
+        };
+        worker.postMessage({ pattern: pattern, flags: flags, testStr: testStr });
+
+        explainRegex(pattern);
+        DT.trackTool('regex-tester');
+        return; // rest handled async
+      }
+
+      function renderResults(testStr) {
         // Build highlighted output
         var html = '';
         var lastIndex = 0;
@@ -638,11 +689,6 @@
         // Status bar
         statusBar.className = allMatches.length > 0 ? 'status-bar valid' : 'status-bar info';
         statusBar.textContent = allMatches.length + ' match' + (allMatches.length !== 1 ? 'es' : '') + ' found';
-
-        DT.trackTool('regex-tester');
-
-        // Update explanation panel
-        explainRegex(pattern);
       }
 
       // Live processing with debounce
